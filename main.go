@@ -14,11 +14,9 @@ import (
 	httpHandler "dapp-moderator/internal/delivery/http"
 	"dapp-moderator/internal/repository"
 	"dapp-moderator/internal/usecase"
-	_ "dapp-moderator/mongo/migrate"
 	"dapp-moderator/utils/connections"
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/googlecloud"
-	"dapp-moderator/utils/redis"
 
 	"github.com/gorilla/mux"
 	migrate "github.com/xakep666/mongo-migrate"
