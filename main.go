@@ -31,14 +31,13 @@ var conf *config.Config
 
 
 func init() {
+	logger = _logger.NewLogger(true)
 
 	c, err := config.NewConfig()
 	if err != nil {
 		panic(err)
 	}
-
-	logger = _logger.NewLogger(true)
-
+	
 	mongoCnn := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", c.Databases.Mongo.Scheme, c.Databases.Mongo.User, c.Databases.Mongo.Pass, c.Databases.Mongo.Host)
 	mongoDbConnection, err := connections.NewMongo(mongoCnn)
 	if err != nil {
@@ -46,6 +45,7 @@ func init() {
 		panic(err)
 	}
 
+	conf = c
 	mongoConnection = mongoDbConnection
 }
 
