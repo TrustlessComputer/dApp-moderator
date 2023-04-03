@@ -15,7 +15,6 @@ import (
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
-	"dapp-moderator/utils/redis"
 )
 
 type IMiddleware interface {

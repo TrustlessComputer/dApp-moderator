@@ -11,8 +11,6 @@ import (
 	"dapp-moderator/utils/config"
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/logger"
-	_logger "dapp-moderator/utils/logger"
-	_redis "dapp-moderator/utils/redis"
 
 	"github.com/go-playground/validator"
 	"github.com/gorilla/handlers"
@@ -27,16 +25,13 @@ type deliveryConfig struct {
 	Handler  *mux.Router
 	Config   *config.Config
 	Response _httpResponse.IHttpResponse
-	Logger   _logger.Ilogger
-	Cache    _redis.IRedisCache
+
 }
 
 func (dc *deliveryConfig) LoadConfig(g *global.Global) {
 	dc.Handler = g.MuxRouter
 	dc.Config = g.Conf
 	dc.Response = _httpResponse.NewHttpResponse()
-	dc.Logger = g.Logger
-	dc.Cache = g.Cache
 }
 
 type httpDelivery struct {
