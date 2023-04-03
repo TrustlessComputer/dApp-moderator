@@ -1,20 +1,16 @@
 package middleware
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
 	"time"
 
-	"go.uber.org/zap"
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/usecase"
-	"dapp-moderator/utils"
 	"dapp-moderator/utils/global"
-	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"dapp-moderator/utils/redis"
 )
 
 type IMiddleware interface {
@@ -91,33 +87,33 @@ func (rw *responseWriter) WriteHeader(code int) {
 func (m *middleware) AccessToken(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 
-		token := r.Header.Get(utils.AUTH_TOKEN)
-		if token == "" {
-			err := errors.New("token is empty")
-			logger.AtLog.Logger.Error("token_is_empty", zap.Error(err))
-			m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
-			return
-		}
+		// token := r.Header.Get(utils.AUTH_TOKEN)
+		// if token == "" {
+		// 	err := errors.New("token is empty")
+		// 	logger.AtLog.Logger.Error("token_is_empty", zap.Error(err))
+		// 	m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
+		// 	return
+		// }
 
-		token = helpers.ReplaceToken(token)
+		// token = helpers.ReplaceToken(token)
 
-		//TODO implement here
-		p, err := m.usecase.ValidateAccessToken(token)
-		if err != nil {
-			logger.AtLog.Logger.Error("cannot_verify_token", zap.Error(err))
-			m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
-			return
-		}
+		// //TODO implement here
+		// p, err := m.usecase.ValidateAccessToken(token)
+		// if err != nil {
+		// 	logger.AtLog.Logger.Error("cannot_verify_token", zap.Error(err))
+		// 	m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
+		// 	return
+		// }
 
-		logger.AtLog.Logger.Info("AccessToken", zap.Any("profile", p))
-		m.cache.SetData(helpers.GenerateCachedProfileKey(token), p)
-		m.cache.SetStringData(helpers.GenerateUserKey(token), p.Uid)
+		// logger.AtLog.Logger.Info("AccessToken", zap.Any("profile", p))
+		// m.cache.SetData(helpers.GenerateCachedProfileKey(token), p)
+		// m.cache.SetStringData(helpers.GenerateUserKey(token), p.Uid)
 
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
-		ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
-		//ctx = context.WithValue(ctx, utils.SIGNED_EMAIL, p.Email)
-		ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
+		 ctx := r.Context()
+		// ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
+		// ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
+		// //ctx = context.WithValue(ctx, utils.SIGNED_EMAIL, p.Email)
+		// ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
 		wrapped := wrapResponseWriter(w)
 		next.ServeHTTP(wrapped, r.WithContext(ctx))
 	}
@@ -129,33 +125,33 @@ func (m *middleware) AccessToken(next http.Handler) http.Handler {
 func (m *middleware) AccessTokenPassThrough(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 
-		token := r.Header.Get(utils.AUTH_TOKEN)
-		if token == "" {
-			err := errors.New("token is empty")
-			logger.AtLog.Logger.Error("token_is_empty", zap.Error(err))
-			next.ServeHTTP(w, r.WithContext(r.Context()))
-			return
-		}
+		// token := r.Header.Get(utils.AUTH_TOKEN)
+		// if token == "" {
+		// 	err := errors.New("token is empty")
+		// 	logger.AtLog.Logger.Error("token_is_empty", zap.Error(err))
+		// 	next.ServeHTTP(w, r.WithContext(r.Context()))
+		// 	return
+		// }
 
-		token = helpers.ReplaceToken(token)
+		// token = helpers.ReplaceToken(token)
 
-		//TODO implement here
-		p, err := m.usecase.ValidateAccessToken(token)
-		if err != nil {
-			logger.AtLog.Logger.Error("cannot_verify_token", zap.Error(err))
-			next.ServeHTTP(w, r.WithContext(r.Context()))
-			return
-		}
+		// //TODO implement here
+		// p, err := m.usecase.ValidateAccessToken(token)
+		// if err != nil {
+		// 	logger.AtLog.Logger.Error("cannot_verify_token", zap.Error(err))
+		// 	next.ServeHTTP(w, r.WithContext(r.Context()))
+		// 	return
+		// }
 
-		m.log.Info("profile", p)
-		m.cache.SetData(helpers.GenerateCachedProfileKey(token), p)
-		m.cache.SetStringData(helpers.GenerateUserKey(token), p.Uid)
+		// m.log.Info("profile", p)
+		// m.cache.SetData(helpers.GenerateCachedProfileKey(token), p)
+		// m.cache.SetStringData(helpers.GenerateUserKey(token), p.Uid)
 
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
-		ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
-		//ctx = context.WithValue(ctx, utils.SIGNED_EMAIL, p.Email)
-		ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
+		// ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
+		// ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
+		// //ctx = context.WithValue(ctx, utils.SIGNED_EMAIL, p.Email)
+		// ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
 		wrapped := wrapResponseWriter(w)
 		next.ServeHTTP(wrapped, r.WithContext(ctx))
 	}
@@ -167,20 +163,20 @@ func (m *middleware) AccessTokenPassThrough(next http.Handler) http.Handler {
 // Authorization
 func (m *middleware) AuthorizationFunc(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
-		if token == "" {
-			next.ServeHTTP(w, r)
-			return
-		}
-		p, err := m.usecase.ValidateAccessToken(token)
-		if err != nil {
-			next.ServeHTTP(w, r)
-			return
-		}
+		// token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
+		// if token == "" {
+		// 	next.ServeHTTP(w, r)
+		// 	return
+		// }
+		// p, err := m.usecase.ValidateAccessToken(token)
+		// if err != nil {
+		// 	next.ServeHTTP(w, r)
+		// 	return
+		// }
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
-		ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
-		ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
+		// ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
+		// ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
+		// ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
 		wrapped := wrapResponseWriter(w)
 		next.ServeHTTP(wrapped, r.WithContext(ctx))
 	}

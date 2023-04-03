@@ -5,6 +5,7 @@ import (
 	_pConnection "dapp-moderator/utils/connections"
 	"dapp-moderator/utils/googlecloud"
 	_logger "dapp-moderator/utils/logger"
+	"dapp-moderator/utils/redis"
 
 	"github.com/gorilla/mux"
 )
@@ -16,4 +17,6 @@ type Global struct {
 	DBConnection        _pConnection.IConnection
 	GCS                 googlecloud.IGcstorage
 	S3Adapter           googlecloud.S3Adapter
+	Cache               redis.IRedisCache
+	CacheAuthService    redis.IRedisCache
 }

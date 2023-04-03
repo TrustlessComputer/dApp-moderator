@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/copier"
 )
 
 type IResponse interface {
@@ -101,22 +100,6 @@ func (h *httpResponse) RespondWithoutContainer(w http.ResponseWriter, httpCode i
 	}
 }
 
-func CopyEntityToRes(toValue IResponse, from entity.IEntity) error {
-	err := copier.Copy(toValue, from)
-	if err != nil {
-		return err
-	}
-	toValue.SetID(from.GetID())
-	return nil
-}
-
-func CopyEntityToResNoID(toValue IResponse, from entity.IEntityNoID) error {
-	err := copier.Copy(toValue, from)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 // HandlerFunc --
 type HandlerFunc func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error)
