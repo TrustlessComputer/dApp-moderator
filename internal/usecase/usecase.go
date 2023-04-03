@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"dapp-moderator/internal/repository"
 	"dapp-moderator/utils/config"
 	"dapp-moderator/utils/global"
 )

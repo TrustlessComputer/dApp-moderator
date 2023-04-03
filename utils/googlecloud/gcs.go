@@ -19,10 +19,11 @@ import (
 	"sync"
 	"time"
 
-	"go.uber.org/zap"
 	"dapp-moderator/utils/config"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+
+	"go.uber.org/zap"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
