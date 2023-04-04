@@ -17,7 +17,11 @@ func (h *httpDelivery) registerRoutes() {
 func (h *httpDelivery) RegisterV1Routes() {
 	h.Handler.Use(h.MiddleWare.LoggingMiddleware)
 	//api
-	api := h.Handler.PathPrefix("/generative/api").Subrouter()
+	api := h.Handler.PathPrefix("/dapp/api").Subrouter()
+
+	//quicknode
+	quicknode := api.PathPrefix("/quicknode").Subrouter()
+	quicknode.HandleFunc("/address/{walletAddress}/balance", h.addressBalance).Methods("GET")
 
 	//admin
 	admin := api.PathPrefix("/admin").Subrouter()
@@ -25,10 +29,10 @@ func (h *httpDelivery) RegisterV1Routes() {
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
-	documentUrl := `/generative/swagger/`
+	documentUrl := `/dapp/swagger/`
 	domain := os.Getenv("swagger_domain")
 	docs.SwaggerInfo.Host = domain
-	docs.SwaggerInfo.BasePath = "/generative/api"
+	docs.SwaggerInfo.BasePath = "/dapp/api"
 	swaggerURL := documentUrl + "swagger/doc.json"
 	h.Handler.PathPrefix(documentUrl).Handler(httpSwagger.Handler(
 		httpSwagger.URL(swaggerURL), //The url pointing to API definition

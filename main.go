@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
+	"dapp-moderator/external/quicknode"
 	"dapp-moderator/internal/delivery"
 	httpHandler "dapp-moderator/internal/delivery/http"
 	"dapp-moderator/internal/repository"
@@ -29,7 +30,6 @@ var logger _logger.Ilogger
 var mongoConnection connections.IConnection
 var conf *config.Config
 
-
 func init() {
 	logger = _logger.NewLogger(true)
 
@@ -37,7 +37,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	mongoCnn := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", c.Databases.Mongo.Scheme, c.Databases.Mongo.User, c.Databases.Mongo.Pass, c.Databases.Mongo.Host)
 	mongoDbConnection, err := connections.NewMongo(mongoCnn)
 	if err != nil {
@@ -82,13 +82,16 @@ func startServer() {
 		return
 	}
 
+	qn := quicknode.NewQuickNode(conf, cache)
+
 	g := global.Global{
-		Logger:              logger,
-		MuxRouter:           r,
-		Conf:                conf,
-		DBConnection:        mongoConnection,
-		Cache:               cache,
-		GCS:                 gcs,
+		Logger:       logger,
+		MuxRouter:    r,
+		Conf:         conf,
+		DBConnection: mongoConnection,
+		Cache:        cache,
+		GCS:          gcs,
+		QuickNode:    qn,
 	}
 
 	repo, err := repository.NewRepository(&g)
@@ -138,7 +141,6 @@ func startServer() {
 			logger.AtLog().Logger.Info(fmt.Sprintf("%s is disabled", name))
 		}
 	}
-
 
 	// Block until we receive our signal.
 	<-c

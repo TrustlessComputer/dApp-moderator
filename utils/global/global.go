@@ -1,6 +1,7 @@
 package global
 
 import (
+	"dapp-moderator/external/quicknode"
 	"dapp-moderator/utils/config"
 	_pConnection "dapp-moderator/utils/connections"
 	"dapp-moderator/utils/googlecloud"
@@ -19,4 +20,5 @@ type Global struct {
 	S3Adapter           googlecloud.S3Adapter
 	Cache               redis.IRedisCache
 	CacheAuthService    redis.IRedisCache
+	QuickNode			*quicknode.QuickNode
 }
