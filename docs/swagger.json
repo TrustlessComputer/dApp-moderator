@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a sample server Autonomous devices management server.",
-        "title": "Generative.xyz APIs",
+        "description": "This is a sample server TC-DAPP server.",
+        "title": "tcDAPP APIs",
         "contact": {},
         "version": "1.0.0"
     },
