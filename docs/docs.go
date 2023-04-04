@@ -23,44 +23,6 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/admin/redis": {
-            "get": {
-                "description": "Get Redis",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Get Redis",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.JsonResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/response.RedisResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
         "/nft-explorer/collections": {
             "get": {
                 "description": "Get Collections",
@@ -84,30 +46,7 @@ var doc = `{
                 }
             }
         },
-        "/nft-explorer/nfts": {
-            "get": {
-                "description": "Get Collections",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "nft-explorer"
-                ],
-                "summary": "Get Collections",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.JsonResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/nft-explorer/{collectionAddress}": {
+        "/nft-explorer/collections/{collectionAddress}": {
             "get": {
                 "description": "Get Collections",
                 "consumes": [
@@ -139,7 +78,7 @@ var doc = `{
                 }
             }
         },
-        "/nft-explorer/{collectionAddress}/nfts": {
+        "/nft-explorer/collections/{collectionAddress}/nfts": {
             "get": {
                 "description": "Get nfts of a Collectionc",
                 "consumes": [
@@ -171,7 +110,7 @@ var doc = `{
                 }
             }
         },
-        "/nft-explorer/{collectionAddress}/nfts/{nftID}": {
+        "/nft-explorer/collections/{collectionAddress}/nfts/{tokenID}": {
             "get": {
                 "description": "Get nft detail of a Collection",
                 "consumes": [
@@ -194,8 +133,8 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "nftID",
-                        "name": "nftID",
+                        "description": "tokenID",
+                        "name": "tokenID",
                         "in": "path",
                         "required": true
                     }
@@ -210,7 +149,7 @@ var doc = `{
                 }
             }
         },
-        "/nft-explorer/{collectionAddress}/nfts/{nftID}/content": {
+        "/nft-explorer/collections/{collectionAddress}/nfts/{tokenID}/content": {
             "get": {
                 "description": "Get nft content of a Collection",
                 "consumes": [
@@ -233,8 +172,63 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "nftID",
-                        "name": "nftID",
+                        "description": "tokenID",
+                        "name": "tokenID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/nft-explorer/nfts": {
+            "get": {
+                "description": "Get Nfts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Get Nfts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/nft-explorer/owner-address/{ownerAddress}/nfts": {
+            "get": {
+                "description": "Get nfts of a wallet address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Get nfts of a wallet address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ownerAddress",
+                        "name": "ownerAddress",
                         "in": "path",
                         "required": true
                     }

@@ -9,14 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// UserCredits godoc
-// @Summary Get Redis
-// @Description Get Redis
-// @Tags Admin
-// @Accept  json
-// @Produce  json
-// @Success 200 {object} response.JsonResponse{data=[]response.RedisResponse}
-// @Router /admin/redis [GET]
+
 func (h *httpDelivery) getRedisKeys(w http.ResponseWriter, r *http.Request) {
 	res, err := h.Usecase.GetAllRedis()
 

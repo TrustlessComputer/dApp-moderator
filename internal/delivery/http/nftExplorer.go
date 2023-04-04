@@ -3,7 +3,10 @@ package http
 import (
 	"context"
 	"dapp-moderator/internal/delivery/http/response"
+	"dapp-moderator/utils/logger"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 // UserCredits godoc
@@ -17,8 +20,14 @@ import (
 func (h *httpDelivery) collections(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			data, err := h.Usecase.Collections(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("Collections", zap.Error(err))
+				return nil, err
+			}
 			
-			return nil, nil
+			logger.AtLog.Logger.Info("Collections", zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
@@ -31,12 +40,19 @@ func (h *httpDelivery) collections(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Param collectionAddress path string true "collectionAddress"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /nft-explorer/{collectionAddress} [GET]
+// @Router /nft-explorer/collections/{collectionAddress} [GET]
 func (h *httpDelivery) collectionDetail(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			collectionAddress := vars["collectionAddress"]
+			data, err := h.Usecase.CollectionDetail(ctx, collectionAddress)
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("collectionAddress",collectionAddress), zap.Error(err))
+				return nil, err
+			}
 			
-			return nil, nil
+			logger.AtLog.Logger.Info("collectionDetail", zap.String("collectionAddress",collectionAddress), zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
@@ -49,12 +65,19 @@ func (h *httpDelivery) collectionDetail(w http.ResponseWriter, r *http.Request) 
 // @Produce  json
 // @Param collectionAddress path string true "collectionAddress"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /nft-explorer/{collectionAddress}/nfts [GET]
+// @Router /nft-explorer/collections/{collectionAddress}/nfts [GET]
 func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
-		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {	
+			collectionAddress := vars["collectionAddress"]
+			data, err := h.Usecase.CollectionNfts(ctx, collectionAddress)
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionNfts", zap.String("collectionAddress",collectionAddress), zap.Error(err))
+				return nil, err
+			}
 			
-			return nil, nil
+			logger.AtLog.Logger.Info("collectionNfts", zap.String("collectionAddress",collectionAddress), zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
@@ -66,14 +89,23 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 // @Param collectionAddress path string true "collectionAddress"
-// @Param nftID path string true "nftID"
+// @Param tokenID path string true "tokenID"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /nft-explorer/{collectionAddress}/nfts/{nftID} [GET]
+// @Router /nft-explorer/collections/{collectionAddress}/nfts/{tokenID} [GET]
 func (h *httpDelivery) collectionNftDetail(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			
-			return nil, nil
+			collectionAddress := vars["collectionAddress"]
+			tokenID := vars["tokenID"]
+			data, err := h.Usecase.CollectionNftDetail(ctx, collectionAddress, tokenID)
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionNftDetail", zap.String("collectionAddress",collectionAddress),  zap.String("tokenID",tokenID), zap.Error(err))
+				return nil, err
+			}
+			
+			logger.AtLog.Logger.Info("collectionNftDetail", zap.String("collectionAddress",collectionAddress),  zap.String("tokenID",tokenID), zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
@@ -85,21 +117,30 @@ func (h *httpDelivery) collectionNftDetail(w http.ResponseWriter, r *http.Reques
 // @Accept  json
 // @Produce  json
 // @Param collectionAddress path string true "collectionAddress"
-// @Param nftID path string true "nftID"
+// @Param tokenID path string true "tokenID"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /nft-explorer/{collectionAddress}/nfts/{nftID}/content [GET]
+// @Router /nft-explorer/collections/{collectionAddress}/nfts/{tokenID}/content [GET]
 func (h *httpDelivery) collectionNftContent(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			
-			return nil, nil
+			collectionAddress := vars["collectionAddress"]
+			tokenID := vars["tokenID"]
+			data, err := h.Usecase.CollectionNftContent(ctx, collectionAddress, tokenID)
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionNftContent", zap.String("collectionAddress",collectionAddress),  zap.String("tokenID",tokenID), zap.Error(err))
+				return nil, err
+			}
+			
+			logger.AtLog.Logger.Info("collectionNftContent", zap.String("collectionAddress",collectionAddress),  zap.String("tokenID",tokenID), zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
 
 // UserCredits godoc
-// @Summary Get Collections
-// @Description Get Collections
+// @Summary Get Nfts
+// @Description Get Nfts
 // @Tags nft-explorer
 // @Accept  json
 // @Produce  json
@@ -108,25 +149,39 @@ func (h *httpDelivery) collectionNftContent(w http.ResponseWriter, r *http.Reque
 func (h *httpDelivery) nfts(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			data, err := h.Usecase.Nfts(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("Nfts",  zap.Error(err))
+				return nil, err
+			}
 			
-			return nil, nil
+			logger.AtLog.Logger.Info("Nfts", zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
 
 // UserCredits godoc
-// @Summary Get Collections
-// @Description Get Collections
+// @Summary Get nfts of a wallet address
+// @Description Get nfts of a wallet address
 // @Tags nft-explorer
 // @Accept  json
 // @Produce  json
+// @Param ownerAddress path string true "ownerAddress"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /nft-explorer/nfts [GET]
-func (h *httpDelivery) collectionnfts(w http.ResponseWriter, r *http.Request) {
+// @Router /nft-explorer/owner-address/{ownerAddress}/nfts [GET]
+func (h *httpDelivery) nftByWalletAddress(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			tokenID := vars["ownerAddress"]
+			data, err := h.Usecase.NftByWalletAddress(ctx, tokenID)
+			if err != nil {
+				logger.AtLog.Logger.Error("Nfts",  zap.Error(err))
+				return nil, err
+			}
 			
-			return nil, nil
+			logger.AtLog.Logger.Info("Nfts", zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }

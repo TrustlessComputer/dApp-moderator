@@ -26,15 +26,13 @@ func (h *httpDelivery) RegisterV1Routes() {
 	//quicknode
 	nftExplorer := api.PathPrefix("/nft-explorer").Subrouter()
 	nftExplorer.HandleFunc("/collections", h.collections).Methods("GET")
-	nftExplorer.HandleFunc("/collections/{collectionAddress}", h.collections).Methods("GET")
+	nftExplorer.HandleFunc("/collections/{collectionAddress}", h.collectionDetail).Methods("GET")
 	nftExplorer.HandleFunc("/collections/{collectionAddress}/nfts", h.collectionNfts).Methods("GET")
-	nftExplorer.HandleFunc("/collections/{collectionAddress}/nfts/{nftID}", h.collectionNftDetail).Methods("GET")
-	nftExplorer.HandleFunc("/collections/{collectionAddress}/nfts/{nftID}/content", h.collectionNftContent).Methods("GET")
-	nftExplorer.HandleFunc("/nfts", h.collections).Methods("GET")
+	nftExplorer.HandleFunc("/collections/{collectionAddress}/nfts/{tokenID}", h.collectionNftDetail).Methods("GET")
+	nftExplorer.HandleFunc("/collections/{collectionAddress}/nfts/{tokenID}/content", h.collectionNftContent).Methods("GET")
+	nftExplorer.HandleFunc("/nfts", h.nfts).Methods("GET")
+	nftExplorer.HandleFunc("/owner-address/{walletAddress}/nfts", h.nftByWalletAddress).Methods("GET")
 
-	//admin
-	admin := api.PathPrefix("/admin").Subrouter()
-	admin.HandleFunc("/redis", h.getRedisKeys).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -31,3 +32,25 @@ func ReplaceNonUTF8(filename string) string  {
 	return fmt.Sprintf(re.ReplaceAllString(filename, ""))
 }
 
+func JsonTransform(from interface{}, to interface{}) error {
+	bytes, err := json.Marshal(from)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(bytes, to)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ParseData(from []byte, to interface{}) error {
+	err := json.Unmarshal(from, to)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
