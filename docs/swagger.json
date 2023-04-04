@@ -46,6 +46,194 @@
                 }
             }
         },
+        "/nft-explorer/collections": {
+            "get": {
+                "description": "Get Collections",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Get Collections",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/nft-explorer/nfts": {
+            "get": {
+                "description": "Get Collections",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Get Collections",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/nft-explorer/{collectionAddress}": {
+            "get": {
+                "description": "Get Collections",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Get Collections",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collectionAddress",
+                        "name": "collectionAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/nft-explorer/{collectionAddress}/nfts": {
+            "get": {
+                "description": "Get nfts of a Collectionc",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Get nfts of a Collectionc",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collectionAddress",
+                        "name": "collectionAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/nft-explorer/{collectionAddress}/nfts/{nftID}": {
+            "get": {
+                "description": "Get nft detail of a Collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Get nft detail of a Collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collectionAddress",
+                        "name": "collectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "nftID",
+                        "name": "nftID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/nft-explorer/{collectionAddress}/nfts/{nftID}/content": {
+            "get": {
+                "description": "Get nft content of a Collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Get nft content of a Collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collectionAddress",
+                        "name": "collectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "nftID",
+                        "name": "nftID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/quicknode/address/{walletAddress}/balance": {
             "get": {
                 "description": "getaddress balance",
