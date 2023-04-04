@@ -8,14 +8,15 @@ import (
 )
 
 type Config struct {
-	Debug                 bool
-	StartHTTP             bool
-	Context               *Context
-	Databases             *Databases
-	Redis                 RedisConfig
-	ENV                   string
-	ServicePort           string
-	Gcs                   *GCS
+	Debug       bool
+	StartHTTP   bool
+	Context     *Context
+	Databases   *Databases
+	Redis       RedisConfig
+	ENV         string
+	ServicePort string
+	QuickNode   string
+	Gcs         *GCS
 }
 
 type Context struct {
@@ -75,13 +76,14 @@ func NewConfig(filePaths ...string) (*Config, error) {
 
 	services["og"] = os.Getenv("OG_SERVICE_URL")
 	conf := &Config{
-		ENV:         os.Getenv("ENV"),
-		StartHTTP:   isStartHTTP,
+		ENV:       os.Getenv("ENV"),
+		StartHTTP: isStartHTTP,
 		Context: &Context{
 			TimeOut: timeOut,
 		},
 		Debug:       isDebug,
 		ServicePort: os.Getenv("SERVICE_PORT"),
+		QuickNode:   os.Getenv("QUICKNODE_URL"),
 		Databases: &Databases{
 			Mongo: &DBConnection{
 				Host:   os.Getenv("MONGO_HOST"),

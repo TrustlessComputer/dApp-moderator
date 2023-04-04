@@ -1,4 +1,4 @@
-package ord_service
+package quicknode
 
 const (
 	Exec          string = "exec"
