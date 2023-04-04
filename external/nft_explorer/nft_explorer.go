@@ -5,8 +5,6 @@ import (
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
 	"fmt"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 type NftExplorer struct {
@@ -25,7 +23,7 @@ func NewNftExplorer(conf *config.Config, cache redis.IRedisCache) *NftExplorer {
 
 func (q NftExplorer) Collections() ([]CollectionsResp, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.HttpRequest(fmt.Sprintf("%s/%s",q.serverURL, "collections"), "GET", headers, nil)
+	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s",q.serverURL, "collections"), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +40,7 @@ func (q NftExplorer) Collections() ([]CollectionsResp, error) {
 
 func (q NftExplorer) CollectionDetail(collectionAddress string) (*CollectionsResp, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.HttpRequest(fmt.Sprintf("%s/%s/%s",q.serverURL, "collection", collectionAddress), "GET", headers, nil)
+	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s/%s",q.serverURL, "collection", collectionAddress), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +57,7 @@ func (q NftExplorer) CollectionDetail(collectionAddress string) (*CollectionsRes
 
 func (q NftExplorer) CollectionNfts(collectionAddress string) ([]NftsResp, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.HttpRequest(fmt.Sprintf("%s/%s/%s/nfts",q.serverURL, "collection", collectionAddress), "GET", headers, nil)
+	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s/%s/nfts",q.serverURL, "collection", collectionAddress), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +75,8 @@ func (q NftExplorer) CollectionNfts(collectionAddress string) ([]NftsResp, error
 func (q NftExplorer) CollectionNftDetail(collectionAddress string, tokenID string) (*NftsResp, error) {
 	headers := make(map[string]string)	
 	fullURL := fmt.Sprintf("%s/%s/%s/nft/%s",q.serverURL, "collection", collectionAddress, tokenID)
-	spew.Dump(fullURL)
-	data, _, err := helpers.HttpRequest(fullURL, "GET", headers, nil)
+	
+	data, _, err := helpers.JsonRequest(fullURL, "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -93,26 +91,24 @@ func (q NftExplorer) CollectionNftDetail(collectionAddress string, tokenID strin
 	return resp.ToNft(), nil
 }
 
-func (q NftExplorer) CollectionNftContent(collectionAddress string, tokenID string) (*ServiceResp, error) {
+func (q NftExplorer) CollectionNftContent(collectionAddress string, tokenID string) ([]byte, string, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.HttpRequest(fmt.Sprintf("%s/%s/%s/nft/%s/content",q.serverURL, "collection", collectionAddress, tokenID), "GET", headers, nil)
+	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s/%s/nft/%s/content",q.serverURL, "collection", collectionAddress, tokenID), "GET", headers, nil)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	
-	resp, err := q.ParseData(data)
+	nft, err := q.CollectionNftDetail(collectionAddress, tokenID)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	
-	
-	return resp, nil
+
+	return data, nft.ContentType,  nil
 }
 
 func (q NftExplorer) Nfts() ([]NftsResp, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.HttpRequest(fmt.Sprintf("%s/%s",q.serverURL, "nfts"), "GET", headers, nil)
+	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s",q.serverURL, "nfts"), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +125,7 @@ func (q NftExplorer) Nfts() ([]NftsResp, error) {
 
 func (q NftExplorer) NftOfWalletAddress(walletAddress string) ([]NftsResp, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.HttpRequest(fmt.Sprintf("%s/%s/%s",q.serverURL, "nfts",walletAddress), "GET", headers, nil)
+	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s/%s",q.serverURL, "nfts",walletAddress), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
