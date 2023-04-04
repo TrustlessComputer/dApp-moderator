@@ -5,7 +5,7 @@ type UpsertRedisRequest struct {
 	Value string `json:"value"`
 }
 
-type ListNftIdsReq struct {
+type ListtokenIDsReq struct {
 	InscriptionID []string `json:"inscriptionIDs"`
 
 	SellOrdAddress string            `json:"seller_ord_address"`

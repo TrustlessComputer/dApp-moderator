@@ -26,29 +26,22 @@ info:
   title: Generative.xyz APIs
   version: 1.0.0
 paths:
-  /admin/redis:
+  /nft-explorer/collections:
     get:
       consumes:
       - application/json
-      description: Get Redis
+      description: Get Collections
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.JsonResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/response.RedisResponse'
-                  type: array
-              type: object
-      summary: Get Redis
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collections
       tags:
-      - Admin
-  /nft-explorer/{collectionAddress}:
+      - nft-explorer
+  /nft-explorer/collections/{collectionAddress}:
     get:
       consumes:
       - application/json
@@ -69,7 +62,7 @@ paths:
       summary: Get Collections
       tags:
       - nft-explorer
-  /nft-explorer/{collectionAddress}/nfts:
+  /nft-explorer/collections/{collectionAddress}/nfts:
     get:
       consumes:
       - application/json
@@ -90,7 +83,7 @@ paths:
       summary: Get nfts of a Collectionc
       tags:
       - nft-explorer
-  /nft-explorer/{collectionAddress}/nfts/{nftID}:
+  /nft-explorer/collections/{collectionAddress}/nfts/{tokenID}:
     get:
       consumes:
       - application/json
@@ -101,9 +94,9 @@ paths:
         name: collectionAddress
         required: true
         type: string
-      - description: nftID
+      - description: tokenID
         in: path
-        name: nftID
+        name: tokenID
         required: true
         type: string
       produces:
@@ -116,7 +109,7 @@ paths:
       summary: Get nft detail of a Collection
       tags:
       - nft-explorer
-  /nft-explorer/{collectionAddress}/nfts/{nftID}/content:
+  /nft-explorer/collections/{collectionAddress}/nfts/{tokenID}/content:
     get:
       consumes:
       - application/json
@@ -127,9 +120,9 @@ paths:
         name: collectionAddress
         required: true
         type: string
-      - description: nftID
+      - description: tokenID
         in: path
-        name: nftID
+        name: tokenID
         required: true
         type: string
       produces:
@@ -142,26 +135,11 @@ paths:
       summary: Get nft content of a Collection
       tags:
       - nft-explorer
-  /nft-explorer/collections:
-    get:
-      consumes:
-      - application/json
-      description: Get Collections
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.JsonResponse'
-      summary: Get Collections
-      tags:
-      - nft-explorer
   /nft-explorer/nfts:
     get:
       consumes:
       - application/json
-      description: Get Collections
+      description: Get Nfts
       produces:
       - application/json
       responses:
@@ -169,7 +147,28 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.JsonResponse'
-      summary: Get Collections
+      summary: Get Nfts
+      tags:
+      - nft-explorer
+  /nft-explorer/owner-address/{ownerAddress}/nfts:
+    get:
+      consumes:
+      - application/json
+      description: Get nfts of a wallet address
+      parameters:
+      - description: ownerAddress
+        in: path
+        name: ownerAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get nfts of a wallet address
       tags:
       - nft-explorer
   /quicknode/address/{walletAddress}/balance:
