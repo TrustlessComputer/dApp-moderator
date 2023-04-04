@@ -50,9 +50,9 @@ func init() {
 	mongoConnection = mongoDbConnection
 }
 
-// @title Generative.xyz APIs
+// @title tcDAPP APIs
 // @version 1.0.0
-// @description This is a sample server Autonomous devices management server.
+// @description This is a sample server TC-DAPP server.
 
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header

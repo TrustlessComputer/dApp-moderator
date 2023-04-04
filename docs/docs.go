@@ -348,8 +348,8 @@ var SwaggerInfo = swaggerInfo{
 	Host:        "",
 	BasePath:    "/dapp-moderator/v1",
 	Schemes:     []string{},
-	Title:       "Generative.xyz APIs",
-	Description: "This is a sample server Autonomous devices management server.",
+	Title:       "tcDAPP APIs",
+	Description: "This is a sample server TC-DAPP server.",
 }
 
 type s struct{}
