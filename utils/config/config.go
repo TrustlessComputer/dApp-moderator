@@ -17,6 +17,7 @@ type Config struct {
 	ServicePort string
 	QuickNode   string
 	NftExplorer string
+	BFSService  string
 	Gcs         *GCS
 }
 
@@ -85,7 +86,8 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		Debug:       isDebug,
 		ServicePort: os.Getenv("SERVICE_PORT"),
 		QuickNode:   os.Getenv("QUICKNODE_URL"),
-		NftExplorer:   os.Getenv("NFT_EXPLORER_URL"),
+		NftExplorer: os.Getenv("NFT_EXPLORER_URL"),
+		BFSService: os.Getenv("BFS_SERVICE_URL"),
 		Databases: &Databases{
 			Mongo: &DBConnection{
 				Host:   os.Getenv("MONGO_HOST"),
