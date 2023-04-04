@@ -48,6 +48,130 @@ paths:
       summary: Get Redis
       tags:
       - Admin
+  /nft-explorer/{collectionAddress}:
+    get:
+      consumes:
+      - application/json
+      description: Get Collections
+      parameters:
+      - description: collectionAddress
+        in: path
+        name: collectionAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collections
+      tags:
+      - nft-explorer
+  /nft-explorer/{collectionAddress}/nfts:
+    get:
+      consumes:
+      - application/json
+      description: Get nfts of a Collectionc
+      parameters:
+      - description: collectionAddress
+        in: path
+        name: collectionAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get nfts of a Collectionc
+      tags:
+      - nft-explorer
+  /nft-explorer/{collectionAddress}/nfts/{nftID}:
+    get:
+      consumes:
+      - application/json
+      description: Get nft detail of a Collection
+      parameters:
+      - description: collectionAddress
+        in: path
+        name: collectionAddress
+        required: true
+        type: string
+      - description: nftID
+        in: path
+        name: nftID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get nft detail of a Collection
+      tags:
+      - nft-explorer
+  /nft-explorer/{collectionAddress}/nfts/{nftID}/content:
+    get:
+      consumes:
+      - application/json
+      description: Get nft content of a Collection
+      parameters:
+      - description: collectionAddress
+        in: path
+        name: collectionAddress
+        required: true
+        type: string
+      - description: nftID
+        in: path
+        name: nftID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get nft content of a Collection
+      tags:
+      - nft-explorer
+  /nft-explorer/collections:
+    get:
+      consumes:
+      - application/json
+      description: Get Collections
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collections
+      tags:
+      - nft-explorer
+  /nft-explorer/nfts:
+    get:
+      consumes:
+      - application/json
+      description: Get Collections
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collections
+      tags:
+      - nft-explorer
   /quicknode/address/{walletAddress}/balance:
     get:
       consumes:

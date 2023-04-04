@@ -22,6 +22,15 @@ func (h *httpDelivery) RegisterV1Routes() {
 	//quicknode
 	quicknode := api.PathPrefix("/quicknode").Subrouter()
 	quicknode.HandleFunc("/address/{walletAddress}/balance", h.addressBalance).Methods("GET")
+	
+	//quicknode
+	nftExplorer := api.PathPrefix("/nft-explorer").Subrouter()
+	nftExplorer.HandleFunc("/collections", h.collections).Methods("GET")
+	nftExplorer.HandleFunc("/collections/{collectionAddress}", h.collections).Methods("GET")
+	nftExplorer.HandleFunc("/collections/{collectionAddress}/nfts", h.collectionNfts).Methods("GET")
+	nftExplorer.HandleFunc("/collections/{collectionAddress}/nfts/{nftID}", h.collectionNftDetail).Methods("GET")
+	nftExplorer.HandleFunc("/collections/{collectionAddress}/nfts/{nftID}/content", h.collectionNftContent).Methods("GET")
+	nftExplorer.HandleFunc("/nfts", h.collections).Methods("GET")
 
 	//admin
 	admin := api.PathPrefix("/admin").Subrouter()

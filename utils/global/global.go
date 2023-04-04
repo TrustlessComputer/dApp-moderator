@@ -1,6 +1,7 @@
 package global
 
 import (
+	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/external/quicknode"
 	"dapp-moderator/utils/config"
 	_pConnection "dapp-moderator/utils/connections"
@@ -21,4 +22,5 @@ type Global struct {
 	Cache               redis.IRedisCache
 	CacheAuthService    redis.IRedisCache
 	QuickNode			*quicknode.QuickNode
+	NftExplorer			*nft_explorer.NftExplorer
 }
