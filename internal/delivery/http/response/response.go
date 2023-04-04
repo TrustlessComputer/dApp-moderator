@@ -142,3 +142,30 @@ func (h *restHandlerTemplate) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 	h.httpResp.RespondSuccess(w, http.StatusOK, Success, item, "")
 }
+
+func (h *restHandlerTemplate) ServeFile(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	vars := mux.Vars(r)
+	vars[utils.SIGNED_USER_ID] = ""
+	vars[utils.SIGNED_WALLET_ADDRESS] = ""
+	userUuid, ok := ctx.Value(utils.SIGNED_USER_ID).(string)
+	if ok && userUuid != "" {
+		vars[utils.SIGNED_USER_ID] = userUuid
+	}
+	userWalletAddress, ok := ctx.Value(utils.SIGNED_WALLET_ADDRESS).(string)
+	if ok && userWalletAddress != "" {
+		vars[utils.SIGNED_WALLET_ADDRESS] = userWalletAddress
+	}
+	item, err := h.handlerFunc(ctx, r, vars)
+	if err != nil {
+		h.httpResp.RespondWithError(w, http.StatusBadRequest, Error, err)
+		return
+	}
+	if item == nil {
+		item = map[string]interface{}{
+			"status": true,
+		}
+	}
+	bytes, _ := json.Marshal(item)
+	w.Write(bytes)
+}

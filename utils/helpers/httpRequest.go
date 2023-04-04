@@ -15,7 +15,7 @@ type AllowedCode struct {
 }
 
 type RelyErrorMessage struct {
-	Code    int         `json:"code"`
+	Code    string         `json:"code"`
 	Message *string     `json:"message"`
 	Error   interface{} `json:"error"`
 }
@@ -97,8 +97,8 @@ func HttpRequest(fullUrl string, method string, headers map[string]string, reqBo
 }
 
 func JsonRequest(fullUrl string, method string, headers map[string]string, reqBody io.Reader) ([]byte, int, error) {
-	headers["accept"] = "application/json"
-	headers["content-type"] = "application/json"
+	// headers["accept"] = "application/json"
+	// headers["content-type"] = "application/json"
 
 	return HttpRequest(fullUrl, method, headers, reqBody)
 }
