@@ -8,6 +8,114 @@
     },
     "basePath": "/dapp-moderator/v1",
     "paths": {
+        "/bfs-service/browse/{walletAddress}": {
+            "get": {
+                "description": "Browse files of a wallet (uploader's wallet address)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BFS-service"
+                ],
+                "summary": "Browse files of a wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "walletAddress",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "path",
+                        "name": "path",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bfs-service/files/{walletAddress}": {
+            "get": {
+                "description": "Get files of a wallet (uploader's wallet address)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BFS-service"
+                ],
+                "summary": "Get files of a wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "walletAddress",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bfs-service/info/{walletAddress}": {
+            "get": {
+                "description": "Get file info of a wallet address (uploader's wallet address)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BFS-service"
+                ],
+                "summary": "Get file info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "walletAddress",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "path",
+                        "name": "path",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/nft-explorer/collections": {
             "get": {
                 "description": "Get Collections",

@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
+	"dapp-moderator/external/bfs_service"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/external/quicknode"
 	"dapp-moderator/internal/delivery"
@@ -85,6 +86,7 @@ func startServer() {
 
 	qn := quicknode.NewQuickNode(conf, cache)
 	nex := nft_explorer.NewNftExplorer(conf, cache)
+	bfs := bfs_service.NewBfsService(conf, cache)
 
 	g := global.Global{
 		Logger:       logger,
@@ -95,6 +97,7 @@ func startServer() {
 		GCS:          gcs,
 		QuickNode:    qn,
 		NftExplorer:  nex,
+		BfsService:   bfs,
 	}
 
 	repo, err := repository.NewRepository(&g)

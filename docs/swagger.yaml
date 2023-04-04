@@ -26,6 +26,77 @@ info:
   title: tcDAPP APIs
   version: 1.0.0
 paths:
+  /bfs-service/browse/{walletAddress}:
+    get:
+      consumes:
+      - application/json
+      description: Browse files of a wallet (uploader's wallet address)
+      parameters:
+      - description: walletAddress
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      - description: path
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Browse files of a wallet
+      tags:
+      - BFS-service
+  /bfs-service/files/{walletAddress}:
+    get:
+      consumes:
+      - application/json
+      description: Get files of a wallet (uploader's wallet address)
+      parameters:
+      - description: walletAddress
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get files of a wallet
+      tags:
+      - BFS-service
+  /bfs-service/info/{walletAddress}:
+    get:
+      consumes:
+      - application/json
+      description: Get file info of a wallet address (uploader's wallet address)
+      parameters:
+      - description: walletAddress
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      - description: path
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get file info
+      tags:
+      - BFS-service
   /nft-explorer/collections:
     get:
       consumes:
