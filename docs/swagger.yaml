@@ -41,15 +41,15 @@ paths:
       summary: Get Collections
       tags:
       - nft-explorer
-  /nft-explorer/collections/{collectionAddress}:
+  /nft-explorer/collections/{contractAddress}:
     get:
       consumes:
       - application/json
       description: Get Collections
       parameters:
-      - description: collectionAddress
+      - description: contractAddress
         in: path
-        name: collectionAddress
+        name: contractAddress
         required: true
         type: string
       produces:
@@ -62,15 +62,15 @@ paths:
       summary: Get Collections
       tags:
       - nft-explorer
-  /nft-explorer/collections/{collectionAddress}/nfts:
+  /nft-explorer/collections/{contractAddress}/nfts:
     get:
       consumes:
       - application/json
       description: Get nfts of a Collectionc
       parameters:
-      - description: collectionAddress
+      - description: contractAddress
         in: path
-        name: collectionAddress
+        name: contractAddress
         required: true
         type: string
       produces:
@@ -83,15 +83,15 @@ paths:
       summary: Get nfts of a Collectionc
       tags:
       - nft-explorer
-  /nft-explorer/collections/{collectionAddress}/nfts/{tokenID}:
+  /nft-explorer/collections/{contractAddress}/nfts/{tokenID}:
     get:
       consumes:
       - application/json
       description: Get nft detail of a Collection
       parameters:
-      - description: collectionAddress
+      - description: contractAddress
         in: path
-        name: collectionAddress
+        name: contractAddress
         required: true
         type: string
       - description: tokenID
@@ -109,15 +109,15 @@ paths:
       summary: Get nft detail of a Collection
       tags:
       - nft-explorer
-  /nft-explorer/collections/{collectionAddress}/nfts/{tokenID}/content:
+  /nft-explorer/collections/{contractAddress}/nfts/{tokenID}/content:
     get:
       consumes:
       - application/json
       description: Get nft content of a Collection
       parameters:
-      - description: collectionAddress
+      - description: contractAddress
         in: path
-        name: collectionAddress
+        name: contractAddress
         required: true
         type: string
       - description: tokenID

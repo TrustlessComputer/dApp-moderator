@@ -28,7 +28,7 @@ type CollectionsResp struct {
 
 type NftsResp struct {
 	Collection        string  `json:"collection"`
-	CollectionAddress string  `json:"collection_address"`
+	contractAddress string  `json:"collection_address"`
 	TokenID           string  `json:"token_id"`
 	ContentType       string  `json:"content_type"`
 	Name              string  `json:"name"`

@@ -46,7 +46,7 @@ var doc = `{
                 }
             }
         },
-        "/nft-explorer/collections/{collectionAddress}": {
+        "/nft-explorer/collections/{contractAddress}": {
             "get": {
                 "description": "Get Collections",
                 "consumes": [
@@ -62,8 +62,8 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "collectionAddress",
-                        "name": "collectionAddress",
+                        "description": "contractAddress",
+                        "name": "contractAddress",
                         "in": "path",
                         "required": true
                     }
@@ -78,7 +78,7 @@ var doc = `{
                 }
             }
         },
-        "/nft-explorer/collections/{collectionAddress}/nfts": {
+        "/nft-explorer/collections/{contractAddress}/nfts": {
             "get": {
                 "description": "Get nfts of a Collectionc",
                 "consumes": [
@@ -94,8 +94,8 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "collectionAddress",
-                        "name": "collectionAddress",
+                        "description": "contractAddress",
+                        "name": "contractAddress",
                         "in": "path",
                         "required": true
                     }
@@ -110,7 +110,7 @@ var doc = `{
                 }
             }
         },
-        "/nft-explorer/collections/{collectionAddress}/nfts/{tokenID}": {
+        "/nft-explorer/collections/{contractAddress}/nfts/{tokenID}": {
             "get": {
                 "description": "Get nft detail of a Collection",
                 "consumes": [
@@ -126,8 +126,8 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "collectionAddress",
-                        "name": "collectionAddress",
+                        "description": "contractAddress",
+                        "name": "contractAddress",
                         "in": "path",
                         "required": true
                     },
@@ -149,7 +149,7 @@ var doc = `{
                 }
             }
         },
-        "/nft-explorer/collections/{collectionAddress}/nfts/{tokenID}/content": {
+        "/nft-explorer/collections/{contractAddress}/nfts/{tokenID}/content": {
             "get": {
                 "description": "Get nft content of a Collection",
                 "consumes": [
@@ -165,8 +165,8 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "collectionAddress",
-                        "name": "collectionAddress",
+                        "description": "contractAddress",
+                        "name": "contractAddress",
                         "in": "path",
                         "required": true
                     },

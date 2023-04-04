@@ -19,48 +19,48 @@ func (u Usecase) Collections(ctx context.Context) (interface{}, error) {
 	return data, nil
 }
 
-func (u Usecase) CollectionDetail(ctx context.Context, collectionAddress string) (interface{}, error) {
-	data, err := u.NftExplorer.CollectionDetail(collectionAddress)
+func (u Usecase) CollectionDetail(ctx context.Context, contractAddress string) (interface{}, error) {
+	data, err := u.NftExplorer.CollectionDetail(contractAddress)
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionDetail", zap.String("collectionAddress", collectionAddress), zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
 		return nil, err
 	}
 	
-	logger.AtLog.Logger.Info("CollectionDetail",zap.String("collectionAddress", collectionAddress), zap.Any("data", data))
+	logger.AtLog.Logger.Info("CollectionDetail",zap.String("contractAddress", contractAddress), zap.Any("data", data))
 	return data, nil
 }
 
-func (u Usecase) CollectionNfts(ctx context.Context, collectionAddress string) (interface{}, error) {
-	data, err := u.NftExplorer.CollectionNfts(collectionAddress)
+func (u Usecase) CollectionNfts(ctx context.Context, contractAddress string) (interface{}, error) {
+	data, err := u.NftExplorer.CollectionNfts(contractAddress)
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionNfts",zap.String("collectionAddress", collectionAddress), zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionNfts",zap.String("contractAddress", contractAddress), zap.Error(err))
 		return nil, err
 	}
 	
-	logger.AtLog.Logger.Info("CollectionNfts",zap.String("collectionAddress", collectionAddress), zap.Any("data", data))
+	logger.AtLog.Logger.Info("CollectionNfts",zap.String("contractAddress", contractAddress), zap.Any("data", data))
 	return data, nil
 }
 
-func (u Usecase) CollectionNftDetail(ctx context.Context, collectionAddress string, tokenID string) (interface{}, error) {
-	data, err := u.NftExplorer.CollectionNftDetail(collectionAddress, tokenID)
+func (u Usecase) CollectionNftDetail(ctx context.Context, contractAddress string, tokenID string) (interface{}, error) {
+	data, err := u.NftExplorer.CollectionNftDetail(contractAddress, tokenID)
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionNfts",zap.String("collectionAddress", collectionAddress), zap.String("tokenID", tokenID), zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionNfts",zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
 		return nil, err
 	}
 	
-	logger.AtLog.Logger.Info("CollectionNfts",zap.String("collectionAddress", collectionAddress), zap.String("tokenID", tokenID), zap.Any("data", data))
+	logger.AtLog.Logger.Info("CollectionNfts",zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", data))
 	return data, nil
 }
 
-func (u Usecase) CollectionNftContent(ctx context.Context,collectionAddress string, tokenID string) ([]byte, string, error) {
+func (u Usecase) CollectionNftContent(ctx context.Context,contractAddress string, tokenID string) ([]byte, string, error) {
 	
-	data, contentType, err := u.NftExplorer.CollectionNftContent(collectionAddress, tokenID)
+	data, contentType, err := u.NftExplorer.CollectionNftContent(contractAddress, tokenID)
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionNftContent",zap.String("collectionAddress", collectionAddress), zap.String("tokenID", tokenID), zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionNftContent",zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
 		return nil, "", err
 	}
 	
-	logger.AtLog.Logger.Info("CollectionNftContent",zap.String("collectionAddress", collectionAddress), zap.String("tokenID", tokenID), zap.Any("data", data))
+	logger.AtLog.Logger.Info("CollectionNftContent",zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", data))
 	return data, contentType, nil
 }
 
