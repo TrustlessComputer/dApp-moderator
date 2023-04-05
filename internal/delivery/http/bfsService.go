@@ -5,7 +5,9 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/utils/logger"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
 
@@ -88,3 +90,38 @@ func (h *httpDelivery) bfsFileInfo(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
+// UserCredits godoc
+// @Summary Get content file
+// @Description Get file content of a wallet address (uploader's wallet address)
+// @Tags BFS-service
+// @Accept  json
+// @Produce  json
+// @Param walletAddress path string true "walletAddress"
+// @Param path query string false "path"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /bfs-service/content/{walletAddress} [GET]
+func (h *httpDelivery) bfsFileContent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	ctx := context.Background()
+	
+	walletAddress := vars["walletAddress"]
+	path := r.URL.Query().Get("path")
+	data, ctype, err := h.Usecase.BfsFileContent(ctx, walletAddress, path)
+	if err != nil {
+		logger.AtLog.Logger.Error("bfsFileInfo", zap.Error(err))
+		return 
+	}
+
+	if err != nil {
+		logger.AtLog.Logger.Error("collectionNftContent",  zap.Error(err))
+		h.Response.RespondWithError(w, http.StatusBadRequest, response.Error, err)
+		return 
+	}
+
+	logger.AtLog.Logger.Info("collectionNftContent", zap.Any("data", data))
+	
+	w.Header().Set("Content-Type", ctype)
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	w.Write(data)
+	return 
+}

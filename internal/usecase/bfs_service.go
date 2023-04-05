@@ -40,3 +40,15 @@ func (u Usecase) BfsFileInfo(ctx context.Context, walletAddress string, path str
 	logger.AtLog.Logger.Info("FileInfo",zap.String("walletAddress",walletAddress), zap.String("path",path), zap.Any("data", data))
 	return data, nil
 }
+
+
+func (u Usecase) BfsFileContent(ctx context.Context, walletAddress string, path string) ([]byte, string, error) {
+	data, contentType , err := u.BfsService.FileContent(walletAddress, path)
+	if err != nil {
+		logger.AtLog.Logger.Error("FileInfo", zap.String("BfsFileContent",walletAddress), zap.String("path",path), zap.Error(err))
+		return nil,contentType, err
+	}
+	
+	logger.AtLog.Logger.Info("FileInfo",zap.String("BfsFileContent",walletAddress), zap.String("path",path), zap.Any("data", data))
+	return data,contentType, nil
+}

@@ -46,6 +46,44 @@
                 }
             }
         },
+        "/bfs-service/content/{walletAddress}": {
+            "get": {
+                "description": "Get file content of a wallet address (uploader's wallet address)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BFS-service"
+                ],
+                "summary": "Get content file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "walletAddress",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "path",
+                        "name": "path",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/bfs-service/files/{walletAddress}": {
             "get": {
                 "description": "Get files of a wallet (uploader's wallet address)",

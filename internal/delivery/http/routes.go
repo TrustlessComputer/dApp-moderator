@@ -39,6 +39,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	bfsServices.HandleFunc("/files/{walletAddress}", h.bfsFiles).Methods("GET")
 	bfsServices.HandleFunc("/browse/{walletAddress}", h.bfsBrowseFile).Methods("GET")
 	bfsServices.HandleFunc("/info/{walletAddress}", h.bfsFileInfo).Methods("GET")
+	bfsServices.HandleFunc("/content/{walletAddress}", h.bfsFileContent).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

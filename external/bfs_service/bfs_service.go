@@ -5,6 +5,8 @@ import (
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
 	"fmt"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 type BfsService struct {
@@ -23,7 +25,10 @@ func NewBfsService(conf *config.Config, cache redis.IRedisCache) *BfsService {
 
 func (q BfsService) Files(walletAddress string) ([]string, error) {
 	headers := make(map[string]string)	
-	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s/files/%s",q.serverURL, walletAddress,), "GET", headers, nil)
+	url := fmt.Sprintf("%s/files/%s",q.serverURL, walletAddress)
+
+	spew.Dump(url)
+	data, _, _, err := helpers.JsonRequest(url, "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +75,16 @@ func (q BfsService) FileInfo(walletAddress string, path string) (*FileInfoResp, 
 	
 	
 	return resp.ToFileInfo(), nil
+}
+
+func (q BfsService) FileContent(walletAddress string, path string) ([]byte, string, error) {
+	headers := make(map[string]string)	
+	data, respHeaders, _, err := helpers.JsonRequest(fmt.Sprintf("%s/file?path=%s/%s",q.serverURL, walletAddress,path), "GET", headers, nil)
+	if err != nil {
+		return nil, "",  err
+	}	
+	
+	return data, respHeaders.Get("content-type"), nil
 }
 
 func (q BfsService) ParseData(data []byte) (*ServiceResp, error) {
