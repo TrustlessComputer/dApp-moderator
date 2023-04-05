@@ -167,6 +167,9 @@ const (
 	AIRDROP_MAGIC  = "https://storage.googleapis.com/generative-static-prod/airdrop/magickey.html"
 	AIRDROP_GOLDEN = "https://storage.googleapis.com/generative-static-prod/airdrop/goldenkey.html"
 	AIRDROP_SILVER = "https://storage.googleapis.com/generative-static-prod/airdrop/silverkey.html"
+
+	PAGINATION = "pagination"
+	
 )
 
 type PubSubSendOtp struct {

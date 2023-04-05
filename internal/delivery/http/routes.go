@@ -16,6 +16,7 @@ func (h *httpDelivery) registerRoutes() {
 
 func (h *httpDelivery) RegisterV1Routes() {
 	h.Handler.Use(h.MiddleWare.LoggingMiddleware)
+	h.Handler.Use(h.MiddleWare.Pagination)
 	//api
 	api := h.Handler.PathPrefix("/dapp/api").Subrouter()
 

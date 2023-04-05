@@ -1,13 +1,17 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"strconv"
 	"time"
 
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/usecase"
+	"dapp-moderator/utils"
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/logger"
 	"dapp-moderator/utils/redis"
@@ -18,6 +22,7 @@ type IMiddleware interface {
 	AccessToken(next http.Handler) http.Handler
 	AccessTokenPassThrough(next http.Handler) http.Handler
 	AuthorizationFunc(next http.Handler) http.Handler
+	Pagination(next http.Handler) http.Handler
 }
 
 type middleware struct {
@@ -81,6 +86,57 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
 	rw.wroteHeader = true
+}
+
+func (m *middleware) Pagination(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		pageInt := 1
+		limitInt := 10
+		
+		page := r.URL.Query().Get("page")
+		limit := r.URL.Query().Get("limit")
+		sortBy := r.URL.Query().Get("sort_by")
+		sortStr := r.URL.Query().Get("sort")
+		sort := -1
+
+		if page != "" {
+			tmp, err := strconv.Atoi(page)
+			if err == nil {
+				pageInt = tmp
+			}
+		}
+		
+		if limit != "" {
+			tmp, err := strconv.Atoi(limit)
+			if err == nil {
+				limitInt = tmp
+			}
+		}
+	
+		offset := limitInt * (pageInt - 1)
+		if sortStr != "" {	
+			sortInt, err := strconv.Atoi(sortStr)
+			if err == nil {
+				sort = sortInt
+			}
+		}
+
+		pag := request.PaginationReq{
+			Page: &pageInt,
+			Limit: &limitInt,
+			SortBy: &sortBy,
+			Sort: &sort,
+			Offset: &offset,
+		}
+
+	
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, utils.PAGINATION, pag)
+		wrapped := wrapResponseWriter(w)
+		next.ServeHTTP(wrapped, r.WithContext(ctx))
+	}
+
+	return http.HandlerFunc(fn)
 }
 
 // Authenticate

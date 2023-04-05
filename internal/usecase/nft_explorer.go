@@ -2,14 +2,17 @@ package usecase
 
 import (
 	"context"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/utils/logger"
 
 	"go.uber.org/zap"
 )
 
 
-func (u Usecase) Collections(ctx context.Context) (interface{}, error) {
-	data, err := u.NftExplorer.Collections()
+func (u Usecase) Collections(ctx context.Context, filter request.PaginationReq) (interface{}, error) {
+
+
+	data, err := u.NftExplorer.Collections(filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("Collections", zap.Error(err))
 		return nil, err
@@ -30,8 +33,8 @@ func (u Usecase) CollectionDetail(ctx context.Context, contractAddress string) (
 	return data, nil
 }
 
-func (u Usecase) CollectionNfts(ctx context.Context, contractAddress string) (interface{}, error) {
-	data, err := u.NftExplorer.CollectionNfts(contractAddress)
+func (u Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) (interface{}, error) {
+	data, err := u.NftExplorer.CollectionNfts(contractAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("CollectionNfts",zap.String("contractAddress", contractAddress), zap.Error(err))
 		return nil, err
@@ -64,8 +67,8 @@ func (u Usecase) CollectionNftContent(ctx context.Context,contractAddress string
 	return data, contentType, nil
 }
 
-func (u Usecase) Nfts(ctx context.Context) (interface{}, error) {
-	data, err := u.NftExplorer.Nfts()
+func (u Usecase) Nfts(ctx context.Context, filter request.PaginationReq) (interface{}, error) {
+	data, err := u.NftExplorer.Nfts(filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("Nfts", zap.Error(err))
 		return nil, err
@@ -75,8 +78,8 @@ func (u Usecase) Nfts(ctx context.Context) (interface{}, error) {
 	return data, nil
 }
 
-func (u Usecase) NftByWalletAddress(ctx context.Context, walletAddress string) (interface{}, error) {
-	data, err := u.NftExplorer.NftOfWalletAddress(walletAddress)
+func (u Usecase) NftByWalletAddress(ctx context.Context, walletAddress string, filter request.PaginationReq) (interface{}, error) {
+	data, err := u.NftExplorer.NftOfWalletAddress(walletAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("Nfts", zap.String("walletAddress", walletAddress), zap.Error(err))
 		return nil, err
