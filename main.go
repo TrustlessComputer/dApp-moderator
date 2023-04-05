@@ -77,13 +77,8 @@ func startServer() {
 	logger.AtLog().Logger.Info("starting server ...")
 	cache, _ := redis.NewRedisCache(conf.Redis)
 	r := mux.NewRouter()
-
-	gcs, err := googlecloud.NewDataGCStorage(*conf)
-	if err != nil {
-		logger.AtLog().Logger.Error("Cannot init gcs", zap.Error(err))
-		return
-	}
-
+	gcs, _ := googlecloud.NewDataGCStorage(*conf)
+	
 	qn := quicknode.NewQuickNode(conf, cache)
 	nex := nft_explorer.NewNftExplorer(conf, cache)
 	bfs := bfs_service.NewBfsService(conf, cache)
