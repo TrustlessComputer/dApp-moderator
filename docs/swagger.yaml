@@ -102,6 +102,15 @@ paths:
       consumes:
       - application/json
       description: Get Collections
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
       produces:
       - application/json
       responses:
@@ -139,6 +148,14 @@ paths:
       - application/json
       description: Get nfts of a Collectionc
       parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
       - description: contractAddress
         in: path
         name: contractAddress
@@ -211,6 +228,15 @@ paths:
       consumes:
       - application/json
       description: Get Nfts
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
       produces:
       - application/json
       responses:
@@ -227,6 +253,14 @@ paths:
       - application/json
       description: Get nfts of a wallet address
       parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
       - description: ownerAddress
         in: path
         name: ownerAddress

@@ -144,6 +144,20 @@ var doc = `{
                     "nft-explorer"
                 ],
                 "summary": "Get Collections",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -200,6 +214,18 @@ var doc = `{
                 ],
                 "summary": "Get nfts of a Collectionc",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "contractAddress",
@@ -309,6 +335,20 @@ var doc = `{
                     "nft-explorer"
                 ],
                 "summary": "Get Nfts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -333,6 +373,18 @@ var doc = `{
                 ],
                 "summary": "Get nfts of a wallet address",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "ownerAddress",
