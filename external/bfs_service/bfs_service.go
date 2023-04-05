@@ -23,7 +23,7 @@ func NewBfsService(conf *config.Config, cache redis.IRedisCache) *BfsService {
 
 func (q BfsService) Files(walletAddress string) ([]string, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/files/%s",q.serverURL, walletAddress,), "GET", headers, nil)
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s/files/%s",q.serverURL, walletAddress,), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (q BfsService) Files(walletAddress string) ([]string, error) {
 
 func (q BfsService) BrowseFiles(walletAddress string, path string) (*BrowsedFileResp, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/browse/%s?path=%s",q.serverURL, walletAddress,path), "GET", headers, nil)
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s/browse/%s?path=%s",q.serverURL, walletAddress,path), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (q BfsService) BrowseFiles(walletAddress string, path string) (*BrowsedFile
 
 func (q BfsService) FileInfo(walletAddress string, path string) (*FileInfoResp, error) {
 	headers := make(map[string]string)	
-	data, _, err := helpers.JsonRequest(fmt.Sprintf("%s/info?path=%s/%s",q.serverURL, walletAddress,path), "GET", headers, nil)
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s/info?path=%s/%s",q.serverURL, walletAddress,path), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
