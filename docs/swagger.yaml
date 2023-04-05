@@ -51,6 +51,31 @@ paths:
       summary: Browse files of a wallet
       tags:
       - BFS-service
+  /bfs-service/content/{walletAddress}:
+    get:
+      consumes:
+      - application/json
+      description: Get file content of a wallet address (uploader's wallet address)
+      parameters:
+      - description: walletAddress
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      - description: path
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get content file
+      tags:
+      - BFS-service
   /bfs-service/files/{walletAddress}:
     get:
       consumes:
