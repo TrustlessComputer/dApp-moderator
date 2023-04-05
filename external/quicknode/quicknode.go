@@ -31,7 +31,7 @@ func (q QuickNode) AddressBalance(walletAddress string) ([]WalletAddressBalanceR
 		},
 	}
 	
-	data, _, err := helpers.HttpRequest(q.serverURL, "POST", headers, reqBody)
+	data,_, _, err := helpers.HttpRequest(q.serverURL, "POST", headers, reqBody)
 	if err != nil {
 		return nil, err
 	}
