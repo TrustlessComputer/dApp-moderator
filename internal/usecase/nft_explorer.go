@@ -4,36 +4,48 @@ import (
 	"context"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"fmt"
 	"net/url"
 	"strings"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 )
 
-func (c *Usecase) Collections(ctx context.Context, filter request.PaginationReq) (interface{}, error) {
-
-	data, err := c.NftExplorer.Collections(filter.ToNFTServiceUrlQuery())
+func (c *Usecase) Collections(ctx context.Context, filter request.PaginationReq) ([]entity.Nfts, error) {
+	res := []entity.Nfts{}
+	err := c.Repo.Find(utils.COLLECTION_NFTS, bson.D{}, int64(*filter.Limit), int64(*filter.Offset), &res)
 	if err != nil {
 		logger.AtLog.Logger.Error("Collections", zap.Error(err))
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("Collections", zap.Any("data", data))
-	return data, nil
+	logger.AtLog.Logger.Info("Collections", zap.Any("data", len(res)))
+	return res, nil
 }
 
-func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) (interface{}, error) {
-	data, err := c.NftExplorer.CollectionDetail(contractAddress)
+func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) (*entity.Nfts, error) {
+	obj := &entity.Nfts{}
+ 	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, bson.D{
+		{"contract", contractAddress},
+	})
+	
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionDetail", zap.Error(err))
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Any("data", data))
-	return data, nil
+	err = sr.Decode(obj)
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionDetail", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Any("obj", obj))
+	return obj, nil
 }
 
 func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) (interface{}, error) {

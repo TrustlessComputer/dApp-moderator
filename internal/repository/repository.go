@@ -118,20 +118,29 @@ func (r Repository) CountDocuments(collectionName string, filter bson.D) (*int64
 	return &count, &estCount, nil
 }
 
-func (r Repository) FindOne(collectionName string, filter bson.D, result entity.IEntity) error {
-	err := r.DB.Collection(collectionName).FindOne(context.TODO(), filter).Decode(&result)
+func (r Repository) FindOne(collectionName string, filter bson.D) (*mongo.SingleResult, error) {
+
+	sr := r.DB.Collection(collectionName).FindOne(context.TODO(), filter)
+	if sr.Err() != nil {
+		return nil, sr.Err()
+	}
+
+	return  sr, nil
+}
+
+func (r Repository) Find(collectionName string, filter bson.D, limit int64, offset int64, result interface{})  error {
+	opts := &options.FindOptions{}
+	opts.Limit = &limit
+	opts.Skip = &offset
+
+	cursor, err := r.DB.Collection(collectionName).Find(context.TODO(), filter, opts)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func (r Repository) Find(collectionName string, filter bson.D, result entity.IEntity) (*mongo.Cursor, error) {
-	cursor, err := r.DB.Collection(collectionName).Find(context.TODO(), filter)
-	if err != nil {
-		return nil, err
+	ctx := context.Background()
+	if err := cursor.All(ctx, result); err != nil {
+		return err
 	}
-
-	return cursor, nil
+	return nil
 }

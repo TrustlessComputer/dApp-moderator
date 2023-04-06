@@ -70,3 +70,17 @@ func ParseData(from []byte, to interface{}) error {
 
 	return nil
 }
+
+func Transform(from interface{}, to interface{}) error {
+	bytes, err := bson.Marshal(from)
+	if err != nil {
+		return err
+	}
+
+	err = bson.Unmarshal(bytes, to)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
