@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-
 type Repository struct {
 	Connection *mongo.Client
 	DB         *mongo.Database
@@ -38,10 +37,10 @@ func (r Repository) InsertOne(data entity.IEntity) (*mongo.InsertOneResult, erro
 	if err != nil {
 		return nil, err
 	}
-	return inserted,  nil
+	return inserted, nil
 }
 
-func (r Repository) InsertMany(data []entity.IEntity)  (*mongo.InsertManyResult, error){
+func (r Repository) InsertMany(data []entity.IEntity) (*mongo.InsertManyResult, error) {
 	// if len(data) <= 0 {
 	// 	return nil, errors.New("Insert data is empty")
 	// }
@@ -53,7 +52,7 @@ func (r Repository) InsertMany(data []entity.IEntity)  (*mongo.InsertManyResult,
 	// return inserted,  nil
 
 	//TODO - implement me
-	return nil,  nil
+	return nil, nil
 }
 
 func (r Repository) UpdateOne(collectionName string, filter bson.D, updatedData bson.D) (*mongo.UpdateResult, error) {
@@ -61,7 +60,7 @@ func (r Repository) UpdateOne(collectionName string, filter bson.D, updatedData 
 	if err != nil {
 		return nil, err
 	}
-	return inserted,  nil
+	return inserted, nil
 }
 
 func (r Repository) UpdateMany(collectionName string, filter bson.D, updatedData bson.D) (*mongo.UpdateResult, error) {
@@ -69,13 +68,60 @@ func (r Repository) UpdateMany(collectionName string, filter bson.D, updatedData
 	if err != nil {
 		return nil, err
 	}
-	return inserted,  nil
+	return inserted, nil
 }
 
-func (r Repository) ReplaceOne(filter bson.D,data entity.IEntity) (*mongo.UpdateResult, error) {
+func (r Repository) ReplaceOne(filter bson.D, data entity.IEntity) (*mongo.UpdateResult, error) {
 	inserted, err := r.DB.Collection(data.CollectionName()).ReplaceOne(context.TODO(), filter, &data)
 	if err != nil {
 		return nil, err
 	}
-	return inserted,  nil
+	return inserted, nil
+}
+
+func (r Repository) DeleteOne(collectionName string, filter bson.D) (*mongo.DeleteResult, error) {
+	deleted, err := r.DB.Collection(collectionName).DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return deleted, nil
+}
+
+func (r Repository) DeleteMany(collectionName string, filter bson.D) (*mongo.DeleteResult, error) {
+	deleted, err := r.DB.Collection(collectionName).DeleteMany(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return deleted, nil
+}
+
+func (r Repository) CountDocuments(collectionName string, filter bson.D) (*int64, *int64, error) {
+	estCount, estCountErr := r.DB.Collection(collectionName).EstimatedDocumentCount(context.TODO())
+	if estCountErr != nil {
+		return nil, nil, estCountErr
+	}
+	count, err := r.DB.Collection(collectionName).CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &count, &estCount, nil
+}
+
+func (r Repository) FindOne(collectionName string, filter bson.D, result entity.IEntity) error {
+	err := r.DB.Collection(collectionName).FindOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r Repository) Find(collectionName string, filter bson.D, result entity.IEntity) (*mongo.Cursor, error) {
+	cursor, err := r.DB.Collection(collectionName).Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return cursor, nil
 }
