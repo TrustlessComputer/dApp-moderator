@@ -14,5 +14,6 @@ type WalletAddressBalanceResp struct {
 	Coinbase bool   `json:"coinbase"`
 	Hash     string `json:"hash"`
 	Index    int    `json:"index"`
+	Value    uint64 `json:"value"`
 	IsOrdinal bool  `json:"isOrdinal"`
 }
