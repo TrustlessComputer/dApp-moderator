@@ -16,6 +16,7 @@ import (
 	"dapp-moderator/external/quicknode"
 	"dapp-moderator/internal/delivery"
 	httpHandler "dapp-moderator/internal/delivery/http"
+	"dapp-moderator/internal/delivery/txTCServer"
 	"dapp-moderator/internal/repository"
 	"dapp-moderator/internal/usecase"
 	"dapp-moderator/utils/config"
@@ -119,6 +120,12 @@ func startServer() {
 	h, _ := httpHandler.NewHandler(&g, *uc)
 	servers["http"] = delivery.AddedServer{
 		Server:  h,
+		Enabled: true,
+	}
+	
+	tx, _ :=  txTCServer.NewTxTCServer(&g, *uc)
+	servers["tx-consumer"] = delivery.AddedServer{
+		Server:  tx,
 		Enabled: true,
 	}
 

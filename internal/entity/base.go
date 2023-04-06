@@ -1,12 +1,7 @@
 package entity
 
-import (
-	"go.mongodb.org/mongo-driver/bson"
-)
-
 type IEntity interface {
 	CollectionName() string
-	ToBson() (*bson.D, error)
 	SetCreatedAt()
 	SetUpdatedAt()
 	SetDeletedAt()

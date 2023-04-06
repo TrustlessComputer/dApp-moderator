@@ -4,7 +4,7 @@ import (
 	"dapp-moderator/utils"
 )
 
-type Files struct {
+type Nfts struct {
 	BaseEntity      `bson:",inline"`
 	Name            string `bson:"name" json:"name"`
 	Slug            string `bson:"slug" json:"slug"`
@@ -24,6 +24,6 @@ type FilterFiles struct {
 	UploadedBy *string
 }
 
-func (u Files) CollectionName() string {
+func (u Nfts) CollectionName() string {
 	return utils.COLLECTION_NFTS
 }
