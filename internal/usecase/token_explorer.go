@@ -18,3 +18,15 @@ func (c *Usecase) Tokens(ctx context.Context, filter request.PaginationReq) (int
 	logger.AtLog.Logger.Info("Tokens", zap.Any("data", data))
 	return data, nil
 }
+
+func (c *Usecase) Token(ctx context.Context, address string) (interface{}, error) {
+
+	data, err := c.TokenExplorer.Token(address)
+	if err != nil {
+		logger.AtLog.Logger.Error("Token", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("Token", zap.Any("data", data))
+	return data, nil
+}

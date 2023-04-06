@@ -26,3 +26,12 @@ func (r *Response) ToTokens() ([]Token, error) {
 	}
 	return resp, nil
 }
+
+func (r *Response) ToToken() (*Token, error) {
+	var resp Token
+	err := helpers.JsonTransform(r.Result, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}

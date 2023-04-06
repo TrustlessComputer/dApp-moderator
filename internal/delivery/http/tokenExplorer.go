@@ -43,3 +43,27 @@ func (h *httpDelivery) tokens(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
+
+// TokenExplorer godoc
+// @Summary Get token detail
+// @Description Get token detail
+// @Tags token-explorer
+// @Accept  json
+// @Produce  json
+// @Param address path string true "contractAddress"
+// @Success 200 {object} response.JsonResponse{}
+// @Success 200 {object} response.JsonResponse{}
+// @Router /token-explorer/token/{address} [GET]
+func (h *httpDelivery) token(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			address := vars["address"]
+			data, err := h.Usecase.Token(ctx, address)
+			if err != nil {
+				logger.AtLog.Logger.Error("token", zap.String("address", address), zap.Error(err))
+				return nil, err
+			}
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
