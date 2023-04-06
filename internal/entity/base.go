@@ -1,6 +1,10 @@
 package entity
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"dapp-moderator/utils/helpers"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type IEntity interface {
 	CollectionName() string
@@ -8,7 +12,9 @@ type IEntity interface {
 	SetUpdatedAt()
 	SetDeletedAt()
 	SetID() 
+	Decode(from *primitive.D) error
 }
+
 
 type SortType int
 
@@ -26,4 +32,12 @@ type BaseFilters struct {
 
 func (b *BaseEntity) SetID() {
 	b.ID = primitive.NewObjectID()
+}
+
+func (b *BaseEntity) Decode(from *primitive.D) error {
+	err := helpers.Transform(from, b)
+	if err != nil {
+		return err
+	}
+	return nil
 }
