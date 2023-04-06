@@ -35,6 +35,23 @@ func (c *Usecase) Collections(ctx context.Context, filter request.PaginationReq)
 	return res, nil
 }
 
+
+func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.PaginationReq) ([]entity.Nfts, error) {
+	res := []entity.Nfts{}
+	f := bson.D{}
+
+	sort := bson.D{ {"deployed_at_block", 1}}
+
+	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, sort)
+	if err != nil {
+		logger.AtLog.Logger.Error("Collections", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("Collections", zap.Any("data", len(res)))
+	return res, nil
+}
+
 func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) (*entity.Nfts, error) {
 	obj := &entity.Nfts{}
 	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, bson.D{
@@ -152,7 +169,7 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 	return data, nil
 }
 
-func (c *Usecase) UpdateCollections(ctx context.Context) error {
+func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 	filter := request.PaginationReq{}
 	page := 1
 	limit := 10
@@ -163,9 +180,8 @@ func (c *Usecase) UpdateCollections(ctx context.Context) error {
 		filter.Page = &page
 		filter.Limit = &limit
 		filter.Offset = &offset
-		nfts, err := c.Collections(ctx, filter)
+		nfts, err := c.CollectionsWithoutLogic(ctx, filter)
 		if err != nil {
-			logger.AtLog.Logger.Info("UpdateCollections", zap.Any("page", page), zap.Any("data", len(nfts)))
 			break
 		}
 
@@ -200,7 +216,6 @@ func (c *Usecase) UpdateCollections(ctx context.Context) error {
 
 				updated, err := c.Repo.UpdateOne(nft.CollectionName(), f, updateData)
 				if err != nil {
-					logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
 					continue
 				}
 
