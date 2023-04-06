@@ -230,9 +230,9 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 					return
 				}
 
-				// if totalItems == nft.TotalItems {
-				// 	return
-				// }
+				if totalItems == nft.TotalItems {
+					return
+				}
 
 				f := bson.D{
 					{"contract", contract},
