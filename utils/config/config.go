@@ -8,17 +8,18 @@ import (
 )
 
 type Config struct {
-	Debug       bool
-	StartHTTP   bool
-	Context     *Context
-	Databases   *Databases
-	Redis       RedisConfig
-	ENV         string
-	ServicePort string
-	QuickNode   string
-	NftExplorer string
-	BFSService  string
-	Gcs         *GCS
+	Debug         bool
+	StartHTTP     bool
+	Context       *Context
+	Databases     *Databases
+	Redis         RedisConfig
+	ENV           string
+	ServicePort   string
+	QuickNode     string
+	NftExplorer   string
+	TokenExplorer string
+	BFSService    string
+	Gcs           *GCS
 }
 
 type Context struct {
@@ -83,11 +84,12 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		Context: &Context{
 			TimeOut: timeOut,
 		},
-		Debug:       isDebug,
-		ServicePort: os.Getenv("SERVICE_PORT"),
-		QuickNode:   os.Getenv("QUICKNODE_URL"),
-		NftExplorer: os.Getenv("NFT_EXPLORER_URL"),
-		BFSService: os.Getenv("BFS_SERVICE_URL"),
+		Debug:         isDebug,
+		ServicePort:   os.Getenv("SERVICE_PORT"),
+		QuickNode:     os.Getenv("QUICKNODE_URL"),
+		NftExplorer:   os.Getenv("NFT_EXPLORER_URL"),
+		TokenExplorer: os.Getenv("TOKEN_EXPLORER_URL"),
+		BFSService:    os.Getenv("BFS_SERVICE_URL"),
 		Databases: &Databases{
 			Mongo: &DBConnection{
 				Host:   os.Getenv("MONGO_HOST"),

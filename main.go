@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"dapp-moderator/external/token_explorer"
 	"fmt"
 	"os"
 	"os/signal"
@@ -78,21 +79,22 @@ func startServer() {
 	cache, _ := redis.NewRedisCache(conf.Redis)
 	r := mux.NewRouter()
 	gcs, _ := googlecloud.NewDataGCStorage(*conf)
-	
+
 	qn := quicknode.NewQuickNode(conf, cache)
 	nex := nft_explorer.NewNftExplorer(conf, cache)
 	bfs := bfs_service.NewBfsService(conf, cache)
-
+	tke := token_explorer.NewTokenExplorer(conf, cache)
 	g := global.Global{
-		Logger:       logger,
-		MuxRouter:    r,
-		Conf:         conf,
-		DBConnection: mongoConnection,
-		Cache:        cache,
-		GCS:          gcs,
-		QuickNode:    qn,
-		NftExplorer:  nex,
-		BfsService:   bfs,
+		Logger:        logger,
+		MuxRouter:     r,
+		Conf:          conf,
+		DBConnection:  mongoConnection,
+		Cache:         cache,
+		GCS:           gcs,
+		QuickNode:     qn,
+		NftExplorer:   nex,
+		TokenExplorer: tke,
+		BfsService:    bfs,
 	}
 
 	repo, err := repository.NewRepository(&g)
