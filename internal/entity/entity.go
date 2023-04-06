@@ -4,8 +4,8 @@ import (
 	"dapp-moderator/utils/helpers"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type BaseEntity struct {
@@ -25,7 +25,6 @@ func (b *BaseEntity) ToBson() (*bson.D, error) {
 func (b *BaseEntity) SetCreatedAt() {
 	now := time.Now().UTC()
 	b.CreatedAt = &now
-
 }
 
 func (b *BaseEntity) SetUpdatedAt() {

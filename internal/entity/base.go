@@ -1,10 +1,13 @@
 package entity
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type IEntity interface {
 	CollectionName() string
 	SetCreatedAt()
 	SetUpdatedAt()
 	SetDeletedAt()
+	SetID() 
 }
 
 type SortType int
@@ -19,4 +22,8 @@ type BaseFilters struct {
 	Limit  int64
 	SortBy string
 	Sort   SortType
+}
+
+func (b *BaseEntity) SetID() {
+	b.ID = primitive.NewObjectID()
 }

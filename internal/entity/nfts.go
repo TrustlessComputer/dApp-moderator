@@ -8,6 +8,7 @@ type Nfts struct {
 	BaseEntity      `bson:",inline"`
 	Name            string `bson:"name" json:"name"`
 	Slug            string `bson:"slug" json:"slug"`
+	ContractType    string `bson:"contract_type" json:"contract_type"`
 	Contract        string `bson:"contract" json:"contract"`
 	Creator         string `bson:"creator" json:"creator"`
 	Description     string `bson:"description" json:"description"`

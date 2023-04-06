@@ -5,8 +5,6 @@ import (
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
 	"fmt"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 type BfsService struct {
@@ -27,7 +25,6 @@ func (q BfsService) Files(walletAddress string) ([]string, error) {
 	headers := make(map[string]string)	
 	url := fmt.Sprintf("%s/files/%s",q.serverURL, walletAddress)
 
-	spew.Dump(url)
 	data, _, _, err := helpers.JsonRequest(url, "GET", headers, nil)
 	if err != nil {
 		return nil, err
