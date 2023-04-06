@@ -86,14 +86,14 @@ func startServer() {
 	bfs := bfs_service.NewBfsService(conf, cache)
 	tke := token_explorer.NewTokenExplorer(conf, cache)
 	g := global.Global{
-		MuxRouter:    r,
-		Conf:         conf,
-		DBConnection: mongoConnection,
-		Cache:        cache,
-		GCS:          gcs,
-		QuickNode:    qn,
-		NftExplorer:  nex,
-		BfsService:   bfs,
+		MuxRouter:     r,
+		Conf:          conf,
+		DBConnection:  mongoConnection,
+		Cache:         cache,
+		GCS:           gcs,
+		QuickNode:     qn,
+		NftExplorer:   nex,
+		BfsService:    bfs,
 		TokenExplorer: tke,
 	}
 
@@ -122,8 +122,8 @@ func startServer() {
 		Server:  h,
 		Enabled: true,
 	}
-	
-	tx, _ :=  txTCServer.NewTxTCServer(&g, *uc)
+
+	tx, _ := txTCServer.NewTxTCServer(&g, *uc)
 	servers["tx-consumer"] = delivery.AddedServer{
 		Server:  tx,
 		Enabled: true,

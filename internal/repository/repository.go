@@ -118,12 +118,11 @@ func (r Repository) CountDocuments(collectionName string, filter bson.D) (*int64
 	return &count, &estCount, nil
 }
 
-func (r Repository) FindOne(collectionName string, filter bson.D, result entity.IEntity) error {
-	err := r.DB.Collection(collectionName).FindOne(context.TODO(), filter).Decode(&result)
+func (r Repository) FindOne(collectionName string, filter bson.D, result interface{}) error {
+	err := r.DB.Collection(collectionName).FindOne(context.TODO(), filter).Decode(result)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

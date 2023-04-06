@@ -4,9 +4,11 @@ import (
 	"context"
 	"dapp-moderator/internal/usecase"
 	"fmt"
+	redis2 "github.com/go-redis/redis"
 	"math"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"dapp-moderator/utils/logger"
@@ -67,7 +69,7 @@ func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, erro
 func (c *txTCServer) getLastProcessedBlock(ctx context.Context) (int64, error) {
 
 	lastProcessed := c.DefaultLastProcessedBlock
-	redisKey := c.getRedisKey()
+	redisKey := c.getRedisKey(nil)
 	exists, err := c.Cache.Exists(redisKey)
 	if err != nil {
 		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
@@ -92,20 +94,32 @@ func (c *txTCServer) getLastProcessedBlock(ctx context.Context) (int64, error) {
 	return lastProcessed, nil
 }
 
-func (c *txTCServer) getRedisKey() string {
-	return fmt.Sprintf("tx-consumer:latest_processed")
+func (c *txTCServer) getRedisKey(postfix *string) string {
+	key := fmt.Sprintf("tx-consumer:latest_processed")
+	if postfix != nil {
+		key = fmt.Sprintf("%s_%s", key, *postfix)
+	}
+	return key
 }
 
-func (tx txTCServer) StartServer() {
+func (c *txTCServer) StartServer() {
 	ctx := context.Background()
 	for {
 		previousTime := time.Now()
-
-		tx.resolveTxTransaction(ctx)
-
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			c.resolveTxTransaction(ctx)
+		}()
+		go func() {
+			defer wg.Done()
+			c.fetchToken(ctx)
+		}()
+		wg.Wait()
 		processedTime := time.Now().Unix() - previousTime.Unix()
-		if processedTime < int64(tx.CronJobPeriod) {
-			time.Sleep(time.Duration(tx.CronJobPeriod-int32(processedTime)) * time.Second)
+		if processedTime < int64(c.CronJobPeriod) {
+			time.Sleep(time.Duration(c.CronJobPeriod-int32(processedTime)) * time.Second)
 		}
 		logger.AtLog.Logger.Info("StartServer", zap.Any("previousTime", previousTime), zap.Any("processedTime", processedTime))
 	}
@@ -138,7 +152,7 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 
 	c.processTxTransaction(ctx, int32(fromBlock), int32(toBlock))
 
-	err = c.Cache.SetStringData(c.getRedisKey(), strconv.FormatInt(toBlock, 10))
+	err = c.Cache.SetStringData(c.getRedisKey(nil), strconv.FormatInt(toBlock, 10))
 	if err != nil {
 		logger.AtLog.Logger.Error("resolveTransaction", zap.Error(err))
 		return err
@@ -147,6 +161,36 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	return nil
 }
 
-func (c *txTCServer) processTxTransaction(ctx context.Context, fromBlock int32 , toBlock int32 ) {
+func (c *txTCServer) processTxTransaction(ctx context.Context, fromBlock int32, toBlock int32) {
 	c.Usecase.GetCollectionFromBlock(ctx, fromBlock, toBlock)
+}
+
+func (c *txTCServer) fetchToken(ctx context.Context) {
+	tokenPage := "token_page"
+	key := c.getRedisKey(&tokenPage)
+
+	lastFetchedPage, err := c.Cache.GetData(key)
+	if err != nil && err != redis2.Nil {
+		logger.AtLog.Logger.Error("fetchToken", zap.Error(err))
+		return
+	}
+	fromPage := 1
+	if lastFetchedPage != nil {
+		fromPage, err = strconv.Atoi(*lastFetchedPage)
+		if err != nil {
+			fromPage = 1
+		}
+	}
+
+	toPage, err := c.Usecase.CrawToken(ctx, fromPage)
+	if err != nil {
+		logger.AtLog.Logger.Error("failed to fetch token from token-explorer", zap.Error(err))
+		return
+	}
+
+	err = c.Cache.SetStringData(key, strconv.Itoa(toPage))
+	if err != nil {
+		logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+		return
+	}
 }
