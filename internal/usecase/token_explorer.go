@@ -7,9 +7,19 @@ import (
 	"go.uber.org/zap"
 )
 
-func (c *Usecase) Tokens(ctx context.Context, filter request.PaginationReq) (interface{}, error) {
+func (c *Usecase) Tokens(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
+	var data interface{}
+	var err error
 
-	data, err := c.TokenExplorer.Tokens(filter.ToNFTServiceUrlQuery())
+	params := filter.ToNFTServiceUrlQuery()
+
+	if key == "" {
+		data, err = c.TokenExplorer.Tokens(params)
+	} else {
+		params["query"] = []string{key}
+		data, err = c.TokenExplorer.Search(params)
+	}
+
 	if err != nil {
 		logger.AtLog.Logger.Error("Tokens", zap.Error(err))
 		return nil, err
