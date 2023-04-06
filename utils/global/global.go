@@ -7,7 +7,6 @@ import (
 	"dapp-moderator/utils/config"
 	_pConnection "dapp-moderator/utils/connections"
 	"dapp-moderator/utils/googlecloud"
-	_logger "dapp-moderator/utils/logger"
 	"dapp-moderator/utils/redis"
 
 	"github.com/gorilla/mux"
@@ -15,7 +14,6 @@ import (
 
 type Global struct {
 	Conf                *config.Config
-	Logger              _logger.Ilogger
 	MuxRouter           *mux.Router
 	DBConnection        _pConnection.IConnection
 	GCS                 googlecloud.IGcstorage
