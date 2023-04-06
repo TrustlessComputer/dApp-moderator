@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
@@ -30,7 +31,7 @@ func (c *Usecase) Collections(ctx context.Context, filter request.PaginationReq)
 func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) (*entity.Nfts, error) {
 	obj := &entity.Nfts{}
  	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, bson.D{
-		{"contract", contractAddress},
+		{"contract", primitive.Regex{Pattern: contractAddress, Options: "i"}},
 	})
 	
 	if err != nil {
