@@ -21,6 +21,7 @@ type Token struct {
 
 type TokenFilter struct {
 	BaseFilters
+	Address   string
 	Name      string
 	Symbol    string
 	CreatedBy string

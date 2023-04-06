@@ -5,7 +5,6 @@ import (
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/logger"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -73,14 +72,15 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			}
 
 			// check if token exist
-			dbToken := entity.Token{}
-			err = c.Repo.FindOne(token.CollectionName(), bson.D{{"address", token.Address}}, &dbToken)
+			dbToken, err := c.Repo.FindToken(ctx, entity.TokenFilter{
+				Address: token.Address,
+			})
 			if err != nil && err != mongo.ErrNoDocuments {
 				logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
 				return toPage, nil
 			}
 
-			if dbToken.Address != "" {
+			if dbToken != nil {
 				continue
 			}
 
