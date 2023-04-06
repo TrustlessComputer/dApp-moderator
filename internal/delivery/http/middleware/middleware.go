@@ -15,6 +15,8 @@ import (
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/logger"
 	"dapp-moderator/utils/redis"
+
+	"go.uber.org/zap"
 )
 
 type IMiddleware interface {
@@ -26,7 +28,6 @@ type IMiddleware interface {
 }
 
 type middleware struct {
-	log              logger.Ilogger
 	usecase          usecase.Usecase
 	response         response.IHttpResponse
 	cache            redis.IRedisCache
@@ -35,7 +36,6 @@ type middleware struct {
 
 func NewMiddleware(uc usecase.Usecase, g *global.Global) *middleware {
 	m := new(middleware)
-	m.log = g.Logger
 	m.usecase = uc
 	m.response = response.NewHttpResponse()
 	m.cache = g.Cache
@@ -48,10 +48,8 @@ func (m *middleware) LoggingMiddleware(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				m.log.Error(
-					"err", err,
-					"trace", debug.Stack(),
-				)
+				logger.AtLog.Logger.Error("err", zap.Any("err", err), zap.Any("trace", debug.Stack()))
+					
 			}
 		}()
 

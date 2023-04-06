@@ -84,7 +84,6 @@ func startServer() {
 	bfs := bfs_service.NewBfsService(conf, cache)
 
 	g := global.Global{
-		Logger:       logger,
 		MuxRouter:    r,
 		Conf:         conf,
 		DBConnection: mongoConnection,
