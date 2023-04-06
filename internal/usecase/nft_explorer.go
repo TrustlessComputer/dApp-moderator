@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,10 +21,10 @@ import (
 func (c *Usecase) Collections(ctx context.Context, filter request.PaginationReq) ([]entity.Nfts, error) {
 	res := []entity.Nfts{}
 	f := bson.D{
-		{"total_items", bson.M{"$gt": 0} },
+		{"total_items", bson.M{"$gt": 0}},
 	}
 
-	sort := bson.D{ {"deployed_at_block", 1}}
+	sort := bson.D{{"deployed_at_block", 1}}
 
 	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, sort)
 	if err != nil {
@@ -35,12 +36,11 @@ func (c *Usecase) Collections(ctx context.Context, filter request.PaginationReq)
 	return res, nil
 }
 
-
 func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.PaginationReq) ([]entity.Nfts, error) {
 	res := []entity.Nfts{}
 	f := bson.D{}
 
-	sort := bson.D{ {"deployed_at_block", 1}}
+	sort := bson.D{{"deployed_at_block", 1}}
 
 	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, sort)
 	if err != nil {
@@ -76,11 +76,11 @@ func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) 
 func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) ([]nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.CollectionNfts(contractAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter",filter),  zap.Error(err))
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("data", data))
+	logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter",filter), zap.Any("data", len(data)))
 	return data, nil
 }
 
@@ -189,21 +189,51 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 			break
 		}
 
+		var wg sync.WaitGroup
 		for _, nft := range nfts {
 			contract := strings.ToLower(nft.Contract)
 
-			itemsLimit := 100
-			//TODO - Paging the request data
- 			items, err := c.CollectionNfts(ctx, contract, request.PaginationReq{
-				Limit: &itemsLimit,
-			})
-			if err != nil {
-				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
-				continue
-			}
+			wg.Add(1)
+			go func(wg *sync.WaitGroup, nft entity.Nfts) {
+				defer wg.Done()
 
-			totalItems := len(items)
-			if totalItems != nft.TotalItems {
+				items := []nft_explorer.NftsResp{}
+				itemsLimit := 100
+				page := 1
+				for {
+
+					offset := limit * (page - 1)
+					//TODO - Paging the request data
+					tmpItems, err := c.CollectionNfts(ctx, contract, request.PaginationReq{
+						Limit: &itemsLimit,
+						Offset: &offset,
+					})
+
+					if err != nil {
+						logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
+						break
+					}
+
+					if len(tmpItems) == 0 {
+						break
+					}
+
+					for _, tmpItem := range tmpItems {
+						items = append(items, tmpItem)
+					}
+
+					page ++
+				}
+				
+				totalItems := len(items)
+				if totalItems == 0 {
+					return
+				}
+
+				// if totalItems == nft.TotalItems {
+				// 	return
+				// }
+
 				f := bson.D{
 					{"contract", contract},
 				}
@@ -216,11 +246,14 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 
 				updated, err := c.Repo.UpdateOne(nft.CollectionName(), f, updateData)
 				if err != nil {
-					continue
+					return
 				}
 
-				logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Any("updated",updated))
-			}
+				logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems ),  zap.Any("updated", updated))
+			}(&wg, nft)
+
+			wg.Wait()
+
 		}
 
 		page++
