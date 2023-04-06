@@ -14,27 +14,28 @@ type ServiceResp struct {
 }
 
 type CollectionsResp struct {
-	Name         string `json:"name"`
-	Slug         string `json:"slug"`
-	Contract     string `json:"contract"`
-	ContractType string `json:"contract_type"`
-	Creator      string `json:"creator"`
-	Description  string `json:"description"`
-	TotalItems   int    `json:"total_items"`
-	TotalOwners  int    `json:"total_owners"`
-	Cover        string `json:"cover"`
-	Thumbnail    string `json:"thumbnail"`
+	Name            string `json:"name"`
+	Slug            string `json:"slug"`
+	Contract        string `json:"contract"`
+	ContractType    string `json:"contract_type"`
+	Creator         string `json:"creator"`
+	Description     string `json:"description"`
+	TotalItems      int    `json:"total_items"`
+	TotalOwners     int    `json:"total_owners"`
+	Cover           string `json:"cover"`
+	Thumbnail       string `json:"thumbnail"`
+	DeployedAtBlock int64  `json:"deployed_at_block" json:"deployed_at_block"`
 }
 
 type NftsResp struct {
-	Collection        string  `json:"collection"`
-	ContractAddress string  `json:"collection_address"`
-	TokenID           string  `json:"token_id"`
-	ContentType       string  `json:"content_type"`
-	Name              string  `json:"name"`
-	Owner             string  `json:"owner"`
-	MintedAt          float64 `json:"mintedAt"`
-	Attributes        []NftAttr `json:"attributes"`
+	Collection      string    `json:"collection"`
+	ContractAddress string    `json:"collection_address"`
+	TokenID         string    `json:"token_id"`
+	ContentType     string    `json:"content_type"`
+	Name            string    `json:"name"`
+	Owner           string    `json:"owner"`
+	MintedAt        float64   `json:"mintedAt"`
+	Attributes      []NftAttr `json:"attributes"`
 }
 
 type NftAttr struct {

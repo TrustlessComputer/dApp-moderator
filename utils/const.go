@@ -132,7 +132,8 @@ const (
 	KEY_LISTING_CONTRACT           string = "collection_contract"
 	KEY_BTC_WALLET_INFO            string = "btc_wallet_info"
 
-	COLLECTION_FILES                     string = "files"
+	COLLECTION_NFTS      string = "nfts"       //ERC721
+	COLLECTION_TOKEN_URI string = "token_uris" //ERC720
 
 	MINT_NFT_BTC string = "mint_nft_btc"
 
@@ -169,7 +170,6 @@ const (
 	AIRDROP_SILVER = "https://storage.googleapis.com/generative-static-prod/airdrop/silverkey.html"
 
 	PAGINATION = "pagination"
-	
 )
 
 type PubSubSendOtp struct {
