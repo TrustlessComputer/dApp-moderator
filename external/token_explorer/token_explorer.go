@@ -24,7 +24,8 @@ func NewTokenExplorer(conf *config.Config, cache redis.IRedisCache) *TokenExplor
 
 func (q *TokenExplorer) Tokens(params url.Values) ([]Token, error) {
 	headers := make(map[string]string)
-	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s?%s", q.serverURL, "tokens", params.Encode()), "GET", headers, nil)
+	url := fmt.Sprintf("%s/%s", q.serverURL, "tokens")
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s?%s", url, params.Encode()), "GET", headers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +36,22 @@ func (q *TokenExplorer) Tokens(params url.Values) ([]Token, error) {
 	}
 
 	return resp.ToTokens()
+}
+
+func (q *TokenExplorer) Search(params url.Values) (*SearchToken, error) {
+	headers := make(map[string]string)
+	url := fmt.Sprintf("%s/%s", q.serverURL, "search")
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s?%s", url, params.Encode()), "GET", headers, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := q.ParseData(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.ToSearchTokens()
 }
 
 func (q *TokenExplorer) Token(address string) (*Token, error) {

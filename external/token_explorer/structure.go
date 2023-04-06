@@ -18,6 +18,20 @@ type Response struct {
 	Result interface{} `json:"result"`
 }
 
+type SearchToken struct {
+	Totals int     `json:"totals"`
+	Tokens []Token `json:"tokens"`
+}
+
+func (r *Response) ToSearchTokens() (*SearchToken, error) {
+	var resp SearchToken
+	err := helpers.JsonTransform(r.Result, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 func (r *Response) ToTokens() ([]Token, error) {
 	var resp []Token
 	err := helpers.JsonTransform(r.Result, &resp)
