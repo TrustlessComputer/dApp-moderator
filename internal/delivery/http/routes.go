@@ -49,7 +49,10 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	bnsRoutes := api.PathPrefix("/bns-explorer").Subrouter()
 	bnsRoutes.HandleFunc("/bns", h.GetBns).Methods("GET")
-}
+
+	walletInfoGroup := api.PathPrefix("/wallets").Subrouter()
+	walletInfoGroup.HandleFunc("/{walletAddress}", h.walletInfo).Methods("GET")
+}	
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
 	documentUrl := `/dapp/swagger/`
