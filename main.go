@@ -85,16 +85,15 @@ func startServer() {
 	bfs := bfs_service.NewBfsService(conf, cache)
 	tke := token_explorer.NewTokenExplorer(conf, cache)
 	g := global.Global{
-		Logger:        logger,
-		MuxRouter:     r,
-		Conf:          conf,
-		DBConnection:  mongoConnection,
-		Cache:         cache,
-		GCS:           gcs,
-		QuickNode:     qn,
-		NftExplorer:   nex,
+		MuxRouter:    r,
+		Conf:         conf,
+		DBConnection: mongoConnection,
+		Cache:        cache,
+		GCS:          gcs,
+		QuickNode:    qn,
+		NftExplorer:  nex,
+		BfsService:   bfs,
 		TokenExplorer: tke,
-		BfsService:    bfs,
 	}
 
 	repo, err := repository.NewRepository(&g)
