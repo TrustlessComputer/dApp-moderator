@@ -162,6 +162,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/bns-explorer/bns": {
+            "get": {
+                "description": "get Bns",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-explorer"
+                ],
+                "summary": "get Bns",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/nft-explorer/collections": {
             "get": {
                 "description": "Get Collections",

@@ -122,6 +122,30 @@ paths:
       summary: Get file info
       tags:
       - BFS-service
+  /bns-explorer/bns:
+    get:
+      consumes:
+      - application/json
+      description: get Bns
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: get Bns
+      tags:
+      - BNS-explorer
   /nft-explorer/collections:
     get:
       consumes:

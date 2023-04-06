@@ -46,6 +46,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	tokenRoutes.HandleFunc("/tokens", h.tokens).Methods("GET")
 	tokenRoutes.HandleFunc("/search", h.search).Methods("GET")
 	tokenRoutes.HandleFunc("/token/{address}", h.token).Methods("GET")
+
+	bnsRoutes := api.PathPrefix("/bns-explorer").Subrouter()
+	bnsRoutes.HandleFunc("/bns", h.GetBns).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
