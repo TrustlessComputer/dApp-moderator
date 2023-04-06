@@ -621,6 +621,38 @@
                     }
                 }
             }
+        },
+        "/wallets/{walletAddress}": {
+            "get": {
+                "description": "Get Wallet's info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Get Wallet's info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "walletAddress",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
