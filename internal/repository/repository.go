@@ -34,6 +34,7 @@ func NewRepository(g *global.Global) (*Repository, error) {
 }
 
 func (r Repository) InsertOne(data entity.IEntity) (*mongo.InsertOneResult, error) {
+	data.SetID()
 	data.SetCreatedAt()
 	insertedData, err := helpers.ToDoc(data)
 	if err != nil {

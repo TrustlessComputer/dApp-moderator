@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func ToDoc(v interface{}) (*bson.D, error) {
