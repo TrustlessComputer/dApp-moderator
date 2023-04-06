@@ -17,6 +17,9 @@ type Token struct {
 	TotalSupply     string `json:"total_supply" bson:"total_supply"`
 	Owner           string `json:"owner" bson:"owner"`
 	DeployedAtBlock int    `json:"deployed_at_block" bson:"deployed_at_block"`
+	Thumbnail       string `json:"thumbnail" bson:"thumbnail"`
+	Description     string `json:"description" bson:"description"`
+	Social          Social `json:"social" bson:"social"`
 }
 
 type TokenFilter struct {

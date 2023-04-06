@@ -17,6 +17,7 @@ type Nfts struct {
 	Cover           string `bson:"cover" json:"cover"`
 	Thumbnail       string `bson:"thumbnail" json:"thumbnail"`
 	DeployedAtBlock int64  `bson:"deployed_at_block" json:"deployed_at_block"`
+	Social          Social `json:"social" bson:"social"`
 }
 
 type FilterFiles struct {
