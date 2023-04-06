@@ -5,7 +5,23 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"gopkg.in/mgo.v2/bson"
 )
+
+func ToDoc(v interface{}) (*bson.D, error) {
+	data, err := bson.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+
+	doc := &bson.D{}
+	err = bson.Unmarshal(data, doc)
+	if err != nil {
+		return nil, err
+	}
+	return doc, nil
+}
 
 func GenerateSlug(key string) string {
 	key = strings.ReplaceAll(key, " ", "-")

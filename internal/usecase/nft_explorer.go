@@ -3,7 +3,12 @@ package usecase
 import (
 	"context"
 	"dapp-moderator/internal/delivery/http/request"
+	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"fmt"
+	"net/url"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -84,5 +89,45 @@ func (c *Usecase) NftByWalletAddress(ctx context.Context, walletAddress string, 
 	}
 
 	logger.AtLog.Logger.Info("Nfts", zap.String("walletAddress", walletAddress), zap.Any("data", data))
+	return data, nil
+}
+
+func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, toBlock int32) (interface{}, error) {
+
+	params := url.Values{}
+	params.Set("filter", fmt.Sprintf(`{"deployed_at_block":{"$gte":%d,"$lte":%d}}`, fromBlock, toBlock) ) 
+
+	data, err := c.NftExplorer.Collections(params)
+	if err != nil {
+		logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock) ,  zap.Error(err))
+		return nil, err
+	}
+
+	if len(data) == 0 {
+		return data, nil
+	} 
+
+	for _, item := range data {
+		tmp := &entity.Nfts{}
+		err := helpers.JsonTransform(item, tmp)
+		if err != nil {
+			logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract) , zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock) ,  zap.Error(err))
+			continue
+		}
+
+		tmp.Slug = helpers.GenerateSlug(tmp.Name)
+		tmp.Contract = strings.ToLower(tmp.Contract)
+		tmp.Creator = strings.ToLower(tmp.Creator)
+		
+		inserted, err := c.Repo.InsertOne(tmp)
+		if err != nil {
+			logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract) , zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock) ,  zap.Error(err))
+			continue
+		}
+
+		_ = inserted
+	}
+
+	logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock) , zap.Any("data", data))
 	return data, nil
 }

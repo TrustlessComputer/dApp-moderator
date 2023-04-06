@@ -4,6 +4,7 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/global"
+	"dapp-moderator/utils/helpers"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -33,10 +34,18 @@ func NewRepository(g *global.Global) (*Repository, error) {
 }
 
 func (r Repository) InsertOne(data entity.IEntity) (*mongo.InsertOneResult, error) {
-	inserted, err := r.DB.Collection(data.CollectionName()).InsertOne(context.TODO(), &data)
+	data.SetCreatedAt()
+	insertedData, err := helpers.ToDoc(data)
 	if err != nil {
 		return nil, err
 	}
+
+	collectionName := data.CollectionName()
+	inserted, err := r.DB.Collection(collectionName).InsertOne(context.TODO(), *insertedData)
+	if err != nil {
+		return nil, err
+	}
+
 	return inserted, nil
 }
 
