@@ -65,7 +65,7 @@ func (r *Repository) InsertMany(data []entity.IEntity) (*mongo.InsertManyResult,
 	return nil, nil
 }
 
-func (r *Repository) UpdateOne(collectionName string, filter bson.D, updatedData bson.D) (*mongo.UpdateResult, error) {
+func (r *Repository) UpdateOne(collectionName string, filter bson.D, updatedData bson.M) (*mongo.UpdateResult, error) {
 	inserted, err := r.DB.Collection(collectionName).UpdateOne(context.TODO(), filter, updatedData)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (r *Repository) UpdateOne(collectionName string, filter bson.D, updatedData
 	return inserted, nil
 }
 
-func (r *Repository) UpdateMany(collectionName string, filter bson.D, updatedData bson.D) (*mongo.UpdateResult, error) {
+func (r *Repository) UpdateMany(collectionName string, filter bson.D, updatedData bson.M) (*mongo.UpdateResult, error) {
 	inserted, err := r.DB.Collection(collectionName).UpdateMany(context.TODO(), filter, updatedData)
 	if err != nil {
 		return nil, err
@@ -128,11 +128,11 @@ func (r *Repository) FindOne(collectionName string, filter bson.D) (*mongo.Singl
 	return sr, nil
 }
 
-func (r *Repository) Find(collectionName string, filter bson.D, limit int64, offset int64, result interface{}) error {
+func (r *Repository) Find(collectionName string, filter bson.D, limit int64, offset int64, result interface{}, sort bson.D ) error {
 	opts := &options.FindOptions{}
 	opts.Limit = &limit
 	opts.Skip = &offset
-	opts.Sort = bson.D{{"deployed_at_block", -1}}
+	opts.Sort = sort
 
 	cursor, err := r.DB.Collection(collectionName).Find(context.TODO(), filter, opts)
 	if err != nil {
