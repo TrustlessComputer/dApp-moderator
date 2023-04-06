@@ -132,6 +132,7 @@ func (r Repository) Find(collectionName string, filter bson.D, limit int64, offs
 	opts := &options.FindOptions{}
 	opts.Limit = &limit
 	opts.Skip = &offset
+	opts.Sort = bson.D{ {"deployed_at_block", -1}}
 
 	cursor, err := r.DB.Collection(collectionName).Find(context.TODO(), filter, opts)
 	if err != nil {
