@@ -4,12 +4,13 @@ import (
 	"context"
 	"dapp-moderator/internal/usecase"
 	"fmt"
-	redis2 "github.com/go-redis/redis"
 	"math"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	redis2 "github.com/go-redis/redis"
 
 	"dapp-moderator/utils/logger"
 	"dapp-moderator/utils/redis"
@@ -107,7 +108,7 @@ func (c *txTCServer) StartServer() {
 	for {
 		previousTime := time.Now()
 		var wg sync.WaitGroup
-		wg.Add(2)
+		wg.Add(3)
 		go func() {
 			defer wg.Done()
 			c.resolveTxTransaction(ctx)
@@ -116,6 +117,12 @@ func (c *txTCServer) StartServer() {
 			defer wg.Done()
 			c.fetchToken(ctx)
 		}()
+		
+		go func() {
+			defer wg.Done()
+			c.Usecase.UpdateCollections(ctx)
+		}()
+		
 		wg.Wait()
 		processedTime := time.Now().Unix() - previousTime.Unix()
 		if processedTime < int64(c.CronJobPeriod) {
