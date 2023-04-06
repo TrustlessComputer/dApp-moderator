@@ -329,6 +329,27 @@ paths:
       summary: qn_addressBalance RPC Method
       tags:
       - QuickNode
+  /token-explorer/token/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Get token detail
+      parameters:
+      - description: contractAddress
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get token detail
+      tags:
+      - token-explorer
   /token-explorer/tokens:
     get:
       consumes:

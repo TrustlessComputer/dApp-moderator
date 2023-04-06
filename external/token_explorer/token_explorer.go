@@ -37,6 +37,18 @@ func (q *TokenExplorer) Tokens(params url.Values) ([]Token, error) {
 	return resp.ToTokens()
 }
 
+func (q *TokenExplorer) Token(address string) (*Token, error) {
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s/%s", q.serverURL, "token", address), "GET", nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := q.ParseData(data)
+	if err != nil {
+		return nil, err
+	}
+	return resp.ToToken()
+}
+
 func (q *TokenExplorer) ParseData(data []byte) (*Response, error) {
 	resp := &Response{}
 	err := helpers.ParseData(data, resp)

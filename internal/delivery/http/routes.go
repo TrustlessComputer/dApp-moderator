@@ -44,6 +44,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	// token explorer
 	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()
 	tokenRoutes.HandleFunc("/tokens", h.tokens).Methods("GET")
+	tokenRoutes.HandleFunc("/token/{address}", h.token).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

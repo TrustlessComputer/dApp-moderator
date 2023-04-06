@@ -481,6 +481,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/token-explorer/token/{address}": {
+            "get": {
+                "description": "Get token detail",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "token-explorer"
+                ],
+                "summary": "Get token detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contractAddress",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/token-explorer/tokens": {
             "get": {
                 "description": "Get tokens",
