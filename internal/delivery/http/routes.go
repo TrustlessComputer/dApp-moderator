@@ -23,7 +23,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	//quicknode
 	quicknode := api.PathPrefix("/quicknode").Subrouter()
 	quicknode.HandleFunc("/address/{walletAddress}/balance", h.addressBalance).Methods("GET")
-	
+
 	//nftExplorer
 	nftExplorer := api.PathPrefix("/nft-explorer").Subrouter()
 	nftExplorer.HandleFunc("/collections", h.collections).Methods("GET")
@@ -33,13 +33,17 @@ func (h *httpDelivery) RegisterV1Routes() {
 	nftExplorer.HandleFunc("/collections/{contractAddress}/nfts/{tokenID}/content", h.collectionNftContent).Methods("GET")
 	nftExplorer.HandleFunc("/nfts", h.nfts).Methods("GET")
 	nftExplorer.HandleFunc("/owner-address/{walletAddress}/nfts", h.nftByWalletAddress).Methods("GET")
-	
+
 	//bfs services
 	bfsServices := api.PathPrefix("/bfs-service").Subrouter()
 	bfsServices.HandleFunc("/files/{walletAddress}", h.bfsFiles).Methods("GET")
 	bfsServices.HandleFunc("/browse/{walletAddress}", h.bfsBrowseFile).Methods("GET")
 	bfsServices.HandleFunc("/info/{walletAddress}", h.bfsFileInfo).Methods("GET")
 	bfsServices.HandleFunc("/content/{walletAddress}", h.bfsFileContent).Methods("GET")
+
+	// token explorer
+	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()
+	tokenRoutes.HandleFunc("/tokens", h.tokens).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

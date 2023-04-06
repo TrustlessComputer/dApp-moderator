@@ -329,6 +329,30 @@ paths:
       summary: qn_addressBalance RPC Method
       tags:
       - QuickNode
+  /token-explorer/tokens:
+    get:
+      consumes:
+      - application/json
+      description: Get tokens
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get tokens
+      tags:
+      - token-explorer
 securityDefinitions:
   ApiKeyAuth:
     in: header

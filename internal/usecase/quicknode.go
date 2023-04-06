@@ -11,10 +11,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func (u Usecase) AddressBalance(ctx context.Context, walletAddress string) ([]structure.WalletAddressBalanceResp, error) {
+func (c *Usecase) AddressBalance(ctx context.Context, walletAddress string) ([]structure.WalletAddressBalanceResp, error) {
 	resp := []structure.WalletAddressBalanceResp{}
-	
-	outputs, err := u.QuickNode.AddressBalance(walletAddress)
+
+	outputs, err := c.QuickNode.AddressBalance(walletAddress)
 	if err != nil {
 		logger.AtLog.Logger.Error("AddressBalance", zap.String("walletAddress", walletAddress), zap.Error(err))
 	}
@@ -26,25 +26,25 @@ func (u Usecase) AddressBalance(ctx context.Context, walletAddress string) ([]st
 			continue
 		}
 
-		out := fmt.Sprintf("%s:%d",output.Hash, output.Index)
-		data, err := u.GetInscriptionByOutput(out)
+		out := fmt.Sprintf("%s:%d", output.Hash, output.Index)
+		data, err := c.GetInscriptionByOutput(out)
 		if err != nil {
 			continue
 		}
-	
+
 		if len(data.Inscriptions) > 0 {
 			tmp.IsOrdinal = true
 		}
 
 		resp = append(resp, *tmp)
-		
+
 	}
 
 	logger.AtLog.Logger.Info("AddressBalance", zap.String("walletAddress", walletAddress), zap.Any("data", outputs))
 	return resp, err
 }
 
-func (u Usecase) GetInscriptionByOutput(ouput string) (*structure.InscriptionByOutput, error) {
+func (c *Usecase) GetInscriptionByOutput(ouput string) (*structure.InscriptionByOutput, error) {
 	ordServer := os.Getenv("CUSTOM_ORD_SERVER")
 	if ordServer == "" {
 		ordServer = "https://dev-v5.generativeexplorer.com"
@@ -52,8 +52,8 @@ func (u Usecase) GetInscriptionByOutput(ouput string) (*structure.InscriptionByO
 
 	url := fmt.Sprintf("%s/api/output/%s", ordServer, ouput)
 	headers := make(map[string]string)
-	
-	resp, _, _ , err := helpers.JsonRequest(url, "GET", headers, nil)
+
+	resp, _, _, err := helpers.JsonRequest(url, "GET", headers, nil)
 	if err != nil {
 		logger.AtLog.Logger.Error("getInscriptionByOutput", zap.String("url", url), zap.Error(err))
 		return nil, err
@@ -69,4 +69,4 @@ func (u Usecase) GetInscriptionByOutput(ouput string) (*structure.InscriptionByO
 	logger.AtLog.Logger.Info("getInscriptionByOutput", zap.String("url", url), zap.Any("data", data))
 
 	return data, nil
-} 
+}
