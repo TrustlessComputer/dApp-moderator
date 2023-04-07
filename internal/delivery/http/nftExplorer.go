@@ -19,16 +19,33 @@ import (
 // @Tags nft-explorer
 // @Accept  json
 // @Produce  json
+// @Param owner query string false "owner"
+// @Param contract query string false "contract"
+// @Param name query string false "name"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
+// @Param sort_by query string false "default deployed_at_block"
+// @Param sort query int false "default -1"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /nft-explorer/collections [GET]
 func (h *httpDelivery) collections(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+
+			owner := r.URL.Query().Get("owner")
+			collectionAddress := r.URL.Query().Get("contract")
+			name := r.URL.Query().Get("name")
+
+			filter := request.CollectionsFilter{
+				Owner: &owner,
+				Address: &collectionAddress,
+				Name: &name,
+				PaginationReq: p,
+			}
 			
-			data, err := h.Usecase.Collections(ctx, iPagination.(request.PaginationReq))
+			data, err := h.Usecase.Collections(ctx, filter)
 			if err != nil {
 				logger.AtLog.Logger.Error("Collections", zap.Error(err))
 				return nil, err
@@ -88,7 +105,7 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("collectionNfts", zap.String("contractAddress", contractAddress), zap.Any("data", data))
+			logger.AtLog.Logger.Info("collectionNfts", zap.String("contractAddress", contractAddress), zap.Any("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)

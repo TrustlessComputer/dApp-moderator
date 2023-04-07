@@ -221,6 +221,24 @@ var doc = `{
                 "summary": "Get Collections",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "owner",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "contract",
+                        "name": "contract",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "limit",
                         "name": "limit",
@@ -230,6 +248,18 @@ var doc = `{
                         "type": "integer",
                         "description": "page",
                         "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default deployed_at_block",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default -1",
+                        "name": "sort",
                         "in": "query"
                     }
                 ],

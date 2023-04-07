@@ -53,7 +53,7 @@ type NftsResp struct {
 	ContentType     string    `json:"content_type"`
 	Name            string    `json:"name"`
 	Owner           string    `json:"owner"`
-	MintedAt        float64   `json:"mintedAt"`
+	MintedAt        float64   `json:"minted_at"`
 	Attributes      []NftAttr `json:"attributes"`
 }
 

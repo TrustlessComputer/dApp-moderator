@@ -152,6 +152,18 @@ paths:
       - application/json
       description: Get Collections
       parameters:
+      - description: owner
+        in: query
+        name: owner
+        type: string
+      - description: contract
+        in: query
+        name: contract
+        type: string
+      - description: name
+        in: query
+        name: name
+        type: string
       - description: limit
         in: query
         name: limit
@@ -159,6 +171,14 @@ paths:
       - description: page
         in: query
         name: page
+        type: integer
+      - description: default deployed_at_block
+        in: query
+        name: sort_by
+        type: string
+      - description: default -1
+        in: query
+        name: sort
         type: integer
       produces:
       - application/json

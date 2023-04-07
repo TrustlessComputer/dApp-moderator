@@ -18,15 +18,36 @@ import (
 	"go.uber.org/zap"
 )
 
-func (c *Usecase) Collections(ctx context.Context, filter request.PaginationReq) ([]entity.Nfts, error) {
+func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFilter) ([]entity.Nfts, error) {
 	res := []entity.Nfts{}
 	f := bson.D{
 		{"total_items", bson.M{"$gt": 0}},
 	}
 
-	sort := bson.D{{"deployed_at_block", 1}}
+	if filter.Address != nil {
+		f = append(f, bson.E{"contract", primitive.Regex{Pattern: *filter.Address , Options: "i"}})
+	}
+	
+	if filter.Name != nil {
+		f = append(f, bson.E{"name", primitive.Regex{Pattern: *filter.Name , Options: "i"}})
+	}
+	
+	if filter.Owner != nil {
+		f = append(f, bson.E{"creator", primitive.Regex{Pattern: *filter.Owner , Options: "i"}})
+	}
 
-	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, sort)
+	sortBy := "deployed_at_block"
+	if filter.SortBy != nil && *filter.SortBy != "" {
+		sortBy = *filter.SortBy
+	}
+	
+	sort := 1
+	if filter.Sort != nil  {
+		sort = *filter.Sort
+	}
+
+	s := bson.D{{sortBy, sort}}
+	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		logger.AtLog.Logger.Error("Collections", zap.Error(err))
 		return nil, err
