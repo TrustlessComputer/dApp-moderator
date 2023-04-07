@@ -135,6 +135,7 @@ const (
 	COLLECTION_NFTS      string = "nfts"       //ERC721
 	COLLECTION_TOKEN_URI string = "token_uris" //ERC720
 	COLLECTION_TOKENS    string = "tokens"     //ERC20
+	COLLECTION_USERS     string = "users"      //ERC20
 	MINT_NFT_BTC         string = "mint_nft_btc"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"

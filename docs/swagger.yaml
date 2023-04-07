@@ -20,12 +20,81 @@ definitions:
       message:
         type: string
     type: object
+  structure.GenerateMessage:
+    properties:
+      address:
+        type: string
+      walletType:
+        type: string
+    type: object
+  structure.VerifyMessage:
+    properties:
+      address:
+        type: string
+      addressBTC:
+        description: taproot address
+        type: string
+      addressBTCSegwit:
+        type: string
+      addressPayment:
+        type: string
+      ethsignature:
+        type: string
+      messagePrefix:
+        type: string
+      signature:
+        type: string
+    type: object
 info:
   contact: {}
   description: This is a sample server TC-DAPP server.
   title: tcDAPP APIs
   version: 1.0.0
 paths:
+  /auth/nonce:
+    post:
+      consumes:
+      - application/json
+      description: Generate a message for user's wallet
+      parameters:
+      - description: Generate message request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/structure.GenerateMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Generate a message
+      tags:
+      - Auth
+  /auth/nonce/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verified the generated message
+      parameters:
+      - description: Verify message request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/structure.VerifyMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Verified the generated message
+      tags:
+      - Auth
   /bfs-service/browse/{walletAddress}:
     get:
       consumes:
@@ -152,6 +221,18 @@ paths:
       - application/json
       description: Get Collections
       parameters:
+      - description: owner
+        in: query
+        name: owner
+        type: string
+      - description: contract
+        in: query
+        name: contract
+        type: string
+      - description: name
+        in: query
+        name: name
+        type: string
       - description: limit
         in: query
         name: limit
@@ -159,6 +240,14 @@ paths:
       - description: page
         in: query
         name: page
+        type: integer
+      - description: default deployed_at_block
+        in: query
+        name: sort_by
+        type: string
+      - description: default -1
+        in: query
+        name: sort
         type: integer
       produces:
       - application/json
@@ -300,7 +389,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get nfts of a wallet address
+      description: Get tokens of a wallet address
       parameters:
       - description: limit
         in: query
@@ -322,9 +411,30 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.JsonResponse'
-      summary: Get nfts of a wallet address
+      summary: Get tokens of a wallet address
       tags:
       - nft-explorer
+  /profile/wallet/{walletAddress}:
+    get:
+      consumes:
+      - application/json
+      description: User profile via wallet address
+      parameters:
+      - description: Wallet address
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: User profile via wallet address
+      tags:
+      - Profile
   /quicknode/address/{walletAddress}/balance:
     get:
       consumes:
@@ -426,6 +536,27 @@ paths:
       summary: Get tokens
       tags:
       - token-explorer
+  /wallets/{walletAddress}:
+    get:
+      consumes:
+      - application/json
+      description: Get Wallet's info
+      parameters:
+      - description: walletAddress
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Wallet's info
+      tags:
+      - Wallet
 securityDefinitions:
   ApiKeyAuth:
     in: header

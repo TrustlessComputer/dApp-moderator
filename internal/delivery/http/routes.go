@@ -19,6 +19,10 @@ func (h *httpDelivery) RegisterV1Routes() {
 	h.Handler.Use(h.MiddleWare.Pagination)
 	//api
 	api := h.Handler.PathPrefix("/dapp/api").Subrouter()
+	//AUTH
+	auth := api.PathPrefix("/auth").Subrouter()
+	auth.HandleFunc("/nonce", h.generateMessage).Methods("POST")
+	auth.HandleFunc("/nonce/verify", h.verifyMessage).Methods("POST")
 
 	//quicknode
 	quicknode := api.PathPrefix("/quicknode").Subrouter()
@@ -32,7 +36,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	nftExplorer.HandleFunc("/collections/{contractAddress}/nfts/{tokenID}", h.collectionNftDetail).Methods("GET")
 	nftExplorer.HandleFunc("/collections/{contractAddress}/nfts/{tokenID}/content", h.collectionNftContent).Methods("GET")
 	nftExplorer.HandleFunc("/nfts", h.nfts).Methods("GET")
-	nftExplorer.HandleFunc("/owner-address/{walletAddress}/nfts", h.nftByWalletAddress).Methods("GET")
+	nftExplorer.HandleFunc("/owner-address/{ownerAddress}/nfts", h.nftByWalletAddress).Methods("GET")
 
 	//bfs services
 	bfsServices := api.PathPrefix("/bfs-service").Subrouter()
@@ -49,7 +53,16 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	bnsRoutes := api.PathPrefix("/bns-explorer").Subrouter()
 	bnsRoutes.HandleFunc("/bns", h.GetBns).Methods("GET")
-}
+
+	walletInfoGroup := api.PathPrefix("/wallets").Subrouter()
+	walletInfoGroup.HandleFunc("/{walletAddress}", h.walletInfo).Methods("GET")
+
+	//profile
+	profile := api.PathPrefix("/profile").Subrouter()
+	profile.Use(h.MiddleWare.AuthorizationFunc)
+	profile.HandleFunc("/wallet/{walletAddress}", h.profileByWallet).Methods("GET")
+	
+}	
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
 	documentUrl := `/dapp/swagger/`

@@ -11,27 +11,59 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
-func (c *Usecase) Collections(ctx context.Context, filter request.PaginationReq) ([]entity.Nfts, error) {
+func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFilter) ([]entity.Nfts, error) {
 	res := []entity.Nfts{}
 	f := bson.D{
-		{"total_items", bson.M{"$gt": 0} },
+		{"total_items", bson.M{"$gt": 0}},
 	}
 
-	sort := bson.D{ {"deployed_at_block", 1}}
+	if filter.Address != nil {
+		f = append(f, bson.E{"contract", primitive.Regex{Pattern: *filter.Address, Options: "i"}})
+	}
+
+	if filter.Name != nil {
+		f = append(f, bson.E{"name", primitive.Regex{Pattern: *filter.Name, Options: "i"}})
+	}
+
+	if filter.Owner != nil {
+		f = append(f, bson.E{"creator", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
+	}
+
+	sortBy := "deployed_at_block"
+	if filter.SortBy != nil && *filter.SortBy != "" {
+		sortBy = *filter.SortBy
+	}
+
+	sort := 1
+	if filter.Sort != nil {
+		sort = *filter.Sort
+	}
+
+	s := bson.D{{sortBy, sort}}
+	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.PaginationReq) ([]entity.Nfts, error) {
+	res := []entity.Nfts{}
+	f := bson.D{}
+
+	sort := bson.D{{"deployed_at_block", 1}}
 
 	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, sort)
 	if err != nil {
-		logger.AtLog.Logger.Error("Collections", zap.Error(err))
 		return nil, err
 	}
-
-	logger.AtLog.Logger.Info("Collections", zap.Any("data", len(res)))
 	return res, nil
 }
 
@@ -42,13 +74,13 @@ func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) 
 	})
 
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionDetail", zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
 		return nil, err
 	}
 
 	err = sr.Decode(obj)
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionDetail", zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
 		return nil, err
 	}
 
@@ -56,18 +88,18 @@ func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) 
 	return obj, nil
 }
 
-func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) ([]nft_explorer.NftsResp, error) {
+func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) ([]*nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.CollectionNfts(contractAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Error(err))
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("data", data))
+	logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Any("data", len(data)))
 	return data, nil
 }
 
-func (c *Usecase) CollectionNftDetail(ctx context.Context, contractAddress string, tokenID string) (interface{}, error) {
+func (c *Usecase) CollectionNftDetail(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.CollectionNftDetail(contractAddress, tokenID)
 	if err != nil {
 		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
@@ -86,11 +118,11 @@ func (c *Usecase) CollectionNftContent(ctx context.Context, contractAddress stri
 		return nil, "", err
 	}
 
-	logger.AtLog.Logger.Info("CollectionNftContent", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", data))
+	logger.AtLog.Logger.Info("CollectionNftContent", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", len(data)))
 	return data, contentType, nil
 }
 
-func (c *Usecase) Nfts(ctx context.Context, filter request.PaginationReq) (interface{}, error) {
+func (c *Usecase) Nfts(ctx context.Context, filter request.PaginationReq) ([]*nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.Nfts(filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("Nfts", zap.Error(err))
@@ -101,14 +133,14 @@ func (c *Usecase) Nfts(ctx context.Context, filter request.PaginationReq) (inter
 	return data, nil
 }
 
-func (c *Usecase) NftByWalletAddress(ctx context.Context, walletAddress string, filter request.PaginationReq) (interface{}, error) {
+func (c *Usecase) NftByWalletAddress(ctx context.Context, walletAddress string, filter request.PaginationReq) ([]*nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.NftOfWalletAddress(walletAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("Nfts", zap.String("walletAddress", walletAddress), zap.Error(err))
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("Nfts", zap.String("walletAddress", walletAddress), zap.Any("data", data))
+	logger.AtLog.Logger.Info("Nfts", zap.String("walletAddress", walletAddress), zap.Any("data", len(data)))
 	return data, nil
 }
 
@@ -152,7 +184,7 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 	return data, nil
 }
 
-func (c *Usecase) UpdateCollections(ctx context.Context) error {
+func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 	filter := request.PaginationReq{}
 	page := 1
 	limit := 10
@@ -163,9 +195,8 @@ func (c *Usecase) UpdateCollections(ctx context.Context) error {
 		filter.Page = &page
 		filter.Limit = &limit
 		filter.Offset = &offset
-		nfts, err := c.Collections(ctx, filter)
+		nfts, err := c.CollectionsWithoutLogic(ctx, filter)
 		if err != nil {
-			logger.AtLog.Logger.Info("UpdateCollections", zap.Any("page", page), zap.Any("data", len(nfts)))
 			break
 		}
 
@@ -173,21 +204,69 @@ func (c *Usecase) UpdateCollections(ctx context.Context) error {
 			break
 		}
 
+		var wg sync.WaitGroup
 		for _, nft := range nfts {
 			contract := strings.ToLower(nft.Contract)
 
-			itemsLimit := 100
-			//TODO - Paging the request data
- 			items, err := c.CollectionNfts(ctx, contract, request.PaginationReq{
-				Limit: &itemsLimit,
-			})
-			if err != nil {
-				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
-				continue
-			}
+			wg.Add(1)
+			go func(wg *sync.WaitGroup, nft entity.Nfts) {
+				defer wg.Done()
 
-			totalItems := len(items)
-			if totalItems != nft.TotalItems {
+				items := []*nft_explorer.NftsResp{}
+				itemsLimit := 100
+				page := 1
+				total := 0
+
+				channelItems := make(chan []*nft_explorer.NftsResp)
+				for {
+
+					go func(ctx context.Context, page int, itemsLimit int, channelItems chan []*nft_explorer.NftsResp) {
+
+						offset := itemsLimit * (page - 1)
+
+						tmpItems := []*nft_explorer.NftsResp{}
+						defer func  ()  {
+							channelItems <- tmpItems
+						}()
+
+						//TODO - Paging the request data
+						tmpItems, err = c.CollectionNfts(ctx, contract, request.PaginationReq{
+							Limit:  &itemsLimit,
+							Offset: &offset,
+						})
+
+						if err != nil {
+							logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
+							return
+						}
+
+
+					}(ctx, page, itemsLimit, channelItems)
+
+
+					tmpItems := <- channelItems
+					if len(tmpItems) == 0 {
+						break
+					}
+
+					for _, tmpItem := range tmpItems {
+						items = append(items, tmpItem)
+					}
+
+
+					total += len(tmpItems)
+					page++
+				}
+
+				totalItems := len(items)
+				if totalItems == 0 {
+					return
+				}
+
+				if totalItems == nft.TotalItems {
+					return
+				}
+
 				f := bson.D{
 					{"contract", contract},
 				}
@@ -200,12 +279,14 @@ func (c *Usecase) UpdateCollections(ctx context.Context) error {
 
 				updated, err := c.Repo.UpdateOne(nft.CollectionName(), f, updateData)
 				if err != nil {
-					logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
-					continue
+					return
 				}
 
-				logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Any("updated",updated))
-			}
+				logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
+			}(&wg, nft)
+
+			wg.Wait()
+
 		}
 
 		page++

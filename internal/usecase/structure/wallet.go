@@ -44,7 +44,7 @@ type BlockCypherWalletInfo struct {
 	NTx                int     `json:"n_tx"`
 	UnconfirmedNTx     int     `json:"unconfirmed_n_tx"`
 	FinalNTx           int     `json:"final_n_tx"`
-	Txrefs             []TxRef `json:"txrefs"`
+	Txrefs             []*TxRef `json:"txrefs"`
 	TxURL              string  `json:"tx_url"`
 	Error              string  `json:"error"`
 }
@@ -59,6 +59,7 @@ type TxRef struct {
 	Confirmations int       `json:"confirmations"`
 	Confirmed     time.Time `json:"confirmed"`
 	DoubleSpend   bool      `json:"double_spend"`
+	IsOrdinal     bool      `json:"is_ordinal"`
 	// SatRanges     [][]uint64 `json:"sat_ranges"`
 }
 type WalletInfo struct {

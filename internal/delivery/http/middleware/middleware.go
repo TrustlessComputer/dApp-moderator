@@ -13,6 +13,7 @@ import (
 	"dapp-moderator/internal/usecase"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/global"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"dapp-moderator/utils/redis"
 
@@ -95,8 +96,7 @@ func (m *middleware) Pagination(next http.Handler) http.Handler {
 		limit := r.URL.Query().Get("limit")
 		sortBy := r.URL.Query().Get("sort_by")
 		sortStr := r.URL.Query().Get("sort")
-		sort := -1
-
+	
 		if page != "" {
 			tmp, err := strconv.Atoi(page)
 			if err == nil {
@@ -112,22 +112,26 @@ func (m *middleware) Pagination(next http.Handler) http.Handler {
 		}
 	
 		offset := limitInt * (pageInt - 1)
-		if sortStr != "" {	
-			sortInt, err := strconv.Atoi(sortStr)
-			if err == nil {
-				sort = sortInt
-			}
-		}
+		
+
 
 		pag := request.PaginationReq{
 			Page: &pageInt,
 			Limit: &limitInt,
-			SortBy: &sortBy,
-			Sort: &sort,
 			Offset: &offset,
 		}
 
-	
+		if sortStr != "" {	
+			sortInt, err := strconv.Atoi(sortStr)
+			if err == nil {
+				pag.Sort = &sortInt
+			}
+		}
+		
+		if sortBy != "" {	
+			pag.SortBy = &sortBy
+		}
+
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, utils.PAGINATION, pag)
 		wrapped := wrapResponseWriter(w)
@@ -217,20 +221,20 @@ func (m *middleware) AccessTokenPassThrough(next http.Handler) http.Handler {
 // Authorization
 func (m *middleware) AuthorizationFunc(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		// token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
-		// if token == "" {
-		// 	next.ServeHTTP(w, r)
-		// 	return
-		// }
-		// p, err := m.usecase.ValidateAccessToken(token)
-		// if err != nil {
-		// 	next.ServeHTTP(w, r)
-		// 	return
-		// }
+		token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
+		if token == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		p, err := m.usecase.ValidateAccessToken(token)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
 		ctx := r.Context()
-		// ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
-		// ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
-		// ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
+		ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
+		ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
+		ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
 		wrapped := wrapResponseWriter(w)
 		next.ServeHTTP(wrapped, r.WithContext(ctx))
 	}

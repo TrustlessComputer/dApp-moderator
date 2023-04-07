@@ -6,6 +6,8 @@ import (
 	"dapp-moderator/utils/redis"
 	"fmt"
 	"net/url"
+	"os"
+	"strings"
 )
 
 type NftExplorer struct {
@@ -56,7 +58,7 @@ func (q NftExplorer) CollectionDetail(contractAddress string) (*CollectionsResp,
 	return resp.ToCollection(), nil
 }
 
-func (q NftExplorer) CollectionNfts(contractAddress string, params url.Values) ([]NftsResp, error) {
+func (q NftExplorer) CollectionNfts(contractAddress string, params url.Values) ([]*NftsResp, error) {
 	headers := make(map[string]string)	
 	url := fmt.Sprintf("%s/%s/%s/nfts?%s",q.serverURL, "collection", contractAddress, params.Encode())
 	data, _, _, err := helpers.JsonRequest(url, "GET", headers, nil)
@@ -69,7 +71,9 @@ func (q NftExplorer) CollectionNfts(contractAddress string, params url.Values) (
 		return nil, err
 	}
 	
-	return resp.ToNfts(), nil
+	res := resp.ToNfts()
+	q.FillDataMultiple(res)
+	return res, nil
 }
 
 func (q NftExplorer) CollectionNftDetail(contractAddress string, tokenID string) (*NftsResp, error) {
@@ -88,7 +92,9 @@ func (q NftExplorer) CollectionNftDetail(contractAddress string, tokenID string)
 	}
 	
 	
-	return resp.ToNft(), nil
+	rs := resp.ToNft()
+	q.FillData(rs)
+	return rs, nil
 }
 
 func (q NftExplorer) CollectionNftContent(contractAddress string, tokenID string) ([]byte, string, error) {
@@ -100,7 +106,7 @@ func (q NftExplorer) CollectionNftContent(contractAddress string, tokenID string
 	return data, resHeader.Get("content-type"),  nil
 }
 
-func (q NftExplorer) Nfts(params url.Values) ([]NftsResp, error) {
+func (q NftExplorer) Nfts(params url.Values) ([]*NftsResp, error) {
 	headers := make(map[string]string)	
 	url := fmt.Sprintf("%s/nfts?%s",q.serverURL, params.Encode())
 	
@@ -116,10 +122,12 @@ func (q NftExplorer) Nfts(params url.Values) ([]NftsResp, error) {
 	}
 	
 	
-	return resp.ToNfts(), nil
+	res := resp.ToNfts()
+	q.FillDataMultiple(res)
+	return res, nil
 }
 
-func (q NftExplorer) NftOfWalletAddress(walletAddress string, params url.Values) ([]NftsResp, error) {
+func (q NftExplorer) NftOfWalletAddress(walletAddress string, params url.Values) ([]*NftsResp, error) {
 	headers := make(map[string]string)	
 	url := fmt.Sprintf("%s/nfts/%s?%s",q.serverURL,walletAddress, params.Encode())
 	data, _, _, err := helpers.JsonRequest(url, "GET", headers, nil)
@@ -133,7 +141,9 @@ func (q NftExplorer) NftOfWalletAddress(walletAddress string, params url.Values)
 	}
 	
 	
-	return resp.ToNfts(), nil
+	res := resp.ToNfts()
+	q.FillDataMultiple(res)
+	return res, nil
 }
 
 func (q NftExplorer) ParseData(data []byte) (*ServiceResp, error) {
@@ -148,4 +158,35 @@ func (q NftExplorer) ParseData(data []byte) (*ServiceResp, error) {
 	}
 
 	return resp, nil
+}
+
+func (q *NftExplorer) FillData(nft *NftsResp) {
+	nft.TokenURI = fmt.Sprintf("%s/dapp/api/nft-explorer/collections/%s/nfts/%s/content", os.Getenv("URL"), nft.ContractAddress, nft.TokenID)
+
+	if strings.Index(nft.ContentType, "image") != -1 {
+		nft.Image = nft.TokenURI
+	}
+
+	if strings.Index(nft.ContentType, "json") != -1 {
+		bytes, _, err :=  q.CollectionNftContent(nft.ContractAddress, nft.TokenID)
+		if err != nil {
+			return
+		}
+
+		nft.Metadata = string(bytes) 
+
+		erc721 := &Erc721{}
+		err = helpers.ParseData(bytes, erc721)
+		if err != nil {
+			return
+		}
+		nft.Image = erc721.Image
+	}
+}
+
+
+func (q *NftExplorer) FillDataMultiple(nfts []*NftsResp) {
+	for _, nft := range nfts {
+		q.FillData(nft)
+	}
 }
