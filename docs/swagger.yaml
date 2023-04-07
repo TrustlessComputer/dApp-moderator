@@ -389,7 +389,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get nfts of a wallet address
+      description: Get tokens of a wallet address
       parameters:
       - description: limit
         in: query
@@ -411,9 +411,30 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.JsonResponse'
-      summary: Get nfts of a wallet address
+      summary: Get tokens of a wallet address
       tags:
       - nft-explorer
+  /profile/wallet/{walletAddress}:
+    get:
+      consumes:
+      - application/json
+      description: User profile via wallet address
+      parameters:
+      - description: Wallet address
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: User profile via wallet address
+      tags:
+      - Profile
   /quicknode/address/{walletAddress}/balance:
     get:
       consumes:

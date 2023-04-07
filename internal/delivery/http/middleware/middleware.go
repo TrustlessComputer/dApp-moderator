@@ -13,6 +13,7 @@ import (
 	"dapp-moderator/internal/usecase"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/global"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"dapp-moderator/utils/redis"
 
@@ -220,20 +221,20 @@ func (m *middleware) AccessTokenPassThrough(next http.Handler) http.Handler {
 // Authorization
 func (m *middleware) AuthorizationFunc(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		// token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
-		// if token == "" {
-		// 	next.ServeHTTP(w, r)
-		// 	return
-		// }
-		// p, err := m.usecase.ValidateAccessToken(token)
-		// if err != nil {
-		// 	next.ServeHTTP(w, r)
-		// 	return
-		// }
+		token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
+		if token == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		p, err := m.usecase.ValidateAccessToken(token)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
 		ctx := r.Context()
-		// ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
-		// ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
-		// ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
+		ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
+		ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
+		ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
 		wrapped := wrapResponseWriter(w)
 		next.ServeHTTP(wrapped, r.WithContext(ctx))
 	}

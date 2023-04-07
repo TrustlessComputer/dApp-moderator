@@ -198,8 +198,8 @@ func (h *httpDelivery) nfts(w http.ResponseWriter, r *http.Request) {
 }
 
 // UserCredits godoc
-// @Summary Get nfts of a wallet address
-// @Description Get nfts of a wallet address
+// @Summary Get tokens of a wallet address
+// @Description Get tokens of a wallet address
 // @Tags nft-explorer
 // @Accept  json
 // @Produce  json

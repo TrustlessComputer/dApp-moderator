@@ -3,9 +3,13 @@ package http
 import (
 	"context"
 	"dapp-moderator/internal/delivery/http/response"
+	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
+	"dapp-moderator/utils/logger"
 	"encoding/json"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 // UserCredits godoc
@@ -66,6 +70,33 @@ func (h *httpDelivery) verifyMessage(w http.ResponseWriter, r *http.Request) {
 			}
 
 			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+
+// @Summary User profile via wallet address
+// @Description User profile via wallet address
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Param walletAddress path string true "Wallet address"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /profile/wallet/{walletAddress} [GET]
+func (h *httpDelivery) profileByWallet(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			walletAddress := vars["walletAddress"]
+			profile, err := h.Usecase.GetUserProfileByWalletAddress(walletAddress)
+			if err != nil {
+				profile, err = h.Usecase.GetUserProfileByBtcAddressTaproot(walletAddress)
+				if err != nil {
+					logger.AtLog.Logger.Error("GetUserProfileByWalletAddress failed", zap.Error(err))
+					profile = &entity.Users{}
+				}
+			}
+			
+			return profile, nil
 		},
 	).ServeHTTP(w, r)
 }

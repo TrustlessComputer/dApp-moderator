@@ -127,3 +127,10 @@ func PubKeyFromSignature(sig, msg string, prefix string) (pubKey *btcec.PublicKe
 	//TODO - implement me
 	return nil, false, nil
 }
+
+func ReplaceToken(token string) string {
+	token = strings.ReplaceAll(token, "Bearer", "")
+	token = strings.ReplaceAll(token, "bearer", "")
+	token = strings.ReplaceAll(token, " ", "")
+	return token
+}
