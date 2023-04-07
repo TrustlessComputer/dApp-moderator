@@ -4,8 +4,11 @@ import (
 	"context"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/delivery/http/response"
+	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/logger"
+	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -21,6 +24,7 @@ import (
 // @Produce  json
 // @Param owner query string false "owner"
 // @Param contract query string false "contract"
+// @Param allow_empty query bool false "allow_empty, default: false"
 // @Param name query string false "name"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
@@ -33,6 +37,8 @@ func (h *httpDelivery) collections(w http.ResponseWriter, r *http.Request) {
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			iPagination := ctx.Value(utils.PAGINATION)
 			p := iPagination.(request.PaginationReq)
+			isAllowEmptyBool := false
+			var err error
 
 			owner := r.URL.Query().Get("owner")
 			collectionAddress := r.URL.Query().Get("contract")
@@ -44,7 +50,18 @@ func (h *httpDelivery) collections(w http.ResponseWriter, r *http.Request) {
 				Name: &name,
 				PaginationReq: p,
 			}
-			
+
+
+			isAllowEmpty := r.URL.Query().Get("allow_empty")
+			if isAllowEmpty != "" {
+				isAllowEmptyBool, err = strconv.ParseBool(isAllowEmpty)
+				if err != nil {
+					isAllowEmptyBool = false
+				}
+
+			}
+
+			filter.AllowEmpty =  &isAllowEmptyBool
 			data, err := h.Usecase.Collections(ctx, filter)
 			if err != nil {
 				logger.AtLog.Logger.Error("collections", zap.Any("filter", filter) , zap.Error(err))
@@ -89,6 +106,7 @@ func (h *httpDelivery) collectionDetail(w http.ResponseWriter, r *http.Request) 
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
+// @Param request body structure.UpdateCollection true "UpdateCollection"
 // @Param contractAddress path string true "contractAddress"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /nft-explorer/collections/{contractAddress} [PUT]
@@ -96,13 +114,29 @@ func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Req
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			contractAddress := vars["contractAddress"]
-			data, err := h.Usecase.CollectionDetail(ctx, contractAddress)
+			reqBody := &structure.UpdateCollection{}
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(reqBody)
 			if err != nil {
-				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody) , zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("data", data))
+			iwalletAdress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
+			walletAdress, ok := iwalletAdress.(string)
+			if !ok {
+				err := errors.New("Token is incorect")
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody) , zap.Error(err))
+				return nil, err
+			}
+
+			data, err := h.Usecase.UpdateCollection(ctx, contractAddress, walletAdress, reqBody)
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody) , zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody) , zap.Any("data", data))
 			return data, nil
 		},
 	).ServeHTTP(w, r)

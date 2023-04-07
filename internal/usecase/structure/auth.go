@@ -2,20 +2,19 @@ package structure
 
 import "time"
 
-
 type GenerateMessage struct {
 	Address    string
 	WalletType string
 }
 
 type VerifyMessage struct {
-	ETHSignature     string
-	Signature        string
-	Address          string
-	AddressBTC       *string // taproot address
-	AddressBTCSegwit *string
-	MessagePrefix    *string
-	AddressPayment   string
+	ETHSignature     string  `json:"-"`
+	Signature        string  `json:"signature"`
+	Address          string  `json:"address"`
+	AddressBTC       *string `json:"-"` // taproot address
+	AddressBTCSegwit *string `json:"-"`
+	MessagePrefix    *string `json:"-"`
+	AddressPayment   string  `json:"-"`
 }
 
 type VerifyResponse struct {

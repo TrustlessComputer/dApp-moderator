@@ -57,7 +57,7 @@ func (m *middleware) LoggingMiddleware(next http.Handler) http.Handler {
 		start := time.Now()
 		wrapped := wrapResponseWriter(w)
 		next.ServeHTTP(wrapped, r)
-		logger.AtLog.Info(fmt.Sprintf("Request:[%s] %s - status: %d - duration %s =====", r.Method, r.URL.EscapedPath(), wrapped.status, time.Since(start)))
+		logger.AtLog.Info(fmt.Sprintf("Request:[%s] %s - status: %d - duration %s", r.Method, r.URL.EscapedPath(), wrapped.status, time.Since(start)))
 	}
 
 	return http.HandlerFunc(fn)
