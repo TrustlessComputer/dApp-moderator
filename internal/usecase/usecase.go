@@ -8,6 +8,8 @@ import (
 	"dapp-moderator/internal/repository"
 	"dapp-moderator/utils/config"
 	"dapp-moderator/utils/global"
+	"dapp-moderator/utils/oauth2service"
+	"dapp-moderator/utils/redis"
 )
 
 type Usecase struct {
@@ -17,6 +19,8 @@ type Usecase struct {
 	NftExplorer   *nft_explorer.NftExplorer
 	TokenExplorer *token_explorer.TokenExplorer
 	BfsService    *bfs_service.BfsService
+	Cache         redis.IRedisCache
+	Auth2         *oauth2service.Auth2
 }
 
 func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error) {
@@ -26,6 +30,7 @@ func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error
 	u.NftExplorer = global.NftExplorer
 	u.BfsService = global.BfsService
 	u.TokenExplorer = global.TokenExplorer
+	u.Cache = global.Cache
 	return u, nil
 }
 

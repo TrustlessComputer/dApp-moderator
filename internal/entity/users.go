@@ -2,6 +2,10 @@ package entity
 
 import "dapp-moderator/utils"
 
+const (
+	WalletType_BTC_PRVKEY = "btc_prvkey"
+)
+
 
 type Users struct {
 	BaseEntity      `bson:",inline"`

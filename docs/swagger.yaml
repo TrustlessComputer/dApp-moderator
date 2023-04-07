@@ -27,6 +27,24 @@ definitions:
       walletType:
         type: string
     type: object
+  structure.VerifyMessage:
+    properties:
+      address:
+        type: string
+      addressBTC:
+        description: taproot address
+        type: string
+      addressBTCSegwit:
+        type: string
+      addressPayment:
+        type: string
+      ethsignature:
+        type: string
+      messagePrefix:
+        type: string
+      signature:
+        type: string
+    type: object
 info:
   contact: {}
   description: This is a sample server TC-DAPP server.
@@ -53,6 +71,28 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Generate a message
+      tags:
+      - Auth
+  /auth/nonce/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verified the generated message
+      parameters:
+      - description: Verify message request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/structure.VerifyMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Verified the generated message
       tags:
       - Auth
   /bfs-service/browse/{walletAddress}:

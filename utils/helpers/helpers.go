@@ -1,11 +1,16 @@
 package helpers
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
 
+	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/btcsuite/btcutil"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -83,4 +88,42 @@ func Transform(from interface{}, to interface{}) error {
 	}
 
 	return nil
+}
+
+func GenerateMd5String(input string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(input)))
+}
+
+func MagicHash(msg, messagePrefix string) (chainhash.Hash, error) {
+	if messagePrefix == "" {
+		messagePrefix = "\u0018Bitcoin Signed Message:\n"
+	}
+
+	bytes := append([]byte(messagePrefix), []byte(msg)...)
+	return chainhash.DoubleHashH(bytes), nil
+}
+
+func GetAddressFromPubKey(publicKey *btcec.PublicKey, compressed bool) (*btcutil.AddressPubKeyHash, error) {
+	temp, err := btcutil.NewAddressPubKeyHash(btcutil.Hash160(publicKey.SerializeCompressed()), &chaincfg.MainNetParams)
+	if err != nil {
+		return nil, err
+	}
+	return temp, nil
+}
+
+func PubKeyFromSignature(sig, msg string, prefix string) (pubKey *btcec.PublicKey, wasCompressed bool, err error) {
+	// var decodedSig []byte
+	// if decodedSig, err = base64.StdEncoding.DecodeString(sig); err != nil {
+	// 	return nil, false, err
+	// }
+
+	// temp, err := MagicHash(msg, prefix)
+	// if err != nil {
+	// 	return nil, false, err
+	// }
+	// k, c, err := ecdsa.RecoverCompact(decodedSig, temp[:])
+	// return k, c, err
+
+	//TODO - implement me
+	return nil, false, nil
 }
