@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"context"
+	"dapp-moderator/external/quicknode"
 	"dapp-moderator/internal/usecase/structure"
+	"fmt"
 	"time"
 )
 
@@ -15,29 +17,48 @@ func (u Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*structu
 		return nil, err
 	}
 	trackT1 := time.Since(t)
-	
+
 	inscriptionByOutput := make(map[string][]structure.WalletInscriptionByOutput)
-	
-	txRefs := []structure.TxRef{}
-	
+
+	txRefs := []*structure.TxRef{}
+	txRefsChan := make(chan *structure.TxRef, len(abs))
+
 	balance := 0
 	for _, ab := range abs {
-		tmp := structure.TxRef{
-			TxHash: ab.Hash,
-			BlockHeight: int(ab.Height),
-			TxInputN: 0,
-			TxOutputN: 0,
-			Value: int(ab.Value),
-			//Confirmed: ,
-		}
+		go func(ab quicknode.WalletAddressBalanceResp, txRefsChan chan *structure.TxRef) {
+			tmp := &structure.TxRef{}
 
-		balance += tmp.Value
-		txRefs = append(txRefs, tmp)
+			defer func() {
+				txRefsChan <- tmp
+			}()
+
+			out := fmt.Sprintf("%s:%d", ab.Hash, ab.Index)
+			data, err := u.GetInscriptionByOutput(out)
+			if err != nil {
+				return
+			}
+
+			tmp.TxHash = ab.Hash
+			tmp.BlockHeight = int(ab.Height)
+			tmp.TxInputN = 0
+			tmp.TxOutputN = 0
+			tmp.Value = int(ab.Value)
+
+			if len(data.Inscriptions) > 0 {
+				tmp.IsOrdinal = true
+			}
+
+			balance += tmp.Value
+		}(ab, txRefsChan)
+	}
+
+	for _,_ = range abs {
+		dataFromChan := <- txRefsChan
+		txRefs = append(txRefs, dataFromChan)
 	}
 
 	trackT2 := time.Since(t)
 	trackT3 := time.Since(t)
-	
 
 	result.Address = address
 	result.TotalReceived = 0

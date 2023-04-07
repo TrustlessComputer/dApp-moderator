@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -123,10 +124,16 @@ func startServer() {
 		Enabled: true,
 	}
 
+	txConsumerStatr := os.Getenv("TX_CONSUMER_START")
+	txConsumerStatrBool, err := strconv.ParseBool(txConsumerStatr)
+	if err != nil {
+		txConsumerStatrBool = true //alway start this server, if config is missing
+	}
+	
 	tx, _ := txTCServer.NewTxTCServer(&g, *uc)
 	servers["tx-consumer"] = delivery.AddedServer{
 		Server:  tx,
-		Enabled: true,
+		Enabled: txConsumerStatrBool,
 	}
 
 	//var wait time.Duration
