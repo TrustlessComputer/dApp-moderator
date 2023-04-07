@@ -294,6 +294,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "boolean",
+                        "description": "allow_empty, default: false",
+                        "name": "allow_empty",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -348,6 +354,50 @@ const docTemplate = `{
                 ],
                 "summary": "Get Collections",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contractAddress",
+                        "name": "contractAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update Collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "Update Collection",
+                "parameters": [
+                    {
+                        "description": "UpdateCollection",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structure.UpdateCollection"
+                        }
+                    },
                     {
                         "type": "string",
                         "description": "contractAddress",
@@ -707,12 +757,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/request.UpdateTokenReq"
                         }
-                    },
-                    {
-                        "type": "file",
-                        "description": "thumbnail file",
-                        "name": "thumbnail_file",
-                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -884,26 +928,53 @@ const docTemplate = `{
                 }
             }
         },
+        "structure.Social": {
+            "type": "object",
+            "properties": {
+                "discord": {
+                    "type": "string"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "medium": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "twitter": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "structure.UpdateCollection": {
+            "type": "object",
+            "properties": {
+                "cover": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "social": {
+                    "$ref": "#/definitions/structure.Social"
+                },
+                "thumbnail": {
+                    "type": "string"
+                }
+            }
+        },
         "structure.VerifyMessage": {
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
-                },
-                "addressBTC": {
-                    "description": "taproot address",
-                    "type": "string"
-                },
-                "addressBTCSegwit": {
-                    "type": "string"
-                },
-                "addressPayment": {
-                    "type": "string"
-                },
-                "ethsignature": {
-                    "type": "string"
-                },
-                "messagePrefix": {
                     "type": "string"
                 },
                 "signature": {

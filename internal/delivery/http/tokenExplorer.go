@@ -55,7 +55,6 @@ func (h *httpDelivery) getTokens(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Param address path string true "contractAddress"
 // @Param payload body request.UpdateTokenReq true "contractAddress"
-// @param thumbnail_file formData file false "thumbnail file"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /token-explorer/token/{address} [PUT]
 func (h *httpDelivery) updateToken(w http.ResponseWriter, r *http.Request) {

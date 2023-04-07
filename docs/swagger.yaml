@@ -53,20 +53,37 @@ definitions:
       walletType:
         type: string
     type: object
+  structure.Social:
+    properties:
+      discord:
+        type: string
+      instagram:
+        type: string
+      medium:
+        type: string
+      telegram:
+        type: string
+      twitter:
+        type: string
+      website:
+        type: string
+    type: object
+  structure.UpdateCollection:
+    properties:
+      cover:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      social:
+        $ref: '#/definitions/structure.Social'
+      thumbnail:
+        type: string
+    type: object
   structure.VerifyMessage:
     properties:
       address:
-        type: string
-      addressBTC:
-        description: taproot address
-        type: string
-      addressBTCSegwit:
-        type: string
-      addressPayment:
-        type: string
-      ethsignature:
-        type: string
-      messagePrefix:
         type: string
       signature:
         type: string
@@ -255,6 +272,10 @@ paths:
         in: query
         name: contract
         type: string
+      - description: 'allow_empty, default: false'
+        in: query
+        name: allow_empty
+        type: boolean
       - description: name
         in: query
         name: name
@@ -304,6 +325,34 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Get Collections
+      tags:
+      - nft-explorer
+    put:
+      consumes:
+      - application/json
+      description: Update Collection
+      parameters:
+      - description: UpdateCollection
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/structure.UpdateCollection'
+      - description: contractAddress
+        in: path
+        name: contractAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Collection
       tags:
       - nft-explorer
   /nft-explorer/collections/{contractAddress}/nfts:
@@ -526,10 +575,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/request.UpdateTokenReq'
-      - description: thumbnail file
-        in: formData
-        name: thumbnail_file
-        type: file
       produces:
       - application/json
       responses:

@@ -34,6 +34,7 @@ func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error
 	u.TokenExplorer = global.TokenExplorer
 	u.Cache = global.Cache
 	u.Storage = global.GCS
+	u.Auth2 = global.Auth2
 	return u, nil
 }
 
