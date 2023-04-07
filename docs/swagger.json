@@ -42,6 +42,40 @@
                 }
             }
         },
+        "/auth/nonce/verify": {
+            "post": {
+                "description": "Verified the generated message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verified the generated message",
+                "parameters": [
+                    {
+                        "description": "Verify message request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structure.VerifyMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/bfs-service/browse/{walletAddress}": {
             "get": {
                 "description": "Browse files of a wallet (uploader's wallet address)",
@@ -758,6 +792,33 @@
                     "type": "string"
                 },
                 "walletType": {
+                    "type": "string"
+                }
+            }
+        },
+        "structure.VerifyMessage": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "addressBTC": {
+                    "description": "taproot address",
+                    "type": "string"
+                },
+                "addressBTCSegwit": {
+                    "type": "string"
+                },
+                "addressPayment": {
+                    "type": "string"
+                },
+                "ethsignature": {
+                    "type": "string"
+                },
+                "messagePrefix": {
+                    "type": "string"
+                },
+                "signature": {
                     "type": "string"
                 }
             }

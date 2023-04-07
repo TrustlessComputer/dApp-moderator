@@ -22,6 +22,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	//AUTH
 	auth := api.PathPrefix("/auth").Subrouter()
 	auth.HandleFunc("/nonce", h.generateMessage).Methods("POST")
+	auth.HandleFunc("/nonce/verify", h.verifyMessage).Methods("POST")
 
 	//quicknode
 	quicknode := api.PathPrefix("/quicknode").Subrouter()

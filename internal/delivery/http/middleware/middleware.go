@@ -95,8 +95,7 @@ func (m *middleware) Pagination(next http.Handler) http.Handler {
 		limit := r.URL.Query().Get("limit")
 		sortBy := r.URL.Query().Get("sort_by")
 		sortStr := r.URL.Query().Get("sort")
-		sort := -1
-
+	
 		if page != "" {
 			tmp, err := strconv.Atoi(page)
 			if err == nil {
@@ -112,22 +111,26 @@ func (m *middleware) Pagination(next http.Handler) http.Handler {
 		}
 	
 		offset := limitInt * (pageInt - 1)
-		if sortStr != "" {	
-			sortInt, err := strconv.Atoi(sortStr)
-			if err == nil {
-				sort = sortInt
-			}
-		}
+		
+
 
 		pag := request.PaginationReq{
 			Page: &pageInt,
 			Limit: &limitInt,
-			SortBy: &sortBy,
-			Sort: &sort,
 			Offset: &offset,
 		}
 
-	
+		if sortStr != "" {	
+			sortInt, err := strconv.Atoi(sortStr)
+			if err == nil {
+				pag.Sort = &sortInt
+			}
+		}
+		
+		if sortBy != "" {	
+			pag.SortBy = &sortBy
+		}
+
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, utils.PAGINATION, pag)
 		wrapped := wrapResponseWriter(w)
