@@ -73,12 +73,12 @@ func (u Usecase) GenerateMessage(ctx context.Context, data *structure.GenerateMe
 
 func (u Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessage) (*structure.VerifyResponse, error) {
 	logger.AtLog.Info("VerifyMessage", zap.Any("walletAddress", data.Address))
+	if data.Signature == "" {
+		return nil, errors.New("invalid params: Signature")
+	}
 
-	// validate data
-	if data.ETHSignature == "" || data.Signature == "" ||
-		data.Address == "" || data.AddressBTC == nil || *data.AddressBTC == "" || data.AddressBTCSegwit == nil || *data.AddressBTCSegwit == "" ||
-		data.MessagePrefix == nil || *data.MessagePrefix == "" {
-		return nil, errors.New("invalid params")
+	if data.Address == "" {
+		return nil, errors.New("invalid params: Address")
 	}
 
 	addrr := strings.ToLower(data.Address)
@@ -87,9 +87,8 @@ func (u Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessag
 		logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
 		return nil, err
 	}
-	userID := user.ID.Hex()
-	
-	isVeried, err := u.verifyBTCSegwit(user.Message, *data)
+	userID := user.ID.Hex()	
+	isVeried, err :=  u.verify(data.Signature, data.Address, user.Message)
 	if err != nil {
 		logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
 		return nil, err
@@ -99,19 +98,6 @@ func (u Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessag
 		err := errors.New("Cannot verify wallet address")
 		logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
 		return nil, err
-	}
-
-	if *data.AddressBTC != "" {
-		user2, _ := u.Repo.FindUserByBTCWalletAddress(*data.AddressBTC)
-		if user2 != nil {
-			if user2.WalletAddressBTCTaproot == *data.AddressBTC {
-				if data.Address != user2.WalletAddress {
-					err := errors.New("invalid wallet address")
-					logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
-					return nil, err
-				}
-			}
-		}
 	}
 
 	token, refreshToken, err := u.Auth2.GenerateAllTokens(user.WalletAddress, "", "", "", userID)

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -22,10 +23,9 @@ import (
 
 type IMiddleware interface {
 	LoggingMiddleware(next http.Handler) http.Handler
-	AccessToken(next http.Handler) http.Handler
-	AccessTokenPassThrough(next http.Handler) http.Handler
 	AuthorizationFunc(next http.Handler) http.Handler
 	Pagination(next http.Handler) http.Handler
+	ValidateAccessToken(next http.Handler) http.Handler
 }
 
 type middleware struct {
@@ -50,14 +50,14 @@ func (m *middleware) LoggingMiddleware(next http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				logger.AtLog.Logger.Error("err", zap.Any("err", err), zap.Any("trace", debug.Stack()))
-					
+
 			}
 		}()
 
 		start := time.Now()
 		wrapped := wrapResponseWriter(w)
 		next.ServeHTTP(wrapped, r)
-		logger.AtLog.Info(fmt.Sprintf("Request:[%s] %s - status: %d - duration %s =====", r.Method, r.URL.EscapedPath(), wrapped.status, time.Since(start)))
+		logger.AtLog.Info(fmt.Sprintf("Request:[%s] %s - status: %d - duration %s", r.Method, r.URL.EscapedPath(), wrapped.status, time.Since(start)))
 	}
 
 	return http.HandlerFunc(fn)
@@ -91,44 +91,42 @@ func (m *middleware) Pagination(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		pageInt := 1
 		limitInt := 10
-		
+
 		page := r.URL.Query().Get("page")
 		limit := r.URL.Query().Get("limit")
 		sortBy := r.URL.Query().Get("sort_by")
 		sortStr := r.URL.Query().Get("sort")
-	
+
 		if page != "" {
 			tmp, err := strconv.Atoi(page)
 			if err == nil {
 				pageInt = tmp
 			}
 		}
-		
+
 		if limit != "" {
 			tmp, err := strconv.Atoi(limit)
 			if err == nil {
 				limitInt = tmp
 			}
 		}
-	
-		offset := limitInt * (pageInt - 1)
-		
 
+		offset := limitInt * (pageInt - 1)
 
 		pag := request.PaginationReq{
-			Page: &pageInt,
-			Limit: &limitInt,
+			Page:   &pageInt,
+			Limit:  &limitInt,
 			Offset: &offset,
 		}
 
-		if sortStr != "" {	
+		if sortStr != "" {
 			sortInt, err := strconv.Atoi(sortStr)
 			if err == nil {
 				pag.Sort = &sortInt
 			}
 		}
-		
-		if sortBy != "" {	
+
+		if sortBy != "" {
 			pag.SortBy = &sortBy
 		}
 
@@ -142,78 +140,16 @@ func (m *middleware) Pagination(next http.Handler) http.Handler {
 }
 
 // Authenticate
-func (m *middleware) AccessToken(next http.Handler) http.Handler {
+func (m *middleware) ValidateAccessToken(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-
-		// token := r.Header.Get(utils.AUTH_TOKEN)
-		// if token == "" {
-		// 	err := errors.New("token is empty")
-		// 	logger.AtLog.Logger.Error("token_is_empty", zap.Error(err))
-		// 	m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
-		// 	return
-		// }
-
-		// token = helpers.ReplaceToken(token)
-
-		// //TODO implement here
-		// p, err := m.usecase.ValidateAccessToken(token)
-		// if err != nil {
-		// 	logger.AtLog.Logger.Error("cannot_verify_token", zap.Error(err))
-		// 	m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
-		// 	return
-		// }
-
-		// logger.AtLog.Logger.Info("AccessToken", zap.Any("profile", p))
-		// m.cache.SetData(helpers.GenerateCachedProfileKey(token), p)
-		// m.cache.SetStringData(helpers.GenerateUserKey(token), p.Uid)
-
-		 ctx := r.Context()
-		// ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
-		// ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
-		// //ctx = context.WithValue(ctx, utils.SIGNED_EMAIL, p.Email)
-		// ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
-		wrapped := wrapResponseWriter(w)
-		next.ServeHTTP(wrapped, r.WithContext(ctx))
+		wrapped, ctx, err := m.ValidateToken(w, r)
+		if err != nil {
+			logger.AtLog.Logger.Error("accessToken", zap.Error(err))
+			m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
+			return
+		}
+		next.ServeHTTP(wrapped, r.WithContext(*ctx))
 	}
-
-	return http.HandlerFunc(fn)
-}
-
-// Authenticate
-func (m *middleware) AccessTokenPassThrough(next http.Handler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-
-		// token := r.Header.Get(utils.AUTH_TOKEN)
-		// if token == "" {
-		// 	err := errors.New("token is empty")
-		// 	logger.AtLog.Logger.Error("token_is_empty", zap.Error(err))
-		// 	next.ServeHTTP(w, r.WithContext(r.Context()))
-		// 	return
-		// }
-
-		// token = helpers.ReplaceToken(token)
-
-		// //TODO implement here
-		// p, err := m.usecase.ValidateAccessToken(token)
-		// if err != nil {
-		// 	logger.AtLog.Logger.Error("cannot_verify_token", zap.Error(err))
-		// 	next.ServeHTTP(w, r.WithContext(r.Context()))
-		// 	return
-		// }
-
-		// m.log.Info("profile", p)
-		// m.cache.SetData(helpers.GenerateCachedProfileKey(token), p)
-		// m.cache.SetStringData(helpers.GenerateUserKey(token), p.Uid)
-
-		ctx := r.Context()
-		// ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
-		// ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
-		// //ctx = context.WithValue(ctx, utils.SIGNED_EMAIL, p.Email)
-		// ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
-		wrapped := wrapResponseWriter(w)
-		next.ServeHTTP(wrapped, r.WithContext(ctx))
-	}
-
 	return http.HandlerFunc(fn)
 }
 
@@ -221,22 +157,32 @@ func (m *middleware) AccessTokenPassThrough(next http.Handler) http.Handler {
 // Authorization
 func (m *middleware) AuthorizationFunc(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
-		if token == "" {
-			next.ServeHTTP(w, r)
-			return
-		}
-		p, err := m.usecase.ValidateAccessToken(token)
+		wrapped, ctx, err := m.ValidateToken(w, r)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
 		}
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
-		ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
-		ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
-		wrapped := wrapResponseWriter(w)
-		next.ServeHTTP(wrapped, r.WithContext(ctx))
+
+		next.ServeHTTP(wrapped, r.WithContext(*ctx))
 	}
 	return http.HandlerFunc(fn)
+}
+
+func (m *middleware) ValidateToken(w http.ResponseWriter, r *http.Request) (*responseWriter, *context.Context, error) {
+	ctx := r.Context()
+	token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
+	if token == "" {
+		err := errors.New("Token is empty")
+		return nil, nil, err
+	}
+	p, err := m.usecase.ValidateAccessToken(token)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ctx = context.WithValue(ctx, utils.AUTH_TOKEN, token)
+	ctx = context.WithValue(ctx, utils.SIGNED_WALLET_ADDRESS, p.WalletAddress)
+	ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
+	wrapped := wrapResponseWriter(w)
+	return wrapped, &ctx, nil
 }

@@ -82,7 +82,12 @@ func (r *Repository) UpdateMany(collectionName string, filter bson.D, updatedDat
 }
 
 func (r *Repository) ReplaceOne(filter bson.D, data entity.IEntity) (*mongo.UpdateResult, error) {
-	inserted, err := r.DB.Collection(data.CollectionName()).ReplaceOne(context.TODO(), filter, &data)
+	bsonData, err := helpers.ToDoc(data)
+	if err != nil {
+		return nil, err
+	}
+
+	inserted, err := r.DB.Collection(data.CollectionName()).ReplaceOne(context.TODO(), filter, bsonData)
 	if err != nil {
 		return nil, err
 	}

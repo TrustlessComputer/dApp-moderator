@@ -18,6 +18,7 @@ type CollectionsFilter struct {
 	Owner   *string
 	Name    *string
 	Address *string
+	AllowEmpty *bool
 }
 
 func (pq PaginationReq) ToNFTServiceUrlQuery() url.Values {
