@@ -25,6 +25,10 @@ func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFil
 		// {"total_items", bson.M{"$gt": 0}},
 	}
 
+	if filter.AllowEmpty != nil && *filter.AllowEmpty == false {
+		f = append(f, bson.E{"total_items", bson.M{"$gt": 0}})
+	}
+
 	if filter.Address != nil {
 		f = append(f, bson.E{"contract", primitive.Regex{Pattern: *filter.Address, Options: "i"}})
 	}
@@ -90,11 +94,14 @@ func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) 
 }
 
 
-func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, updateData structure.UpdateCollection) (*entity.Nfts, error) {
+func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, walletAdress string, updateData *structure.UpdateCollection) (*entity.Nfts, error) {
 	obj := &entity.Nfts{}
-	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, bson.D{
+
+	f := bson.D{
 		{"contract", primitive.Regex{Pattern: contractAddress, Options: "i"}},
-	})
+		{"creator", primitive.Regex{Pattern: walletAdress, Options: "i"}},
+	}
+	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, f)
 
 	if err != nil {
 		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
@@ -102,6 +109,48 @@ func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, 
 	}
 
 	err = sr.Decode(obj)
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+		return nil, err
+	}
+
+	if updateData.Cover != nil && *updateData.Cover != obj.Cover {
+		obj.Cover = *updateData.Cover
+	}
+	
+	if updateData.Thumbnail != nil && *updateData.Thumbnail != obj.Thumbnail {
+		obj.Thumbnail = *updateData.Thumbnail
+	}
+	
+	if updateData.Description != nil && *updateData.Description != obj.Description {
+		obj.Description = *updateData.Description
+	}
+	
+	if updateData.Social.DisCord != nil && *updateData.Social.DisCord != obj.Social.DisCord {
+		obj.Social.DisCord = *updateData.Social.DisCord
+	}
+	
+	if updateData.Social.Instagram != nil && *updateData.Social.Instagram != obj.Social.Instagram {
+		obj.Social.Instagram = *updateData.Social.Instagram
+	}
+	
+	if updateData.Social.Medium != nil && *updateData.Social.Medium != obj.Social.Medium {
+		obj.Social.Medium = *updateData.Social.Medium
+	}
+
+	if updateData.Social.Telegram != nil && *updateData.Social.Telegram != obj.Social.Telegram {
+		obj.Social.Telegram = *updateData.Social.Telegram
+	}
+	
+	if updateData.Social.Twitter != nil && *updateData.Social.Twitter != obj.Social.Twitter {
+		obj.Social.Twitter = *updateData.Social.Twitter
+	}
+	
+	if updateData.Social.Website != nil && *updateData.Social.Website != obj.Social.Website {
+		obj.Social.Website = *updateData.Social.Website
+	}
+
+	_, err = c.Repo.ReplaceOne(f, obj)
 	if err != nil {
 		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
 		return nil, err

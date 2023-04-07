@@ -27,20 +27,37 @@ definitions:
       walletType:
         type: string
     type: object
+  structure.Social:
+    properties:
+      discord:
+        type: string
+      instagram:
+        type: string
+      medium:
+        type: string
+      telegram:
+        type: string
+      twitter:
+        type: string
+      website:
+        type: string
+    type: object
+  structure.UpdateCollection:
+    properties:
+      cover:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      social:
+        $ref: '#/definitions/structure.Social'
+      thumbnail:
+        type: string
+    type: object
   structure.VerifyMessage:
     properties:
       address:
-        type: string
-      addressBTC:
-        description: taproot address
-        type: string
-      addressBTCSegwit:
-        type: string
-      addressPayment:
-        type: string
-      ethsignature:
-        type: string
-      messagePrefix:
         type: string
       signature:
         type: string
@@ -229,6 +246,10 @@ paths:
         in: query
         name: contract
         type: string
+      - description: 'allow_empty, default: false'
+        in: query
+        name: allow_empty
+        type: boolean
       - description: name
         in: query
         name: name
@@ -285,6 +306,12 @@ paths:
       - application/json
       description: Update Collection
       parameters:
+      - description: UpdateCollection
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/structure.UpdateCollection'
       - description: contractAddress
         in: path
         name: contractAddress
