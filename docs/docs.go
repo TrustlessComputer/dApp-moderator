@@ -23,6 +23,40 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/nonce": {
+            "post": {
+                "description": "Generate a message for user's wallet",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Generate a message",
+                "parameters": [
+                    {
+                        "description": "Generate message request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structure.GenerateMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/bfs-service/browse/{walletAddress}": {
             "get": {
                 "description": "Browse files of a wallet (uploader's wallet address)",
@@ -728,6 +762,17 @@ var doc = `{
                     "type": "integer"
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "structure.GenerateMessage": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "walletType": {
                     "type": "string"
                 }
             }

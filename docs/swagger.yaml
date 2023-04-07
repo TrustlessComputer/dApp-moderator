@@ -20,12 +20,41 @@ definitions:
       message:
         type: string
     type: object
+  structure.GenerateMessage:
+    properties:
+      address:
+        type: string
+      walletType:
+        type: string
+    type: object
 info:
   contact: {}
   description: This is a sample server TC-DAPP server.
   title: tcDAPP APIs
   version: 1.0.0
 paths:
+  /auth/nonce:
+    post:
+      consumes:
+      - application/json
+      description: Generate a message for user's wallet
+      parameters:
+      - description: Generate message request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/structure.GenerateMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Generate a message
+      tags:
+      - Auth
   /bfs-service/browse/{walletAddress}:
     get:
       consumes:
