@@ -640,9 +640,9 @@
                 }
             }
         },
-        "/token-explorer/search": {
+        "/token-explorer/token/{address}": {
             "get": {
-                "description": "search tokens",
+                "description": "Update token",
                 "consumes": [
                     "application/json"
                 ],
@@ -652,25 +652,14 @@
                 "tags": [
                     "token-explorer"
                 ],
-                "summary": "search tokens",
+                "summary": "Update token",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
                         "type": "string",
-                        "description": "searching key",
-                        "name": "key",
-                        "in": "query"
+                        "description": "contractAddress",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -681,10 +670,8 @@
                         }
                     }
                 }
-            }
-        },
-        "/token-explorer/token/{address}": {
-            "get": {
+            },
+            "put": {
                 "description": "Get token detail",
                 "consumes": [
                     "application/json"
@@ -703,6 +690,21 @@
                         "name": "address",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "contractAddress",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateTokenReq"
+                        }
+                    },
+                    {
+                        "type": "file",
+                        "description": "thumbnail file",
+                        "name": "thumbnail_file",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -739,6 +741,12 @@
                         "type": "integer",
                         "description": "page",
                         "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "page",
+                        "name": "key",
                         "in": "query"
                     }
                 ],
@@ -786,6 +794,46 @@
         }
     },
     "definitions": {
+        "request.UpdateTokenReq": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "social": {
+                    "type": "object",
+                    "properties": {
+                        "discord": {
+                            "type": "string"
+                        },
+                        "instagram": {
+                            "type": "string"
+                        },
+                        "medium": {
+                            "type": "string"
+                        },
+                        "telegram": {
+                            "type": "string"
+                        },
+                        "twitter": {
+                            "type": "string"
+                        },
+                        "website": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "symbol": {
+                    "type": "string"
+                },
+                "thumbnail": {
+                    "type": "string"
+                }
+            }
+        },
         "response.JsonResponse": {
             "type": "object",
             "properties": {

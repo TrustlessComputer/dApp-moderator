@@ -11,16 +11,18 @@ import (
 type Token struct {
 	BaseEntity      `bson:",inline"`
 	Address         string `json:"address" bson:"address"`
-	Symbol          string `json:"symbol" bson:"symbol"`
-	Slug            string `json:"slug" bson:"slug"`
-	Decimal         int    `json:"decimal" bson:"decimal"`
-	Name            string `json:"name" bson:"name"`
 	TotalSupply     string `json:"total_supply" bson:"total_supply"`
 	Owner           string `json:"owner" bson:"owner"`
+	Decimal         int    `json:"decimal" bson:"decimal"`
 	DeployedAtBlock int    `json:"deployed_at_block" bson:"deployed_at_block"`
-	Thumbnail       string `json:"thumbnail" bson:"thumbnail"`
-	Description     string `json:"description" bson:"description"`
-	Social          Social `json:"social" bson:"social"`
+	Slug            string `json:"slug" bson:"slug"`
+
+	// edit able
+	Symbol      string `json:"symbol" bson:"symbol"`
+	Name        string `json:"name" bson:"name"`
+	Thumbnail   string `json:"thumbnail" bson:"thumbnail"`
+	Description string `json:"description" bson:"description"`
+	Social      Social `json:"social" bson:"social"`
 }
 
 func (t *Token) CollectionName() string {
@@ -45,19 +47,19 @@ func (t *Token) FromTokenExplorer(te token_explorer.Token) error {
 
 type TokenFilter struct {
 	BaseFilters
-	Address   string
 	Key       string
+	Address   string
 	CreatedBy string
 }
 
 func (t *TokenFilter) FromPagination(pag request.PaginationReq) {
-	t.Limit = 10
-	if pag.Limit != nil {
+	t.Limit = 100
+	if pag.Limit != nil && *pag.Limit > 0 {
 		t.Limit = int64(*pag.Limit)
 	}
 
 	t.Page = 1
-	if pag.Page != nil {
+	if pag.Page != nil && *pag.Page > 0 {
 		t.Page = int64(*pag.Page)
 	}
 }

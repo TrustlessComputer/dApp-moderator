@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
 )
@@ -18,42 +19,35 @@ func (r *Repository) FindToken(ctx context.Context, filter entity.TokenFilter) (
 	return &token, nil
 }
 
-func (r *Repository) parseTokenFilter(filter entity.TokenFilter) bson.D {
-	query := bson.D{}
+func (r *Repository) parseTokenFilter(filter entity.TokenFilter) bson.M {
 
-	andCond := make([]bson.E, 0)
-	orCond := make([]bson.E, 0)
+	andCond := make([]bson.M, 0)
 	// Define your OR query
 	if filter.Address != "" {
-		andCond = append(andCond, bson.E{Key: "address", Value: filter.Address})
+		andCond = append(andCond, bson.M{"address": filter.Address})
 	}
 
 	if filter.Key != "" {
-		orCond = append(orCond,
-			bson.E{Key: "slug", Value: bson.M{"$regex": strings.ToLower(filter.Key)}},
-			bson.E{Key: "name", Value: bson.M{"$regex": filter.Key}},
+		andCond = append(andCond,
+			bson.M{"slug": bson.M{"$regex": strings.ToLower(filter.Key)}},
+			bson.M{"name": bson.M{"$regex": filter.Key}},
 		)
 	}
 
 	if filter.CreatedBy != "" {
-		andCond = append(andCond, bson.E{Key: "owner", Value: filter.CreatedBy})
+		andCond = append(andCond, bson.M{"owner": filter.CreatedBy})
 	}
 
-	if len(andCond) > 0 {
-		query = append(query, bson.E{Key: "$and", Value: andCond})
+	if len(andCond) == 0 {
+		return bson.M{}
 	}
-	return query
+	return bson.M{"$and": andCond}
 }
 
 func (r *Repository) FindTokens(ctx context.Context, filter entity.TokenFilter) ([]entity.Token, error) {
 	var tokens []entity.Token
 
 	// pagination
-	page := filter.Page
-	if page == 0 {
-		page = 1
-	}
-
 	numToSkip := (filter.Page - 1) * filter.Limit
 	// Set the options for the query
 	options := options.Find()
@@ -74,4 +68,16 @@ func (r *Repository) FindTokens(ctx context.Context, filter entity.TokenFilter) 
 		tokens = append(tokens, token)
 	}
 	return tokens, nil
+}
+
+func (r *Repository) UpdateToken(ctx context.Context, token *entity.Token) error {
+	collectionName := token.CollectionName()
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"address": token.Address}, bson.M{"$set": token})
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
 }

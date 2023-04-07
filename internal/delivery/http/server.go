@@ -25,7 +25,6 @@ type deliveryConfig struct {
 	Handler  *mux.Router
 	Config   *config.Config
 	Response _httpResponse.IHttpResponse
-
 }
 
 func (dc *deliveryConfig) LoadConfig(g *global.Global) {
@@ -74,5 +73,4 @@ func (h *httpDelivery) StartServer() {
 	if err := srv.ListenAndServe(); err != nil {
 		logger.AtLog.Error("httpDelivery.StartServer - Can not start http server", err)
 	}
-
 }

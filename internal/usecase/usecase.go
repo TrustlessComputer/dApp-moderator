@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/internal/repository"
 	"dapp-moderator/utils/config"
 	"dapp-moderator/utils/global"
+	"dapp-moderator/utils/googlecloud"
 	"dapp-moderator/utils/oauth2service"
 	"dapp-moderator/utils/redis"
 )
@@ -21,6 +22,7 @@ type Usecase struct {
 	BfsService    *bfs_service.BfsService
 	Cache         redis.IRedisCache
 	Auth2         *oauth2service.Auth2
+	Storage       googlecloud.IGcstorage
 }
 
 func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error) {
@@ -31,6 +33,7 @@ func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error
 	u.BfsService = global.BfsService
 	u.TokenExplorer = global.TokenExplorer
 	u.Cache = global.Cache
+	u.Storage = global.GCS
 	return u, nil
 }
 

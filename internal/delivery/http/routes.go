@@ -47,9 +47,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	// token explorer
 	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()
-	tokenRoutes.HandleFunc("/tokens", h.tokens).Methods("GET")
-	tokenRoutes.HandleFunc("/search", h.search).Methods("GET")
-	tokenRoutes.HandleFunc("/token/{address}", h.token).Methods("GET")
+	tokenRoutes.HandleFunc("/tokens", h.getToken).Methods("GET")
+	tokenRoutes.HandleFunc("/token/{address}", h.getToken).Methods("GET")
+	tokenRoutes.HandleFunc("/token/{address}", h.updateToken).Methods("PUT")
 
 	bnsRoutes := api.PathPrefix("/bns-explorer").Subrouter()
 	bnsRoutes.HandleFunc("/bns", h.GetBns).Methods("GET")
@@ -61,8 +61,8 @@ func (h *httpDelivery) RegisterV1Routes() {
 	profile := api.PathPrefix("/profile").Subrouter()
 	profile.Use(h.MiddleWare.AuthorizationFunc)
 	profile.HandleFunc("/wallet/{walletAddress}", h.profileByWallet).Methods("GET")
-	
-}	
+
+}
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
 	documentUrl := `/dapp/swagger/`
