@@ -45,6 +45,23 @@ func (r Repository) FindUserByBTCWalletAddress(walletAddress string) (*entity.Us
 	return resp, nil
 }
 
+func (r Repository) FindUserByBTCTaprootWalletAddress(walletAddress string) (*entity.Users, error) {
+	resp := &entity.Users{}
+	f := bson.D{{utils.KEY_WALLET_ADDRESS_BTC_TAPROOT, primitive.Regex{Pattern: walletAddress, Options: "i"}}}
+
+	usr, err := r.FindOne(utils.COLLECTION_USERS, f)
+	if err != nil {
+		return nil, err
+	}
+
+	err = usr.Decode(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 func (r Repository) UpdateUserMessage(walletAddress string, message string) (*mongo.UpdateResult, error) {
 	now := time.Now().UTC()
 	f := bson.D{{utils.KEY_WALLET_ADDRESS, primitive.Regex{Pattern: walletAddress, Options: "i"}}}

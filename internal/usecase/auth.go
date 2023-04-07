@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"dapp-moderator/utils/oauth2service"
 	"errors"
 	"fmt"
 	"strings"
@@ -236,4 +237,59 @@ func (u Usecase) verify(signatureHex string, signer string, msgStr string) (bool
 
 	logger.AtLog.Info("verify",  zap.Bool("isVerified", isVerified), zap.String("signerHex", signerHex), zap.String("signatureHex", signatureHex), zap.String("signer", signer), zap.String("msgStr", msgStr),  zap.Any("recoveredAddr", recoveredAddr))
 	return isVerified, nil
+}
+
+func (u Usecase) ValidateAccessToken(accessToken string) (*oauth2service.SignedDetails, error) {
+
+	//tokenMd5 := helpers.GenerateMd5String(accessToken)
+	//logger.AtLog.Logger.Info("ValidateAccessToken", zap.String("ValidateAccessToken", zap.Any("accessToken)", accessToken)))
+
+	// userID, err := u.Cache.GetData(tokenMd5)
+	// if err != nil {
+	// 	err = errors.New("Access token is invaild")
+	// 	logger.AtLog.Logger.Error("ValidateAccessToken", zap.String("GetData", accessToken), zap.Error(err))
+	// 	return nil, err
+
+	// }
+
+	//Claim wallet Address
+	claim, err := u.Auth2.ValidateToken(accessToken)
+	if err != nil {
+		logger.AtLog.Logger.Error("ValidateAccessToken", zap.String("ValidateToken", accessToken), zap.Error(err))
+		return nil, err
+	}
+
+	userID := &claim.Uid
+	if userID == nil {
+		err := errors.New("Cannot find userID")
+		logger.AtLog.Logger.Error("ValidateAccessToken", zap.String("userID", accessToken), zap.Error(err))
+		return nil, err
+	}
+
+	//timeT := time.Unix(claim.ExpiresAt, 0)
+	return claim, err
+}
+
+func (u Usecase) GetUserProfileByWalletAddress(userAddr string) (*entity.Users, error) {
+
+	logger.AtLog.Info("GetUserProfileByWalletAddress", zap.String("userAddr", userAddr))
+	user, err := u.Repo.FindUserByWalletAddress(userAddr)
+	if err != nil {
+		logger.AtLog.Error("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Error(err))
+		return nil, err
+	}
+	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Any("user",user))
+	return user, nil
+}
+
+func (u Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Users, error) {
+
+	
+	user, err := u.Repo.FindUserByBTCTaprootWalletAddress(userAddr)
+	if err != nil {
+		logger.AtLog.Error("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Error(err))
+		return nil, err
+	}
+	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Any("user",user))
+	return user, nil
 }

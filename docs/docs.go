@@ -534,7 +534,7 @@ var doc = `{
         },
         "/nft-explorer/owner-address/{ownerAddress}/nfts": {
             "get": {
-                "description": "Get nfts of a wallet address",
+                "description": "Get tokens of a wallet address",
                 "consumes": [
                     "application/json"
                 ],
@@ -544,7 +544,7 @@ var doc = `{
                 "tags": [
                     "nft-explorer"
                 ],
-                "summary": "Get nfts of a wallet address",
+                "summary": "Get tokens of a wallet address",
                 "parameters": [
                     {
                         "type": "integer",
@@ -562,6 +562,38 @@ var doc = `{
                         "type": "string",
                         "description": "ownerAddress",
                         "name": "ownerAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/wallet/{walletAddress}": {
+            "get": {
+                "description": "User profile via wallet address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "User profile via wallet address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "walletAddress",
                         "in": "path",
                         "required": true
                     }
