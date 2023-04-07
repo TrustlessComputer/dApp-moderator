@@ -220,6 +220,12 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 
 	params := url.Values{}
 	params.Set("filter", fmt.Sprintf(`{"deployed_at_block":{"$gte":%d,"$lte":%d}}`, fromBlock, toBlock))
+	page := 1
+	limit := 100
+	offset := limit * (page - 1)
+
+	params.Set("limit", fmt.Sprintf("%d", limit))
+	params.Set("offset", fmt.Sprintf("%d", offset))
 
 	data, err := c.NftExplorer.Collections(params)
 	if err != nil {
