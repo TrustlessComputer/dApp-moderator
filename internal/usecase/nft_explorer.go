@@ -25,24 +25,24 @@ func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFil
 	}
 
 	if filter.Address != nil {
-		f = append(f, bson.E{"contract", primitive.Regex{Pattern: *filter.Address , Options: "i"}})
+		f = append(f, bson.E{"contract", primitive.Regex{Pattern: *filter.Address, Options: "i"}})
 	}
-	
+
 	if filter.Name != nil {
-		f = append(f, bson.E{"name", primitive.Regex{Pattern: *filter.Name , Options: "i"}})
+		f = append(f, bson.E{"name", primitive.Regex{Pattern: *filter.Name, Options: "i"}})
 	}
-	
+
 	if filter.Owner != nil {
-		f = append(f, bson.E{"creator", primitive.Regex{Pattern: *filter.Owner , Options: "i"}})
+		f = append(f, bson.E{"creator", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
 	}
 
 	sortBy := "deployed_at_block"
 	if filter.SortBy != nil && *filter.SortBy != "" {
 		sortBy = *filter.SortBy
 	}
-	
+
 	sort := 1
-	if filter.Sort != nil  {
+	if filter.Sort != nil {
 		sort = *filter.Sort
 	}
 
@@ -74,13 +74,13 @@ func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) 
 	})
 
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress",contractAddress) , zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
 		return nil, err
 	}
 
 	err = sr.Decode(obj)
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress",contractAddress), zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
 		return nil, err
 	}
 
@@ -91,11 +91,11 @@ func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) 
 func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) ([]nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.CollectionNfts(contractAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
-		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter",filter),  zap.Error(err))
+		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Error(err))
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter",filter), zap.Any("data", len(data)))
+	logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Any("data", len(data)))
 	return data, nil
 }
 
@@ -215,20 +215,36 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 				items := []nft_explorer.NftsResp{}
 				itemsLimit := 100
 				page := 1
+				total := 0
+
+				channelItems := make(chan []nft_explorer.NftsResp)
 				for {
 
-					offset := limit * (page - 1)
-					//TODO - Paging the request data
-					tmpItems, err := c.CollectionNfts(ctx, contract, request.PaginationReq{
-						Limit: &itemsLimit,
-						Offset: &offset,
-					})
+					go func(ctx context.Context, page int, itemsLimit int, channelItems chan []nft_explorer.NftsResp) {
 
-					if err != nil {
-						logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
-						break
-					}
+						offset := itemsLimit * (page - 1)
 
+						tmpItems := []nft_explorer.NftsResp{}
+						defer func  ()  {
+							channelItems <- tmpItems
+						}()
+
+						//TODO - Paging the request data
+						tmpItems, err = c.CollectionNfts(ctx, contract, request.PaginationReq{
+							Limit:  &itemsLimit,
+							Offset: &offset,
+						})
+
+						if err != nil {
+							logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
+							return
+						}
+
+
+					}(ctx, page, itemsLimit, channelItems)
+
+
+					tmpItems := <- channelItems
 					if len(tmpItems) == 0 {
 						break
 					}
@@ -237,9 +253,11 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 						items = append(items, tmpItem)
 					}
 
-					page ++
+					
+					total += len(tmpItems)
+					page++
 				}
-				
+
 				totalItems := len(items)
 				if totalItems == 0 {
 					return
@@ -264,7 +282,7 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 					return
 				}
 
-				logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems ),  zap.Any("updated", updated))
+				logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
 			}(&wg, nft)
 
 			wg.Wait()
