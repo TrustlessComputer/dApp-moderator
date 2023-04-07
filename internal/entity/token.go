@@ -2,6 +2,7 @@ package entity
 
 import (
 	"dapp-moderator/external/token_explorer"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/utils"
 	"encoding/json"
 	"strings"
@@ -22,15 +23,6 @@ type Token struct {
 	Social          Social `json:"social" bson:"social"`
 }
 
-type TokenFilter struct {
-	BaseFilters
-	Address   string
-	Name      string
-	Symbol    string
-	CreatedBy string
-	Decimal   int
-}
-
 func (t *Token) CollectionName() string {
 	return utils.COLLECTION_TOKENS
 }
@@ -49,4 +41,23 @@ func (t *Token) FromTokenExplorer(te token_explorer.Token) error {
 	t.Slug = strings.ToLower(t.Symbol)
 
 	return err
+}
+
+type TokenFilter struct {
+	BaseFilters
+	Address   string
+	Key       string
+	CreatedBy string
+}
+
+func (t *TokenFilter) FromPagination(pag request.PaginationReq) {
+	t.Limit = 10
+	if pag.Limit != nil {
+		t.Limit = int64(*pag.Limit)
+	}
+
+	t.Page = 1
+	if pag.Page != nil {
+		t.Page = int64(*pag.Page)
+	}
 }

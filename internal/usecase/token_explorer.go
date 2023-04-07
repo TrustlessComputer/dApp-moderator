@@ -15,6 +15,13 @@ func (c *Usecase) Tokens(ctx context.Context, filter request.PaginationReq, key 
 
 	params := filter.ToNFTServiceUrlQuery()
 
+	query := entity.TokenFilter{}
+	query.FromPagination(filter)
+
+	if key != "" {
+		query.Key = key
+	}
+
 	if key == "" {
 		data, err = c.TokenExplorer.Tokens(params)
 	} else {

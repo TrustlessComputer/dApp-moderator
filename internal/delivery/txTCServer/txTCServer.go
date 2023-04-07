@@ -117,12 +117,12 @@ func (c *txTCServer) StartServer() {
 			defer wg.Done()
 			c.fetchToken(ctx)
 		}()
-		
+
 		go func() {
 			defer wg.Done()
 			c.Usecase.UpdateCollections(ctx)
 		}()
-		
+
 		wg.Wait()
 		processedTime := time.Now().Unix() - previousTime.Unix()
 		if processedTime < int64(c.CronJobPeriod) {
