@@ -1,6 +1,11 @@
 package nft_explorer
 
-import "dapp-moderator/utils/helpers"
+import (
+	"dapp-moderator/utils/helpers"
+	"fmt"
+	"os"
+	"strings"
+)
 
 type RequestData struct {
 	Method string      `json:"method"`
@@ -28,14 +33,18 @@ type CollectionsResp struct {
 }
 
 type NftsResp struct {
-	Collection      string    `json:"collection"`
-	ContractAddress string    `json:"collection_address"`
-	TokenID         string    `json:"token_id"`
-	ContentType     string    `json:"content_type"`
-	Name            string    `json:"name"`
-	Owner           string    `json:"owner"`
-	MintedAt        float64   `json:"minted_at"`
-	Attributes      []NftAttr `json:"attributes"`
+	Collection      string      `json:"collection"`
+	ContractAddress string      `json:"collection_address"`
+	TokenID         string      `json:"token_id"`
+	ContentType     string      `json:"content_type"`
+	Name            string      `json:"name"`
+	Owner           string      `json:"owner"`
+	URL             string      `json:"url"`
+	Image           string      `json:"image"`
+	MintedAt        float64     `json:"minted_at"`
+	Attributes      []NftAttr   `json:"attributes"`
+	Metadata        interface{} `json:"metadata"`
+	MetadataType    string      `json:"metadata_type"`
 }
 
 type NftAttr struct {
@@ -63,11 +72,23 @@ func (sr ServiceResp) ToCollection() *CollectionsResp {
 	return resp
 }
 
-func (sr ServiceResp) ToNfts() []NftsResp {
-	resp := []NftsResp{}
+func (sr ServiceResp) ToNfts() []*NftsResp {
+	resp := []*NftsResp{}
 	err := helpers.JsonTransform(sr.Result, &resp)
 	if err == nil {
 		return resp
+	}
+
+	for _, item := range resp {
+		item.URL = fmt.Sprintf("%s/dapp/api/nft-explorer/collections/%s/nfts/%s/content", os.Getenv("URL"), item.ContractAddress, item.TokenID)
+
+		if strings.Index(item.ContentType, "image") != -1 {
+			item.Image = item.URL
+		}
+
+		if strings.Index(item.ContentType, "json") != -1 {
+			item.Image = ""
+		}
 	}
 
 	return resp
