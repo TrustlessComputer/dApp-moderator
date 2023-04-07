@@ -146,7 +146,7 @@ func (c *Usecase) NftByWalletAddress(ctx context.Context, walletAddress string, 
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("Nfts", zap.String("walletAddress", walletAddress), zap.Any("data", data))
+	logger.AtLog.Logger.Info("Nfts", zap.String("walletAddress", walletAddress), zap.Any("data", len(data)))
 	return data, nil
 }
 
