@@ -19,22 +19,39 @@ import (
 // @Tags nft-explorer
 // @Accept  json
 // @Produce  json
+// @Param owner query string false "owner"
+// @Param contract query string false "contract"
+// @Param name query string false "name"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
+// @Param sort_by query string false "default deployed_at_block"
+// @Param sort query int false "default -1"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /nft-explorer/collections [GET]
 func (h *httpDelivery) collections(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+
+			owner := r.URL.Query().Get("owner")
+			collectionAddress := r.URL.Query().Get("contract")
+			name := r.URL.Query().Get("name")
+
+			filter := request.CollectionsFilter{
+				Owner: &owner,
+				Address: &collectionAddress,
+				Name: &name,
+				PaginationReq: p,
+			}
 			
-			data, err := h.Usecase.Collections(ctx, iPagination.(request.PaginationReq))
+			data, err := h.Usecase.Collections(ctx, filter)
 			if err != nil {
-				logger.AtLog.Logger.Error("Collections", zap.Error(err))
+				logger.AtLog.Logger.Error("collections", zap.Any("filter", filter) , zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("Collections", zap.Any("data", data))
+			logger.AtLog.Logger.Info("collections", zap.Any("filter", filter) , zap.Int("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -84,11 +101,11 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 
 			data, err := h.Usecase.CollectionNfts(ctx, contractAddress, iPagination.(request.PaginationReq))
 			if err != nil {
-				logger.AtLog.Logger.Error("collectionNfts", zap.String("contractAddress", contractAddress), zap.Error(err))
+				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination",iPagination) , zap.String("contractAddress", contractAddress), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("collectionNfts", zap.String("contractAddress", contractAddress), zap.Any("data", data))
+			logger.AtLog.Logger.Info("collectionNfts", zap.Any("iPagination",iPagination), zap.String("contractAddress", contractAddress), zap.Any("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -145,7 +162,7 @@ func (h *httpDelivery) collectionNftContent(w http.ResponseWriter, r *http.Reque
 		return 
 	}
 
-	logger.AtLog.Logger.Info("collectionNftContent", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", data))
+	logger.AtLog.Logger.Info("collectionNftContent", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", len(data)))
 	
 	w.Header().Set("Content-Type", ctype)
 	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
@@ -170,19 +187,19 @@ func (h *httpDelivery) nfts(w http.ResponseWriter, r *http.Request) {
 
 			data, err := h.Usecase.Nfts(ctx, iPagination.(request.PaginationReq))
 			if err != nil {
-				logger.AtLog.Logger.Error("Nfts", zap.Error(err))
+				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination",iPagination), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("Nfts", zap.Any("data", data))
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination",iPagination), zap.Any("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
 
 // UserCredits godoc
-// @Summary Get nfts of a wallet address
-// @Description Get nfts of a wallet address
+// @Summary Get tokens of a wallet address
+// @Description Get tokens of a wallet address
 // @Tags nft-explorer
 // @Accept  json
 // @Produce  json
@@ -198,11 +215,11 @@ func (h *httpDelivery) nftByWalletAddress(w http.ResponseWriter, r *http.Request
 			iPagination := ctx.Value(utils.PAGINATION)
 			data, err := h.Usecase.NftByWalletAddress(ctx, tokenID, iPagination.(request.PaginationReq))
 			if err != nil {
-				logger.AtLog.Logger.Error("Nfts", zap.Error(err))
+				logger.AtLog.Logger.Error("nftByWalletAddress", zap.Any("pagination", iPagination), zap.String("tokenID", tokenID), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("Nfts", zap.Any("data", data))
+			logger.AtLog.Logger.Info("nftByWalletAddress", zap.Any("pagination", iPagination), zap.String("tokenID", tokenID), zap.Int("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)

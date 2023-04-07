@@ -120,7 +120,7 @@ func (c *txTCServer) StartServer() {
 
 		go func() {
 			defer wg.Done()
-			c.Usecase.UpdateCollections(ctx)
+			c.Usecase.UpdateCollectionItems(ctx)
 		}()
 
 		wg.Wait()

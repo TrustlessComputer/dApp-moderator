@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -24,6 +25,7 @@ import (
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/googlecloud"
 	_logger "dapp-moderator/utils/logger"
+	"dapp-moderator/utils/oauth2service"
 	"dapp-moderator/utils/redis"
 
 	"github.com/gorilla/mux"
@@ -85,6 +87,8 @@ func startServer() {
 	nex := nft_explorer.NewNftExplorer(conf, cache)
 	bfs := bfs_service.NewBfsService(conf, cache)
 	tke := token_explorer.NewTokenExplorer(conf, cache)
+
+	auth2Service := oauth2service.NewAuth2()
 	g := global.Global{
 		MuxRouter:     r,
 		Conf:          conf,
@@ -95,6 +99,7 @@ func startServer() {
 		NftExplorer:   nex,
 		BfsService:    bfs,
 		TokenExplorer: tke,
+		Auth2:         auth2Service,
 	}
 
 	repo, err := repository.NewRepository(&g)
@@ -123,10 +128,16 @@ func startServer() {
 		Enabled: true,
 	}
 
+	txConsumerStatr := os.Getenv("TX_CONSUMER_START")
+	txConsumerStatrBool, err := strconv.ParseBool(txConsumerStatr)
+	if err != nil {
+		txConsumerStatrBool = true //alway start this server, if config is missing
+	}
+
 	tx, _ := txTCServer.NewTxTCServer(&g, *uc)
 	servers["tx-consumer"] = delivery.AddedServer{
 		Server:  tx,
-		Enabled: true,
+		Enabled: txConsumerStatrBool,
 	}
 
 	//var wait time.Duration

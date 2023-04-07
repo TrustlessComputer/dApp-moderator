@@ -1,6 +1,15 @@
 package nft_explorer
 
-import "dapp-moderator/utils/helpers"
+import (
+	"dapp-moderator/utils/helpers"
+)
+
+type Erc721 struct {
+	Image       string      `json:"image"`
+	Attributes  interface{} `json:"attributes"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+}
 
 type RequestData struct {
 	Method string      `json:"method"`
@@ -28,14 +37,18 @@ type CollectionsResp struct {
 }
 
 type NftsResp struct {
-	Collection      string    `json:"collection"`
-	ContractAddress string    `json:"collection_address"`
-	TokenID         string    `json:"token_id"`
-	ContentType     string    `json:"content_type"`
-	Name            string    `json:"name"`
-	Owner           string    `json:"owner"`
-	MintedAt        float64   `json:"mintedAt"`
-	Attributes      []NftAttr `json:"attributes"`
+	Collection      string      `json:"collection"`
+	ContractAddress string      `json:"collection_address"`
+	TokenID         string      `json:"token_id"`
+	ContentType     string      `json:"content_type"`
+	Name            string      `json:"name"`
+	Owner           string      `json:"owner"`
+	TokenURI        string      `json:"token_uri"`
+	Image           string      `json:"image"`
+	MintedAt        float64     `json:"minted_at"`
+	Attributes      []NftAttr   `json:"attributes"`
+	Metadata        interface{} `json:"metadata"`
+	MetadataType    string      `json:"metadata_type"`
 }
 
 type NftAttr struct {
@@ -63,8 +76,8 @@ func (sr ServiceResp) ToCollection() *CollectionsResp {
 	return resp
 }
 
-func (sr ServiceResp) ToNfts() []NftsResp {
-	resp := []NftsResp{}
+func (sr ServiceResp) ToNfts() []*NftsResp {
+	resp := []*NftsResp{}
 	err := helpers.JsonTransform(sr.Result, &resp)
 	if err == nil {
 		return resp
