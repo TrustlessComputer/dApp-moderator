@@ -18,9 +18,9 @@ type VerifyMessage struct {
 }
 
 type VerifyResponse struct {
-	IsVerified   bool
-	Token        string
-	RefreshToken string
+	IsVerified   bool   `json:"is_verified"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type ProfileResponse struct {
