@@ -9,6 +9,7 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -16,6 +17,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
 
@@ -51,7 +53,7 @@ func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFil
 		sort = *filter.Sort
 	}
 
-	s := bson.D{{sortBy, sort}}
+	s := bson.D{{sortBy, sort}, {"index", 1}}
 	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
@@ -216,50 +218,76 @@ func (c *Usecase) NftByWalletAddress(ctx context.Context, walletAddress string, 
 	return data, nil
 }
 
-func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, toBlock int32) (interface{}, error) {
-
+func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, toBlock int32) error {
 	params := url.Values{}
-	params.Set("filter", fmt.Sprintf(`{"deployed_at_block":{"$gte":%d,"$lte":%d}}`, fromBlock, toBlock))
 	page := 1
 	limit := 100
-	offset := limit * (page - 1)
+	for {
 
-	params.Set("limit", fmt.Sprintf("%d", limit))
-	params.Set("offset", fmt.Sprintf("%d", offset))
+		offset := limit * (page - 1)
+		params.Set("filter", fmt.Sprintf(`{"deployed_at_block":{"$gte":%d,"$lte":%d}}`, fromBlock, toBlock))
+		params.Set("limit", fmt.Sprintf("%d", limit))
+		params.Set("offset", fmt.Sprintf("%d", offset))
 
-	data, err := c.NftExplorer.Collections(params)
-	if err != nil {
-		logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
-		return nil, err
-	}
-
-	if len(data) == 0 {
-		return data, nil
-	}
-
-	for _, item := range data {
-		tmp := &entity.Nfts{}
-		err := helpers.JsonTransform(item, tmp)
+		data, err := c.NftExplorer.Collections(params)
 		if err != nil {
-			logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
-			continue
+			logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("params", params)  , zap.Error(err))
+			break
 		}
 
-		tmp.Slug = helpers.GenerateSlug(tmp.Name)
-		tmp.Contract = strings.ToLower(tmp.Contract)
-		tmp.Creator = strings.ToLower(tmp.Creator)
+		if len(data) == 0 {
+			break
+		}
+		
+		//revert the array to index
+		for i := len(data) - 1; i >= 0; i = i -1 {
+			item := data[i]
+			
+			tmp := &entity.Nfts{}
+			err := helpers.JsonTransform(item, tmp)
+			if err != nil {
+				logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
+				continue
+			}
 
-		inserted, err := c.Repo.InsertOne(tmp)
-		if err != nil {
-			logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
-			continue
+			countInt := int64(0)
+			count, _, err := c.Repo.CountDocuments(utils.COLLECTION_NFTS, bson.D{})
+			if err != nil || count == nil {
+				countInt = 0
+			}else{
+				countInt = *count
+			}
+			countInt ++
+
+			nft, err := c.CollectionDetail(ctx, item.Contract)
+			if err != nil && errors.Is(err, mongo.ErrNoDocuments)  {
+				tmp.Index = countInt
+				tmp.Slug = helpers.GenerateSlug(tmp.Name)
+				tmp.Contract = strings.ToLower(tmp.Contract)
+				tmp.Creator = strings.ToLower(tmp.Creator)
+	
+				_, err := c.Repo.InsertOne(tmp)
+				if err != nil {
+					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
+					continue
+				}
+			}else{
+				updatedData := bson.M{
+					"$set" : bson.M{"index": countInt},
+				}
+				_, err := c.Repo.UpdateOne(utils.COLLECTION_NFTS, bson.D{{"contract", nft.Contract}}, updatedData)
+				if err != nil {
+					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
+					continue
+				}
+			}
 		}
 
-		_ = inserted
+		logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Any("data", data))
 	}
+	
 
-	logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Any("data", data))
-	return data, nil
+	return nil
 }
 
 func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
