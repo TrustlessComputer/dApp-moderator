@@ -280,6 +280,28 @@ paths:
       summary: Get Collections
       tags:
       - nft-explorer
+    put:
+      consumes:
+      - application/json
+      description: Update Collection
+      parameters:
+      - description: contractAddress
+        in: path
+        name: contractAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Collection
+      tags:
+      - nft-explorer
   /nft-explorer/collections/{contractAddress}/nfts:
     get:
       consumes:
