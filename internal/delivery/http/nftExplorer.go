@@ -83,6 +83,32 @@ func (h *httpDelivery) collectionDetail(w http.ResponseWriter, r *http.Request) 
 }
 
 // UserCredits godoc
+// @Summary Update Collection
+// @Description Update Collection
+// @Tags nft-explorer
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param contractAddress path string true "contractAddress"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /nft-explorer/collections/{contractAddress} [PUT]
+func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			contractAddress := vars["contractAddress"]
+			data, err := h.Usecase.CollectionDetail(ctx, contractAddress)
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("data", data))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
 // @Summary Get nfts of a Collectionc
 // @Description Get nfts of a Collectionc
 // @Tags nft-explorer

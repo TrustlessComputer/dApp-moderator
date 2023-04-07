@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
@@ -21,7 +22,7 @@ import (
 func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFilter) ([]entity.Nfts, error) {
 	res := []entity.Nfts{}
 	f := bson.D{
-		{"total_items", bson.M{"$gt": 0}},
+		// {"total_items", bson.M{"$gt": 0}},
 	}
 
 	if filter.Address != nil {
@@ -68,6 +69,28 @@ func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.Pa
 }
 
 func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) (*entity.Nfts, error) {
+	obj := &entity.Nfts{}
+	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, bson.D{
+		{"contract", primitive.Regex{Pattern: contractAddress, Options: "i"}},
+	})
+
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+		return nil, err
+	}
+
+	err = sr.Decode(obj)
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Any("obj", obj))
+	return obj, nil
+}
+
+
+func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, updateData structure.UpdateCollection) (*entity.Nfts, error) {
 	obj := &entity.Nfts{}
 	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, bson.D{
 		{"contract", primitive.Regex{Pattern: contractAddress, Options: "i"}},

@@ -38,6 +38,10 @@ func (h *httpDelivery) RegisterV1Routes() {
 	nftExplorer.HandleFunc("/nfts", h.nfts).Methods("GET")
 	nftExplorer.HandleFunc("/owner-address/{ownerAddress}/nfts", h.nftByWalletAddress).Methods("GET")
 
+	nftExplorerAuth := api.PathPrefix("/nft-explorer").Subrouter()
+	nftExplorerAuth.Use(h.MiddleWare.ValidateAccessToken)
+	nftExplorerAuth.HandleFunc("/collections/{contractAddress}", h.updateCollectionDetail).Methods("PUT")
+
 	//bfs services
 	bfsServices := api.PathPrefix("/bfs-service").Subrouter()
 	bfsServices.HandleFunc("/files/{walletAddress}", h.bfsFiles).Methods("GET")
