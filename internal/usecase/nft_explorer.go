@@ -88,7 +88,7 @@ func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) 
 	return obj, nil
 }
 
-func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) ([]nft_explorer.NftsResp, error) {
+func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) ([]*nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.CollectionNfts(contractAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Error(err))
@@ -118,11 +118,11 @@ func (c *Usecase) CollectionNftContent(ctx context.Context, contractAddress stri
 		return nil, "", err
 	}
 
-	logger.AtLog.Logger.Info("CollectionNftContent", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", data))
+	logger.AtLog.Logger.Info("CollectionNftContent", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", len(data)))
 	return data, contentType, nil
 }
 
-func (c *Usecase) Nfts(ctx context.Context, filter request.PaginationReq) ([]nft_explorer.NftsResp, error) {
+func (c *Usecase) Nfts(ctx context.Context, filter request.PaginationReq) ([]*nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.Nfts(filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("Nfts", zap.Error(err))
@@ -133,7 +133,7 @@ func (c *Usecase) Nfts(ctx context.Context, filter request.PaginationReq) ([]nft
 	return data, nil
 }
 
-func (c *Usecase) NftByWalletAddress(ctx context.Context, walletAddress string, filter request.PaginationReq) ([]nft_explorer.NftsResp, error) {
+func (c *Usecase) NftByWalletAddress(ctx context.Context, walletAddress string, filter request.PaginationReq) ([]*nft_explorer.NftsResp, error) {
 	data, err := c.NftExplorer.NftOfWalletAddress(walletAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("Nfts", zap.String("walletAddress", walletAddress), zap.Error(err))
@@ -212,19 +212,19 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 			go func(wg *sync.WaitGroup, nft entity.Nfts) {
 				defer wg.Done()
 
-				items := []nft_explorer.NftsResp{}
+				items := []*nft_explorer.NftsResp{}
 				itemsLimit := 100
 				page := 1
 				total := 0
 
-				channelItems := make(chan []nft_explorer.NftsResp)
+				channelItems := make(chan []*nft_explorer.NftsResp)
 				for {
 
-					go func(ctx context.Context, page int, itemsLimit int, channelItems chan []nft_explorer.NftsResp) {
+					go func(ctx context.Context, page int, itemsLimit int, channelItems chan []*nft_explorer.NftsResp) {
 
 						offset := itemsLimit * (page - 1)
 
-						tmpItems := []nft_explorer.NftsResp{}
+						tmpItems := []*nft_explorer.NftsResp{}
 						defer func  ()  {
 							channelItems <- tmpItems
 						}()
@@ -253,7 +253,7 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 						items = append(items, tmpItem)
 					}
 
-					
+
 					total += len(tmpItems)
 					page++
 				}

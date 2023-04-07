@@ -56,7 +56,7 @@ func (q NftExplorer) CollectionDetail(contractAddress string) (*CollectionsResp,
 	return resp.ToCollection(), nil
 }
 
-func (q NftExplorer) CollectionNfts(contractAddress string, params url.Values) ([]NftsResp, error) {
+func (q NftExplorer) CollectionNfts(contractAddress string, params url.Values) ([]*NftsResp, error) {
 	headers := make(map[string]string)	
 	url := fmt.Sprintf("%s/%s/%s/nfts?%s",q.serverURL, "collection", contractAddress, params.Encode())
 	data, _, _, err := helpers.JsonRequest(url, "GET", headers, nil)
@@ -100,7 +100,7 @@ func (q NftExplorer) CollectionNftContent(contractAddress string, tokenID string
 	return data, resHeader.Get("content-type"),  nil
 }
 
-func (q NftExplorer) Nfts(params url.Values) ([]NftsResp, error) {
+func (q NftExplorer) Nfts(params url.Values) ([]*NftsResp, error) {
 	headers := make(map[string]string)	
 	url := fmt.Sprintf("%s/nfts?%s",q.serverURL, params.Encode())
 	
@@ -119,7 +119,7 @@ func (q NftExplorer) Nfts(params url.Values) ([]NftsResp, error) {
 	return resp.ToNfts(), nil
 }
 
-func (q NftExplorer) NftOfWalletAddress(walletAddress string, params url.Values) ([]NftsResp, error) {
+func (q NftExplorer) NftOfWalletAddress(walletAddress string, params url.Values) ([]*NftsResp, error) {
 	headers := make(map[string]string)	
 	url := fmt.Sprintf("%s/nfts/%s?%s",q.serverURL,walletAddress, params.Encode())
 	data, _, _, err := helpers.JsonRequest(url, "GET", headers, nil)
