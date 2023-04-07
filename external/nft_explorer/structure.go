@@ -2,10 +2,14 @@ package nft_explorer
 
 import (
 	"dapp-moderator/utils/helpers"
-	"fmt"
-	"os"
-	"strings"
 )
+
+type Erc721 struct {
+	Image       string      `json:"image"`
+	Attributes  interface{} `json:"attributes"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+}
 
 type RequestData struct {
 	Method string      `json:"method"`
@@ -39,7 +43,7 @@ type NftsResp struct {
 	ContentType     string      `json:"content_type"`
 	Name            string      `json:"name"`
 	Owner           string      `json:"owner"`
-	URL             string      `json:"url"`
+	TokenURI        string      `json:"token_uri"`
 	Image           string      `json:"image"`
 	MintedAt        float64     `json:"minted_at"`
 	Attributes      []NftAttr   `json:"attributes"`
@@ -77,18 +81,6 @@ func (sr ServiceResp) ToNfts() []*NftsResp {
 	err := helpers.JsonTransform(sr.Result, &resp)
 	if err == nil {
 		return resp
-	}
-
-	for _, item := range resp {
-		item.URL = fmt.Sprintf("%s/dapp/api/nft-explorer/collections/%s/nfts/%s/content", os.Getenv("URL"), item.ContractAddress, item.TokenID)
-
-		if strings.Index(item.ContentType, "image") != -1 {
-			item.Image = item.URL
-		}
-
-		if strings.Index(item.ContentType, "json") != -1 {
-			item.Image = ""
-		}
 	}
 
 	return resp
