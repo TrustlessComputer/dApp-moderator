@@ -1,5 +1,31 @@
 basePath: /dapp-moderator/v1
 definitions:
+  request.UpdateTokenReq:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      social:
+        properties:
+          discord:
+            type: string
+          instagram:
+            type: string
+          medium:
+            type: string
+          telegram:
+            type: string
+          twitter:
+            type: string
+          website:
+            type: string
+        type: object
+      symbol:
+        type: string
+      thumbnail:
+        type: string
+    type: object
   response.JsonResponse:
     properties:
       data: {}
@@ -463,23 +489,16 @@ paths:
       summary: qn_addressBalance RPC Method
       tags:
       - QuickNode
-  /token-explorer/search:
+  /token-explorer/token/{address}:
     get:
       consumes:
       - application/json
-      description: search tokens
+      description: Update token
       parameters:
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: searching key
-        in: query
-        name: key
+      - description: contractAddress
+        in: path
+        name: address
+        required: true
         type: string
       produces:
       - application/json
@@ -488,11 +507,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.JsonResponse'
-      summary: search tokens
+      summary: Update token
       tags:
       - token-explorer
-  /token-explorer/token/{address}:
-    get:
+    put:
       consumes:
       - application/json
       description: Get token detail
@@ -502,6 +520,16 @@ paths:
         name: address
         required: true
         type: string
+      - description: contractAddress
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateTokenReq'
+      - description: thumbnail file
+        in: formData
+        name: thumbnail_file
+        type: file
       produces:
       - application/json
       responses:
@@ -526,6 +554,10 @@ paths:
         in: query
         name: page
         type: integer
+      - description: page
+        in: query
+        name: key
+        type: string
       produces:
       - application/json
       responses:

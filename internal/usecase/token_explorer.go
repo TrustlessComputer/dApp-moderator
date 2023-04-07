@@ -5,16 +5,15 @@ import (
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/logger"
+	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
+	"strings"
 )
 
-func (c *Usecase) Tokens(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
+func (c *Usecase) FindTokens(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
 	var data interface{}
 	var err error
-
-	params := filter.ToNFTServiceUrlQuery()
-
 	query := entity.TokenFilter{}
 	query.FromPagination(filter)
 
@@ -22,12 +21,7 @@ func (c *Usecase) Tokens(ctx context.Context, filter request.PaginationReq, key 
 		query.Key = key
 	}
 
-	if key == "" {
-		data, err = c.TokenExplorer.Tokens(params)
-	} else {
-		params["query"] = []string{key}
-		data, err = c.TokenExplorer.Search(params)
-	}
+	data, err = c.Repo.FindTokens(ctx, query)
 
 	if err != nil {
 		logger.AtLog.Logger.Error("Tokens", zap.Error(err))
@@ -38,16 +32,51 @@ func (c *Usecase) Tokens(ctx context.Context, filter request.PaginationReq, key 
 	return data, nil
 }
 
-func (c *Usecase) Token(ctx context.Context, address string) (interface{}, error) {
+func (c *Usecase) FindToken(ctx context.Context, address string) (interface{}, error) {
 
-	data, err := c.TokenExplorer.Token(address)
+	query := entity.TokenFilter{
+		Address: address,
+	}
+	data, err := c.Repo.FindToken(ctx, query)
 	if err != nil {
 		logger.AtLog.Logger.Error("Token", zap.Error(err))
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("Token", zap.Any("data", data))
 	return data, nil
+}
+
+func (c *Usecase) UpdateToken(ctx context.Context, address string, req request.UpdateTokenReq) error {
+	query := entity.TokenFilter{
+		Address: address,
+	}
+	token, err := c.Repo.FindToken(ctx, query)
+	if err != nil {
+		logger.AtLog.Logger.Error("Token", zap.Error(err))
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("token not found")
+		}
+		return err
+	}
+
+	token.Name = req.Name
+	token.Symbol = req.Symbol
+	token.Slug = strings.ToLower(req.Symbol)
+	token.Description = req.Description
+
+	token.Social.DisCord = req.Social.DisCord
+	token.Social.Telegram = req.Social.Telegram
+	token.Social.Twitter = req.Social.Twitter
+	token.Social.Website = req.Social.Website
+	token.Social.Medium = req.Social.Medium
+	token.Social.Instagram = req.Social.Instagram
+
+	err = c.Repo.UpdateToken(ctx, token)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {

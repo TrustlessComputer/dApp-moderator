@@ -1,6 +1,9 @@
 package request
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 func Queries(r *http.Request) map[string]string {
 	query := r.URL.Query()
@@ -17,4 +20,13 @@ func Query(r *http.Request, key, defaultValue string) string {
 		return value[0]
 	}
 	return defaultValue
+}
+
+func BindJson(r *http.Request, payload interface{}) error {
+
+	err := json.NewDecoder(r.Body).Decode(payload)
+	if err != nil {
+		return err
+	}
+	return nil
 }

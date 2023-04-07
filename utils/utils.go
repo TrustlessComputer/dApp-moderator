@@ -73,3 +73,12 @@ func MD5Ext(val interface{}) string {
 	result := fmt.Sprintf("%x", md5.Sum(jsonBytes))
 	return result
 }
+
+func InArray(needle interface{}, haystack []interface{}) bool {
+	for _, item := range haystack {
+		if item == needle {
+			return true
+		}
+	}
+	return false
+}
