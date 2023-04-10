@@ -54,7 +54,7 @@ func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFil
 	}
 
 	s := bson.D{{sortBy, sort}, {"index", 1}}
-	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
+	err := c.Repo.Find(utils.COLLECTION_COLLECTIONS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.Pa
 
 	sort := bson.D{{"deployed_at_block", 1}}
 
-	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, sort)
+	err := c.Repo.Find(utils.COLLECTION_COLLECTIONS, f, int64(*filter.Limit), int64(*filter.Offset), &res, sort)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.Pa
 
 func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) (*entity.Collections, error) {
 	obj := &entity.Collections{}
-	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, bson.D{
+	sr, err := c.Repo.FindOne(utils.COLLECTION_COLLECTIONS, bson.D{
 		{"contract", primitive.Regex{Pattern: contractAddress, Options: "i"}},
 	})
 
@@ -115,7 +115,7 @@ func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, 
 		{"contract", primitive.Regex{Pattern: contractAddress, Options: "i"}},
 		{"creator", primitive.Regex{Pattern: walletAdress, Options: "i"}},
 	}
-	sr, err := c.Repo.FindOne(utils.COLLECTION_NFTS, f)
+	sr, err := c.Repo.FindOne(utils.COLLECTION_COLLECTIONS, f)
 
 	if err != nil {
 		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
