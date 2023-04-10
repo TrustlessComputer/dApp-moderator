@@ -109,6 +109,10 @@ func (m *middleware) Pagination(next http.Handler) http.Handler {
 			if err == nil {
 				limitInt = tmp
 			}
+
+			if limitInt > 100 {
+				limitInt = 100
+			}
 		}
 
 		offset := limitInt * (pageInt - 1)
