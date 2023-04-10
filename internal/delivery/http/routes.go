@@ -70,6 +70,8 @@ func (h *httpDelivery) RegisterV1Routes() {
 	profile.Use(h.MiddleWare.AuthorizationFunc)
 	profile.HandleFunc("/me", h.currentUerProfile).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}", h.profileByWallet).Methods("GET")
+	profile.HandleFunc("/histories", h.createProfileHistory).Methods("POST")
+	profile.HandleFunc("/histories/{txHash}/confirm", h.confirmProfileHistory).Methods("PUT")
 
 }
 

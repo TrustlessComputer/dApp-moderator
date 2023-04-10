@@ -17,6 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -232,6 +233,26 @@ func (u Usecase) GetUserProfileByWalletAddress(userAddr string) (*entity.Users, 
 	return user, nil
 }
 
+func (u Usecase) CreateUserHistory(ctx context.Context, data *structure.CreateHistoryMessage) (*entity.UserHistories, error) {
+
+	logger.AtLog.Info("CreateUserHistory", zap.String("userAddr", data.WalletAddress))
+	input := &entity.UserHistories{}
+	input.WalletAddress =  data.WalletAddress
+	input.TxHash =  data.TxHash
+	input.DappTypeTxHash =  data.DappTypeTxHash
+	input.Status =  entity.HISTORY_PENDING
+
+	_, err :=  u.Repo.InsertOne(input)
+	if err != nil {
+		logger.AtLog.Error("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", data.WalletAddress), zap.Error(err))
+		return nil, err
+	}
+
+
+	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", data.WalletAddress), zap.Any("history",input))
+	return input, nil
+}
+
 func (u Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Users, error) {
 
 	
@@ -242,4 +263,36 @@ func (u Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Use
 	}
 	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Any("user",user))
 	return user, nil
+}
+
+func (u Usecase) ConfirmUserHistory(ctx context.Context, txHash string, userAddr string) (*entity.UserHistories, error) {
+
+	
+	f := bson.D{
+		{"wallet_address", userAddr},
+		{"tx_hash", txHash},
+		{"status", entity.HISTORY_PENDING},
+	}
+	data, err :=  u.Repo.FindOne(utils.COLLECTION_USER_HISTORIES, f)
+	if err != nil {
+		logger.AtLog.Error("ConfirmUserHistory", zap.String("txHash", txHash), zap.String("userAddr", userAddr), zap.Error(err))
+		return nil, err
+	}
+
+	h := &entity.UserHistories{}
+	err = data.Decode(h)
+	if err != nil {
+		logger.AtLog.Error("ConfirmUserHistory", zap.String("txHash", txHash), zap.String("userAddr", userAddr), zap.Error(err))
+		return nil, err
+	}
+
+	h.Status = entity.HISTORY_CONFIRMED
+	_, err = u.Repo.ReplaceOne(f, h)
+	if err != nil {
+		logger.AtLog.Error("ConfirmUserHistory", zap.String("txHash", txHash), zap.String("userAddr", userAddr), zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Info("ConfirmUserHistory", zap.String("txHash", txHash), zap.String("userAddr", userAddr), zap.Any("history",h))
+	return h, nil
 }

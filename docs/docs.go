@@ -743,6 +743,82 @@ var doc = `{
                 }
             }
         },
+        "/profile/histories": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create profile's history",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Create profile's history",
+                "parameters": [
+                    {
+                        "description": "Generate message request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structure.CreateHistoryMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/histories/{txHash}/confirm": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "confirm profile's history",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "confirm profile's history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "txHash",
+                        "name": "txHash",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/me": {
             "get": {
                 "security": [
@@ -1065,6 +1141,17 @@ var doc = `{
                     "type": "integer"
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "structure.CreateHistoryMessage": {
+            "type": "object",
+            "properties": {
+                "dapp_type": {
+                    "type": "string"
+                },
+                "tx_hash": {
                     "type": "string"
                 }
             }

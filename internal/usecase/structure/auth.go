@@ -32,3 +32,10 @@ type ProfileResponse struct {
 	CreatedAt        *time.Time `json:"created_at"`
 	WalletAddressBTC string     `json:"wallet_address_btc"`
 }
+
+type CreateHistoryMessage struct {
+	TxHash         string `json:"tx_hash"`
+	DappTypeTxHash string `json:"dapp_type"`
+	WalletAddress  string `json:"-"` 
+	Status         string `json:"-"`
+}
