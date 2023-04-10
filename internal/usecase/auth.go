@@ -17,7 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -106,49 +105,14 @@ func (u Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessag
 		return nil, err
 	}
 
-	logger.AtLog.Info("token", token)
 	tokenMd5 := helpers.GenerateMd5String(token)
-	logger.AtLog.Info("tokenMd5", tokenMd5)
-	
 	err = u.Cache.SetDataWithExpireTime(tokenMd5, userID, int(utils.TOKEN_CACHE_EXPIRED_TIME))
 	if err != nil {
 		logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
 		return nil, err
 	}
 
-	if data.AddressBTC != nil && *data.AddressBTC != "" {
-		if user.WalletAddressBTCTaproot == "" {
-			user.WalletAddressBTCTaproot = *data.AddressBTC
-			logger.AtLog.Info("user.WalletAddressBTCTaproot.Updated", true)
-		}
-		if user.WalletAddressBTC == "" {
-			user.WalletAddressBTC = *data.AddressBTC
-			logger.AtLog.Info("user.WalletAddressBTC.Updated", true)
-		}
-	}
-
-	if user.WalletAddressPayment == "" {
-		if data.AddressPayment == "" {
-			if user.WalletType != entity.WalletType_BTC_PRVKEY {
-				user.WalletAddressPayment = user.WalletAddress
-				logger.AtLog.Info("user.WalletAddressPayment.Updated", true)
-			}
-		} else {
-			user.WalletAddressPayment = data.AddressPayment
-			logger.AtLog.Info("user.WalletAddressPayment.Updated", true)
-		}
-	}
-
-	updated, err := u.Repo.ReplaceOne(bson.D{
-		{utils.KEY_WALLET_ADDRESS, user.WalletAddress},
-	}, user)
-
-	if err != nil {
-		logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
-		return nil, err
-	}
-
-	_ = updated
+	u.Repo.UpdateUserLastLoggedIn(user.WalletAddress)
 	verified := structure.VerifyResponse{
 		Token:        token,
 		RefreshToken: refreshToken,
