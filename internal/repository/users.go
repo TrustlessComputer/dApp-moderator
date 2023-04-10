@@ -77,3 +77,19 @@ func (r Repository) UpdateUserMessage(walletAddress string, message string) (*mo
 
 	return updated, nil
 }
+
+func (r Repository) UpdateUserLastLoggedIn(walletAddress string) (*mongo.UpdateResult, error) {
+	now := time.Now().UTC()
+	f := bson.D{{utils.KEY_WALLET_ADDRESS, primitive.Regex{Pattern: walletAddress, Options: "i"}}}
+	data := bson.M{"$set": bson.M{
+		"updated_at" :now,
+		"last_loggedin_at": now,
+	}}
+
+	updated, err := r.UpdateOne(utils.COLLECTION_USERS, f, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+}
