@@ -295,13 +295,13 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 			}
 
 			countInt := int64(0)
-			count, _, err := c.Repo.CountDocuments(utils.COLLECTION_NFTS, bson.D{})
+			count, _, err := c.Repo.CountDocuments(utils.COLLECTION_COLLECTIONS, bson.D{})
 			if err != nil || count == nil {
 				countInt = 0
 			}else{
-				countInt = *count
+				countInt = *count - int64(i)
 			}
-			countInt ++
+			//countInt ++
 
 			nft, err := c.CollectionDetail(ctx, item.Contract)
 			if err != nil && errors.Is(err, mongo.ErrNoDocuments)  {
@@ -319,7 +319,7 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 				updatedData := bson.M{
 					"$set" : bson.M{"index": countInt},
 				}
-				_, err := c.Repo.UpdateOne(utils.COLLECTION_NFTS, bson.D{{"contract", nft.Contract}}, updatedData)
+				_, err := c.Repo.UpdateOne(utils.COLLECTION_COLLECTIONS, bson.D{{"contract", nft.Contract}}, updatedData)
 				if err != nil {
 					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
 					continue
