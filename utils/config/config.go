@@ -19,6 +19,7 @@ type Config struct {
 	NftExplorer   string
 	TokenExplorer string
 	BFSService    string
+	BNSService    string
 	Gcs           *GCS
 }
 
@@ -90,6 +91,7 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		NftExplorer:   os.Getenv("NFT_EXPLORER_URL"),
 		TokenExplorer: os.Getenv("TOKEN_EXPLORER_URL"),
 		BFSService:    os.Getenv("BFS_SERVICE_URL"),
+		BNSService:    os.Getenv("BNS_SERVICE_URL"),
 		Databases: &Databases{
 			Mongo: &DBConnection{
 				Host:   os.Getenv("MONGO_HOST"),

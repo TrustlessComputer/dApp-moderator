@@ -234,12 +234,20 @@ paths:
       summary: Get file info
       tags:
       - BFS-service
-  /bns-explorer/bns:
+  /bns-service/names:
     get:
       consumes:
       - application/json
-      description: get Bns
+      description: Get bns names
       parameters:
+      - description: from_block
+        in: query
+        name: from_block
+        type: integer
+      - description: to_block
+        in: query
+        name: to_block
+        type: integer
       - description: limit
         in: query
         name: limit
@@ -255,9 +263,69 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.JsonResponse'
-      summary: get Bns
+      summary: Get bns names
       tags:
-      - BNS-explorer
+      - BNS-service
+  /bns-service/names/{name}:
+    get:
+      consumes:
+      - application/json
+      description: detail of bns name
+      parameters:
+      - description: name
+        in: path
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get detail of bns name
+      tags:
+      - BNS-service
+  /bns-service/names/{name}/available:
+    get:
+      consumes:
+      - application/json
+      description: Check bns name available for register
+      parameters:
+      - description: name
+        in: path
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Check bns name available for register
+      tags:
+      - BNS-service
+  /bns-service/names/owned/{wallet_address}:
+    get:
+      consumes:
+      - application/json
+      description: Get name of a wallet-address
+      parameters:
+      - description: wallet_address
+        in: path
+        name: wallet_address
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get name of a wallet-address
+      tags:
+      - BNS-service
   /nft-explorer/collections:
     get:
       consumes:

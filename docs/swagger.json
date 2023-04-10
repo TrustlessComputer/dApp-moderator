@@ -222,9 +222,9 @@
                 }
             }
         },
-        "/bns-explorer/bns": {
+        "/bns-service/names": {
             "get": {
-                "description": "get Bns",
+                "description": "Get bns names",
                 "consumes": [
                     "application/json"
                 ],
@@ -232,10 +232,22 @@
                     "application/json"
                 ],
                 "tags": [
-                    "BNS-explorer"
+                    "BNS-service"
                 ],
-                "summary": "get Bns",
+                "summary": "Get bns names",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "from_block",
+                        "name": "from_block",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "to_block",
+                        "name": "to_block",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "limit",
@@ -247,6 +259,99 @@
                         "description": "page",
                         "name": "page",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bns-service/names/owned/{wallet_address}": {
+            "get": {
+                "description": "Get name of a wallet-address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-service"
+                ],
+                "summary": "Get name of a wallet-address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "wallet_address",
+                        "name": "wallet_address",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bns-service/names/{name}": {
+            "get": {
+                "description": "detail of bns name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-service"
+                ],
+                "summary": "Get detail of bns name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bns-service/names/{name}/available": {
+            "get": {
+                "description": "Check bns name available for register",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-service"
+                ],
+                "summary": "Check bns name available for register",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path"
                     }
                 ],
                 "responses": {

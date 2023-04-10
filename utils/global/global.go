@@ -2,6 +2,7 @@ package global
 
 import (
 	"dapp-moderator/external/bfs_service"
+	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/external/quicknode"
 	"dapp-moderator/external/token_explorer"
@@ -25,6 +26,7 @@ type Global struct {
 	QuickNode        *quicknode.QuickNode
 	NftExplorer      *nft_explorer.NftExplorer
 	BfsService       *bfs_service.BfsService
+	BnsService       *bns_service.BNSService
 	TokenExplorer    *token_explorer.TokenExplorer
 	Auth2            *oauth2service.Auth2
 }
