@@ -21,6 +21,14 @@ type CollectionsFilter struct {
 	AllowEmpty *bool
 }
 
+type NftItemsFilter struct {
+	PaginationReq
+	Owner      *string
+	Name       *string
+	Address    *string
+	AllowEmpty *bool
+}
+
 type FilterBNSNames struct {
 	PaginationReq
 	FromBlock *int
