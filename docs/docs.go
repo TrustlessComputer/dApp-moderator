@@ -253,18 +253,6 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "from_block",
-                        "name": "from_block",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "to_block",
-                        "name": "to_block",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
                         "description": "limit",
                         "name": "limit",
                         "in": "query"
@@ -305,6 +293,18 @@ var doc = `{
                         "description": "wallet_address",
                         "name": "wallet_address",
                         "in": "path"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -721,6 +721,34 @@ var doc = `{
                         "required": true
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/me": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Current user profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Current user profile",
                 "responses": {
                     "200": {
                         "description": "OK",

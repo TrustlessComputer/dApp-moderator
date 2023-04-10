@@ -120,7 +120,7 @@ func (h *httpDelivery) bnsNameOwnedByWalletAddress(w http.ResponseWriter, r *htt
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("bnsName",zap.Any("filter",walletAddress), zap.Any("data", data))
+			logger.AtLog.Logger.Info("bnsName",zap.Any("filter",walletAddress), zap.Any("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
