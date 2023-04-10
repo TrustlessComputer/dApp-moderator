@@ -49,7 +49,6 @@ type TokenFilter struct {
 	BaseFilters
 	Key       string
 	Address   string
-	Owner     string
 	CreatedBy string
 }
 
