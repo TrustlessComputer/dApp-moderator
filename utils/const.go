@@ -133,12 +133,12 @@ const (
 	KEY_BTC_WALLET_INFO            string = "btc_wallet_info"
 
 	COLLECTION_COLLECTIONS string = "collections" //ERC721, a collection has many nfts
-	COLLECTION_NFTS        string = "nfts" //ERC721
+	COLLECTION_NFTS        string = "nfts"        //ERC721
 
-	COLLECTION_TOKEN_URI string = "token_uris" //ERC720
-	COLLECTION_TOKENS    string = "tokens"     //ERC20
-	COLLECTION_USERS     string = "users"      //ERC20
-	MINT_NFT_BTC         string = "mint_nft_btc"
+	COLLECTION_TOKEN_URI      string = "token_uris"
+	COLLECTION_TOKENS         string = "tokens"
+	COLLECTION_USERS          string = "users"
+	COLLECTION_USER_HISTORIES string = "user_histories"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"
 	EVM_NULL_ADDRESS                          string = "0x0000000000000000000000000000000000000000"

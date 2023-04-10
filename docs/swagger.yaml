@@ -46,6 +46,13 @@ definitions:
       message:
         type: string
     type: object
+  structure.CreateHistoryMessage:
+    properties:
+      dapp_type:
+        type: string
+      tx_hash:
+        type: string
+    type: object
   structure.GenerateMessage:
     properties:
       address:
@@ -565,6 +572,53 @@ paths:
       summary: Get tokens of a wallet address
       tags:
       - nft-explorer
+  /profile/histories:
+    post:
+      consumes:
+      - application/json
+      description: Create profile's history
+      parameters:
+      - description: Generate message request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/structure.CreateHistoryMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create profile's history
+      tags:
+      - Profile
+  /profile/histories/{txHash}/confirm:
+    post:
+      consumes:
+      - application/json
+      description: confirm profile's history
+      parameters:
+      - description: txHash
+        in: path
+        name: txHash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: confirm profile's history
+      tags:
+      - Profile
   /profile/me:
     get:
       consumes:

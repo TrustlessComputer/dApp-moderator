@@ -136,3 +136,73 @@ func (h *httpDelivery) currentUerProfile(w http.ResponseWriter, r *http.Request)
 		},
 	).ServeHTTP(w, r)
 }
+
+// @Summary  Create profile's history
+// @Description Create profile's history
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param request body structure.CreateHistoryMessage true "Generate message request"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /profile/histories [POST]
+func (h *httpDelivery) createProfileHistory(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iwalletAdress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
+			walletAdress, ok := iwalletAdress.(string)
+			if !ok {
+				err := errors.New("Token is incorect")
+				logger.AtLog.Logger.Error("createProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				return nil, err
+			}
+
+			reqBody := &structure.CreateHistoryMessage{}
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(reqBody)
+			if err != nil {
+				return nil, err
+			}
+			reqBody.WalletAddress = walletAdress
+			resp, err := h.Usecase.CreateUserHistory(ctx, reqBody)
+			if err != nil {
+				logger.AtLog.Logger.Error("createProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				return nil, err
+			}
+			
+			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// @Summary  confirm profile's history
+// @Description confirm profile's history
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param txHash path string true "txHash"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /profile/histories/{txHash}/confirm [POST]
+func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iwalletAdress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
+			walletAdress, ok := iwalletAdress.(string)
+			if !ok {
+				err := errors.New("Token is incorect")
+				logger.AtLog.Logger.Error("confirmProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				return nil, err
+			}
+
+			txHash := vars["txHash"]
+			resp, err := h.Usecase.ConfirmUserHistory(ctx, walletAdress, txHash)
+			if err != nil {
+				logger.AtLog.Logger.Error("confirmProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				return nil, err
+			}
+			
+			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
