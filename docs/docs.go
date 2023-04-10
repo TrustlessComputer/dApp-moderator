@@ -783,7 +783,7 @@ var doc = `{
             }
         },
         "/profile/histories/{txHash}/confirm": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
