@@ -28,11 +28,14 @@ func (r *Repository) parseTokenFilter(filter entity.TokenFilter) bson.M {
 	}
 
 	if filter.Key != "" {
-		andCond = append(andCond,
-			bson.M{"slug": bson.M{"$regex": strings.ToLower(filter.Key)}},
-			bson.M{"name": bson.M{"$regex": filter.Key}},
-			bson.M{"owner": filter.Key},
-		)
+		andCond = append(andCond, bson.M{"$or": []bson.M{
+			{"slug": bson.M{"$regex": strings.ToLower(filter.Key)}},
+			{"name": bson.M{"$regex": filter.Key}},
+		}})
+	}
+
+	if filter.Owner != "" {
+		andCond = append(andCond, bson.M{"owner": filter.Owner})
 	}
 
 	if filter.CreatedBy != "" {
