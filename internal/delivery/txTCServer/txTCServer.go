@@ -140,7 +140,6 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	}
 
 	fromBlock := lastProcessedBlock + 1
-	fromBlock = 1
 	blockNumber, err := c.Blockchain.GetBlockNumber()
 	if err != nil {
 		logger.AtLog.Logger.Error("resolveTransaction", zap.Any("err", err))
@@ -148,7 +147,6 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	}
 
 	toBlock := int64(math.Min(float64(blockNumber.Int64()), float64(fromBlock+int64(c.BatchLogSize))))
-	toBlock = 2522
 	if toBlock < fromBlock {
 		fromBlock = toBlock
 	}
