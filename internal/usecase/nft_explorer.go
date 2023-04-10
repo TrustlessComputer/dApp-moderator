@@ -174,15 +174,47 @@ func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, 
 	return obj, nil
 }
 
-func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.PaginationReq) ([]*nft_explorer.NftsResp, error) {
-	data, err := c.NftExplorer.CollectionNfts(contractAddress, filter.ToNFTServiceUrlQuery())
-	if err != nil {
-		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Error(err))
-		return nil, err
+func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.CollectionsFilter) ([]entity.Nfts, error) {
+	// data, err := c.NftExplorer.CollectionNfts(contractAddress, filter.ToNFTServiceUrlQuery())
+	// if err != nil {
+	// 	logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Error(err))
+	// 	return nil, err
+	// }
+
+	// logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Any("data", len(data)))
+	// return data, nil
+
+	res := []entity.Nfts{}
+	f := bson.D{}
+
+	if filter.Address != nil && *filter.Address != "" {
+		f = append(f, bson.E{"collection_address", primitive.Regex{Pattern: *filter.Address, Options: "i"}})
 	}
 
-	logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Any("data", len(data)))
-	return data, nil
+	if filter.Name != nil && *filter.Name != "" {
+		f = append(f, bson.E{"collection", primitive.Regex{Pattern: *filter.Name, Options: "i"}})
+	}
+
+	if filter.Owner != nil && *filter.Owner != "" {
+		f = append(f, bson.E{"owner", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
+	}
+
+	sortBy := "deployed_at_block"
+	if filter.SortBy != nil && *filter.SortBy != "" {
+		sortBy = *filter.SortBy
+	}
+
+	sort := 1
+	if filter.Sort != nil {
+		sort = *filter.Sort
+	}
+
+	s := bson.D{{sortBy, sort}, {"index", 1}}
+	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (c *Usecase) CollectionNftDetail(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.NftsResp, error) {
