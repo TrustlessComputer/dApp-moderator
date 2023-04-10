@@ -31,6 +31,7 @@ func (r *Repository) parseTokenFilter(filter entity.TokenFilter) bson.M {
 		andCond = append(andCond,
 			bson.M{"slug": bson.M{"$regex": strings.ToLower(filter.Key)}},
 			bson.M{"name": bson.M{"$regex": filter.Key}},
+			bson.M{"owner": filter.Key},
 		)
 	}
 
