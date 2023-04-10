@@ -183,7 +183,7 @@ func (h *httpDelivery) createProfileHistory(w http.ResponseWriter, r *http.Reque
 // @Security ApiKeyAuth
 // @Param txHash path string true "txHash"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /profile/histories/{txHash}/confirm [POST]
+// @Router /profile/histories/{txHash}/confirm [PUT]
 func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
