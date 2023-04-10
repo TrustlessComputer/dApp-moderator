@@ -327,7 +327,9 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 			}
 		}
 
-		logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Any("data", data))
+		logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Any("data", len(data)))
+
+		page ++
 	}
 	
 
@@ -359,101 +361,7 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 			contract := strings.ToLower(nft.Contract)
 
 			wg.Add(1)
-			go func(wg *sync.WaitGroup, nft entity.Collections) {
-				defer wg.Done()
-
-				items := []*nft_explorer.NftsResp{}
-				itemsLimit := 100
-				page := 1
-				total := 0
-
-				channelItems := make(chan []*nft_explorer.NftsResp)
-				for {
-
-					go func(ctx context.Context, page int, itemsLimit int, channelItems chan []*nft_explorer.NftsResp) {
-
-						offset := itemsLimit * (page - 1)
-
-						tmpItems := []*nft_explorer.NftsResp{}
-						defer func  ()  {
-							channelItems <- tmpItems
-						}()
-
-						//TODO - Paging the request data
-						tmpItems, err = c.CollectionNftsFrom3rdService(ctx, contract, request.PaginationReq{
-							Limit:  &itemsLimit,
-							Offset: &offset,
-						})
-
-						if err != nil {
-							logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
-							return
-						}
-
-
-					}(ctx, page, itemsLimit, channelItems)
-
-
-					tmpItems := <- channelItems
-					if len(tmpItems) == 0 {
-						break
-					}
-
-					for _, tmpItem := range tmpItems {
-						items = append(items, tmpItem)
-					}
-
-
-					total += len(tmpItems)
-					page++
-				}
-
-				totalItems := len(items)
-				if totalItems == 0 {
-					return
-				}
-
-				if totalItems == nft.TotalItems {
-					return
-				}
-
-				//spew.Dump(items)
-
-				insertedItem := []entity.IEntity{}
-				for _ , item := range items {
-					tmp := &entity.Nfts{}
-
-					err := helpers.JsonTransform(item, tmp)
-					if err != nil {
-						continue
-					}
-
-					insertedItem = append(insertedItem, tmp)
-				}
-
-				_, err = c.Repo.InsertMany(insertedItem)
-				if err != nil {
-					return
-				}
-				
-
-				f := bson.D{
-					{"contract", contract},
-				}
-
-				updateData := bson.M{
-					"$set": bson.M{
-						"total_items": totalItems,
-					},
-				}
-
-				updated, err := c.Repo.UpdateOne(nft.CollectionName(), f, updateData)
-				if err != nil {
-					return
-				}
-
-				logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
-			}(&wg, nft)
+			c.GetNftsFromCollection(ctx, &wg, contract, nft)
 
 			wg.Wait()
 
@@ -463,4 +371,101 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+
+func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup, contract string, nft entity.Collections) {
+		defer wg.Done()
+
+		items := []*nft_explorer.NftsResp{}
+		itemsLimit := 100
+		page := 1
+		total := 0
+
+		channelItems := make(chan []*nft_explorer.NftsResp)
+		for {
+
+			go func(ctx context.Context, page int, itemsLimit int, channelItems chan []*nft_explorer.NftsResp) {
+
+				offset := itemsLimit * (page - 1)
+
+				tmpItems := []*nft_explorer.NftsResp{}
+				defer func  ()  {
+					channelItems <- tmpItems
+				}()
+
+				//TODO - Paging the request data
+				tmpItems, err := c.CollectionNftsFrom3rdService(ctx, contract, request.PaginationReq{
+					Limit:  &itemsLimit,
+					Offset: &offset,
+				})
+
+				if err != nil {
+					logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
+					return
+				}
+
+
+			}(ctx, page, itemsLimit, channelItems)
+
+
+			tmpItems := <- channelItems
+			if len(tmpItems) == 0 {
+				break
+			}
+
+			for _, tmpItem := range tmpItems {
+				items = append(items, tmpItem)
+			}
+
+
+			total += len(tmpItems)
+			page++
+		}
+
+		totalItems := len(items)
+		if totalItems == 0 {
+			return
+		}
+
+		if totalItems == nft.TotalItems {
+			return
+		}
+
+		//spew.Dump(items)
+
+		insertedItem := []entity.IEntity{}
+		for _ , item := range items {
+			tmp := &entity.Nfts{}
+
+			err := helpers.JsonTransform(item, tmp)
+			if err != nil {
+				continue
+			}
+
+			insertedItem = append(insertedItem, tmp)
+		}
+
+		_, err := c.Repo.InsertMany(insertedItem)
+		if err != nil {
+			return
+		}
+		
+
+		f := bson.D{
+			{"contract", contract},
+		}
+
+		updateData := bson.M{
+			"$set": bson.M{
+				"total_items": totalItems,
+			},
+		}
+
+		updated, err := c.Repo.UpdateOne(nft.CollectionName(), f, updateData)
+		if err != nil {
+			return
+		}
+
+		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
 }

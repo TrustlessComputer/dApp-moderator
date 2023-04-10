@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 type NftExplorer struct {
@@ -99,7 +101,10 @@ func (q NftExplorer) CollectionNftDetail(contractAddress string, tokenID string)
 
 func (q NftExplorer) CollectionNftContent(contractAddress string, tokenID string) ([]byte, string, error) {
 	headers := make(map[string]string)	
-	data, resHeader, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s/%s/nft/%s/content",q.serverURL, "collection", contractAddress, tokenID), "GET", headers, nil)
+	url := fmt.Sprintf("%s/%s/%s/nft/%s/content",q.serverURL, "collection", contractAddress, tokenID)
+	spew.Dump(url)
+
+	data, resHeader, _, err := helpers.JsonRequest(url, "GET", headers, nil)
 	if err != nil {
 		return nil, "", err
 	}

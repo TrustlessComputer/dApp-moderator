@@ -165,12 +165,11 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 			var err error
 
 			owner := r.URL.Query().Get("owner")
-			collectionAddress := r.URL.Query().Get("contract")
 			name := r.URL.Query().Get("name")
 
 			filter := request.CollectionsFilter{
 				Owner: &owner,
-				Address: &collectionAddress,
+				Address: &contractAddress,
 				Name: &name,
 				PaginationReq: p,
 			}
