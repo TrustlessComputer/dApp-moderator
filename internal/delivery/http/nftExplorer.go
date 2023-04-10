@@ -164,18 +164,18 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 			p := iPagination.(request.PaginationReq)
 			var err error
 
-			// owner := r.URL.Query().Get("owner")
-			// collectionAddress := r.URL.Query().Get("contract")
-			// name := r.URL.Query().Get("name")
+			owner := r.URL.Query().Get("owner")
+			collectionAddress := r.URL.Query().Get("contract")
+			name := r.URL.Query().Get("name")
 
-			// filter := request.CollectionsFilter{
-			// 	Owner: &owner,
-			// 	Address: &collectionAddress,
-			// 	Name: &name,
-			// 	PaginationReq: p,
-			// }
+			filter := request.CollectionsFilter{
+				Owner: &owner,
+				Address: &collectionAddress,
+				Name: &name,
+				PaginationReq: p,
+			}
 
-			data, err := h.Usecase.CollectionNfts(ctx, contractAddress, p)
+			data, err := h.Usecase.CollectionNfts(ctx, contractAddress, filter)
 			if err != nil {
 				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination",iPagination) , zap.String("contractAddress", contractAddress), zap.Error(err))
 				return nil, err
