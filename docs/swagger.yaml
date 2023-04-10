@@ -437,6 +437,14 @@ paths:
         in: query
         name: page
         type: integer
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: owner
+        in: query
+        name: owner
+        type: string
       - description: contractAddress
         in: path
         name: contractAddress

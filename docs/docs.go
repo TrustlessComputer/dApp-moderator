@@ -556,6 +556,18 @@ var doc = `{
                     },
                     {
                         "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "owner",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "contractAddress",
                         "name": "contractAddress",
                         "in": "path",

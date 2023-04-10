@@ -150,6 +150,8 @@ func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Req
 // @Produce  json
 // @Param limit query int false "limit"
 // @Param page query int false "page"
+// @Param name query string false "name"
+// @Param owner query string false "owner"
 // @Param contractAddress path string true "contractAddress"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /nft-explorer/collections/{contractAddress}/nfts [GET]
