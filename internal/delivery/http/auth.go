@@ -5,8 +5,10 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
+	"dapp-moderator/utils"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -92,6 +94,40 @@ func (h *httpDelivery) profileByWallet(w http.ResponseWriter, r *http.Request) {
 				profile, err = h.Usecase.GetUserProfileByBtcAddressTaproot(walletAddress)
 				if err != nil {
 					logger.AtLog.Logger.Error("GetUserProfileByWalletAddress failed", zap.Error(err))
+					profile = &entity.Users{}
+				}
+			}
+			
+			return profile, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+
+// @Summary  Current user profile 
+// @Description Current user profile
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} response.JsonResponse{}
+// @Router /profile/me [GET]
+func (h *httpDelivery) currentUerProfile(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iwalletAdress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
+			walletAdress, ok := iwalletAdress.(string)
+			if !ok {
+				err := errors.New("Token is incorect")
+				logger.AtLog.Logger.Error("currentUerProfile", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				return nil, err
+			}
+
+			profile, err := h.Usecase.GetUserProfileByWalletAddress(walletAdress)
+			if err != nil {
+				profile, err = h.Usecase.GetUserProfileByBtcAddressTaproot(walletAdress)
+				if err != nil {
+					logger.AtLog.Logger.Error("currentUerProfile failed", zap.String("walletAdress", walletAdress), zap.Error(err))
 					profile = &entity.Users{}
 				}
 			}

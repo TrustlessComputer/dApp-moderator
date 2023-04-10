@@ -240,14 +240,6 @@ paths:
       - application/json
       description: Get bns names
       parameters:
-      - description: from_block
-        in: query
-        name: from_block
-        type: integer
-      - description: to_block
-        in: query
-        name: to_block
-        type: integer
       - description: limit
         in: query
         name: limit
@@ -316,6 +308,14 @@ paths:
         in: path
         name: wallet_address
         type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
       produces:
       - application/json
       responses:
@@ -557,6 +557,23 @@ paths:
       summary: Get tokens of a wallet address
       tags:
       - nft-explorer
+  /profile/me:
+    get:
+      consumes:
+      - application/json
+      description: Current user profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Current user profile
+      tags:
+      - Profile
   /profile/wallet/{walletAddress}:
     get:
       consumes:
