@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/token_explorer"
 	"fmt"
 	"os"
@@ -86,6 +87,7 @@ func startServer() {
 	qn := quicknode.NewQuickNode(conf, cache)
 	nex := nft_explorer.NewNftExplorer(conf, cache)
 	bfs := bfs_service.NewBfsService(conf, cache)
+	bns := bns_service.NewBNSService(conf, cache)
 	tke := token_explorer.NewTokenExplorer(conf, cache)
 
 	auth2Service := oauth2service.NewAuth2()
@@ -98,6 +100,7 @@ func startServer() {
 		QuickNode:     qn,
 		NftExplorer:   nex,
 		BfsService:    bfs,
+		BnsService:    bns,
 		TokenExplorer: tke,
 		Auth2:         auth2Service,
 	}

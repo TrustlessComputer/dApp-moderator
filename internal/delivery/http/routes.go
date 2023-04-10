@@ -48,15 +48,19 @@ func (h *httpDelivery) RegisterV1Routes() {
 	bfsServices.HandleFunc("/browse/{walletAddress}", h.bfsBrowseFile).Methods("GET")
 	bfsServices.HandleFunc("/info/{walletAddress}", h.bfsFileInfo).Methods("GET")
 	bfsServices.HandleFunc("/content/{walletAddress}", h.bfsFileContent).Methods("GET")
-
+	
+	//bns services
+	bnsServices := api.PathPrefix("/bns-service").Subrouter()
+	bnsServices.HandleFunc("/names", h.bnsNames).Methods("GET")
+	bnsServices.HandleFunc("/names/{name}", h.bnsName).Methods("GET")
+	bnsServices.HandleFunc("/names/{name}/available", h.bnsNameAvailable).Methods("GET")
+	bnsServices.HandleFunc("/names/owned/{wallet_address}", h.bnsNameOwnedByWalletAddress).Methods("GET")
+	
 	// token explorer
 	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()
 	tokenRoutes.HandleFunc("/tokens", h.getTokens).Methods("GET")
 	tokenRoutes.HandleFunc("/token/{address}", h.getToken).Methods("GET")
 	tokenRoutes.HandleFunc("/token/{address}", h.updateToken).Methods("PUT")
-
-	bnsRoutes := api.PathPrefix("/bns-explorer").Subrouter()
-	bnsRoutes.HandleFunc("/bns", h.GetBns).Methods("GET")
 
 	walletInfoGroup := api.PathPrefix("/wallets").Subrouter()
 	walletInfoGroup.HandleFunc("/{walletAddress}", h.walletInfo).Methods("GET")
