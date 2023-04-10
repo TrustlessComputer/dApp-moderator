@@ -340,6 +340,7 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 	filter := request.PaginationReq{}
 	page := 1
 	limit := 10
+	
 	for {
 
 		//filter again
@@ -356,17 +357,17 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 			break
 		}
 
+		
 		var wg sync.WaitGroup
 		for _, nft := range nfts {
 			contract := strings.ToLower(nft.Contract)
 
 			wg.Add(1)
-			c.GetNftsFromCollection(ctx, &wg, contract, nft)
-
-			wg.Wait()
+			go c.GetNftsFromCollection(ctx, &wg, contract, nft)
+			
 
 		}
-
+		wg.Wait()
 		page++
 	}
 

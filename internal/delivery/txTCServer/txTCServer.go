@@ -164,7 +164,7 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 		logger.AtLog.Logger.Error("resolveTransaction", zap.Error(err))
 		return err
 	}
-	logger.AtLog.Logger.Info("resolveTransaction", zap.Int64("lastProcessedBlock", lastProcessedBlock), zap.Int64("fromBlock", fromBlock), zap.Int64("toBlock", toBlock))
+	logger.AtLog.Logger.Info("resolveTransaction", zap.Int64("lastProcessedBlock", lastProcessedBlock), zap.Int64("blockNumber", blockNumber.Int64()), zap.Int64("fromBlock", fromBlock), zap.Int64("toBlock", toBlock))
 	return nil
 }
 

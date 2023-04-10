@@ -6,9 +6,10 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/logger"
 	"fmt"
+	"strings"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
-	"strings"
 )
 
 func (c *Usecase) FindTokens(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
@@ -85,9 +86,12 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 
 	tokenCount := 1
 	for tokenCount > 0 {
+
+		offset :=  perPage * (toPage - 1)
 		params := request.PaginationReq{
 			Page:  &toPage,
 			Limit: &perPage,
+			Offset: &offset,
 		}.ToNFTServiceUrlQuery()
 		Tokens, err := c.TokenExplorer.Tokens(params)
 		if err != nil {
