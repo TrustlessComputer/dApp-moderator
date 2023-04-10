@@ -132,8 +132,9 @@ const (
 	KEY_LISTING_CONTRACT           string = "collection_contract"
 	KEY_BTC_WALLET_INFO            string = "btc_wallet_info"
 
-	COLLECTION_NFTS      string = "nfts"       //ERC721
-	COLLECTION_NFT_ITEMS string = "nft_items"  //ERC721's items
+	COLLECTION_COLLECTIONS string = "collections" //ERC721, a collection has many nfts
+	COLLECTION_NFTS        string = "nfts" //ERC721
+
 	COLLECTION_TOKEN_URI string = "token_uris" //ERC720
 	COLLECTION_TOKENS    string = "tokens"     //ERC20
 	COLLECTION_USERS     string = "users"      //ERC20

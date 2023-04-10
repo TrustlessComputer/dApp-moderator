@@ -41,7 +41,7 @@ func (u Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*structu
 			tmp.TxHash = ab.Hash
 			tmp.BlockHeight = int(ab.Height)
 			tmp.TxInputN = 0
-			tmp.TxOutputN = 0
+			tmp.TxOutputN = ab.Index
 			tmp.Value = int(ab.Value)
 
 			if len(data.Inscriptions) > 0 {

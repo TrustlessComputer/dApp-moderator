@@ -4,7 +4,7 @@ import (
 	"dapp-moderator/utils"
 )
 
-type NftItems struct {
+type Nfts struct {
 	BaseEntity `bson:",inline"`
 
 	Collection      string      `json:"collection" bson:"collection"`
@@ -28,6 +28,6 @@ type NftAttr struct {
 
 
 
-func (u NftItems) CollectionName() string {
-	return utils.COLLECTION_NFT_ITEMS
+func (u Nfts) CollectionName() string {
+	return utils.COLLECTION_NFTS
 }
