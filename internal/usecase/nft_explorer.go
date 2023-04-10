@@ -31,15 +31,15 @@ func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFil
 		f = append(f, bson.E{"total_items", bson.M{"$gt": 0}})
 	}
 
-	if filter.Address != nil {
+	if filter.Address != nil && *filter.Address != "" {
 		f = append(f, bson.E{"contract", primitive.Regex{Pattern: *filter.Address, Options: "i"}})
 	}
 
-	if filter.Name != nil {
+	if filter.Name != nil && *filter.Name != "" {
 		f = append(f, bson.E{"name", primitive.Regex{Pattern: *filter.Name, Options: "i"}})
 	}
 
-	if filter.Owner != nil {
+	if filter.Owner != nil && *filter.Owner != "" {
 		f = append(f, bson.E{"creator", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
 	}
 
@@ -372,6 +372,26 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 				if totalItems == nft.TotalItems {
 					return
 				}
+
+				//spew.Dump(items)
+
+				insertedItem := []entity.IEntity{}
+				for _ , item := range items {
+					tmp := &entity.NftItems{}
+
+					err := helpers.JsonTransform(item, tmp)
+					if err != nil {
+						continue
+					}
+
+					insertedItem = append(insertedItem, tmp)
+				}
+
+				_, err = c.Repo.InsertMany(insertedItem)
+				if err != nil {
+					return
+				}
+				
 
 				f := bson.D{
 					{"contract", contract},

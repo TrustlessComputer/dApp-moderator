@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/helpers"
+	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -51,18 +52,26 @@ func (r *Repository) InsertOne(data entity.IEntity) (*mongo.InsertOneResult, err
 }
 
 func (r *Repository) InsertMany(data []entity.IEntity) (*mongo.InsertManyResult, error) {
-	// if len(data) <= 0 {
-	// 	return nil, errors.New("Insert data is empty")
-	// }
+	if len(data) <= 0 {
+		return nil, errors.New("Insert data is empty")
+	}
+	insertedData := make([]interface{}, 0)
+	for _, item := range data {
+		item.SetID()
+		item.SetCreatedAt()
+		tmp, err := helpers.ToDoc(item)
+		if err != nil {
+			return nil, err
+		}
+		insertedData  = append(insertedData, *tmp)
+	}
 
-	// inserted, err := r.DB.Collection(data[0].CollectionName()).InsertMany(context.TODO(), data)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return inserted,  nil
-
-	//TODO - implement me
-	return nil, nil
+	opts := options.InsertMany().SetOrdered(false)
+	inserted, err := r.DB.Collection(data[0].CollectionName()).InsertMany(context.TODO(), insertedData, opts)
+	if err != nil {
+		return nil, err
+	}
+	return inserted,  nil
 }
 
 func (r *Repository) UpdateOne(collectionName string, filter bson.D, updatedData bson.M) (*mongo.UpdateResult, error) {
