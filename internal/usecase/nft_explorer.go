@@ -197,7 +197,7 @@ func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 		f = append(f, bson.E{"owner", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
 	}
 
-	sortBy := "deployed_at_block"
+	sortBy := "token_id"
 	if filter.SortBy != nil && *filter.SortBy != "" {
 		sortBy = *filter.SortBy
 	}
@@ -207,7 +207,7 @@ func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 		sort = *filter.Sort
 	}
 
-	s := bson.D{{sortBy, sort}, {"index", 1}}
+	s := bson.D{{sortBy, sort}}
 	err := c.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
@@ -281,6 +281,15 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 			break
 		}
 
+		countInt := int64(0)
+		count, _, err := c.Repo.CountDocuments(utils.COLLECTION_COLLECTIONS, bson.D{})
+		if err != nil || count == nil {
+			countInt = 0
+		} else {
+			countInt = *count 
+		}
+		countInt ++
+
 		//revert the array to index
 		for i := len(data) - 1; i >= 0; i = i - 1 {
 			item := data[i]
@@ -292,16 +301,7 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 				continue
 			}
 
-			countInt := int64(0)
-			count, _, err := c.Repo.CountDocuments(utils.COLLECTION_COLLECTIONS, bson.D{})
-			if err != nil || count == nil {
-				countInt = 0
-			} else {
-				countInt = *count - int64(i)
-			}
-			//countInt ++
-
-			nft, err := c.CollectionDetail(ctx, item.Contract)
+			_, err = c.CollectionDetail(ctx, item.Contract)
 			if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 				tmp.Index = countInt
 				tmp.Slug = helpers.GenerateSlug(tmp.Name)
@@ -313,16 +313,20 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
 					continue
 				}
-			} else {
-				updatedData := bson.M{
-					"$set": bson.M{"index": countInt},
-				}
-				_, err := c.Repo.UpdateOne(utils.COLLECTION_COLLECTIONS, bson.D{{"contract", nft.Contract}}, updatedData)
-				if err != nil {
-					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
-					continue
-				}
-			}
+			} 
+			
+			// else {
+			// 	updatedData := bson.M{
+			// 		"$set": bson.M{"index": countInt},
+			// 	}
+			// 	_, err := c.Repo.UpdateOne(utils.COLLECTION_COLLECTIONS, bson.D{{"contract", nft.Contract}}, updatedData)
+			// 	if err != nil {
+			// 		logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
+			// 		continue
+			// 	}
+			// }
+
+			countInt ++
 		}
 
 		logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Any("data", len(data)))
