@@ -8,8 +8,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 type NftExplorer struct {
@@ -102,7 +100,6 @@ func (q NftExplorer) CollectionNftDetail(contractAddress string, tokenID string)
 func (q NftExplorer) CollectionNftContent(contractAddress string, tokenID string) ([]byte, string, error) {
 	headers := make(map[string]string)	
 	url := fmt.Sprintf("%s/%s/%s/nft/%s/content",q.serverURL, "collection", contractAddress, tokenID)
-	spew.Dump(url)
 
 	data, resHeader, _, err := helpers.JsonRequest(url, "GET", headers, nil)
 	if err != nil {
@@ -166,7 +163,8 @@ func (q NftExplorer) ParseData(data []byte) (*ServiceResp, error) {
 }
 
 func (q *NftExplorer) FillData(nft *NftsResp) {
-	nft.TokenURI = fmt.Sprintf("%s/dapp/api/nft-explorer/collections/%s/nfts/%s/content", os.Getenv("URL"), nft.ContractAddress, nft.TokenID)
+	nft.Image = fmt.Sprintf("%s/dapp/api/nft-explorer/collections/%s/nfts/%s/content", os.Getenv("URL"), nft.ContractAddress, nft.TokenID)
+	nft.TokenURI = fmt.Sprintf("%s/dapp/api/nft-explorer/collections/%s/nfts/%s", os.Getenv("URL"), nft.ContractAddress, nft.TokenID)
 
 	if strings.Index(nft.ContentType, "image") != -1 {
 		nft.Image = nft.TokenURI
