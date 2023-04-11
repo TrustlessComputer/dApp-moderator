@@ -131,7 +131,11 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 				return toPage, nil
 			}
 		}
-		toPage++
+
+		if len(Tokens) >= perPage {
+			toPage++
+		}
+		
 	}
 	return toPage, nil
 }
