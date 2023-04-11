@@ -189,6 +189,7 @@ func (c *txTCServer) fetchToken(ctx context.Context) {
 		}
 	}
 
+	fromPage = 1
 	toPage, err := c.Usecase.CrawToken(ctx, fromPage)
 	if err != nil {
 		logger.AtLog.Logger.Error("failed to fetch token from token-explorer", zap.Error(err))
