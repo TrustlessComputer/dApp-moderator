@@ -72,7 +72,6 @@ func (c *Usecase) CollectionNftsFrom3rdService(ctx context.Context, contractAddr
 	return data, nil
 }
 
-
 func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.PaginationReq) ([]entity.Collections, error) {
 	res := []entity.Collections{}
 	f := bson.D{}
@@ -107,7 +106,6 @@ func (c *Usecase) CollectionDetail(ctx context.Context, contractAddress string) 
 	return obj, nil
 }
 
-
 func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, walletAdress string, updateData *structure.UpdateCollection) (*entity.Collections, error) {
 	obj := &entity.Collections{}
 
@@ -131,23 +129,23 @@ func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, 
 	if updateData.Cover != nil && *updateData.Cover != obj.Cover {
 		obj.Cover = *updateData.Cover
 	}
-	
+
 	if updateData.Thumbnail != nil && *updateData.Thumbnail != obj.Thumbnail {
 		obj.Thumbnail = *updateData.Thumbnail
 	}
-	
+
 	if updateData.Description != nil && *updateData.Description != obj.Description {
 		obj.Description = *updateData.Description
 	}
-	
+
 	if updateData.Social.DisCord != nil && *updateData.Social.DisCord != obj.Social.DisCord {
 		obj.Social.DisCord = *updateData.Social.DisCord
 	}
-	
+
 	if updateData.Social.Instagram != nil && *updateData.Social.Instagram != obj.Social.Instagram {
 		obj.Social.Instagram = *updateData.Social.Instagram
 	}
-	
+
 	if updateData.Social.Medium != nil && *updateData.Social.Medium != obj.Social.Medium {
 		obj.Social.Medium = *updateData.Social.Medium
 	}
@@ -155,11 +153,11 @@ func (c *Usecase) UpdateCollection(ctx context.Context, contractAddress string, 
 	if updateData.Social.Telegram != nil && *updateData.Social.Telegram != obj.Social.Telegram {
 		obj.Social.Telegram = *updateData.Social.Telegram
 	}
-	
+
 	if updateData.Social.Twitter != nil && *updateData.Social.Twitter != obj.Social.Twitter {
 		obj.Social.Twitter = *updateData.Social.Twitter
 	}
-	
+
 	if updateData.Social.Website != nil && *updateData.Social.Website != obj.Social.Website {
 		obj.Social.Website = *updateData.Social.Website
 	}
@@ -204,7 +202,7 @@ func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 		sortBy = *filter.SortBy
 	}
 
-	sort := 1
+	sort := -1
 	if filter.Sort != nil {
 		sort = *filter.Sort
 	}
@@ -275,18 +273,18 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 
 		data, err := c.NftExplorer.Collections(params)
 		if err != nil {
-			logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("params", params)  , zap.Error(err))
+			logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("params", params), zap.Error(err))
 			break
 		}
 
 		if len(data) == 0 {
 			break
 		}
-		
+
 		//revert the array to index
-		for i := len(data) - 1; i >= 0; i = i -1 {
+		for i := len(data) - 1; i >= 0; i = i - 1 {
 			item := data[i]
-			
+
 			tmp := &entity.Collections{}
 			err := helpers.JsonTransform(item, tmp)
 			if err != nil {
@@ -298,26 +296,26 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 			count, _, err := c.Repo.CountDocuments(utils.COLLECTION_COLLECTIONS, bson.D{})
 			if err != nil || count == nil {
 				countInt = 0
-			}else{
+			} else {
 				countInt = *count - int64(i)
 			}
 			//countInt ++
 
 			nft, err := c.CollectionDetail(ctx, item.Contract)
-			if err != nil && errors.Is(err, mongo.ErrNoDocuments)  {
+			if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 				tmp.Index = countInt
 				tmp.Slug = helpers.GenerateSlug(tmp.Name)
 				tmp.Contract = strings.ToLower(tmp.Contract)
 				tmp.Creator = strings.ToLower(tmp.Creator)
-	
+
 				_, err := c.Repo.InsertOne(tmp)
 				if err != nil {
 					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
 					continue
 				}
-			}else{
+			} else {
 				updatedData := bson.M{
-					"$set" : bson.M{"index": countInt},
+					"$set": bson.M{"index": countInt},
 				}
 				_, err := c.Repo.UpdateOne(utils.COLLECTION_COLLECTIONS, bson.D{{"contract", nft.Contract}}, updatedData)
 				if err != nil {
@@ -329,9 +327,8 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 
 		logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Any("data", len(data)))
 
-		page ++
+		page++
 	}
-	
 
 	return nil
 }
@@ -340,7 +337,7 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 	filter := request.PaginationReq{}
 	page := 1
 	limit := 10
-	
+
 	for {
 
 		//filter again
@@ -357,14 +354,12 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 			break
 		}
 
-		
 		var wg sync.WaitGroup
 		for _, nft := range nfts {
 			contract := strings.ToLower(nft.Contract)
 
 			wg.Add(1)
 			go c.GetNftsFromCollection(ctx, &wg, contract, nft)
-			
 
 		}
 		wg.Wait()
@@ -374,99 +369,94 @@ func (c *Usecase) UpdateCollectionItems(ctx context.Context) error {
 	return nil
 }
 
-
 func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup, contract string, nft entity.Collections) {
-		defer wg.Done()
+	defer wg.Done()
 
-		items := []*nft_explorer.NftsResp{}
-		itemsLimit := 100
-		page := 1
-		total := 0
+	items := []*nft_explorer.NftsResp{}
+	itemsLimit := 100
+	page := 1
+	total := 0
 
-		channelItems := make(chan []*nft_explorer.NftsResp)
-		for {
+	channelItems := make(chan []*nft_explorer.NftsResp)
+	for {
 
-			go func(ctx context.Context, page int, itemsLimit int, channelItems chan []*nft_explorer.NftsResp) {
+		go func(ctx context.Context, page int, itemsLimit int, channelItems chan []*nft_explorer.NftsResp) {
 
-				offset := itemsLimit * (page - 1)
+			offset := itemsLimit * (page - 1)
 
-				tmpItems := []*nft_explorer.NftsResp{}
-				defer func  ()  {
-					channelItems <- tmpItems
-				}()
+			tmpItems := []*nft_explorer.NftsResp{}
+			defer func() {
+				channelItems <- tmpItems
+			}()
 
-				//TODO - Paging the request data
-				tmpItems, err := c.CollectionNftsFrom3rdService(ctx, contract, request.PaginationReq{
-					Limit:  &itemsLimit,
-					Offset: &offset,
-				})
+			//TODO - Paging the request data
+			tmpItems, err := c.CollectionNftsFrom3rdService(ctx, contract, request.PaginationReq{
+				Limit:  &itemsLimit,
+				Offset: &offset,
+			})
 
-				if err != nil {
-					logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
-					return
-				}
-
-
-			}(ctx, page, itemsLimit, channelItems)
-
-
-			tmpItems := <- channelItems
-			if len(tmpItems) == 0 {
-				break
-			}
-
-			for _, tmpItem := range tmpItems {
-				items = append(items, tmpItem)
-			}
-
-
-			total += len(tmpItems)
-			page++
-		}
-
-		totalItems := len(items)
-		if totalItems == 0 {
-			return
-		}
-
-		if totalItems == nft.TotalItems {
-			return
-		}
-
-		//spew.Dump(items)
-
-		insertedItem := []entity.IEntity{}
-		for _ , item := range items {
-			tmp := &entity.Nfts{}
-
-			err := helpers.JsonTransform(item, tmp)
 			if err != nil {
-				continue
+				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
+				return
 			}
 
-			insertedItem = append(insertedItem, tmp)
+		}(ctx, page, itemsLimit, channelItems)
+
+		tmpItems := <-channelItems
+		if len(tmpItems) == 0 {
+			break
 		}
 
-		_, err := c.Repo.InsertMany(insertedItem)
+		for _, tmpItem := range tmpItems {
+			items = append(items, tmpItem)
+		}
+
+		total += len(tmpItems)
+		page++
+	}
+
+	totalItems := len(items)
+	if totalItems == 0 {
+		return
+	}
+
+	if totalItems == nft.TotalItems {
+		return
+	}
+
+	//spew.Dump(items)
+
+	insertedItem := []entity.IEntity{}
+	for _, item := range items {
+		tmp := &entity.Nfts{}
+
+		err := helpers.JsonTransform(item, tmp)
 		if err != nil {
-			return
-		}
-		
-
-		f := bson.D{
-			{"contract", contract},
+			continue
 		}
 
-		updateData := bson.M{
-			"$set": bson.M{
-				"total_items": totalItems,
-			},
-		}
+		insertedItem = append(insertedItem, tmp)
+	}
 
-		updated, err := c.Repo.UpdateOne(nft.CollectionName(), f, updateData)
-		if err != nil {
-			return
-		}
+	_, err := c.Repo.InsertMany(insertedItem)
+	if err != nil {
+		return
+	}
 
-		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
+	f := bson.D{
+		{"contract", contract},
+	}
+
+	updateData := bson.M{
+		"$set": bson.M{
+			"total_items": totalItems,
+		},
+	}
+
+	updated, err := c.Repo.UpdateOne(nft.CollectionName(), f, updateData)
+	if err != nil {
+		return
+	}
+
+	logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
 }
