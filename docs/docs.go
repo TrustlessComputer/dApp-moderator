@@ -743,72 +743,6 @@ var doc = `{
                 }
             }
         },
-        "/profile/collections": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Current user collections (created collections and collection has the owned nft)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "Current user collections",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "contract",
-                        "name": "contract",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "default deployed_at_block",
-                        "name": "sort_by",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "default -1",
-                        "name": "sort",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.JsonResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/profile/histories": {
             "post": {
                 "security": [
@@ -913,13 +847,108 @@ var doc = `{
                 }
             }
         },
-        "/profile/tokens/bought": {
+        "/profile/wallet/{walletAddress}": {
             "get": {
-                "security": [
+                "description": "User profile via wallet address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "User profile via wallet address",
+                "parameters": [
                     {
-                        "ApiKeyAuth": []
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/wallet/{walletAddress}/collections": {
+            "get": {
+                "description": "Current user collections (created collections and collection has the owned nft)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Current user collections",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract",
+                        "name": "contract",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default deployed_at_block",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default -1",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/wallet/{walletAddress}/tokens/bought": {
+            "get": {
                 "description": "Current user bouhght-tokens  (the tokens that the user has spent)",
                 "consumes": [
                     "application/json"
@@ -932,6 +961,13 @@ var doc = `{
                 ],
                 "summary": "Current user bouhght-tokens",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "limit",
@@ -955,38 +991,6 @@ var doc = `{
                         "description": "default -1",
                         "name": "sort",
                         "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.JsonResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/profile/wallet/{walletAddress}": {
-            "get": {
-                "description": "User profile via wallet address",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "User profile via wallet address",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Wallet address",
-                        "name": "walletAddress",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {

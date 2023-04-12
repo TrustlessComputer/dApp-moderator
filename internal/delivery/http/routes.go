@@ -67,13 +67,17 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	//profile
 	profile := api.PathPrefix("/profile").Subrouter()
-	profile.Use(h.MiddleWare.AuthorizationFunc)
-	profile.HandleFunc("/me", h.currentUerProfile).Methods("GET")
-	profile.HandleFunc("/collections", h.currentUerProfileCollections).Methods("GET")
-	profile.HandleFunc("/tokens/bought", h.currentUerProfileBoughtTokens).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}", h.profileByWallet).Methods("GET")
-	profile.HandleFunc("/histories", h.createProfileHistory).Methods("POST")
-	profile.HandleFunc("/histories/{txHash}/confirm", h.confirmProfileHistory).Methods("PUT")
+	profile.HandleFunc("/wallet/{walletAddress}/collections", h.currentUerProfileCollections).Methods("GET")
+	profile.HandleFunc("/wallet/{walletAddress}/tokens/bought", h.currentUerProfileBoughtTokens).Methods("GET")
+
+	profileAuth := api.PathPrefix("/profile").Subrouter()
+	profileAuth.Use(h.MiddleWare.AuthorizationFunc)
+	profileAuth.HandleFunc("/me", h.currentUerProfile).Methods("GET")
+	profileAuth.HandleFunc("/histories", h.createProfileHistory).Methods("POST")
+	profileAuth.HandleFunc("/histories/{txHash}/confirm", h.confirmProfileHistory).Methods("PUT")
+
+	
 
 }
 
