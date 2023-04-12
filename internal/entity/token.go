@@ -12,7 +12,7 @@ type Token struct {
 	BaseEntity      `bson:",inline"`
 	Address         string `json:"address" bson:"address"`
 	TotalSupply     string `json:"total_supply" bson:"total_supply"`
-	Owner           string `json:"owner" bson:"owner"`
+	Owner           string `json:"owner" bson:"owner"` // Owner of a contract (contract address)
 	Decimal         int    `json:"decimal" bson:"decimal"`
 	DeployedAtBlock int    `json:"deployed_at_block" bson:"deployed_at_block"`
 	Slug            string `json:"slug" bson:"slug"`

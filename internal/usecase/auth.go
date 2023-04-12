@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"crypto/rand"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
@@ -18,6 +19,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -253,6 +255,36 @@ func (u Usecase) CreateUserHistory(ctx context.Context, data *structure.CreateHi
 	return input, nil
 }
 
+func (u Usecase) GetUserHistories(ctx context.Context, filter request.HistoriesFilter) ([]entity.UserHistories, error) {
+	res := []entity.UserHistories{}
+	f := bson.D{}
+
+	if filter.TxHash != nil && *filter.TxHash != "" {
+		f = append(f, bson.E{"tx_hash", primitive.Regex{Pattern: *filter.TxHash, Options: "i"}})
+	}
+
+	if filter.WalletAdress != nil && *filter.WalletAdress != "" {
+		f = append(f, bson.E{"wallet_address", primitive.Regex{Pattern: *filter.WalletAdress, Options: "i"}})
+	}
+
+	sort := 1
+	if filter.Sort != nil {
+		sort = *filter.Sort
+	}
+	
+	sortBy := "created_at"
+	if filter.SortBy != nil {
+		sort = *filter.Sort
+	}
+
+	s := bson.D{{sortBy, sort}}
+	err := u.Repo.Find(utils.COLLECTION_USER_HISTORIES, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (u Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Users, error) {
 
 	
@@ -265,34 +297,39 @@ func (u Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Use
 	return user, nil
 }
 
-func (u Usecase) ConfirmUserHistory(ctx context.Context, txHash string, userAddr string) (*entity.UserHistories, error) {
+func (u Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHashData request.ConfirmHistoriesReq) ([]entity.UserHistories, error) {
+	txHashes := txHashData.TxHash
+	resp := []entity.UserHistories{}
 
+	for _, txHash := range txHashes {
+		f := bson.D{
+			{"wallet_address", userAddr},
+			{"tx_hash", txHash},
+			{"status", entity.HISTORY_PENDING},
+		}
+
+		data, err :=  u.Repo.FindOne(utils.COLLECTION_USER_HISTORIES, f)
+		if err != nil {
+			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData",txHashData),zap.String("userAddr", userAddr), zap.Error(err))
+			return nil, fmt.Errorf("Cannot find transaction: %s - %v", txHash, err.Error())
+		}
 	
-	f := bson.D{
-		{"wallet_address", userAddr},
-		{"tx_hash", txHash},
-		{"status", entity.HISTORY_PENDING},
-	}
-	data, err :=  u.Repo.FindOne(utils.COLLECTION_USER_HISTORIES, f)
-	if err != nil {
-		logger.AtLog.Error("ConfirmUserHistory", zap.String("txHash", txHash), zap.String("userAddr", userAddr), zap.Error(err))
-		return nil, err
-	}
-
-	h := &entity.UserHistories{}
-	err = data.Decode(h)
-	if err != nil {
-		logger.AtLog.Error("ConfirmUserHistory", zap.String("txHash", txHash), zap.String("userAddr", userAddr), zap.Error(err))
-		return nil, err
+		h := &entity.UserHistories{}
+		err = data.Decode(h)
+		if err != nil {
+			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData",txHashData), zap.String("userAddr", userAddr), zap.Error(err))
+			return nil, fmt.Errorf("Cannot find transaction: %s - %v", txHash, err.Error())
+		}
+	
+		h.Status = entity.HISTORY_CONFIRMED
+		_, err = u.Repo.ReplaceOne(f, h)
+		if err != nil {
+			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData",txHashData), zap.String("userAddr", userAddr), zap.Error(err))
+			return nil, fmt.Errorf("Cannot update transaction: %s - %v", txHash, err.Error())
+		}
+		resp = append(resp, *h)
 	}
 
-	h.Status = entity.HISTORY_CONFIRMED
-	_, err = u.Repo.ReplaceOne(f, h)
-	if err != nil {
-		logger.AtLog.Error("ConfirmUserHistory", zap.String("txHash", txHash), zap.String("userAddr", userAddr), zap.Error(err))
-		return nil, err
-	}
-
-	logger.AtLog.Info("ConfirmUserHistory", zap.String("txHash", txHash), zap.String("userAddr", userAddr), zap.Any("history",h))
-	return h, nil
+	logger.AtLog.Info("ConfirmUserHistory", zap.Any("txHashData",txHashData), zap.String("userAddr", userAddr), zap.Any("histories", len(resp)))
+	return resp, nil
 }
