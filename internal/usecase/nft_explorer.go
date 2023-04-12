@@ -472,5 +472,5 @@ func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 }
 
 func (c *Usecase) UserCollections(ctx context.Context, filter request.CollectionsFilter) ([]entity.Collections, error) {
-		return c.Repo.UserCollections(filter)
+	return c.Repo.UserCollections(filter)
 }

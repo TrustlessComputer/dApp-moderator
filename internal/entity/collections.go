@@ -4,6 +4,15 @@ import (
 	"dapp-moderator/utils"
 )
 
+type GroupedCollection struct {
+	ID GroupedCollectionID `bson:"_id"`
+	Tokens int64 `bson:"tokens"`
+}
+
+type GroupedCollectionID struct {
+	CollectionAddress string `bson:"collection_address"`
+}
+
 type Collections struct {
 	BaseEntity `bson:",inline"`
 
