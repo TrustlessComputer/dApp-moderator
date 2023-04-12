@@ -68,6 +68,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	//profile
 	profile := api.PathPrefix("/profile").Subrouter()
 	profile.HandleFunc("/wallet/{walletAddress}", h.profileByWallet).Methods("GET")
+	profile.HandleFunc("/wallet/{walletAddress}/transactions", h.currentUerProfileTransactions).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}/collections", h.currentUerProfileCollections).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}/tokens/bought", h.currentUerProfileBoughtTokens).Methods("GET")
 
