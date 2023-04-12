@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -197,7 +198,7 @@ func (c *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 		f = append(f, bson.E{"owner", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
 	}
 
-	sortBy := "token_id"
+	sortBy := "token_id_int"
 	if filter.SortBy != nil && *filter.SortBy != "" {
 		sortBy = *filter.SortBy
 	}
@@ -437,6 +438,11 @@ func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 		err := helpers.JsonTransform(item, tmp)
 		if err != nil {
 			continue
+		}
+
+		tokenIDInt, err := strconv.Atoi(tmp.TokenID)
+		if err == nil {
+			tmp.TokenIDInt = int64(tokenIDInt)
 		}
 
 		insertedItem = append(insertedItem, tmp)

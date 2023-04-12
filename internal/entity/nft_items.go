@@ -10,6 +10,7 @@ type Nfts struct {
 	Collection      string      `json:"collection" bson:"collection"`
 	ContractAddress string      `json:"collection_address" bson:"collection_address"`
 	TokenID         string      `json:"token_id" bson:"token_id"`
+	TokenIDInt      int64       `json:"token_id_int" bson:"token_id_int"` //use it for sort
 	ContentType     string      `json:"content_type" bson:"content_type"`
 	Name            string      `json:"name" bson:"name"`
 	Owner           string      `json:"owner" bson:"owner"`
@@ -25,8 +26,6 @@ type NftAttr struct {
 	TraitType string `json:"trait_type" bson:"trait_type"`
 	Value     string `json:"value"  bson:"value"`
 }
-
-
 
 func (u Nfts) CollectionName() string {
 	return utils.COLLECTION_NFTS
