@@ -215,7 +215,6 @@ func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Requ
 // @Tags Profile
 // @Accept json
 // @Produce json
-// @Security ApiKeyAuth
 // @Param contract query string false "contract"
 // @Param name query string false "name"
 // @Param limit query int false "limit"
@@ -223,17 +222,12 @@ func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Requ
 // @Param sort_by query string false "default deployed_at_block"
 // @Param sort query int false "default -1"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /profile/collections [GET]
+// @Param walletAddress path string true "Wallet address"
+// @Router /profile/wallet/{walletAddress}/collections [GET]
 func (h *httpDelivery) currentUerProfileCollections(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			iwalletAdress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
-			walletAdress, ok := iwalletAdress.(string)
-			if !ok {
-				err := errors.New("Token is incorect")
-				logger.AtLog.Logger.Error("currentUerProfileCollections", zap.String("walletAdress", walletAdress) , zap.Error(err))
-				return nil, err
-			}
+			walletAdress := vars["walletAddress"]
 
 			iPagination := ctx.Value(utils.PAGINATION)
 			p := iPagination.(request.PaginationReq)
@@ -241,8 +235,6 @@ func (h *httpDelivery) currentUerProfileCollections(w http.ResponseWriter, r *ht
 
 			collectionAddress := r.URL.Query().Get("contract")
 			name := r.URL.Query().Get("name")
-
-			walletAdress = "0x368172cad06cff710bb14657492af9992988f656"
 			filter := request.CollectionsFilter{
 				Owner: &walletAdress,
 				Address: &collectionAddress,
@@ -266,13 +258,13 @@ func (h *httpDelivery) currentUerProfileCollections(w http.ResponseWriter, r *ht
 // @Tags Profile
 // @Accept json
 // @Produce json
-// @Security ApiKeyAuth
+// @Param walletAddress path string true "Wallet address"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
 // @Param sort_by query string false "default token_id_int"
 // @Param sort query int false "default -1"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /profile/tokens/bought [GET]
+// @Router /profile/wallet/{walletAddress}/tokens/bought [GET]
 func (h *httpDelivery) currentUerProfileBoughtTokens(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
@@ -283,6 +275,9 @@ func (h *httpDelivery) currentUerProfileBoughtTokens(w http.ResponseWriter, r *h
 				logger.AtLog.Logger.Error("currentUerProfileBoughtTokens", zap.Error(err))
 				return nil, err
 			}
+
+			walletAdress := vars["walletAddress"]
+			_ = walletAdress
 
 			data, err := h.Usecase.FindTokens(ctx, pagination, req.Query(r, "key", ""))
 			if err != nil {
