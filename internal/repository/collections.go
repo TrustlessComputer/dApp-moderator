@@ -32,7 +32,7 @@ func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity
 
 	if filter.Owner != nil && *filter.Owner != "" {
 		f = append(f, bson.E{"$or", bson.A{
-			bson.M{"creator": primitive.Regex{Pattern: *filter.Owner, Options: "i"}},
+			//bson.M{"creator": primitive.Regex{Pattern: *filter.Owner, Options: "i"}},
 			bson.M{"contract": bson.M{"$in": collectionIDs} },
 		} })
 	}

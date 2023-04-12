@@ -21,6 +21,16 @@ type CollectionsFilter struct {
 	AllowEmpty *bool
 }
 
+type HistoriesFilter struct {
+	PaginationReq
+	WalletAdress  *string
+	TxHash *string
+}
+
+type ConfirmHistoriesReq struct {
+	TxHash []string `json:"tx_hash"`
+}
+
 type NftItemsFilter struct {
 	PaginationReq
 	Owner      *string

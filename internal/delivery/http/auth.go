@@ -184,9 +184,9 @@ func (h *httpDelivery) createProfileHistory(w http.ResponseWriter, r *http.Reque
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param txHash path string true "txHash"
+// @Param req body request.ConfirmHistoriesReq true "request"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /profile/histories/{txHash}/confirm [PUT]
+// @Router /profile/histories/confirm [PUT]
 func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
@@ -198,8 +198,14 @@ func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Requ
 				return nil, err
 			}
 
-			txHash := vars["txHash"]
-			resp, err := h.Usecase.ConfirmUserHistory(ctx, walletAdress, txHash)
+			reqBody := &request.ConfirmHistoriesReq{}
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			resp, err := h.Usecase.ConfirmUserHistory(ctx, walletAdress, *reqBody)
 			if err != nil {
 				logger.AtLog.Logger.Error("confirmProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
 				return nil, err
@@ -224,7 +230,7 @@ func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Requ
 // @Success 200 {object} response.JsonResponse{}
 // @Param walletAddress path string true "Wallet address"
 // @Router /profile/wallet/{walletAddress}/collections [GET]
-func (h *httpDelivery) currentUerProfileCollections(w http.ResponseWriter, r *http.Request) {
+func (h *httpDelivery) currentUserProfileCollections(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			walletAdress := vars["walletAddress"]
@@ -265,7 +271,7 @@ func (h *httpDelivery) currentUerProfileCollections(w http.ResponseWriter, r *ht
 // @Param sort query int false "default -1"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /profile/wallet/{walletAddress}/tokens/bought [GET]
-func (h *httpDelivery) currentUerProfileBoughtTokens(w http.ResponseWriter, r *http.Request) {
+func (h *httpDelivery) currentUserProfileBoughtTokens(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			iPagination := ctx.Value(utils.PAGINATION)
@@ -277,9 +283,7 @@ func (h *httpDelivery) currentUerProfileBoughtTokens(w http.ResponseWriter, r *h
 			}
 
 			walletAdress := vars["walletAddress"]
-			_ = walletAdress
-
-			data, err := h.Usecase.FindTokens(ctx, pagination, req.Query(r, "key", ""))
+			data, err := h.Usecase.FindTokens(ctx, pagination, req.Query(r, "key", walletAdress))
 			if err != nil {
 				logger.AtLog.Logger.Error("currentUerProfileBoughtTokens", zap.Any("pagination", pagination), zap.Error(err))
 				return nil, err
@@ -291,21 +295,20 @@ func (h *httpDelivery) currentUerProfileBoughtTokens(w http.ResponseWriter, r *h
 	).ServeHTTP(w, r)
 }
 
-// @Summary  Current user transactions 
-// @Description Current user transactions
+// @Summary  Current user histories 
+// @Description Current user histories
 // @Tags Profile
 // @Accept json
 // @Produce json
-// @Param contract query string false "contract"
-// @Param name query string false "name"
+// @Param tx_hash query string false "tx_hash"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
 // @Param sort_by query string false "default deployed_at_block"
 // @Param sort query int false "default -1"
 // @Success 200 {object} response.JsonResponse{}
 // @Param walletAddress path string true "Wallet address"
-// @Router /profile/wallet/{walletAddress}/transactions [GET]
-func (h *httpDelivery) currentUerProfileTransactions(w http.ResponseWriter, r *http.Request) {
+// @Router /profile/wallet/{walletAddress}/histories [GET]
+func (h *httpDelivery) currentUerProfileHistories(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			walletAdress := vars["walletAddress"]
@@ -313,20 +316,22 @@ func (h *httpDelivery) currentUerProfileTransactions(w http.ResponseWriter, r *h
 			iPagination := ctx.Value(utils.PAGINATION)
 			p := iPagination.(request.PaginationReq)
 			var err error
-
-			collectionAddress := r.URL.Query().Get("contract")
-			name := r.URL.Query().Get("name")
-			filter := request.CollectionsFilter{
-				Owner: &walletAdress,
-				Address: &collectionAddress,
-				Name: &name,
+			txHash := r.URL.Query().Get("tx_hash")
+			filter := request.HistoriesFilter{
+				WalletAdress: &walletAdress,
 				PaginationReq: p,
+				TxHash: &txHash,
 			}
 
-			_ = filter
-			nfts := []entity.UserHistories{}
-			logger.AtLog.Logger.Error("currentUerProfileCollections", zap.String("walletAdress", walletAdress), zap.Error(err), zap.Int("resp", len(nfts)))
-			return nfts, nil
+			h, err := h.Usecase.GetUserHistories(ctx, filter)
+			if err != nil {
+				logger.AtLog.Logger.Error("currentUerProfileHistories", zap.Any("filter", filter), zap.Error(err))
+				return nil, err
+
+			}
+
+			logger.AtLog.Logger.Info("currentUerProfileHistories", zap.Any("filter", filter), zap.Int("data", len(h)))
+			return h, nil
 		},
 	).ServeHTTP(w, r)
 }
