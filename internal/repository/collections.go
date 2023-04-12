@@ -9,15 +9,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-
+//All the created collections and the collections which have the owned nfts
 func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity.Collections,  error) {
-
 	res := []entity.Collections{}
 	f := bson.D{}
 
-	// if filter.AllowEmpty != nil && *filter.AllowEmpty == false {
-	// 	f = append(f, bson.E{"total_items", bson.M{"$gt": 0}})
-	// }
+	collectionIDs := []string{}
+	data, err := r.CollectionsByNfts(*filter.Owner)
+	if err == nil {
+		for _, item := range data {
+			collectionIDs = append(collectionIDs, item.ID.CollectionAddress)
+		}
+	}
 
 	if filter.Address != nil && *filter.Address != "" {
 		f = append(f, bson.E{"contract", primitive.Regex{Pattern: *filter.Address, Options: "i"}})
@@ -28,7 +31,10 @@ func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity
 	}
 
 	if filter.Owner != nil && *filter.Owner != "" {
-		f = append(f, bson.E{"creator", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
+		f = append(f, bson.E{"$or", bson.A{
+			bson.M{"creator": primitive.Regex{Pattern: *filter.Owner, Options: "i"}},
+			bson.M{"contract": bson.M{"$in": collectionIDs} },
+		} })
 	}
 
 	sortBy := "deployed_at_block"
@@ -42,7 +48,7 @@ func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity
 	}
 
 	s := bson.D{{sortBy, sort}, {"index", 1}}
-	err := r.Find(utils.COLLECTION_COLLECTIONS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
+	err = r.Find(utils.COLLECTION_COLLECTIONS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
 	}
