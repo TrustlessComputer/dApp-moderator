@@ -290,3 +290,43 @@ func (h *httpDelivery) currentUerProfileBoughtTokens(w http.ResponseWriter, r *h
 		},
 	).ServeHTTP(w, r)
 }
+
+// @Summary  Current user transactions 
+// @Description Current user transactions
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Param contract query string false "contract"
+// @Param name query string false "name"
+// @Param limit query int false "limit"
+// @Param page query int false "page"
+// @Param sort_by query string false "default deployed_at_block"
+// @Param sort query int false "default -1"
+// @Success 200 {object} response.JsonResponse{}
+// @Param walletAddress path string true "Wallet address"
+// @Router /profile/wallet/{walletAddress}/transactions [GET]
+func (h *httpDelivery) currentUerProfileTransactions(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			walletAdress := vars["walletAddress"]
+
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+			var err error
+
+			collectionAddress := r.URL.Query().Get("contract")
+			name := r.URL.Query().Get("name")
+			filter := request.CollectionsFilter{
+				Owner: &walletAdress,
+				Address: &collectionAddress,
+				Name: &name,
+				PaginationReq: p,
+			}
+
+			_ = filter
+			nfts := []entity.UserHistories{}
+			logger.AtLog.Logger.Error("currentUerProfileCollections", zap.String("walletAdress", walletAdress), zap.Error(err), zap.Int("resp", len(nfts)))
+			return nfts, nil
+		},
+	).ServeHTTP(w, r)
+}

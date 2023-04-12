@@ -173,7 +173,7 @@ func (c *txTCServer) processTxTransaction(ctx context.Context, fromBlock int32, 
 }
 
 func (c *txTCServer) fetchToken(ctx context.Context) {
-	tokenPage := "token_page"
+	tokenPage := "tokens_page"
 	key := c.getRedisKey(&tokenPage)
 
 	lastFetchedPage, err := c.Cache.GetData(key)

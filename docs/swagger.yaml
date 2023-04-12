@@ -740,6 +740,51 @@ paths:
       summary: Current user bouhght-tokens
       tags:
       - Profile
+  /profile/wallet/{walletAddress}/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Current user transactions
+      parameters:
+      - description: contract
+        in: query
+        name: contract
+        type: string
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: default deployed_at_block
+        in: query
+        name: sort_by
+        type: string
+      - description: default -1
+        in: query
+        name: sort
+        type: integer
+      - description: Wallet address
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Current user transactions
+      tags:
+      - Profile
   /quicknode/address/{walletAddress}/balance:
     get:
       consumes:
