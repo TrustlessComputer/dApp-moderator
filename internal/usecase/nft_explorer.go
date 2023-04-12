@@ -450,7 +450,7 @@ func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 
 	_, err := c.Repo.InsertMany(insertedItem)
 	if err != nil {
-		return
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Error(err))
 	}
 
 	f := bson.D{
