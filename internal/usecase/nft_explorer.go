@@ -470,3 +470,7 @@ func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 
 	logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
 }
+
+func (c *Usecase) UserCollections(ctx context.Context, filter request.CollectionsFilter) ([]entity.Collections, error) {
+		return c.Repo.UserCollections(filter)
+}

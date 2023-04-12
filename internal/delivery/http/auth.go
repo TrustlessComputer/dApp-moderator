@@ -2,13 +2,16 @@ package http
 
 import (
 	"context"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/logger"
+	req "dapp-moderator/utils/request"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -203,6 +206,92 @@ func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Requ
 			}
 			
 			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// @Summary  Current user collections 
+// @Description Current user collections (created collections and collection has the owned nft)
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param contract query string false "contract"
+// @Param name query string false "name"
+// @Param limit query int false "limit"
+// @Param page query int false "page"
+// @Param sort_by query string false "default deployed_at_block"
+// @Param sort query int false "default -1"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /profile/collections [GET]
+func (h *httpDelivery) currentUerProfileCollections(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iwalletAdress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
+			walletAdress, ok := iwalletAdress.(string)
+			if !ok {
+				err := errors.New("Token is incorect")
+				logger.AtLog.Logger.Error("currentUerProfileCollections", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				return nil, err
+			}
+
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+			var err error
+
+			collectionAddress := r.URL.Query().Get("contract")
+			name := r.URL.Query().Get("name")
+
+			walletAdress = "0x368172cad06cff710bb14657492af9992988f656"
+			filter := request.CollectionsFilter{
+				Owner: &walletAdress,
+				Address: &collectionAddress,
+				Name: &name,
+				PaginationReq: p,
+			}
+
+			nfts, err := h.Usecase.UserCollections(ctx, filter)
+			if err != nil {
+				logger.AtLog.Logger.Error("currentUerProfileCollections", zap.String("walletAdress", walletAdress), zap.Error(err), zap.Any("filter", filter))
+				return nil, err
+			}
+			logger.AtLog.Logger.Error("currentUerProfileCollections", zap.String("walletAdress", walletAdress), zap.Error(err), zap.Int("resp", len(nfts)))
+			return nfts, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// @Summary  Current user bouhght-tokens 
+// @Description Current user bouhght-tokens  (the tokens that the user has spent)
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param limit query int false "limit"
+// @Param page query int false "page"
+// @Param sort_by query string false "default token_id_int"
+// @Param sort query int false "default -1"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /profile/tokens/bought [GET]
+func (h *httpDelivery) currentUerProfileBoughtTokens(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			pagination, ok := iPagination.(request.PaginationReq)
+			if !ok {
+				err := fmt.Errorf("invalid pagination params")
+				logger.AtLog.Logger.Error("currentUerProfileBoughtTokens", zap.Error(err))
+				return nil, err
+			}
+
+			data, err := h.Usecase.FindTokens(ctx, pagination, req.Query(r, "key", ""))
+			if err != nil {
+				logger.AtLog.Logger.Error("currentUerProfileBoughtTokens", zap.Any("pagination", pagination), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("currentUerProfileBoughtTokens", zap.Any("pagination", pagination))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
