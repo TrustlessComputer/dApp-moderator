@@ -1259,6 +1259,38 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/wallets/{walletAddress}/txs": {
+            "get": {
+                "description": "Get Wallet's txs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Get Wallet's txs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "walletAddress",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

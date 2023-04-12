@@ -64,6 +64,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	walletInfoGroup := api.PathPrefix("/wallets").Subrouter()
 	walletInfoGroup.HandleFunc("/{walletAddress}", h.walletInfo).Methods("GET")
+	walletInfoGroup.HandleFunc("/{walletAddress}/txs", h.walletTxs).Methods("GET")
 
 	//profile
 	profile := api.PathPrefix("/profile").Subrouter()

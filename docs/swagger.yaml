@@ -913,6 +913,27 @@ paths:
       summary: Get Wallet's info
       tags:
       - Wallet
+  /wallets/{walletAddress}/txs:
+    get:
+      consumes:
+      - application/json
+      description: Get Wallet's txs
+      parameters:
+      - description: walletAddress
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Wallet's txs
+      tags:
+      - Wallet
 securityDefinitions:
   ApiKeyAuth:
     in: header

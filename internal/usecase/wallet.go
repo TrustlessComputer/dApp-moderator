@@ -79,3 +79,7 @@ func (u Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*structu
 
 	return &result, nil
 }
+
+func (u Usecase) GetBTCWalletTXS(ctx context.Context, address string) (interface{}, error) {
+	return u.BlockStream.Txs(address)
+}

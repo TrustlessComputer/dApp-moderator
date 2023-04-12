@@ -2,6 +2,7 @@ package global
 
 import (
 	"dapp-moderator/external/bfs_service"
+	"dapp-moderator/external/block_stream"
 	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/external/quicknode"
@@ -24,6 +25,7 @@ type Global struct {
 	Cache            redis.IRedisCache
 	CacheAuthService redis.IRedisCache
 	QuickNode        *quicknode.QuickNode
+	BlockStream      *block_stream.BlockStream
 	NftExplorer      *nft_explorer.NftExplorer
 	BfsService       *bfs_service.BfsService
 	BnsService       *bns_service.BNSService

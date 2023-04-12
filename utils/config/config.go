@@ -16,6 +16,7 @@ type Config struct {
 	ENV           string
 	ServicePort   string
 	QuickNode     string
+	BlockStream   string
 	NftExplorer   string
 	TokenExplorer string
 	BFSService    string
@@ -88,6 +89,7 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		Debug:         isDebug,
 		ServicePort:   os.Getenv("SERVICE_PORT"),
 		QuickNode:     os.Getenv("QUICKNODE_URL"),
+		BlockStream:   os.Getenv("BLOCK_STREAM_URL"),
 		NftExplorer:   os.Getenv("NFT_EXPLORER_URL"),
 		TokenExplorer: os.Getenv("TOKEN_EXPLORER_URL"),
 		BFSService:    os.Getenv("BFS_SERVICE_URL"),

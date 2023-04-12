@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"dapp-moderator/external/block_stream"
 	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/token_explorer"
 	"fmt"
@@ -85,6 +86,7 @@ func startServer() {
 	gcs, _ := googlecloud.NewDataGCStorage(*conf)
 
 	qn := quicknode.NewQuickNode(conf, cache)
+	bst := block_stream.NewBlockStream(conf, cache)
 	nex := nft_explorer.NewNftExplorer(conf, cache)
 	bfs := bfs_service.NewBfsService(conf, cache)
 	bns := bns_service.NewBNSService(conf, cache)
@@ -98,6 +100,7 @@ func startServer() {
 		Cache:         cache,
 		GCS:           gcs,
 		QuickNode:     qn,
+		BlockStream:   bst,
 		NftExplorer:   nex,
 		BfsService:    bfs,
 		BnsService:    bns,
