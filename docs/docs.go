@@ -782,7 +782,7 @@ var doc = `{
                 }
             }
         },
-        "/profile/histories/{txHash}/confirm": {
+        "/profile/histories/confirm": {
             "put": {
                 "security": [
                     {
@@ -802,11 +802,13 @@ var doc = `{
                 "summary": "confirm profile's history",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "txHash",
-                        "name": "txHash",
-                        "in": "path",
-                        "required": true
+                        "description": "request",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ConfirmHistoriesReq"
+                        }
                     }
                 ],
                 "responses": {
@@ -947,6 +949,68 @@ var doc = `{
                 }
             }
         },
+        "/profile/wallet/{walletAddress}/histories": {
+            "get": {
+                "description": "Current user histories",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Current user histories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default deployed_at_block",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default -1",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/wallet/{walletAddress}/tokens/bought": {
             "get": {
                 "description": "Current user bouhght-tokens  (the tokens that the user has spent)",
@@ -991,74 +1055,6 @@ var doc = `{
                         "description": "default -1",
                         "name": "sort",
                         "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.JsonResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/profile/wallet/{walletAddress}/transactions": {
-            "get": {
-                "description": "Current user transactions",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "Current user transactions",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "contract",
-                        "name": "contract",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "default deployed_at_block",
-                        "name": "sort_by",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "default -1",
-                        "name": "sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Wallet address",
-                        "name": "walletAddress",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -1266,6 +1262,17 @@ var doc = `{
         }
     },
     "definitions": {
+        "request.ConfirmHistoriesReq": {
+            "type": "object",
+            "properties": {
+                "tx_hash": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "request.UpdateTokenReq": {
             "type": "object",
             "properties": {

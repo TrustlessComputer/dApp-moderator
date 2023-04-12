@@ -1,5 +1,12 @@
 basePath: /dapp-moderator/v1
 definitions:
+  request.ConfirmHistoriesReq:
+    properties:
+      tx_hash:
+        items:
+          type: string
+        type: array
+    type: object
   request.UpdateTokenReq:
     properties:
       description:
@@ -596,17 +603,18 @@ paths:
       summary: Create profile's history
       tags:
       - Profile
-  /profile/histories/{txHash}/confirm:
+  /profile/histories/confirm:
     put:
       consumes:
       - application/json
       description: confirm profile's history
       parameters:
-      - description: txHash
-        in: path
-        name: txHash
+      - description: request
+        in: body
+        name: req
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/request.ConfirmHistoriesReq'
       produces:
       - application/json
       responses:
@@ -703,6 +711,47 @@ paths:
       summary: Current user collections
       tags:
       - Profile
+  /profile/wallet/{walletAddress}/histories:
+    get:
+      consumes:
+      - application/json
+      description: Current user histories
+      parameters:
+      - description: tx_hash
+        in: query
+        name: tx_hash
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: default deployed_at_block
+        in: query
+        name: sort_by
+        type: string
+      - description: default -1
+        in: query
+        name: sort
+        type: integer
+      - description: Wallet address
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Current user histories
+      tags:
+      - Profile
   /profile/wallet/{walletAddress}/tokens/bought:
     get:
       consumes:
@@ -738,51 +787,6 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Current user bouhght-tokens
-      tags:
-      - Profile
-  /profile/wallet/{walletAddress}/transactions:
-    get:
-      consumes:
-      - application/json
-      description: Current user transactions
-      parameters:
-      - description: contract
-        in: query
-        name: contract
-        type: string
-      - description: name
-        in: query
-        name: name
-        type: string
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: default deployed_at_block
-        in: query
-        name: sort_by
-        type: string
-      - description: default -1
-        in: query
-        name: sort
-        type: integer
-      - description: Wallet address
-        in: path
-        name: walletAddress
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.JsonResponse'
-      summary: Current user transactions
       tags:
       - Profile
   /quicknode/address/{walletAddress}/balance:
