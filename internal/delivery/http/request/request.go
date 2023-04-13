@@ -23,8 +23,8 @@ type CollectionsFilter struct {
 
 type HistoriesFilter struct {
 	PaginationReq
-	WalletAdress  *string
-	TxHash *string
+	WalletAdress *string
+	TxHash       *string
 }
 
 type ConfirmHistoriesReq struct {

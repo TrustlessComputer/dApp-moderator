@@ -47,7 +47,6 @@ func (h *httpDelivery) generateMessage(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
-
 // UserCredits godoc
 // @Summary Verified the generated message
 // @Description Verified the generated message
@@ -79,7 +78,6 @@ func (h *httpDelivery) verifyMessage(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
-
 // @Summary User profile via wallet address
 // @Description User profile via wallet address
 // @Tags Profile
@@ -100,14 +98,13 @@ func (h *httpDelivery) profileByWallet(w http.ResponseWriter, r *http.Request) {
 					profile = &entity.Users{}
 				}
 			}
-			
+
 			return profile, nil
 		},
 	).ServeHTTP(w, r)
 }
 
-
-// @Summary  Current user profile 
+// @Summary  Current user profile
 // @Description Current user profile
 // @Tags Profile
 // @Accept json
@@ -122,7 +119,7 @@ func (h *httpDelivery) currentUerProfile(w http.ResponseWriter, r *http.Request)
 			walletAdress, ok := iwalletAdress.(string)
 			if !ok {
 				err := errors.New("Token is incorect")
-				logger.AtLog.Logger.Error("currentUerProfile", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				logger.AtLog.Logger.Error("currentUerProfile", zap.String("walletAdress", walletAdress), zap.Error(err))
 				return nil, err
 			}
 
@@ -134,7 +131,7 @@ func (h *httpDelivery) currentUerProfile(w http.ResponseWriter, r *http.Request)
 					profile = &entity.Users{}
 				}
 			}
-			
+
 			return profile, nil
 		},
 	).ServeHTTP(w, r)
@@ -156,7 +153,7 @@ func (h *httpDelivery) createProfileHistory(w http.ResponseWriter, r *http.Reque
 			walletAdress, ok := iwalletAdress.(string)
 			if !ok {
 				err := errors.New("Token is incorect")
-				logger.AtLog.Logger.Error("createProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				logger.AtLog.Logger.Error("createProfileHistory", zap.String("walletAdress", walletAdress), zap.Error(err))
 				return nil, err
 			}
 
@@ -169,10 +166,10 @@ func (h *httpDelivery) createProfileHistory(w http.ResponseWriter, r *http.Reque
 			reqBody.WalletAddress = walletAdress
 			resp, err := h.Usecase.CreateUserHistory(ctx, reqBody)
 			if err != nil {
-				logger.AtLog.Logger.Error("createProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				logger.AtLog.Logger.Error("createProfileHistory", zap.String("walletAdress", walletAdress), zap.Error(err))
 				return nil, err
 			}
-			
+
 			return resp, nil
 		},
 	).ServeHTTP(w, r)
@@ -186,7 +183,7 @@ func (h *httpDelivery) createProfileHistory(w http.ResponseWriter, r *http.Reque
 // @Security ApiKeyAuth
 // @Param req body request.ConfirmHistoriesReq true "request"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /profile/histories/confirm [PUT]
+// @Router /profile/histories [PUT]
 func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
@@ -194,7 +191,7 @@ func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Requ
 			walletAdress, ok := iwalletAdress.(string)
 			if !ok {
 				err := errors.New("Token is incorect")
-				logger.AtLog.Logger.Error("confirmProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				logger.AtLog.Logger.Error("confirmProfileHistory", zap.String("walletAdress", walletAdress), zap.Error(err))
 				return nil, err
 			}
 
@@ -207,16 +204,16 @@ func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Requ
 
 			resp, err := h.Usecase.ConfirmUserHistory(ctx, walletAdress, *reqBody)
 			if err != nil {
-				logger.AtLog.Logger.Error("confirmProfileHistory", zap.String("walletAdress", walletAdress) , zap.Error(err))
+				logger.AtLog.Logger.Error("confirmProfileHistory", zap.String("walletAdress", walletAdress), zap.Error(err))
 				return nil, err
 			}
-			
+
 			return resp, nil
 		},
 	).ServeHTTP(w, r)
 }
 
-// @Summary  Current user collections 
+// @Summary  Current user collections
 // @Description Current user collections (created collections and collection has the owned nft)
 // @Tags Profile
 // @Accept json
@@ -242,9 +239,9 @@ func (h *httpDelivery) currentUserProfileCollections(w http.ResponseWriter, r *h
 			collectionAddress := r.URL.Query().Get("contract")
 			name := r.URL.Query().Get("name")
 			filter := request.CollectionsFilter{
-				Owner: &walletAdress,
-				Address: &collectionAddress,
-				Name: &name,
+				Owner:         &walletAdress,
+				Address:       &collectionAddress,
+				Name:          &name,
 				PaginationReq: p,
 			}
 
@@ -259,7 +256,7 @@ func (h *httpDelivery) currentUserProfileCollections(w http.ResponseWriter, r *h
 	).ServeHTTP(w, r)
 }
 
-// @Summary  Current user bouhght-tokens 
+// @Summary  Current user bouhght-tokens
 // @Description Current user bouhght-tokens  (the tokens that the user has spent)
 // @Tags Profile
 // @Accept json
@@ -295,7 +292,7 @@ func (h *httpDelivery) currentUserProfileBoughtTokens(w http.ResponseWriter, r *
 	).ServeHTTP(w, r)
 }
 
-// @Summary  Current user histories 
+// @Summary  Current user histories
 // @Description Current user histories
 // @Tags Profile
 // @Accept json
@@ -318,9 +315,9 @@ func (h *httpDelivery) currentUerProfileHistories(w http.ResponseWriter, r *http
 			var err error
 			txHash := r.URL.Query().Get("tx_hash")
 			filter := request.HistoriesFilter{
-				WalletAdress: &walletAdress,
+				WalletAdress:  &walletAdress,
 				PaginationReq: p,
-				TxHash: &txHash,
+				TxHash:        &txHash,
 			}
 
 			h, err := h.Usecase.GetUserHistories(ctx, filter)
