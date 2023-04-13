@@ -271,7 +271,7 @@ func (u Usecase) GetUserHistories(ctx context.Context, filter request.HistoriesF
 		f = append(f, bson.E{"wallet_address", primitive.Regex{Pattern: *filter.WalletAdress, Options: "i"}})
 	}
 
-	sort := 1
+	sort := -1
 	if filter.Sort != nil {
 		sort = *filter.Sort
 	}
