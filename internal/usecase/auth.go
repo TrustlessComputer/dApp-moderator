@@ -247,6 +247,7 @@ func (u Usecase) CreateUserHistory(ctx context.Context, data *structure.CreateHi
 	input.Value = data.Value
 	input.Decimal = data.Decimal
 	input.Status = entity.HISTORY_PENDING
+	input.BTCTxHash = data.BTCTxHash
 
 	_, err := u.Repo.InsertOne(input)
 	if err != nil {
