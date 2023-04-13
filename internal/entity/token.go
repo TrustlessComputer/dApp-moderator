@@ -23,6 +23,7 @@ type Token struct {
 	Thumbnail   string `json:"thumbnail" bson:"thumbnail"`
 	Description string `json:"description" bson:"description"`
 	Social      Social `json:"social" bson:"social"`
+	Index       int64  `json:"index" bson:"index"`
 }
 
 func (t *Token) CollectionName() string {

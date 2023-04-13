@@ -280,7 +280,7 @@ func (u Usecase) GetUserHistories(ctx context.Context, filter request.HistoriesF
 		sort = *filter.Sort
 	}
 
-	s := bson.D{{sortBy, sort}}
+	s := bson.D{{"status", -1}, {sortBy, sort}}
 	err := u.Repo.Find(utils.COLLECTION_USER_HISTORIES, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
