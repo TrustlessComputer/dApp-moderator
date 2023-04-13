@@ -53,6 +53,15 @@ definitions:
       message:
         type: string
     type: object
+  response.UploadResponse:
+    properties:
+      created_at:
+        type: string
+      file_name:
+        type: string
+      url:
+        type: string
+    type: object
   structure.CreateHistoryMessage:
     properties:
       currency:
@@ -904,6 +913,29 @@ paths:
       summary: Get tokens
       tags:
       - token-explorer
+  /upload/file:
+    post:
+      consumes:
+      - application/json
+      description: Upload File
+      parameters:
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload File
+      tags:
+      - Uploader
   /wallets/{walletAddress}:
     get:
       consumes:

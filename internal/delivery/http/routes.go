@@ -48,14 +48,14 @@ func (h *httpDelivery) RegisterV1Routes() {
 	bfsServices.HandleFunc("/browse/{walletAddress}", h.bfsBrowseFile).Methods("GET")
 	bfsServices.HandleFunc("/info/{walletAddress}", h.bfsFileInfo).Methods("GET")
 	bfsServices.HandleFunc("/content/{walletAddress}", h.bfsFileContent).Methods("GET")
-	
+
 	//bns services
 	bnsServices := api.PathPrefix("/bns-service").Subrouter()
 	bnsServices.HandleFunc("/names", h.bnsNames).Methods("GET")
 	bnsServices.HandleFunc("/names/{name}", h.bnsName).Methods("GET")
 	bnsServices.HandleFunc("/names/{name}/available", h.bnsNameAvailable).Methods("GET")
 	bnsServices.HandleFunc("/names/owned/{wallet_address}", h.bnsNameOwnedByWalletAddress).Methods("GET")
-	
+
 	// token explorer
 	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()
 	tokenRoutes.HandleFunc("/tokens", h.getTokens).Methods("GET")
@@ -79,7 +79,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	profileAuth.HandleFunc("/histories", h.createProfileHistory).Methods("POST")
 	profileAuth.HandleFunc("/histories/confirm", h.confirmProfileHistory).Methods("PUT")
 
-	
+	uploadRoute := api.PathPrefix("/upload").Subrouter()
+	uploadRoute.Use(h.MiddleWare.AuthorizationFunc)
+	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
 
 }
 
