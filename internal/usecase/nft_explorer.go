@@ -75,9 +75,7 @@ func (c *Usecase) CollectionNftsFrom3rdService(ctx context.Context, contractAddr
 
 func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.PaginationReq) ([]entity.Collections, error) {
 	res := []entity.Collections{}
-	f := bson.D{
-		{"contract", "0x16efdc6d3f977e39dac0eb0e123feffed4320bc0" },
-	}
+	f := bson.D{}
 
 	sort := bson.D{{"deployed_at_block", 1}}
 
@@ -289,9 +287,9 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 		if err != nil || count == nil {
 			countInt = 0
 		} else {
-			countInt = *count 
+			countInt = *count
 		}
-		countInt ++
+		countInt++
 
 		//revert the array to index
 		for i := len(data) - 1; i >= 0; i = i - 1 {
@@ -316,8 +314,8 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
 					continue
 				}
-			} 
-			
+			}
+
 			// else {
 			// 	updatedData := bson.M{
 			// 		"$set": bson.M{"index": countInt},
@@ -329,7 +327,7 @@ func (c *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 			// 	}
 			// }
 
-			countInt ++
+			countInt++
 		}
 
 		logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Any("data", len(data)))

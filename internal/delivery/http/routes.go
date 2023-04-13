@@ -77,7 +77,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	profileAuth.Use(h.MiddleWare.AuthorizationFunc)
 	profileAuth.HandleFunc("/me", h.currentUerProfile).Methods("GET")
 	profileAuth.HandleFunc("/histories", h.createProfileHistory).Methods("POST")
-	profileAuth.HandleFunc("/histories/confirm", h.confirmProfileHistory).Methods("PUT")
+	profileAuth.HandleFunc("/histories", h.confirmProfileHistory).Methods("PUT")
 
 	uploadRoute := api.PathPrefix("/upload").Subrouter()
 	uploadRoute.Use(h.MiddleWare.AuthorizationFunc)
