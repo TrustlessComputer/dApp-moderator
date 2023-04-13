@@ -300,37 +300,50 @@ func (u Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Use
 	return user, nil
 }
 
-func (u Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHashData request.ConfirmHistoriesReq) ([]entity.UserHistories, error) {
-	txHashes := txHashData.TxHash
+func (u Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHashData *request.ConfirmHistoriesReq) ([]entity.UserHistories, error) {
+
 	resp := []entity.UserHistories{}
 
-	for _, txHash := range txHashes {
-		f := bson.D{
-			{"wallet_address", userAddr},
-			{"tx_hash", txHash},
-			{"status", entity.HISTORY_PENDING},
+	for _, el := range txHashData.Data {
+		if el.BTCHash == "" {
+			// skip empty btc has
+			continue
 		}
+		if el.Status != entity.HISTORY_CONFIRMED && el.Status != entity.HISTORY_PENDING {
+			// skip invalid status
+			continue
+		}
+		for _, txHash := range el.TxHash {
 
-		data, err := u.Repo.FindOne(utils.COLLECTION_USER_HISTORIES, f)
-		if err != nil {
-			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
-			return nil, fmt.Errorf("Cannot find transaction: %s - %v", txHash, err.Error())
-		}
+			f := bson.D{
+				{"wallet_address", userAddr},
+				{"tx_hash", txHash},
+				{"status", entity.HISTORY_PENDING},
+			}
 
-		h := &entity.UserHistories{}
-		err = data.Decode(h)
-		if err != nil {
-			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
-			return nil, fmt.Errorf("Cannot find transaction: %s - %v", txHash, err.Error())
-		}
+			data, err := u.Repo.FindOne(utils.COLLECTION_USER_HISTORIES, f)
+			if err != nil {
+				logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
+				return nil, fmt.Errorf("Cannot find transaction: %s - %v", txHash, err.Error())
+			}
 
-		h.Status = entity.HISTORY_CONFIRMED
-		_, err = u.Repo.ReplaceOne(f, h)
-		if err != nil {
-			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
-			return nil, fmt.Errorf("Cannot update transaction: %s - %v", txHash, err.Error())
+			h := &entity.UserHistories{}
+			err = data.Decode(h)
+			if err != nil {
+				logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
+				return nil, fmt.Errorf("Cannot find transaction: %s - %v", txHash, err.Error())
+			}
+
+			h.Status = el.Status
+			h.BTCTxHash = el.BTCHash
+
+			_, err = u.Repo.ReplaceOne(f, h)
+			if err != nil {
+				logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
+				return nil, fmt.Errorf("Cannot update transaction: %s - %v", txHash, err.Error())
+			}
+			resp = append(resp, *h)
 		}
-		resp = append(resp, *h)
 	}
 
 	logger.AtLog.Info("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Any("histories", len(resp)))

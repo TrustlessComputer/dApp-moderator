@@ -28,7 +28,11 @@ type HistoriesFilter struct {
 }
 
 type ConfirmHistoriesReq struct {
-	TxHash []string `json:"tx_hash"`
+	Data []struct {
+		TxHash  []string `json:"tx_hash"`
+		BTCHash string   `json:"btc_hash"`
+		Status  string   `json:"status"`
+	} `json:"data"`
 }
 
 type NftItemsFilter struct {
