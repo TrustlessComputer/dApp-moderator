@@ -3,15 +3,15 @@ package repository
 import (
 	"context"
 	"dapp-moderator/internal/entity"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-
-func (r *Repository) CollectionsByNfts(ownerAddress string) ([]entity.GroupedCollection,  error) {
+func (r *Repository) CollectionsByNfts(ownerAddress string) ([]entity.GroupedCollection, error) {
 	f2 := bson.A{
-		bson.D{{"$match", bson.D{{"owner",  ownerAddress}}}},
+		bson.D{{"$match", bson.D{{"owner", primitive.Regex{Pattern: ownerAddress, Options: "i"}}}}},
 		bson.D{
 			{"$group",
 				bson.D{
