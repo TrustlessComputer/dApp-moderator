@@ -75,7 +75,9 @@ func (c *Usecase) CollectionNftsFrom3rdService(ctx context.Context, contractAddr
 
 func (c *Usecase) CollectionsWithoutLogic(ctx context.Context, filter request.PaginationReq) ([]entity.Collections, error) {
 	res := []entity.Collections{}
-	f := bson.D{}
+	f := bson.D{
+		{"contract", "0x16efdc6d3f977e39dac0eb0e123feffed4320bc0" },
+	}
 
 	sort := bson.D{{"deployed_at_block", 1}}
 
@@ -445,12 +447,13 @@ func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 			tmp.TokenIDInt = int64(tokenIDInt)
 		}
 
-		insertedItem = append(insertedItem, tmp)
-	}
+		_, err = c.Repo.InsertOne(tmp)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+			continue
+		}
 
-	_, err := c.Repo.InsertMany(insertedItem)
-	if err != nil {
-		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Error(err))
+		insertedItem = append(insertedItem, tmp)
 	}
 
 	f := bson.D{
