@@ -34,8 +34,14 @@ type ProfileResponse struct {
 }
 
 type CreateHistoryMessage struct {
-	TxHash         string `json:"tx_hash"`
-	DappTypeTxHash string `json:"dapp_type"`
-	WalletAddress  string `json:"-"` 
-	Status         string `json:"-"`
+	TxHash         string     `json:"tx_hash"`
+	DappTypeTxHash string     `json:"dapp_type"`
+	FromAddress    string     `json:"from_address"`
+	ToAddress      string     `json:"to_address"`
+	Value          string     `json:"value"`
+	Decimal        int     `json:"decimal"`
+	Currency       string     `json:"currency"`
+	Time           *time.Time `json:"time"`
+	WalletAddress  string     `json:"-"`
+	Status         string     `json:"-"`
 }

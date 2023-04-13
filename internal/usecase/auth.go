@@ -62,7 +62,7 @@ func (u Usecase) GenerateMessage(ctx context.Context, data *structure.GenerateMe
 			return nil, err
 		}
 	}
-	
+
 	_, err = u.Repo.UpdateUserMessage(addrr, message)
 	if err != nil {
 		logger.AtLog.Error("GenerateMessage", zap.String("walletAddress", data.Address), zap.String("WalletType", data.WalletType), zap.Error(err))
@@ -71,7 +71,6 @@ func (u Usecase) GenerateMessage(ctx context.Context, data *structure.GenerateMe
 
 	return &message, nil
 }
-
 
 func (u Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessage) (*structure.VerifyResponse, error) {
 	logger.AtLog.Info("VerifyMessage", zap.Any("walletAddress", data.Address))
@@ -89,13 +88,13 @@ func (u Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessag
 		logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
 		return nil, err
 	}
-	userID := user.ID.Hex()	
-	isVeried, err :=  u.verify(data.Signature, data.Address, user.Message)
+	userID := user.ID.Hex()
+	isVeried, err := u.verify(data.Signature, data.Address, user.Message)
 	if err != nil {
 		logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
 		return nil, err
 	}
-	
+
 	if !isVeried {
 		err := errors.New("Cannot verify wallet address")
 		logger.AtLog.Error("VerifyMessage", zap.Any("walletAddress", data.Address), zap.Error(err))
@@ -188,7 +187,7 @@ func (u Usecase) verify(signatureHex string, signer string, msgStr string) (bool
 	signerHex := recoveredAddr.Hex()
 	isVerified := strings.ToLower(signer) == strings.ToLower(signerHex)
 
-	logger.AtLog.Info("verify",  zap.Bool("isVerified", isVerified), zap.String("signerHex", signerHex), zap.String("signatureHex", signatureHex), zap.String("signer", signer), zap.String("msgStr", msgStr),  zap.Any("recoveredAddr", recoveredAddr))
+	logger.AtLog.Info("verify", zap.Bool("isVerified", isVerified), zap.String("signerHex", signerHex), zap.String("signatureHex", signatureHex), zap.String("signer", signer), zap.String("msgStr", msgStr), zap.Any("recoveredAddr", recoveredAddr))
 	return isVerified, nil
 }
 
@@ -231,7 +230,7 @@ func (u Usecase) GetUserProfileByWalletAddress(userAddr string) (*entity.Users, 
 		logger.AtLog.Error("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Error(err))
 		return nil, err
 	}
-	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Any("user",user))
+	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Any("user", user))
 	return user, nil
 }
 
@@ -239,19 +238,23 @@ func (u Usecase) CreateUserHistory(ctx context.Context, data *structure.CreateHi
 
 	logger.AtLog.Info("CreateUserHistory", zap.String("userAddr", data.WalletAddress))
 	input := &entity.UserHistories{}
-	input.WalletAddress =  data.WalletAddress
-	input.TxHash =  data.TxHash
-	input.DappTypeTxHash =  data.DappTypeTxHash
-	input.Status =  entity.HISTORY_PENDING
+	input.WalletAddress = data.WalletAddress
+	input.TxHash = data.TxHash
+	input.DappTypeTxHash = data.DappTypeTxHash
+	input.FromAddress = data.FromAddress
+	input.ToAddress = data.ToAddress
+	input.Time = data.Time
+	input.Value = data.Value
+	input.Decimal = data.Decimal
+	input.Status = entity.HISTORY_PENDING
 
-	_, err :=  u.Repo.InsertOne(input)
+	_, err := u.Repo.InsertOne(input)
 	if err != nil {
 		logger.AtLog.Error("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", data.WalletAddress), zap.Error(err))
 		return nil, err
 	}
 
-
-	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", data.WalletAddress), zap.Any("history",input))
+	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", data.WalletAddress), zap.Any("history", input))
 	return input, nil
 }
 
@@ -271,7 +274,7 @@ func (u Usecase) GetUserHistories(ctx context.Context, filter request.HistoriesF
 	if filter.Sort != nil {
 		sort = *filter.Sort
 	}
-	
+
 	sortBy := "created_at"
 	if filter.SortBy != nil {
 		sort = *filter.Sort
@@ -287,13 +290,12 @@ func (u Usecase) GetUserHistories(ctx context.Context, filter request.HistoriesF
 
 func (u Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Users, error) {
 
-	
 	user, err := u.Repo.FindUserByBTCTaprootWalletAddress(userAddr)
 	if err != nil {
 		logger.AtLog.Error("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Error(err))
 		return nil, err
 	}
-	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Any("user",user))
+	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Any("user", user))
 	return user, nil
 }
 
@@ -308,28 +310,28 @@ func (u Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHash
 			{"status", entity.HISTORY_PENDING},
 		}
 
-		data, err :=  u.Repo.FindOne(utils.COLLECTION_USER_HISTORIES, f)
+		data, err := u.Repo.FindOne(utils.COLLECTION_USER_HISTORIES, f)
 		if err != nil {
-			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData",txHashData),zap.String("userAddr", userAddr), zap.Error(err))
+			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
 			return nil, fmt.Errorf("Cannot find transaction: %s - %v", txHash, err.Error())
 		}
-	
+
 		h := &entity.UserHistories{}
 		err = data.Decode(h)
 		if err != nil {
-			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData",txHashData), zap.String("userAddr", userAddr), zap.Error(err))
+			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
 			return nil, fmt.Errorf("Cannot find transaction: %s - %v", txHash, err.Error())
 		}
-	
+
 		h.Status = entity.HISTORY_CONFIRMED
 		_, err = u.Repo.ReplaceOne(f, h)
 		if err != nil {
-			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData",txHashData), zap.String("userAddr", userAddr), zap.Error(err))
+			logger.AtLog.Error("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Error(err))
 			return nil, fmt.Errorf("Cannot update transaction: %s - %v", txHash, err.Error())
 		}
 		resp = append(resp, *h)
 	}
 
-	logger.AtLog.Info("ConfirmUserHistory", zap.Any("txHashData",txHashData), zap.String("userAddr", userAddr), zap.Any("histories", len(resp)))
+	logger.AtLog.Info("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Any("histories", len(resp)))
 	return resp, nil
 }
