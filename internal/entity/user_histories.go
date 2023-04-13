@@ -21,6 +21,7 @@ type UserHistories struct {
 	Value          string `bson:"value" json:"value"`
 	Decimal        int    `bson:"decimal" json:"decimal"`
 	Currency       string `bson:"currency" json:"currency"`
+	BTCTxHash      string `bson:"btc_tx_hash"`
 
 	Time *time.Time `bson:"time" json:"time"`
 }
