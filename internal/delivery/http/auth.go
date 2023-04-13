@@ -12,9 +12,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-
 	"go.uber.org/zap"
+	"net/http"
 )
 
 // UserCredits godoc
