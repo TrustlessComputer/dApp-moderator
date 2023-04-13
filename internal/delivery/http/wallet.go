@@ -47,7 +47,7 @@ func (h *httpDelivery) walletTxs(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			walletAddress := vars["walletAddress"]
-			data, err := h.Usecase.GetBTCWalletInfo(ctx, walletAddress)
+			data, err := h.Usecase.GetBTCWalletTXS(ctx, walletAddress)
 			if err != nil {
 				logger.AtLog.Logger.Error("walletAddress", zap.String("walletAddress", walletAddress), zap.Error(err))
 				return nil, err
