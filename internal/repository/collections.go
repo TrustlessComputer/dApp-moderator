@@ -9,8 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-//All the created collections and the collections which have the owned nfts
-func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity.Collections,  error) {
+// All the created collections and the collections which have the owned nfts
+func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity.Collections, error) {
 	res := []entity.Collections{}
 	f := bson.D{}
 
@@ -31,10 +31,7 @@ func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity
 	}
 
 	if filter.Owner != nil && *filter.Owner != "" {
-		f = append(f, bson.E{"$or", bson.A{
-			//bson.M{"creator": primitive.Regex{Pattern: *filter.Owner, Options: "i"}},
-			bson.M{"contract": bson.M{"$in": collectionIDs} },
-		} })
+		f = append(f, bson.E{"contract", bson.M{"$in": collectionIDs}})
 	}
 
 	sortBy := "deployed_at_block"
@@ -53,7 +50,6 @@ func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity
 		return nil, err
 	}
 
-	
 	return res, nil
 
 }
