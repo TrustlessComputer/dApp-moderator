@@ -4,10 +4,12 @@ import (
 	"context"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils"
 	"dapp-moderator/utils/logger"
 	"fmt"
 	"strings"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -103,7 +105,10 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			return toPage, nil
 		}
 
+		
+
 		for _, t := range Tokens {
+			
 			// parse token
 			token := entity.Token{}
 			if err = token.FromTokenExplorer(t); err != nil {
@@ -124,6 +129,14 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 				continue
 			}
 
+			countInt := int64(0)
+			count,_, err := c.Repo.CountDocuments(utils.COLLECTION_TOKENS, bson.D{})
+			if err == nil && count != nil {
+				countInt = *count
+			}
+
+			countInt ++
+			token.Index = countInt
 			// save token to DB
 			_, err = c.Repo.InsertOne(&token)
 			if err != nil {
