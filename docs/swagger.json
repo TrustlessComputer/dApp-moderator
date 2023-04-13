@@ -1364,10 +1364,28 @@
         "structure.CreateHistoryMessage": {
             "type": "object",
             "properties": {
+                "currency": {
+                    "type": "string"
+                },
                 "dapp_type": {
                     "type": "string"
                 },
+                "decimal": {
+                    "type": "integer"
+                },
+                "from_address": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "to_address": {
+                    "type": "string"
+                },
                 "tx_hash": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }
