@@ -83,7 +83,7 @@ func startServer() {
 	logger.AtLog().Logger.Info("starting server ...")
 	cache, _ := redis.NewRedisCache(conf.Redis)
 	r := mux.NewRouter()
-	gcs, _ := googlecloud.NewDataGCStorage(*conf)
+	gcs, err := googlecloud.NewDataGCStorage(*conf)
 
 	qn := quicknode.NewQuickNode(conf, cache)
 	bst := block_stream.NewBlockStream(conf, cache)

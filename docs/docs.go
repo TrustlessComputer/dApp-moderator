@@ -1221,6 +1221,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/upload/file": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload File",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Upload File",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/wallets/{walletAddress}": {
             "get": {
                 "description": "Get Wallet's info",
@@ -1365,6 +1402,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.UploadResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }
