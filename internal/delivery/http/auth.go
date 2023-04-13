@@ -195,14 +195,14 @@ func (h *httpDelivery) confirmProfileHistory(w http.ResponseWriter, r *http.Requ
 				return nil, err
 			}
 
-			reqBody := &request.ConfirmHistoriesReq{}
-			decoder := json.NewDecoder(r.Body)
-			err := decoder.Decode(reqBody)
+			var reqBody request.ConfirmHistoriesReq
+			err := req.BindJson(r, &reqBody)
+
 			if err != nil {
 				return nil, err
 			}
 
-			resp, err := h.Usecase.ConfirmUserHistory(ctx, walletAdress, *reqBody)
+			resp, err := h.Usecase.ConfirmUserHistory(ctx, walletAdress, &reqBody)
 			if err != nil {
 				logger.AtLog.Logger.Error("confirmProfileHistory", zap.String("walletAdress", walletAdress), zap.Error(err))
 				return nil, err

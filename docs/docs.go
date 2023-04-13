@@ -737,45 +737,6 @@ const docTemplate = `{
             }
         },
         "/profile/histories": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create profile's history",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "Create profile's history",
-                "parameters": [
-                    {
-                        "description": "Generate message request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/structure.CreateHistoryMessage"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.JsonResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/profile/histories/confirm": {
             "put": {
                 "security": [
                     {
@@ -801,6 +762,43 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/request.ConfirmHistoriesReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create profile's history",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Create profile's history",
+                "parameters": [
+                    {
+                        "description": "Generate message request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structure.CreateHistoryMessage"
                         }
                     }
                 ],
@@ -1327,10 +1325,24 @@ const docTemplate = `{
         "request.ConfirmHistoriesReq": {
             "type": "object",
             "properties": {
-                "tx_hash": {
+                "data": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "object",
+                        "properties": {
+                            "btc_hash": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "tx_hash": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1423,6 +1435,9 @@ const docTemplate = `{
         "structure.CreateHistoryMessage": {
             "type": "object",
             "properties": {
+                "btc_tx_hash": {
+                    "type": "string"
+                },
                 "currency": {
                     "type": "string"
                 },
