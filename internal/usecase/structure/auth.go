@@ -39,9 +39,10 @@ type CreateHistoryMessage struct {
 	FromAddress    string     `json:"from_address"`
 	ToAddress      string     `json:"to_address"`
 	Value          string     `json:"value"`
-	Decimal        int     `json:"decimal"`
+	Decimal        int        `json:"decimal"`
 	Currency       string     `json:"currency"`
 	Time           *time.Time `json:"time"`
 	WalletAddress  string     `json:"-"`
 	Status         string     `json:"-"`
+	BTCTxHash      string     `json:"btc_tx_hash"`
 }
