@@ -142,6 +142,7 @@ func (u *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 				logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
 				return toPage, nil
 			}
+			u.NewTokenNotify(&token)
 		}
 
 		if len(Tokens) >= perPage {
