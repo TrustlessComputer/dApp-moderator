@@ -66,6 +66,22 @@ func (q *TokenExplorer) Token(address string) (*Token, error) {
 	return resp.ToToken()
 }
 
+func (q *TokenExplorer) WalletAddressTokens(walletAddress string, params url.Values) ([]WalletAddressToken, error) {
+	headers := make(map[string]string)
+	url := fmt.Sprintf("%s/%s/%s", q.serverURL, walletAddress, "tokens")
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s?%s", url, params.Encode()), "GET", headers, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := q.ParseData(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.ToWalletAddressTokens()
+}
+
 func (q *TokenExplorer) ParseData(data []byte) (*Response, error) {
 	resp := &Response{}
 	err := helpers.ParseData(data, resp)

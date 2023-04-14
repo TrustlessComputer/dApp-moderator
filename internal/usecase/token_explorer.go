@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"dapp-moderator/external/token_explorer"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
@@ -89,10 +90,10 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 	tokenCount := 1
 	for tokenCount > 0 {
 
-		offset :=  perPage * (toPage - 1)
+		offset := perPage * (toPage - 1)
 		params := request.PaginationReq{
-			Page:  &toPage,
-			Limit: &perPage,
+			Page:   &toPage,
+			Limit:  &perPage,
 			Offset: &offset,
 		}.ToNFTServiceUrlQuery()
 		Tokens, err := c.TokenExplorer.Tokens(params)
@@ -105,10 +106,8 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			return toPage, nil
 		}
 
-		
-
 		for _, t := range Tokens {
-			
+
 			// parse token
 			token := entity.Token{}
 			if err = token.FromTokenExplorer(t); err != nil {
@@ -130,12 +129,12 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			}
 
 			countInt := int64(0)
-			count,_, err := c.Repo.CountDocuments(utils.COLLECTION_TOKENS, bson.D{})
+			count, _, err := c.Repo.CountDocuments(utils.COLLECTION_TOKENS, bson.D{})
 			if err == nil && count != nil {
 				countInt = *count
 			}
 
-			countInt ++
+			countInt++
 			token.Index = countInt
 			// save token to DB
 			_, err = c.Repo.InsertOne(&token)
@@ -148,7 +147,46 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 		if len(Tokens) >= perPage {
 			toPage++
 		}
-		
+
 	}
 	return toPage, nil
+}
+
+func (c *Usecase) FindWalletAddressTokens(ctx context.Context, filter request.PaginationReq, walletAddress string) (interface{}, error) {
+	query := entity.TokenFilter{}
+	query.FromPagination(filter)
+
+	contractAddresses := []string{}
+	contractAddressBalance := make(map[string]token_explorer.WalletAddressToken)
+
+	data, err := c.TokenExplorer.WalletAddressTokens(walletAddress, filter.ToNFTServiceUrlQuery())
+	if err != nil {
+		logger.AtLog.Logger.Error("FindWalletAddressTokens", zap.String("walletAddress", walletAddress), zap.Error(err))
+		return nil, err
+	}
+
+	for _, item := range data {
+		contractAddresses = append(contractAddresses, item.Contract)
+		contractAddressBalance[strings.ToLower(item.Contract)] = item
+	}
+
+	tokens, err := c.Repo.FindTokensByContracts(ctx, contractAddresses)
+	if err != nil {
+		logger.AtLog.Logger.Error("FindWalletAddressTokens", zap.String("walletAddress", walletAddress), zap.Error(err))
+		return nil, err
+	}
+
+	resp := []*entity.OwnedToken{}
+
+	for _, token := range tokens {
+		tmp := contractAddressBalance[strings.ToLower(token.Address)]
+		tmpResp := token.OwnedToken()
+		tmpResp.Balance = tmp.Balance
+		tmpResp.Decimal = tmp.Decimal
+
+		resp = append(resp, tmpResp)
+	}
+
+	logger.AtLog.Logger.Info("FindWalletAddressTokens", zap.String("walletAddress", walletAddress), zap.Any("data", resp))
+	return resp, nil
 }
