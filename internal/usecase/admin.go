@@ -1,5 +1,5 @@
 package usecase
 
-func (c *Usecase) GetAllRedis() ([]string, error) {
+func (u *Usecase) GetAllRedis() ([]string, error) {
 	return nil, nil
 }

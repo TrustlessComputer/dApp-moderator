@@ -24,7 +24,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (c *Usecase) GenerateMessage(ctx context.Context, data *structure.GenerateMessage) (*string, error) {
+func (u *Usecase) GenerateMessage(ctx context.Context, data *structure.GenerateMessage) (*string, error) {
 	addrr := data.Address
 	addrr = strings.ToLower(addrr)
 
@@ -72,7 +72,7 @@ func (c *Usecase) GenerateMessage(ctx context.Context, data *structure.GenerateM
 	return &message, nil
 }
 
-func (c *Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessage) (*structure.VerifyResponse, error) {
+func (u *Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessage) (*structure.VerifyResponse, error) {
 	logger.AtLog.Info("VerifyMessage", zap.Any("walletAddress", data.Address))
 	if data.Signature == "" {
 		return nil, errors.New("invalid params: Signature")
@@ -133,7 +133,7 @@ func buildMsgETH(taprootAddress, segwitAddress, nonceMessage string) string {
 	return msg
 }
 
-func (c *Usecase) verifyBTCSegwit(msgStr string, data structure.VerifyMessage) (bool, error) {
+func (u *Usecase) verifyBTCSegwit(msgStr string, data structure.VerifyMessage) (bool, error) {
 	// // verify BTC segwit signature
 	// // Reconstruct the pubkey
 	// publicKey, wasCompressed, err := helpers.PubKeyFromSignature(data.Signature, msgStr, *data.MessagePrefix)
@@ -166,7 +166,7 @@ func (c *Usecase) verifyBTCSegwit(msgStr string, data structure.VerifyMessage) (
 	return true, nil
 }
 
-func (c *Usecase) verify(signatureHex string, signer string, msgStr string) (bool, error) {
+func (u *Usecase) verify(signatureHex string, signer string, msgStr string) (bool, error) {
 	logger.AtLog.Info("verify", zap.String("signatureHex", signatureHex), zap.String("signer", signer), zap.String("msgStr", msgStr))
 	sig := hexutil.MustDecode(signatureHex)
 
@@ -191,7 +191,7 @@ func (c *Usecase) verify(signatureHex string, signer string, msgStr string) (boo
 	return isVerified, nil
 }
 
-func (c *Usecase) ValidateAccessToken(accessToken string) (*oauth2service.SignedDetails, error) {
+func (u *Usecase) ValidateAccessToken(accessToken string) (*oauth2service.SignedDetails, error) {
 
 	//tokenMd5 := helpers.GenerateMd5String(accessToken)
 	//logger.AtLog.Logger.Info("ValidateAccessToken", zap.String("ValidateAccessToken", zap.Any("accessToken)", accessToken)))
@@ -222,7 +222,7 @@ func (c *Usecase) ValidateAccessToken(accessToken string) (*oauth2service.Signed
 	return claim, err
 }
 
-func (c *Usecase) GetUserProfileByWalletAddress(userAddr string) (*entity.Users, error) {
+func (u *Usecase) GetUserProfileByWalletAddress(userAddr string) (*entity.Users, error) {
 
 	logger.AtLog.Info("GetUserProfileByWalletAddress", zap.String("userAddr", userAddr))
 	user, err := u.Repo.FindUserByWalletAddress(userAddr)
@@ -234,7 +234,7 @@ func (c *Usecase) GetUserProfileByWalletAddress(userAddr string) (*entity.Users,
 	return user, nil
 }
 
-func (c *Usecase) CreateUserHistory(ctx context.Context, data *structure.CreateHistoryMessage) (*entity.UserHistories, error) {
+func (u *Usecase) CreateUserHistory(ctx context.Context, data *structure.CreateHistoryMessage) (*entity.UserHistories, error) {
 
 	logger.AtLog.Info("CreateUserHistory", zap.String("userAddr", data.WalletAddress))
 	input := &entity.UserHistories{}
@@ -259,7 +259,7 @@ func (c *Usecase) CreateUserHistory(ctx context.Context, data *structure.CreateH
 	return input, nil
 }
 
-func (c *Usecase) GetUserHistories(ctx context.Context, filter request.HistoriesFilter) ([]entity.UserHistories, error) {
+func (u *Usecase) GetUserHistories(ctx context.Context, filter request.HistoriesFilter) ([]entity.UserHistories, error) {
 	res := []entity.UserHistories{}
 	f := bson.D{}
 
@@ -289,7 +289,7 @@ func (c *Usecase) GetUserHistories(ctx context.Context, filter request.Histories
 	return res, nil
 }
 
-func (c *Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Users, error) {
+func (u *Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Users, error) {
 
 	user, err := u.Repo.FindUserByBTCTaprootWalletAddress(userAddr)
 	if err != nil {
@@ -300,7 +300,7 @@ func (c *Usecase) GetUserProfileByBtcAddressTaproot(userAddr string) (*entity.Us
 	return user, nil
 }
 
-func (c *Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHashData *request.ConfirmHistoriesReq) ([]entity.UserHistories, error) {
+func (u *Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHashData *request.ConfirmHistoriesReq) ([]entity.UserHistories, error) {
 
 	resp := []entity.UserHistories{}
 
