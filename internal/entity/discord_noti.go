@@ -37,14 +37,12 @@ type GetDiscordReq struct {
 }
 
 type DiscordMeta struct {
-	ProjectID string `bson:"project_id"`
-	Category  string `bson:"category"`
-	Amount    uint64 `bson:"amount"`
-	SendTo    string `bson:"send_to"`
+	SendTo string `bson:"send_to"`
 }
 
 type DiscordNotification struct {
 	BaseEntity `bson:",inline"`
+	UUID       string
 	Message    discordclient.Message `bson:"message"` // message to send, base on client
 
 	Status     DiscordStatus `bson:"status"`

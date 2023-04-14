@@ -313,6 +313,7 @@ func (u *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
 					continue
 				}
+				u.NewCollectionNotify(tmp)
 			}
 
 			// else {
