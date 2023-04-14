@@ -9,6 +9,7 @@ import (
 	"dapp-moderator/external/token_explorer"
 	"dapp-moderator/utils/config"
 	_pConnection "dapp-moderator/utils/connections"
+	discordclient "dapp-moderator/utils/discord"
 	"dapp-moderator/utils/googlecloud"
 	"dapp-moderator/utils/oauth2service"
 	"dapp-moderator/utils/redis"
@@ -31,4 +32,5 @@ type Global struct {
 	BnsService       *bns_service.BNSService
 	TokenExplorer    *token_explorer.TokenExplorer
 	Auth2            *oauth2service.Auth2
+	DiscordClient    *discordclient.Client
 }

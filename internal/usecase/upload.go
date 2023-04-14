@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func (u *Usecase) UploadFile(fileHeader *multipart.FileHeader) (string, error) {
+func (c *Usecase) UploadFile(fileHeader *multipart.FileHeader) (string, error) {
 	gf := googlecloud.GcsFile{
 		FileHeader: fileHeader,
 	}
