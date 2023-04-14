@@ -9,6 +9,7 @@ import (
 	"dapp-moderator/external/token_explorer"
 	"dapp-moderator/internal/repository"
 	"dapp-moderator/utils/config"
+	discordclient "dapp-moderator/utils/discord"
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/googlecloud"
 	"dapp-moderator/utils/oauth2service"
@@ -27,6 +28,7 @@ type Usecase struct {
 	Cache         redis.IRedisCache
 	Auth2         *oauth2service.Auth2
 	Storage       googlecloud.IGcstorage
+	DiscordClient *discordclient.Client
 }
 
 func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error) {
@@ -41,6 +43,7 @@ func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error
 	u.Storage = global.GCS
 	u.Auth2 = global.Auth2
 	u.BnsService = global.BnsService
+	u.DiscordClient = global.DiscordClient
 	return u, nil
 }
 

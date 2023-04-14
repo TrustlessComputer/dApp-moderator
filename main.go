@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/external/block_stream"
 	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/token_explorer"
+	discordclient "dapp-moderator/utils/discord"
 	"fmt"
 	"os"
 	"os/signal"
@@ -91,6 +92,7 @@ func startServer() {
 	bfs := bfs_service.NewBfsService(conf, cache)
 	bns := bns_service.NewBNSService(conf, cache)
 	tke := token_explorer.NewTokenExplorer(conf, cache)
+	dcl := discordclient.NewClient()
 
 	auth2Service := oauth2service.NewAuth2()
 	g := global.Global{
@@ -106,6 +108,7 @@ func startServer() {
 		BnsService:    bns,
 		TokenExplorer: tke,
 		Auth2:         auth2Service,
+		DiscordClient: dcl,
 	}
 
 	repo, err := repository.NewRepository(&g)
