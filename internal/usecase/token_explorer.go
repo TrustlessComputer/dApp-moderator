@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (c *Usecase) FindTokens(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
+func (u *Usecase) FindTokens(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
 	var data interface{}
 	var err error
 	query := entity.TokenFilter{}
@@ -25,7 +25,7 @@ func (c *Usecase) FindTokens(ctx context.Context, filter request.PaginationReq, 
 		query.Key = key
 	}
 
-	data, err = c.Repo.FindTokens(ctx, query)
+	data, err = u.Repo.FindTokens(ctx, query)
 
 	if err != nil {
 		logger.AtLog.Logger.Error("Tokens", zap.Error(err))
@@ -36,12 +36,12 @@ func (c *Usecase) FindTokens(ctx context.Context, filter request.PaginationReq, 
 	return data, nil
 }
 
-func (c *Usecase) FindToken(ctx context.Context, address string) (interface{}, error) {
+func (u *Usecase) FindToken(ctx context.Context, address string) (interface{}, error) {
 
 	query := entity.TokenFilter{
 		Address: address,
 	}
-	data, err := c.Repo.FindToken(ctx, query)
+	data, err := u.Repo.FindToken(ctx, query)
 	if err != nil {
 		logger.AtLog.Logger.Error("Token", zap.Error(err))
 		return nil, err
@@ -50,11 +50,11 @@ func (c *Usecase) FindToken(ctx context.Context, address string) (interface{}, e
 	return data, nil
 }
 
-func (c *Usecase) UpdateToken(ctx context.Context, address string, req request.UpdateTokenReq) error {
+func (u *Usecase) UpdateToken(ctx context.Context, address string, req request.UpdateTokenReq) error {
 	query := entity.TokenFilter{
 		Address: address,
 	}
-	token, err := c.Repo.FindToken(ctx, query)
+	token, err := u.Repo.FindToken(ctx, query)
 	if err != nil {
 		logger.AtLog.Logger.Error("Token", zap.Error(err))
 		if err == mongo.ErrNoDocuments {
@@ -75,7 +75,7 @@ func (c *Usecase) UpdateToken(ctx context.Context, address string, req request.U
 	token.Social.Medium = req.Social.Medium
 	token.Social.Instagram = req.Social.Instagram
 
-	err = c.Repo.UpdateToken(ctx, token)
+	err = u.Repo.UpdateToken(ctx, token)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (c *Usecase) UpdateToken(ctx context.Context, address string, req request.U
 	return nil
 }
 
-func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
+func (u *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 	perPage := 100
 	toPage := fromPage
 
@@ -96,7 +96,7 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			Limit:  &perPage,
 			Offset: &offset,
 		}.ToNFTServiceUrlQuery()
-		Tokens, err := c.TokenExplorer.Tokens(params)
+		Tokens, err := u.TokenExplorer.Tokens(params)
 		if err != nil {
 			logger.AtLog.Logger.Error("Tokens() failed", zap.Error(err))
 			return toPage, err
@@ -116,7 +116,7 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			}
 
 			// check if token exist
-			dbToken, err := c.Repo.FindToken(ctx, entity.TokenFilter{
+			dbToken, err := u.Repo.FindToken(ctx, entity.TokenFilter{
 				Address: token.Address,
 			})
 			if err != nil && err != mongo.ErrNoDocuments {
@@ -129,7 +129,7 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			}
 
 			countInt := int64(0)
-			count, _, err := c.Repo.CountDocuments(utils.COLLECTION_TOKENS, bson.D{})
+			count, _, err := u.Repo.CountDocuments(utils.COLLECTION_TOKENS, bson.D{})
 			if err == nil && count != nil {
 				countInt = *count
 			}
@@ -137,7 +137,7 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			countInt++
 			token.Index = countInt
 			// save token to DB
-			_, err = c.Repo.InsertOne(&token)
+			_, err = u.Repo.InsertOne(&token)
 			if err != nil {
 				logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
 				return toPage, nil
@@ -152,14 +152,14 @@ func (c *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 	return toPage, nil
 }
 
-func (c *Usecase) FindWalletAddressTokens(ctx context.Context, filter request.PaginationReq, walletAddress string) (interface{}, error) {
+func (u *Usecase) FindWalletAddressTokens(ctx context.Context, filter request.PaginationReq, walletAddress string) (interface{}, error) {
 	query := entity.TokenFilter{}
 	query.FromPagination(filter)
 
 	contractAddresses := []string{}
 	contractAddressBalance := make(map[string]token_explorer.WalletAddressToken)
 
-	data, err := c.TokenExplorer.WalletAddressTokens(walletAddress, filter.ToNFTServiceUrlQuery())
+	data, err := u.TokenExplorer.WalletAddressTokens(walletAddress, filter.ToNFTServiceUrlQuery())
 	if err != nil {
 		logger.AtLog.Logger.Error("FindWalletAddressTokens", zap.String("walletAddress", walletAddress), zap.Error(err))
 		return nil, err
@@ -170,7 +170,7 @@ func (c *Usecase) FindWalletAddressTokens(ctx context.Context, filter request.Pa
 		contractAddressBalance[strings.ToLower(item.Contract)] = item
 	}
 
-	tokens, err := c.Repo.FindTokensByContracts(ctx, contractAddresses)
+	tokens, err := u.Repo.FindTokensByContracts(ctx, contractAddresses)
 	if err != nil {
 		logger.AtLog.Logger.Error("FindWalletAddressTokens", zap.String("walletAddress", walletAddress), zap.Error(err))
 		return nil, err

@@ -174,6 +174,9 @@ const (
 	AIRDROP_SILVER = "https://storage.googleapis.com/generative-static-prod/airdrop/silverkey.html"
 
 	PAGINATION = "pagination"
+
+	COLLECTION_DISCORD_NOTIFICATION = "discord_notifications"
+	COLLECTION_DISCORD_PARTNERS     = "discord_partners"
 )
 
 type PubSubSendOtp struct {
