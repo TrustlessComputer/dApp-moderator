@@ -82,3 +82,24 @@ func InArray(needle interface{}, haystack []interface{}) bool {
 	}
 	return false
 }
+
+func FormatStringNumber(number string) string {
+	if len(number) < 4 {
+		return number
+	}
+	var result string
+	for i := len(number) - 1; i >= 0; i-- {
+		result = string(number[i]) + result
+		if (len(number)-i)%3 == 0 && i != 0 {
+			result = "," + result
+		}
+	}
+	return result
+}
+
+func ShortenBlockAddress(address string) string {
+	if len(address) < 10 {
+		return address
+	}
+	return address[:6] + "..." + address[len(address)-4:]
+}
