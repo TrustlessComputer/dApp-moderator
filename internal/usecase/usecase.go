@@ -47,6 +47,6 @@ func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error
 	return u, nil
 }
 
-func (c *Usecase) Version() string {
+func (u *Usecase) Version() string {
 	return "dAPP-API Server - version 1"
 }

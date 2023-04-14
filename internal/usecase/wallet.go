@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (c *Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*structure.WalletInfo, error) {
+func (u *Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*structure.WalletInfo, error) {
 	var result structure.WalletInfo
 
 	t := time.Now()
@@ -80,6 +80,6 @@ func (c *Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*struct
 	return &result, nil
 }
 
-func (c *Usecase) GetBTCWalletTXS(ctx context.Context, address string) (interface{}, error) {
+func (u *Usecase) GetBTCWalletTXS(ctx context.Context, address string) (interface{}, error) {
 	return u.BlockStream.Txs(address)
 }
