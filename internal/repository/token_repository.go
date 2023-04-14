@@ -4,10 +4,12 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"strings"
+
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strings"
 )
 
 func (r *Repository) FindToken(ctx context.Context, filter entity.TokenFilter) (*entity.Token, error) {
@@ -31,7 +33,7 @@ func (r *Repository) parseTokenFilter(filter entity.TokenFilter) bson.M {
 		andCond = append(andCond, bson.M{"$or": []bson.M{
 			{"slug": bson.M{"$regex": strings.ToLower(filter.Key)}},
 			{"name": bson.M{"$regex": filter.Key}},
-			{"owner": filter.Key},
+			{"owner": primitive.Regex{Pattern: filter.Key, Options: "i"}},
 		}})
 	}
 
