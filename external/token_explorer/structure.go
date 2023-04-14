@@ -12,6 +12,15 @@ type Token struct {
 	DeployedAtBlock int    `json:"deployed_at_block"`
 }
 
+type WalletAddressToken struct {
+	Symbol           string `json:"symbol"`
+	Decimal          int    `json:"decimal"`
+	Name             string `json:"name"`
+	Contract         string `json:"contract"`
+	Balance          string `json:"balance"`
+	UpdatededAtBlock int    `json:"updated_at_block"`
+}
+
 type Response struct {
 	Code   string      `json:"code"`
 	Error  error       `json:"error"`
@@ -34,6 +43,15 @@ func (r *Response) ToSearchTokens() (*SearchToken, error) {
 
 func (r *Response) ToTokens() ([]Token, error) {
 	var resp []Token
+	err := helpers.JsonTransform(r.Result, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (r *Response) ToWalletAddressTokens() ([]WalletAddressToken, error) {
+	var resp []WalletAddressToken
 	err := helpers.JsonTransform(r.Result, &resp)
 	if err != nil {
 		return nil, err
