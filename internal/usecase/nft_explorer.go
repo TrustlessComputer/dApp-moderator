@@ -49,7 +49,7 @@ func (c *Usecase) Collections(ctx context.Context, filter request.CollectionsFil
 		sortBy = *filter.SortBy
 	}
 
-	sort := 1
+	sort := -1
 	if filter.Sort != nil {
 		sort = *filter.Sort
 	}
