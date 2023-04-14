@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 )
 
-
 func (h *httpDelivery) getRedisKeys(w http.ResponseWriter, r *http.Request) {
 	res, err := h.Usecase.GetAllRedis()
 
