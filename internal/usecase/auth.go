@@ -305,14 +305,12 @@ func (c *Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHas
 	resp := []entity.UserHistories{}
 
 	for _, el := range txHashData.Data {
-		if el.BTCHash == "" {
-			// skip empty btc has
-			continue
-		}
+
 		if el.Status != entity.HISTORY_CONFIRMED && el.Status != entity.HISTORY_PENDING {
 			// skip invalid status
 			continue
 		}
+
 		for _, txHash := range el.TxHash {
 
 			f := bson.D{

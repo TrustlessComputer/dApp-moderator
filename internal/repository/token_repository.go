@@ -4,10 +4,12 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"strings"
+
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strings"
 )
 
 func (r *Repository) FindToken(ctx context.Context, filter entity.TokenFilter) (*entity.Token, error) {
@@ -17,6 +19,27 @@ func (r *Repository) FindToken(ctx context.Context, filter entity.TokenFilter) (
 		return nil, err
 	}
 	return &token, nil
+}
+
+func (r *Repository) FindTokensByContracts(ctx context.Context, contracts []string) ([]*entity.Token, error) {
+	tokens := []*entity.Token{}
+
+	f := bson.D{{"address", bson.M{"$in": contracts}}}
+	cursor, err := r.DB.Collection(utils.COLLECTION_TOKENS).Find(ctx, f)
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		token := &entity.Token{}
+		err = cursor.Decode(token)
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, token)
+	}
+	return tokens, nil
 }
 
 func (r *Repository) parseTokenFilter(filter entity.TokenFilter) bson.M {
@@ -31,7 +54,7 @@ func (r *Repository) parseTokenFilter(filter entity.TokenFilter) bson.M {
 		andCond = append(andCond, bson.M{"$or": []bson.M{
 			{"slug": bson.M{"$regex": strings.ToLower(filter.Key)}},
 			{"name": bson.M{"$regex": filter.Key}},
-			{"owner": filter.Key},
+			{"owner": primitive.Regex{Pattern: filter.Key, Options: "i"}},
 		}})
 	}
 
