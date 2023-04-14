@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+type OwnedToken struct {
+	Token
+	Balance string `json:"balance" bson:"balance"`
+	Decimal int    `json:"decimal" bson:"decimal"`
+}
+
 type Token struct {
 	BaseEntity      `bson:",inline"`
 	Address         string `json:"address" bson:"address"`
@@ -28,6 +34,13 @@ type Token struct {
 
 func (t *Token) CollectionName() string {
 	return utils.COLLECTION_TOKENS
+}
+
+func (t *Token) OwnedToken() *OwnedToken {
+	resp := &OwnedToken{
+		Token:   *t,
+		Balance: "0", Decimal: 1}
+	return resp
 }
 
 func (t *Token) FromTokenExplorer(te token_explorer.Token) error {

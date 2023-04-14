@@ -12,8 +12,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 // UserCredits godoc
@@ -279,7 +280,7 @@ func (h *httpDelivery) currentUserProfileBoughtTokens(w http.ResponseWriter, r *
 			}
 
 			walletAdress := vars["walletAddress"]
-			data, err := h.Usecase.FindTokens(ctx, pagination, req.Query(r, "key", walletAdress))
+			data, err := h.Usecase.FindWalletAddressTokens(ctx, pagination, walletAdress)
 			if err != nil {
 				logger.AtLog.Logger.Error("currentUerProfileBoughtTokens", zap.Any("pagination", pagination), zap.Error(err))
 				return nil, err

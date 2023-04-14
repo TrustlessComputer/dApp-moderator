@@ -394,7 +394,6 @@ func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 				channelItems <- tmpItems
 			}()
 
-			//TODO - Paging the request data
 			tmpItems, err := c.CollectionNftsFrom3rdService(ctx, contract, request.PaginationReq{
 				Limit:  &itemsLimit,
 				Offset: &offset,
@@ -414,44 +413,18 @@ func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 
 		for _, tmpItem := range tmpItems {
 			items = append(items, tmpItem)
+			err := c.InsertOrUpdateNft(tmpItem)
+			if err == nil {
+				total += len(tmpItems)
+			}
 		}
 
-		total += len(tmpItems)
 		page++
 	}
 
 	totalItems := len(items)
 	if totalItems == 0 {
 		return
-	}
-
-	if totalItems == nft.TotalItems {
-		return
-	}
-
-	//spew.Dump(items)
-
-	insertedItem := []entity.IEntity{}
-	for _, item := range items {
-		tmp := &entity.Nfts{}
-
-		err := helpers.JsonTransform(item, tmp)
-		if err != nil {
-			continue
-		}
-
-		tokenIDInt, err := strconv.Atoi(tmp.TokenID)
-		if err == nil {
-			tmp.TokenIDInt = int64(tokenIDInt)
-		}
-
-		_, err = c.Repo.InsertOne(tmp)
-		if err != nil {
-			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
-			continue
-		}
-
-		insertedItem = append(insertedItem, tmp)
 	}
 
 	f := bson.D{
@@ -474,4 +447,73 @@ func (c *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 
 func (c *Usecase) UserCollections(ctx context.Context, filter request.CollectionsFilter) ([]entity.Collections, error) {
 	return c.Repo.UserCollections(filter)
+}
+
+func (c *Usecase) InsertOrUpdateNft(item *nft_explorer.NftsResp) error {
+	tmp := &entity.Nfts{}
+
+	err := helpers.JsonTransform(item, tmp)
+	if err != nil {
+		return err
+	}
+
+	contract := item.ContractAddress
+	tokenIDInt, err := strconv.Atoi(tmp.TokenID)
+	if err == nil {
+		tmp.TokenIDInt = int64(tokenIDInt)
+	}
+
+	nft, err := c.Repo.GetNft(tmp.ContractAddress, tmp.TokenID)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			_, err = c.Repo.CreateNftHistories(&entity.NftHistories{
+				Collection:        strings.ToLower(tmp.Collection),
+				ContractAddress:   strings.ToLower(tmp.ContractAddress),
+				TokenID:           tmp.TokenID,
+				TokenIDInt:        tmp.TokenIDInt,
+				FromWalletAddress: strings.ToLower(tmp.Owner),
+				ToWalletAddress:   strings.ToLower(tmp.Owner),
+				Action:            "mint",
+			})
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s.CreateNftHistories", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				return err
+			}
+
+			_, err = c.Repo.InsertOne(tmp)
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s.InsertOne", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				return err
+			}
+
+		} else {
+			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+			return err
+		}
+	} else {
+		//the current owner != owner from chain
+		if strings.ToLower(nft.Owner) != strings.ToLower(tmp.Owner) {
+			_, err := c.Repo.CreateNftHistories(&entity.NftHistories{
+				Collection:        strings.ToLower(tmp.Collection),
+				ContractAddress:   strings.ToLower(tmp.ContractAddress),
+				TokenID:           tmp.TokenID,
+				TokenIDInt:        tmp.TokenIDInt,
+				FromWalletAddress: strings.ToLower(nft.Owner),
+				ToWalletAddress:   strings.ToLower(tmp.Owner),
+				Action:            "transfer",
+			})
+
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s.%s.history", tmp.ContractAddress, tmp.TokenID), zap.String("owner", tmp.Owner), zap.Error(err))
+			}
+
+			_, err = c.Repo.UpdateNftOwner(tmp.ContractAddress, tmp.TokenID, tmp.Owner)
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s.%s.onwer", tmp.ContractAddress, tmp.TokenID), zap.String("owner", tmp.Owner), zap.Error(err))
+			}
+
+		}
+	}
+
+	return nil
 }
