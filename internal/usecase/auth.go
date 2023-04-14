@@ -333,7 +333,9 @@ func (c *Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHas
 			}
 
 			h.Status = el.Status
-			h.BTCTxHash = el.BTCHash
+			if el.BTCHash != "" {
+				h.BTCTxHash = el.BTCHash
+			}
 
 			_, err = u.Repo.ReplaceOne(f, h)
 			if err != nil {
