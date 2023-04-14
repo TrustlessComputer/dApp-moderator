@@ -11,10 +11,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func (c *Usecase) AddressBalance(ctx context.Context, walletAddress string) ([]structure.WalletAddressBalanceResp, error) {
+func (u *Usecase) AddressBalance(ctx context.Context, walletAddress string) ([]structure.WalletAddressBalanceResp, error) {
 	resp := []structure.WalletAddressBalanceResp{}
 
-	outputs, err := c.QuickNode.AddressBalance(walletAddress)
+	outputs, err := u.QuickNode.AddressBalance(walletAddress)
 	if err != nil {
 		logger.AtLog.Logger.Error("AddressBalance", zap.String("walletAddress", walletAddress), zap.Error(err))
 	}
@@ -27,7 +27,7 @@ func (c *Usecase) AddressBalance(ctx context.Context, walletAddress string) ([]s
 		}
 
 		out := fmt.Sprintf("%s:%d", output.Hash, output.Index)
-		data, err := c.GetInscriptionByOutput(out)
+		data, err := u.GetInscriptionByOutput(out)
 		if err != nil {
 			continue
 		}
@@ -44,7 +44,7 @@ func (c *Usecase) AddressBalance(ctx context.Context, walletAddress string) ([]s
 	return resp, err
 }
 
-func (c *Usecase) GetInscriptionByOutput(ouput string) (*structure.InscriptionByOutput, error) {
+func (u *Usecase) GetInscriptionByOutput(ouput string) (*structure.InscriptionByOutput, error) {
 	ordServer := os.Getenv("CUSTOM_ORD_SERVER")
 	if ordServer == "" {
 		ordServer = "https://dev-v5.generativeexplorer.com"

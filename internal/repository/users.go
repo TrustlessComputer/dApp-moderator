@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-//ETH
-func (r Repository) FindUserByWalletAddress(walletAddress string) (*entity.Users, error) {
+// ETH
+func (r *Repository) FindUserByWalletAddress(walletAddress string) (*entity.Users, error) {
 	resp := &entity.Users{}
 	f := bson.D{{utils.KEY_WALLET_ADDRESS, primitive.Regex{Pattern: walletAddress, Options: "i"}}}
 
@@ -28,7 +28,7 @@ func (r Repository) FindUserByWalletAddress(walletAddress string) (*entity.Users
 	return resp, nil
 }
 
-func (r Repository) FindUserByBTCWalletAddress(walletAddress string) (*entity.Users, error) {
+func (r *Repository) FindUserByBTCWalletAddress(walletAddress string) (*entity.Users, error) {
 	resp := &entity.Users{}
 	f := bson.D{{utils.KEY_WALLET_ADDRESS_BTC, primitive.Regex{Pattern: walletAddress, Options: "i"}}}
 
@@ -45,7 +45,7 @@ func (r Repository) FindUserByBTCWalletAddress(walletAddress string) (*entity.Us
 	return resp, nil
 }
 
-func (r Repository) FindUserByBTCTaprootWalletAddress(walletAddress string) (*entity.Users, error) {
+func (r *Repository) FindUserByBTCTaprootWalletAddress(walletAddress string) (*entity.Users, error) {
 	resp := &entity.Users{}
 	f := bson.D{{utils.KEY_WALLET_ADDRESS_BTC_TAPROOT, primitive.Regex{Pattern: walletAddress, Options: "i"}}}
 
@@ -62,12 +62,12 @@ func (r Repository) FindUserByBTCTaprootWalletAddress(walletAddress string) (*en
 	return resp, nil
 }
 
-func (r Repository) UpdateUserMessage(walletAddress string, message string) (*mongo.UpdateResult, error) {
+func (r *Repository) UpdateUserMessage(walletAddress string, message string) (*mongo.UpdateResult, error) {
 	now := time.Now().UTC()
 	f := bson.D{{utils.KEY_WALLET_ADDRESS, primitive.Regex{Pattern: walletAddress, Options: "i"}}}
 	data := bson.M{"$set": bson.M{
-		"message": message,
-		"updated_at" :now,
+		"message":    message,
+		"updated_at": now,
 	}}
 
 	updated, err := r.UpdateOne(utils.COLLECTION_USERS, f, data)
@@ -78,11 +78,11 @@ func (r Repository) UpdateUserMessage(walletAddress string, message string) (*mo
 	return updated, nil
 }
 
-func (r Repository) UpdateUserLastLoggedIn(walletAddress string) (*mongo.UpdateResult, error) {
+func (r *Repository) UpdateUserLastLoggedIn(walletAddress string) (*mongo.UpdateResult, error) {
 	now := time.Now().UTC()
 	f := bson.D{{utils.KEY_WALLET_ADDRESS, primitive.Regex{Pattern: walletAddress, Options: "i"}}}
 	data := bson.M{"$set": bson.M{
-		"updated_at" :now,
+		"updated_at":       now,
 		"last_loggedin_at": now,
 	}}
 
