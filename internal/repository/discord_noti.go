@@ -4,12 +4,16 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (r *Repository) CreateDiscordNotification(ctx context.Context, notify *entity.DiscordNotification) error {
+	notify.ID = primitive.NewObjectID()
+	notify.UUID = notify.Id()
 	_, err := r.DB.Collection(utils.COLLECTION_DISCORD_NOTIFICATION).InsertOne(ctx, notify)
 	return err
 }
@@ -17,12 +21,10 @@ func (r *Repository) CreateDiscordNotification(ctx context.Context, notify *enti
 func (r *Repository) FindDiscordNotifications(ctx context.Context, req entity.GetDiscordReq) ([]entity.DiscordNotification, error) {
 
 	var results []entity.DiscordNotification
-	filter := make([]bson.M, 0)
-
-	filter = append(filter, bson.M{"status": req.Status})
-	numToSkip := (req.Page - 1) * req.Limit
+	filter := bson.M{"status": req.Status}
 
 	// paging
+	numToSkip := (req.Page - 1) * req.Limit
 	options := options.Find()
 	options.SetSkip(numToSkip)
 	options.SetLimit(req.Limit)
@@ -50,7 +52,7 @@ func (r *Repository) FindDiscordNotifications(ctx context.Context, req entity.Ge
 
 func (r *Repository) UpdateDiscord(ctx context.Context, id string, fields map[string]interface{}) error {
 	filter := bson.M{
-		"_id": id,
+		"uuid": id,
 	}
 
 	update := bson.M{}
@@ -58,9 +60,13 @@ func (r *Repository) UpdateDiscord(ctx context.Context, id string, fields map[st
 		update[k] = v
 	}
 
-	_, err := r.DB.Collection(utils.COLLECTION_DISCORD_NOTIFICATION).UpdateOne(ctx, filter, bson.M{"$set": update})
+	result, err := r.DB.Collection(utils.COLLECTION_DISCORD_NOTIFICATION).UpdateOne(ctx, filter, bson.M{"$set": update})
 	if err != nil {
 		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
 	}
 
 	return nil

@@ -129,6 +129,8 @@ func startServer() {
 		return
 	}
 
+	//uc.TestSendNotify()
+
 	servers := make(map[string]delivery.AddedServer)
 	// api fixed run:
 	h, _ := httpHandler.NewHandler(&g, *uc)
