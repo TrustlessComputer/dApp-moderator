@@ -129,8 +129,6 @@ func startServer() {
 		return
 	}
 
-	//uc.TestSendNotify()
-
 	servers := make(map[string]delivery.AddedServer)
 	// api fixed run:
 	h, _ := httpHandler.NewHandler(&g, *uc)
@@ -149,6 +147,11 @@ func startServer() {
 	servers["tx-consumer"] = delivery.AddedServer{
 		Server:  tx,
 		Enabled: txConsumerStatrBool,
+	}
+
+	servers["job-discord"] = delivery.AddedServer{
+		Server:  txTCServer.NewJobDisCord(&g, *uc),
+		Enabled: true,
 	}
 
 	//var wait time.Duration
