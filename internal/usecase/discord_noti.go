@@ -53,6 +53,7 @@ func (u *Usecase) NewTokenNotify(token *entity.Token) error {
 		Event:  entity.EventNewToken,
 	})
 }
+
 func (u *Usecase) NewCollectionNotify(collection *entity.Collections) error {
 	return u.CreateDiscordNotify(&entity.DiscordNotification{
 		Message: discordclient.Message{
@@ -87,6 +88,7 @@ func (u *Usecase) NewCollectionNotify(collection *entity.Collections) error {
 		Event:  entity.EventNewCollection,
 	})
 }
+
 func (u *Usecase) NewNameNotify(bns *bns_service.NameResp) error {
 	return u.CreateDiscordNotify(&entity.DiscordNotification{
 		Message: discordclient.Message{
@@ -112,6 +114,7 @@ func (u *Usecase) NewNameNotify(bns *bns_service.NameResp) error {
 		Event:  entity.EventNewName,
 	})
 }
+
 func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	notify := &entity.DiscordNotification{
 		Message: discordclient.Message{
