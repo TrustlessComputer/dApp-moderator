@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
@@ -413,15 +412,17 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 		if len(tmpItems) == 0 {
 			break
 		}
-
+		var itemWg sync.WaitGroup
+		items = append(items, tmpItems...)
+		total += len(tmpItems)
 		for _, tmpItem := range tmpItems {
-			items = append(items, tmpItem)
-			err := u.InsertOrUpdateNft(tmpItem)
-			if err == nil {
-				total += len(tmpItems)
-			}
+			itemWg.Add(1)
+			go func() {
+				defer itemWg.Done()
+				u.InsertOrUpdateNft(tmpItem)
+			}()
 		}
-
+		itemWg.Wait()
 		page++
 	}
 
@@ -466,6 +467,9 @@ func (u *Usecase) InsertOrUpdateNft(item *nft_explorer.NftsResp) error {
 		tmp.TokenIDInt = int64(tokenIDInt)
 	}
 
+	artfactAddress := strings.ToLower(os.Getenv("ARTIFACT_ADDRESS"))
+	bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
+
 	nft, err := u.Repo.GetNft(tmp.ContractAddress, tmp.TokenID)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -488,15 +492,18 @@ func (u *Usecase) InsertOrUpdateNft(item *nft_explorer.NftsResp) error {
 				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s.InsertOne", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 				return err
 			}
-			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("ARTIFACT_ADDRESS")) {
+			if tmp.ContractAddress == artfactAddress {
 				u.NewArtifactNotify(tmp)
 			}
-			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("BNS_ADDRESS")) {
-				u.NewNameNotify(&bns_service.NameResp{
-					Owner: tmp.Owner,
-					Name:  tmp.Name,
-					ID:    tmp.TokenID,
-				})
+			if tmp.ContractAddress == bnsAddress {
+				go func() {
+					name, err := u.BnsService.NameByToken(tmp.TokenID)
+					if err == nil {
+						u.NewNameNotify(name)
+					} else {
+						logger.AtLog.Logger.Error("UpdateCollection.NewNameNotify", zap.String("tokenID", tmp.TokenID), zap.Error(err))
+					}
+				}()
 			}
 
 		} else {
