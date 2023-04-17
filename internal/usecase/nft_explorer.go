@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
@@ -484,6 +485,16 @@ func (u *Usecase) InsertOrUpdateNft(item *nft_explorer.NftsResp) error {
 			if err != nil {
 				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s.InsertOne", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 				return err
+			}
+			if tmp.Collection == strings.ToLower("0x16EfDc6D3F977E39DAc0Eb0E123FefFeD4320Bc0") {
+				u.NewArtifactNotify(tmp)
+			}
+			if tmp.Collection == strings.ToLower("0x8b46F89BBA2B1c1f9eE196F43939476E79579798") {
+				u.NewNameNotify(&bns_service.NameResp{
+					Owner: tmp.Owner,
+					Name:  tmp.Name,
+					ID:    tmp.TokenID,
+				})
 			}
 
 		} else {
