@@ -12,15 +12,16 @@ import (
 	"dapp-moderator/utils/logger"
 	"errors"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.uber.org/zap"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 )
 
 func (u *Usecase) Collections(ctx context.Context, filter request.CollectionsFilter) ([]entity.Collections, error) {
@@ -487,10 +488,10 @@ func (u *Usecase) InsertOrUpdateNft(item *nft_explorer.NftsResp) error {
 				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s.InsertOne", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 				return err
 			}
-			if tmp.Collection == strings.ToLower(os.Getenv("ARTIFACT_ADDRESS")) {
+			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("ARTIFACT_ADDRESS")) {
 				u.NewArtifactNotify(tmp)
 			}
-			if tmp.Collection == strings.ToLower(os.Getenv("BNS_ADDRESS")) {
+			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("BNS_ADDRESS")) {
 				u.NewNameNotify(&bns_service.NameResp{
 					Owner: tmp.Owner,
 					Name:  tmp.Name,
