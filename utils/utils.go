@@ -83,7 +83,8 @@ func InArray(needle interface{}, haystack []interface{}) bool {
 	return false
 }
 
-func FormatStringNumber(number string) string {
+func FormatStringNumber(number string, decimal int) string {
+	number = number[:len(number)-decimal]
 	if len(number) < 4 {
 		return number
 	}
