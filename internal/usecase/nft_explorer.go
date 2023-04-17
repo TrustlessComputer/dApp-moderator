@@ -17,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -486,10 +487,10 @@ func (u *Usecase) InsertOrUpdateNft(item *nft_explorer.NftsResp) error {
 				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateCollection.%s.InsertOne", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 				return err
 			}
-			if tmp.Collection == strings.ToLower("0x16EfDc6D3F977E39DAc0Eb0E123FefFeD4320Bc0") {
+			if tmp.Collection == strings.ToLower(os.Getenv("ARTIFACT_ADDRESS")) {
 				u.NewArtifactNotify(tmp)
 			}
-			if tmp.Collection == strings.ToLower("0x8b46F89BBA2B1c1f9eE196F43939476E79579798") {
+			if tmp.Collection == strings.ToLower(os.Getenv("BNS_ADDRESS")) {
 				u.NewNameNotify(&bns_service.NameResp{
 					Owner: tmp.Owner,
 					Name:  tmp.Name,
