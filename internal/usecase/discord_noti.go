@@ -38,7 +38,7 @@ func (u *Usecase) NewTokenNotify(token *entity.Token) error {
 							Inline: false,
 						},
 						{
-							Value:  fmt.Sprintf("**Token Supply: %s**", utils.FormatStringNumber(token.TotalSupply)),
+							Value:  fmt.Sprintf("**Token Supply: %s**", utils.FormatStringNumber(token.TotalSupply, token.Decimal)),
 							Inline: false,
 						},
 						{
