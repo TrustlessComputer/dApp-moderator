@@ -6,8 +6,6 @@ import (
 	"dapp-moderator/utils"
 	discordclient "dapp-moderator/utils/discord"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"strings"
 	"time"
@@ -222,36 +220,6 @@ func (u *Usecase) CreateDiscordNotify(notify *entity.DiscordNotification) error 
 func (u *Usecase) TestSendNotify() {
 	env := os.Getenv("ENVIRONMENT")
 	if env == "local" {
-		token, _ := u.Repo.FindToken(context.TODO(), entity.TokenFilter{
-			Address: "0xF3368Ba95164A9dFbd8E1F7D33F222D565C10bf6",
-		})
-		err := u.NewTokenNotify(token)
-		logger.AtLog.Info("err", zap.Error(err))
 
-		collection := &entity.Collections{}
-		sr, err := u.Repo.FindOne(utils.COLLECTION_COLLECTIONS, bson.D{
-			{"contract", primitive.Regex{Pattern: "0xbecb1bd2e2849532520da6d36b1684ce63b68617", Options: "i"}},
-		})
-		sr.Decode(collection)
-
-		err = u.NewCollectionNotify(collection)
-		logger.AtLog.Info("err", zap.Error(err))
-
-		u.NewNameNotify(&bns_service.NameResp{
-			Name:  "annhien",
-			Owner: "0x82268af8207117ddbcd8ce4e444263ccd8d1bf87",
-			ID:    "1166",
-		})
-
-		nftResp, _ := u.Repo.FindOne(entity.Nfts{}.CollectionName(), bson.D{
-			{"token_id", "1"},
-		})
-		nfts := &entity.Nfts{}
-		nftResp.Decode(nfts)
-
-		u.NewArtifactNotify(nfts)
-
-		u.JobSendDiscord()
-		fmt.Println("done")
 	}
 }
