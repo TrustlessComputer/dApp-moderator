@@ -163,7 +163,7 @@ func startServer() {
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
 	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
 	signal.Notify(c, os.Interrupt)
-
+	uc.TestSendNotify()
 	// Run our server in a goroutine so that it doesn't block.
 	for name, server := range servers {
 		if server.Enabled {
