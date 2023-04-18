@@ -344,6 +344,7 @@ func (u *Usecase) UpdateCollectionItems(ctx context.Context) error {
 	limit := 10
 
 	for {
+		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollectionItems.%d.%d", page, limit), zap.Int("page", page), zap.Int("limit", limit))
 
 		//filter again
 		offset := limit * (page - 1)
@@ -393,6 +394,10 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 
 	total := 0
 
+	if page > 1 {
+		page-- //Move to the last page that has items
+	}
+
 	channelItems := make(chan []*nft_explorer.NftsResp)
 	for {
 
@@ -419,9 +424,11 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 		}(ctx, page, itemsLimit, channelItems)
 
 		tmpItems := <-channelItems
+
 		if len(tmpItems) == 0 {
 			break
 		}
+
 		var itemWg sync.WaitGroup
 		items = append(items, tmpItems...)
 		total += len(tmpItems)
@@ -434,11 +441,9 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 		}
 		itemWg.Wait()
 
-		if len(tmpItems) >= itemsLimit {
-			page++
-			//Update current page here.
-			u.Cache.SetStringData(key, fmt.Sprintf("%d", page))
-		}
+		page++
+		//Update current page here.
+		u.Cache.SetStringData(key, fmt.Sprintf("%d", page))
 
 	}
 
