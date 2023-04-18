@@ -344,19 +344,23 @@ func (u *Usecase) UpdateCollectionItems(ctx context.Context) error {
 	limit := 10
 
 	for {
-		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollectionItems.%d.%d", page, limit), zap.Int("page", page), zap.Int("limit", limit))
 
 		//filter again
 		offset := limit * (page - 1)
 		filter.Page = &page
 		filter.Limit = &limit
 		filter.Offset = &offset
+
+		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollectionItems.page.%d.limit.%d", page, limit), zap.Any("filter", filter))
 		nfts, err := u.CollectionsWithoutLogic(ctx, filter)
 		if err != nil {
+			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollectionItems.page.%d.limit.%d", page, limit), zap.Any("filter", filter), zap.Error(err))
 			break
 		}
 
 		if len(nfts) == 0 {
+			err = errors.New("nfts is empty")
+			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollectionItems.page.%d.limit.%d", page, limit), zap.Any("filter", filter), zap.Error(err))
 			break
 		}
 
@@ -434,10 +438,10 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 		total += len(tmpItems)
 		for _, tmpItem := range tmpItems {
 			itemWg.Add(1)
-			go func(ctx context.Context, nft *nft_explorer.NftsResp) {
+			go func(itemWg *sync.WaitGroup, ctx context.Context, nft *nft_explorer.NftsResp) {
 				defer itemWg.Done()
 				u.InsertOrUpdateNft(ctx, nft)
-			}(ctx, tmpItem)
+			}(&itemWg, ctx, tmpItem)
 		}
 		itemWg.Wait()
 
@@ -493,9 +497,11 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 	bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 
 	logger.AtLog.Logger.Info(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", tmp.ContractAddress), zap.String("tokenID", tmp.TokenID))
+
 	nft, err := u.Repo.GetNft(tmp.ContractAddress, tmp.TokenID)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
+
 			_, err = u.Repo.CreateNftHistories(&entity.NftHistories{
 				Collection:        strings.ToLower(tmp.Collection),
 				ContractAddress:   strings.ToLower(tmp.ContractAddress),
@@ -507,7 +513,6 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 			})
 			if err != nil {
 				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
-				return err
 			}
 
 			_, err = u.Repo.InsertOne(tmp)
