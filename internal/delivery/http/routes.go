@@ -83,6 +83,14 @@ func (h *httpDelivery) RegisterV1Routes() {
 	uploadRoute.Use(h.MiddleWare.AuthorizationFunc)
 	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
 
+	//admin
+	admin := api.PathPrefix("/admin").Subrouter()
+	admin.HandleFunc("/redis", h.getRedisKeys).Methods("GET")
+	admin.HandleFunc("/redis/{key}", h.getRedis).Methods("GET")
+	admin.HandleFunc("/redis", h.upsertRedis).Methods("POST")
+	admin.HandleFunc("/redis", h.deleteAllRedis).Methods("DELETE")
+	admin.HandleFunc("/redis/{key}", h.deleteRedis).Methods("DELETE")
+
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
