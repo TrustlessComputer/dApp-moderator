@@ -362,6 +362,7 @@ func (u *Usecase) UpdateCollectionItems(ctx context.Context) error {
 		var wg sync.WaitGroup
 		for _, nft := range nfts {
 			contract := strings.ToLower(nft.Contract)
+			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollectionItems.%s", contract), zap.String("contract", contract))
 
 			wg.Add(1)
 			go u.GetNftsFromCollection(ctx, &wg, contract, nft)
@@ -401,7 +402,7 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 			tmpItems := []*nft_explorer.NftsResp{}
 			defer func() {
 				channelItems <- tmpItems
-				logger.AtLog.Logger.Info("GetNftsFromCollection.Routine", zap.String("contract", contract), zap.Any("page", colectionPage), zap.Any("itemsLimit", itemsLimit), zap.Any("Offset", offset), zap.Any("tmpItems", len(tmpItems)))
+				logger.AtLog.Logger.Info(fmt.Sprintf("GetNftsFromCollection.Routine.%s", contract), zap.String("contract", contract), zap.Any("page", colectionPage), zap.Any("itemsLimit", itemsLimit), zap.Any("Offset", offset), zap.Any("tmpItems", len(tmpItems)))
 
 			}()
 
@@ -411,7 +412,7 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 			})
 
 			if err != nil {
-				logger.AtLog.Logger.Error("GetNftsFromCollection", zap.String("contract", contract), zap.Error(err))
+				logger.AtLog.Logger.Error(fmt.Sprintf("GetNftsFromCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
 				return
 			}
 
@@ -458,11 +459,11 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 
 	updated, err := u.Repo.UpdateOne(nft.CollectionName(), f, updateData)
 	if err != nil {
-		logger.AtLog.Logger.Error("GetNftsFromCollection", zap.String("contract", contract), zap.Error(err))
+		logger.AtLog.Logger.Error(fmt.Sprintf("GetNftsFromCollection.%s", contract), zap.String("contract", contract), zap.Error(err))
 		return
 	}
 
-	logger.AtLog.Logger.Info("GetNftsFromCollection", zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
+	logger.AtLog.Logger.Info(fmt.Sprintf("GetNftsFromCollection.%s", contract), zap.String("contract", contract), zap.Int("items", totalItems), zap.Any("updated", updated))
 }
 
 func (u *Usecase) UserCollections(ctx context.Context, filter request.CollectionsFilter) ([]entity.Collections, error) {
@@ -486,7 +487,7 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 	artfactAddress := strings.ToLower(os.Getenv("ARTIFACT_ADDRESS"))
 	bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 
-	logger.AtLog.Logger.Info("InsertOrUpdateNft", zap.String("contract", tmp.ContractAddress), zap.String("tokenID", tmp.TokenID))
+	logger.AtLog.Logger.Info(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", tmp.ContractAddress), zap.String("tokenID", tmp.TokenID))
 	nft, err := u.Repo.GetNft(tmp.ContractAddress, tmp.TokenID)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -500,13 +501,13 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 				Action:            "mint",
 			})
 			if err != nil {
-				logger.AtLog.Logger.Error("InsertOrUpdateNft", zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 				return err
 			}
 
 			_, err = u.Repo.InsertOne(tmp)
 			if err != nil {
-				logger.AtLog.Logger.Error("InsertOrUpdateNft", zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 				return err
 			}
 			if tmp.ContractAddress == artfactAddress {
@@ -524,7 +525,7 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 			}
 
 		} else {
-			logger.AtLog.Logger.Error("InsertOrUpdateNft", zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+			logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 			return err
 		}
 	} else {
@@ -541,12 +542,12 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 			})
 
 			if err != nil {
-				logger.AtLog.Logger.Error("InsertOrUpdateNft", zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 			}
 
 			_, err = u.Repo.UpdateNftOwner(tmp.ContractAddress, tmp.TokenID, tmp.Owner)
 			if err != nil {
-				logger.AtLog.Logger.Error("InsertOrUpdateNft", zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 			}
 
 		}
