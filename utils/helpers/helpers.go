@@ -48,7 +48,7 @@ func GenerateSlug(key string) string {
 	return key
 }
 
-func ReplaceNonUTF8(filename string) string  {
+func ReplaceNonUTF8(filename string) string {
 	re := regexp.MustCompile("[^a-zA-Z0-9./:]")
 	return fmt.Sprintf(re.ReplaceAllString(filename, ""))
 }
@@ -133,4 +133,8 @@ func ReplaceToken(token string) string {
 	token = strings.ReplaceAll(token, "bearer", "")
 	token = strings.ReplaceAll(token, " ", "")
 	return token
+}
+
+func NftsOfContractPageKey(contract string) string {
+	return fmt.Sprintf("contract.%s.nfts.page", contract)
 }
