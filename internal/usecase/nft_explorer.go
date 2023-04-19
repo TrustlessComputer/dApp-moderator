@@ -367,7 +367,7 @@ func (u *Usecase) UpdateCollectionItems(ctx context.Context) error {
 		var wg sync.WaitGroup
 		for _, nft := range nfts {
 			contract := strings.ToLower(nft.Contract)
-			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollectionItems.%s", contract), zap.String("contract", contract))
+			//logger.AtLog.Logger.Info(fmt.Sprintf("UpdateCollectionItems.%s", contract), zap.String("contract", contract))
 
 			wg.Add(1)
 			go u.GetNftsFromCollection(ctx, &wg, contract, nft)
@@ -411,7 +411,7 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 			tmpItems := []*nft_explorer.NftsResp{}
 			defer func() {
 				channelItems <- tmpItems
-				logger.AtLog.Logger.Info(fmt.Sprintf("GetNftsFromCollection.Routine.%s", contract), zap.String("contract", contract), zap.Any("page", colectionPage), zap.Any("itemsLimit", itemsLimit), zap.Any("Offset", offset), zap.Any("tmpItems", len(tmpItems)))
+				//logger.AtLog.Logger.Info(fmt.Sprintf("GetNftsFromCollection.Routine.%s", contract), zap.String("contract", contract), zap.Any("page", colectionPage), zap.Any("itemsLimit", itemsLimit), zap.Any("Offset", offset), zap.Any("tmpItems", len(tmpItems)))
 
 			}()
 
@@ -496,7 +496,7 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 	artfactAddress := strings.ToLower(os.Getenv("ARTIFACT_ADDRESS"))
 	bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 
-	logger.AtLog.Logger.Info(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", tmp.ContractAddress), zap.String("tokenID", tmp.TokenID))
+	//logger.AtLog.Logger.Info(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", tmp.ContractAddress), zap.String("tokenID", tmp.TokenID))
 
 	nft, err := u.Repo.GetNft(tmp.ContractAddress, tmp.TokenID)
 	if err != nil {
@@ -561,6 +561,27 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 			}
 
 		}
+	}
+
+	return nil
+}
+
+func (u *Usecase) UpdateCollectionThumbnails(ctx context.Context) error {
+	collections, err := u.Repo.CollectionThumbnailByNfts()
+	if err != nil {
+		logger.AtLog.Logger.Error("UpdateCollectionThumbnails", zap.Error(err))
+		return err
+	}
+
+	for _, collection := range collections {
+		err = u.Repo.UpdateCollectionThumbnail(ctx, collection.Contract, collection.NftImage)
+		if err != nil {
+			logger.AtLog.Logger.Error("UpdateCollectionThumbnails", zap.String("contract", collection.Contract), zap.String("nftImage", collection.NftImage), zap.Error(err))
+			return err
+		}
+
+		logger.AtLog.Logger.Info("UpdateCollectionThumbnails", zap.String("contract", collection.Contract), zap.String("nftImage", collection.NftImage))
+
 	}
 
 	return nil
