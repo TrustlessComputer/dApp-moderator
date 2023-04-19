@@ -1,9 +1,12 @@
 package repository
 
 import (
+	"context"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/helpers"
+	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -52,4 +55,100 @@ func (r *Repository) UserCollections(filter request.CollectionsFilter) ([]entity
 
 	return res, nil
 
+}
+
+func (r *Repository) CollectionThumbnailByNfts() ([]*entity.CollectionNftThumbnail, error) {
+	f := bson.A{
+		bson.D{
+			{"$match",
+				bson.D{
+					{"thumbnail", ""},
+					{"total_items", bson.D{{"$gt", 0}}},
+				},
+			},
+		},
+		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "nfts"},
+					{"localField", "contract"},
+					{"foreignField", "collection_address"},
+					{"let", bson.D{{"token_id_int", "$token_id_int"}}},
+					{"pipeline",
+						bson.A{
+							bson.D{{"$sort", bson.D{{"token_id_int", -1}}}},
+							bson.D{{"$limit", 1}},
+						},
+					},
+					{"as", "nfts"},
+				},
+			},
+		},
+		bson.D{
+			{"$unwind",
+				bson.D{
+					{"path", "$nfts"},
+					{"includeArrayIndex", "string"},
+					{"preserveNullAndEmptyArrays", true},
+				},
+			},
+		},
+		bson.D{
+			{"$project",
+				bson.D{
+					{"contract", 1},
+					{"thumbnail", 1},
+					{"nft_image", "$nfts.image"},
+					{"nft_token_uri", "$nfts.token_uri"},
+					{"nft_token_id_int", "$nfts.token_id_int"},
+				},
+			},
+		},
+	}
+
+	cursor, err := r.DB.Collection(entity.Collections{}.CollectionName()).Aggregate(context.TODO(), f, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// display the results
+	var results []bson.M
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	resp := []*entity.CollectionNftThumbnail{}
+
+	for _, item := range results {
+		res := &entity.CollectionNftThumbnail{}
+		err = helpers.Transform(item, res)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, res)
+	}
+
+	return resp, err
+}
+
+func (r *Repository) UpdateCollectionThumbnail(ctx context.Context, contract string, thumbnail string) error {
+	filter := bson.M{
+		"contract": contract,
+	}
+
+	update := bson.M{
+		"thumbnail": thumbnail,
+	}
+
+	result, err := r.DB.Collection(entity.Collections{}.CollectionName()).UpdateOne(ctx, filter, bson.M{"$set": update})
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return errors.New("no document")
+	}
+
+	return nil
 }

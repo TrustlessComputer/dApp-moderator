@@ -5,8 +5,8 @@ import (
 )
 
 type GroupedCollection struct {
-	ID GroupedCollectionID `bson:"_id"`
-	Tokens int64 `bson:"tokens"`
+	ID     GroupedCollectionID `bson:"_id"`
+	Tokens int64               `bson:"tokens"`
 }
 
 type GroupedCollectionID struct {
@@ -22,7 +22,7 @@ type Collections struct {
 	Creator         string `bson:"creator" json:"creator"`
 	TotalItems      int    `bson:"total_items" json:"total_items"`
 	TotalOwners     int    `bson:"total_owners" json:"total_owners"`
-	Index           int64  `bson:"index" json:"index"` //autoinscreament 
+	Index           int64  `bson:"index" json:"index"` //autoinscreament
 	DeployedAtBlock int64  `bson:"deployed_at_block" json:"deployed_at_block"`
 
 	//TODO - Updateable
@@ -31,6 +31,14 @@ type Collections struct {
 	Name        string `bson:"name" json:"name"`
 	Description string `bson:"description" json:"description"`
 	Social      Social `json:"social" bson:"social"`
+}
+
+type CollectionNftThumbnail struct {
+	Contract      string `bson:"contract"`
+	Thumbnail     string `bson:"thumbnail"`
+	NftImage      string `bson:"nft_image"`
+	NftTokenUri   string `bson:"nft_token_uri"`
+	NftTokenIDInt int64  `bson:"nft_token_id_int"`
 }
 
 type FilterFiles struct {

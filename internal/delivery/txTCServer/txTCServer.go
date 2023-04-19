@@ -108,7 +108,7 @@ func (c *txTCServer) StartServer() {
 	for {
 		previousTime := time.Now()
 		var wg sync.WaitGroup
-		wg.Add(3)
+		wg.Add(4)
 		go func() {
 			defer wg.Done()
 			c.resolveTxTransaction(ctx)
@@ -121,6 +121,11 @@ func (c *txTCServer) StartServer() {
 		go func() {
 			defer wg.Done()
 			c.Usecase.UpdateCollectionItems(ctx)
+		}()
+
+		go func() {
+			defer wg.Done()
+			c.Usecase.UpdateCollectionThumbnails(ctx)
 		}()
 
 		wg.Wait()
