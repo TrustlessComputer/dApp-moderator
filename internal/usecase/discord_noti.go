@@ -67,10 +67,6 @@ func (u *Usecase) NewCollectionNotify(collection *entity.Collections) error {
 							Inline: false,
 						},
 						{
-							Value:  fmt.Sprintf("**Suply: %d**", collection.TotalItems),
-							Inline: false,
-						},
-						{
 							Value:  fmt.Sprintf("**Contract: %s**", utils.ShortenBlockAddress(collection.Contract)),
 							Inline: false,
 						},
