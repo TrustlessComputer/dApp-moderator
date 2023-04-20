@@ -27,7 +27,7 @@ type UploadedFile struct {
 
 const (
 	PATH_PROJECT_TEMPLATE = "/app/tools/compile-contract/base-project"
-	PATH_RUNTIME_PROJECT  = "/app/project/"
+	PATH_RUNTIME_PROJECT  = "/app/user-contracts/"
 
 	dirPerm = 0777
 )
