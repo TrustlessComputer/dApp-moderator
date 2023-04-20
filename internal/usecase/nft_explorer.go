@@ -138,6 +138,10 @@ func (u *Usecase) UpdateCollection(ctx context.Context, contractAddress string, 
 		obj.Description = *updateData.Description
 	}
 
+	if updateData.Name != nil && *updateData.Name != obj.Name {
+		obj.Name = *updateData.Name
+	}
+
 	if updateData.Social.DisCord != nil && *updateData.Social.DisCord != obj.Social.DisCord {
 		obj.Social.DisCord = *updateData.Social.DisCord
 	}
