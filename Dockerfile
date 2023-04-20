@@ -35,6 +35,8 @@ RUN cd /app/tools/compile-contract/base-project \
 FROM nodejs-builder as runner
 
 WORKDIR /app
-COPY --from=builder /app/tools /app/tools
 
+COPY --from=builder /app/tools /app/tools
 COPY --from=builder /app/backend-api /app/backend-api
+
+RUN mkdir -p /app/user-contracts
