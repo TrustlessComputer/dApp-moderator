@@ -1,4 +1,4 @@
-FROM golang:1.18 as deps
+FROM golang:1.18-bullseye as deps
 
 RUN apt-get -y update && apt-get -y upgrade && \
     apt-get -y install git && \
@@ -23,12 +23,20 @@ COPY  . .
 RUN echo "✅ Build for Linux"; make build
 
 # Distribution
-FROM ubuntu:20.04 as runner
-RUN apt-get -y update && apt upgrade -y
-RUN apt-get -y install  software-properties-common && \
-    apt-get -y install wget && \
-    DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+FROM node:16-bullseye as nodejs-builder
+
+WORKDIR /app
+COPY ./tools /app/tools
+
+RUN cd /app/tools/compile-contract/base-project \
+    && npm install
+
+
+FROM nodejs-builder as runner
 
 WORKDIR /app
 
-COPY --from=builder /app/backend-api /app
+COPY --from=builder /app/tools /app/tools
+COPY --from=builder /app/backend-api /app/backend-api
+
+RUN mkdir -p /app/user-contracts
