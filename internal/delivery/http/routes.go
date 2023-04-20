@@ -83,6 +83,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	uploadRoute.Use(h.MiddleWare.AuthorizationFunc)
 	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
 
+	// tools := api.PathPrefix("/tools").Subrouter()
+	// tools.HandleFunc("/compile-contract/", h.profileByWallet).Methods("GET")
+
 	//admin
 	admin := api.PathPrefix("/admin").Subrouter()
 	admin.HandleFunc("/redis", h.getRedisKeys).Methods("GET")
