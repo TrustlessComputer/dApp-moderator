@@ -83,8 +83,8 @@ func (h *httpDelivery) RegisterV1Routes() {
 	uploadRoute.Use(h.MiddleWare.AuthorizationFunc)
 	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
 
-	// tools := api.PathPrefix("/tools").Subrouter()
-	// tools.HandleFunc("/compile-contract/", h.profileByWallet).Methods("GET")
+	tools := api.PathPrefix("/tools").Subrouter()
+	tools.HandleFunc("/compile-contract", h.compileContract).Methods("POST")
 
 	//admin
 	admin := api.PathPrefix("/admin").Subrouter()
