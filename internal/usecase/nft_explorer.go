@@ -389,11 +389,13 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 	key := helpers.NftsOfContractPageKey(contract)
 	page := 1
 
+	existed := false
 	cachedPage, err := u.Cache.GetData(key)
 	if err == nil && cachedPage != nil {
 		pageInt, err := strconv.Atoi(*cachedPage)
 		if err == nil {
 			page = pageInt
+			existed = true
 		}
 	}
 
@@ -458,6 +460,11 @@ func (u *Usecase) GetNftsFromCollection(ctx context.Context, wg *sync.WaitGroup,
 	totalItems := len(items)
 	if totalItems == 0 {
 		return
+	}
+
+	if existed {
+		offset := (page - 2) * itemsLimit //get offset = (page-1)*limit ( - 1), and the cached page that was not updated by the loop ( - 1): total - 2
+		totalItems = offset + totalItems  // items of the previous offset and the current page (totalItems)
 	}
 
 	f := bson.D{
