@@ -29,6 +29,9 @@ const (
 	PATH_PROJECT_TEMPLATE = "/app/tools/compile-contract/base-project"
 	PATH_RUNTIME_PROJECT  = "/app/user-contracts/"
 
+	// PATH_PROJECT_TEMPLATE = "/Users/x/Dropbox/TrustlessComputer/dApp-moderator/tools/compile-contract/demo-project"
+	// PATH_RUNTIME_PROJECT  = "/Users/x/Downloads/test-complie/"
+
 	dirPerm = 0777
 )
 
@@ -146,6 +149,9 @@ func (u *Usecase) CompileContract(r *http.Request) ([]AbiData, error) {
 
 		// fmt.Println("Command.compile: ", compileCmd)
 
+		// find list json in contract folder:
+		folderToGetAbi := folderToCompile + "artifacts/contracts/"
+
 		cmd = exec.Command("npx", "hardhat", "compile")
 		cmd.Dir = folderToCompile
 
@@ -156,11 +162,13 @@ func (u *Usecase) CompileContract(r *http.Request) ([]AbiData, error) {
 		fmt.Println("Output:", string(output))
 
 		if err != nil {
-			fmt.Println("Command.compile: ", err)
-			return abiData, err
+			fmt.Println("Command.compile error===> ", err)
+			// return abiData, err
+			if _, errNf := os.Stat(folderToGetAbi); os.IsNotExist(errNf) {
+				fmt.Println("folderToGetAbi IsNotExist: ", errNf)
+				return abiData, err
+			}
 		}
-		// find list json in contract folder:
-		folderToGetAbi := folderToCompile + "artifacts/contracts/"
 
 		if _, err := os.Stat(folderToGetAbi); os.IsNotExist(err) {
 			fmt.Println("folderToGetAbi IsNotExist: ", err)
