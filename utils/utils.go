@@ -104,3 +104,10 @@ func ShortenBlockAddress(address string) string {
 	}
 	return address[:6] + "..." + address[len(address)-4:]
 }
+
+func NameOrAddress(name, address string) string {
+	if name != "" {
+		return name
+	}
+	return ShortenBlockAddress(address)
+}
