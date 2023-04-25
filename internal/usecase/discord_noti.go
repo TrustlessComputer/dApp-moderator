@@ -93,7 +93,7 @@ func (u *Usecase) NewNameNotify(bns *bns_service.NameResp) error {
 				{
 					Fields: []discordclient.Field{
 						{
-							Value:  fmt.Sprintf("**Name: [%s](https://trustless.computer/dapps?tab=names&key=%s)**", bns.Name, bns.Name),
+							Value:  fmt.Sprintf("**Name: [%s](https://trustless.domains)**", bns.Name),
 							Inline: false,
 						},
 						{
