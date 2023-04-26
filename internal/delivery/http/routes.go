@@ -80,11 +80,15 @@ func (h *httpDelivery) RegisterV1Routes() {
 	profileAuth.HandleFunc("/histories", h.confirmProfileHistory).Methods("PUT")
 
 	uploadRoute := api.PathPrefix("/upload").Subrouter()
-	uploadRoute.Use(h.MiddleWare.AuthorizationFunc)
+	// uploadRoute.Use(h.MiddleWare.AuthorizationFunc) // temp pause
 	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
 
 	tools := api.PathPrefix("/tools").Subrouter()
 	tools.HandleFunc("/compile-contract", h.compileContract).Methods("POST")
+
+	dappInfo := api.PathPrefix("/dapp-info").Subrouter()
+	dappInfo.HandleFunc("/create", h.createDAppInfo).Methods("POST")
+	dappInfo.HandleFunc("/list", h.listDAppInfo).Methods("GET")
 
 	//admin
 	admin := api.PathPrefix("/admin").Subrouter()
