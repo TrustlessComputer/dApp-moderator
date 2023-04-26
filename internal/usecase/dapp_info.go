@@ -18,6 +18,7 @@ func (u *Usecase) ApiCreateDappInfo(ctx context.Context, req *request.CreateDapp
 		Link:        req.Link,
 		Creator:     req.Creator,
 		Description: req.Desc,
+		Status:      0,
 	}
 
 	err := u.Repo.InsertDappInfo(dapp)
