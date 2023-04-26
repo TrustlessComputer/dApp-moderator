@@ -17,7 +17,7 @@ func (r *Repository) InsertDappInfo(data *entity.DappInfo) error {
 
 func (r *Repository) ListDappInfo() ([]*entity.DappInfo, error) {
 	resp := []*entity.DappInfo{}
-	filter := bson.M{}
+	filter := bson.M{"status": 1}
 
 	cursor, err := r.DB.Collection(entity.DappInfo{}.CollectionName()).Find(context.TODO(), filter)
 	if err != nil {
