@@ -4,18 +4,89 @@ import (
 	"context"
 	"dapp-moderator/external/quicknode"
 	"dapp-moderator/internal/usecase/structure"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
 	"time"
 )
+
+func (u Usecase) getUTXOFromBlockStream(address string) ([]quicknode.WalletAddressBalanceResp, error) {
+	url := u.Config.BlockStream + "/api/address/" + address + "/utxo"
+
+	fmt.Printf("URL blockstream: %v\n", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	fmt.Printf("resp getUTXOFromBlockStream: %+v\n", resp)
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	bodyStr := string(body)
+	if strings.Contains(bodyStr, "RPC error") {
+		return nil, errors.New(bodyStr)
+	}
+
+	respUTXOs := []structure.UTXOFromBlockStream{}
+	err = json.Unmarshal(body, &respUTXOs)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []quicknode.WalletAddressBalanceResp{}
+	for _, utxo := range respUTXOs {
+		if utxo.Status.Confirmed {
+			result = append(result, quicknode.WalletAddressBalanceResp{
+				Height:  int64(utxo.Status.BlockHeight),
+				Address: address,
+				Hash:    utxo.Txid,
+				Index:   utxo.Vout,
+				Value:   uint64(utxo.Value),
+			})
+		}
+	}
+
+	fmt.Printf("result: %+v\n", result)
+	return result, nil
+}
 
 func (u *Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*structure.WalletInfo, error) {
 	var result structure.WalletInfo
 
 	t := time.Now()
-	abs, err := u.QuickNode.AddressBalance(address)
-	if err != nil {
-		return nil, err
+
+	abs := []quicknode.WalletAddressBalanceResp{}
+	var err error
+
+	switch u.Config.ENV {
+	case "develop":
+		{
+			abs, err = u.getUTXOFromBlockStream(address)
+			if err != nil {
+				return nil, err
+			}
+		}
+	case "production":
+		{
+			abs, err = u.QuickNode.AddressBalance(address)
+			if err != nil {
+				return nil, err
+			}
+		}
+	default:
+		{
+			return nil, fmt.Errorf("Invalid network env: %v", u.Config.ENV)
+		}
 	}
+
 	trackT1 := time.Since(t)
 
 	inscriptionByOutput := make(map[string][]structure.WalletInscriptionByOutput)
