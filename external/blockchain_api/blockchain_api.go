@@ -140,7 +140,7 @@ func (c *BlockChainApi) TcSwapEventsByTransaction(txHash string) (*TcSwapEventRe
 	return resp.Result, nil
 }
 
-func (c *BlockChainApi) TcSwapEvents(numBlocks, startBlocks int64) (*TcSwapEventResp, error) {
+func (c *BlockChainApi) TcSwapEvents(numBlocks, startBlocks, endBlocks int64) (*TcSwapEventResp, error) {
 	resp := struct {
 		Result *TcSwapEventResp `json:"result"`
 	}{}
@@ -151,8 +151,8 @@ func (c *BlockChainApi) TcSwapEvents(numBlocks, startBlocks int64) (*TcSwapEvent
 
 	err := c.methodJSON(
 		http.MethodGet,
-		c.buildUrl(fmt.Sprintf("swap/events?contract_addrs=%s&num_blocks=%d&start_blocks=%d",
-			strings.Join(contractAddrs, ","), numBlocks, startBlocks)),
+		c.buildUrl(fmt.Sprintf("swap/events?contract_addrs=%s&num_blocks=%d&start_blocks=%d&end_blocks=%d",
+			strings.Join(contractAddrs, ","), numBlocks, startBlocks, endBlocks)),
 		nil,
 		&resp,
 	)
