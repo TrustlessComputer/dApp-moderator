@@ -84,12 +84,14 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 		token0.Address = "0x9c24ef17fE784576f2906c9eE28b49d0A9b02532"
 		token0.Name = "WBTC"
 		token0.Symbol = "WBTC"
+		token0.Decimal = 18
 		tokens = append(tokens, token0)
 
 		token1 := entity.Token{}
 		token1.Address = "0xf50CbEf214ABE8D9a0ba4D8D7914A0511A9e1Aba"
 		token1.Name = "USDT"
 		token1.Symbol = "USDT"
+		token1.Decimal = 18
 		tokens = append(tokens, token1)
 	}
 	data = tokens
