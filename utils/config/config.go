@@ -22,6 +22,7 @@ type Config struct {
 	BFSService    string
 	BNSService    string
 	Gcs           *GCS
+	BlockChainApi *BlockChainApi
 }
 
 type Context struct {
@@ -64,6 +65,12 @@ type RedisConfig struct {
 	ENV      string
 }
 
+type BlockChainApi struct {
+	BaseURL                      string
+	UniswapV2FactoryContractAddr string
+	UniswapV2RouterContractAddr  string
+}
+
 func NewConfig(filePaths ...string) (*Config, error) {
 	if len(filePaths) > 0 {
 		godotenv.Load(filePaths[0])
@@ -94,6 +101,11 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		TokenExplorer: os.Getenv("TOKEN_EXPLORER_URL"),
 		BFSService:    os.Getenv("BFS_SERVICE_URL"),
 		BNSService:    os.Getenv("BNS_SERVICE_URL"),
+		BlockChainApi: &BlockChainApi{
+			BaseURL:                      os.Getenv("BLOCKCHAIN_URL"),
+			UniswapV2FactoryContractAddr: os.Getenv("BLOCKCHAIN_FACTORY_CONTRACT_ADDR"),
+			UniswapV2RouterContractAddr:  os.Getenv("BLOCKCHAIN_ROUTER_CONTRACT_ADDR"),
+		},
 		Databases: &Databases{
 			Mongo: &DBConnection{
 				Host:   os.Getenv("MONGO_HOST"),
