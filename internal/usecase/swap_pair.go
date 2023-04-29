@@ -25,3 +25,20 @@ func (u *Usecase) TcSwapFindSwapPairs(ctx context.Context, filter request.Pagina
 	logger.AtLog.Logger.Info("FindSwapPairs", zap.Any("data", data))
 	return data, nil
 }
+
+func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
+	var data interface{}
+	var err error
+	query := entity.SwapPairSwapHistoriesFilter{}
+	query.FromPagination(filter)
+
+	data, err = u.Repo.FindSwapPairSwapHistory(ctx, query)
+
+	if err != nil {
+		logger.AtLog.Logger.Error("TcSwapFindSwapHistories", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("TcSwapFindSwapHistories", zap.Any("data", data))
+	return data, nil
+}

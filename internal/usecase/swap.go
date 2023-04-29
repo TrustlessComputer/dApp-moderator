@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,7 +16,23 @@ import (
 )
 
 func (u *Usecase) TcSwapScanEvents(ctx context.Context) error {
-	eventResp, err := u.BlockChainApi.TcSwapEvents(0, 0)
+	configName := "swap_scan_current_block_number"
+	dbSwapConfig, err := u.Repo.FindSwapConfig(ctx, entity.SwapConfigsFilter{
+		Name: configName,
+	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+	startBlocks := int64(0)
+	if dbSwapConfig != nil {
+		startBlocks, err = strconv.ParseInt(dbSwapConfig.Value, 10, 64)
+		if err != nil {
+			return err
+		}
+	}
+
+	eventResp, err := u.BlockChainApi.TcSwapEvents(0, startBlocks, 0)
 	if err != nil {
 		return err
 	}
@@ -24,6 +41,40 @@ func (u *Usecase) TcSwapScanEvents(ctx context.Context) error {
 	)
 	if len(errs) > 0 {
 		return errs[0]
+	} else {
+		u.TcSwapCreateOrUpdateCurrentScanBlock(ctx, eventResp.LastBlockNumber)
+	}
+	return nil
+}
+
+func (u *Usecase) TcSwapCreateOrUpdateCurrentScanBlock(ctx context.Context, endBlock int64) error {
+	configName := "swap_scan_current_block_number"
+	dbSwapConfig, err := u.Repo.FindSwapConfig(ctx, entity.SwapConfigsFilter{
+		Name: configName,
+	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+	isCreated := false
+	if dbSwapConfig == nil {
+		dbSwapConfig = &entity.SwapConfigs{}
+		isCreated = true
+	}
+	dbSwapConfig.Name = configName
+	dbSwapConfig.Value = strconv.FormatInt(endBlock, 10)
+	if isCreated {
+		_, err = u.Repo.InsertOne(dbSwapConfig)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	} else {
+		err = u.Repo.UpdateSwapConfig(ctx, dbSwapConfig)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
 	}
 	return nil
 }

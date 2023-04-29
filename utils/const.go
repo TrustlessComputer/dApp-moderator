@@ -141,6 +141,7 @@ const (
 	COLLECTION_USERS          string = "users"
 	COLLECTION_USER_HISTORIES string = "user_histories"
 
+	COLLECTION_SWAP_CONFIGS     string = "swap_configs"
 	COLLECTION_SWAP_PAIR        string = "swap_pair"
 	COLLECTION_SWAP_PAIR_SYNC   string = "swap_pair_sync"
 	COLLECTION_SWAP_PAIR_EVENTS string = "swap_pair_events"
