@@ -3,18 +3,19 @@ package entity
 import (
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/utils"
-	"math/big"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type SwapPairSync struct {
 	BaseEntity      `bson:",inline"`
-	TxHash          string    `json:"tx_hash" bson:"tx_hash"`
-	ContractAddress string    `json:"contract_address" bson:"contract_address"`
-	Timestamp       time.Time `json:"timestamp" bson:"timestamp"`
-	Reserve0        *big.Int  `json:"reserve0" bson:"reserve0"`
-	Reserve1        *big.Int  `json:"reserve1" bson:"reserve1"`
-	Index           uint      `json:"log_index" bson:"log_index"`
+	TxHash          string               `json:"tx_hash" bson:"tx_hash,omitempty"`
+	ContractAddress string               `json:"contract_address" bson:"contract_address,omitempty"`
+	Timestamp       time.Time            `json:"timestamp" bson:"timestamp,omitempty"`
+	Reserve0        primitive.Decimal128 `json:"reserve0" bson:"reserve0,omitempty"`
+	Reserve1        primitive.Decimal128 `json:"reserve1" bson:"reserve1,omitempty"`
+	Index           uint                 `json:"log_index" bson:"log_index,omitempty"`
 }
 
 func (t *SwapPairSync) CollectionName() string {

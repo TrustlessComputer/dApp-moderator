@@ -4,10 +4,12 @@ import (
 	"context"
 	"dapp-moderator/external/blockchain_api"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"strings"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -98,7 +100,7 @@ func (u *Usecase) TcSwapCreatedPair(ctx context.Context, eventResp *blockchain_a
 		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
 		swapPair.Pair = strings.ToLower(eventResp.Pair)
 		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
-		swapPair.Arg3 = eventResp.Arg3
+		swapPair.Arg3 = eventResp.Arg3.Int64()
 		swapPair.Token0 = eventResp.Token0
 		swapPair.Token1 = eventResp.Token1
 		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
@@ -128,8 +130,8 @@ func (u *Usecase) TcSwapPairCreateEvent(ctx context.Context, eventResp *blockcha
 		swapPair := &entity.SwapPairEvents{}
 		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
 		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
-		swapPair.Amount0 = eventResp.Amount0
-		swapPair.Amount1 = eventResp.Amount1
+		swapPair.Amount0, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Amount0, 18).String())
+		swapPair.Amount1, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Amount1, 18).String())
 		swapPair.Sender = eventResp.Sender
 		swapPair.To = eventResp.To
 		swapPair.EventType = eventType
@@ -160,8 +162,8 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 		swapPair := &entity.SwapPairSync{}
 		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
 		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
-		swapPair.Reserve0 = eventResp.Reserve0
-		swapPair.Reserve1 = eventResp.Reserve1
+		swapPair.Reserve0, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18).String())
+		swapPair.Reserve1, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18).String())
 		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
 		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {

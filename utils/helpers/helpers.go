@@ -3,7 +3,9 @@ package helpers
 import (
 	"crypto/md5"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math/big"
 	"regexp"
 	"strings"
 
@@ -137,4 +139,28 @@ func ReplaceToken(token string) string {
 
 func NftsOfContractPageKey(contract string) string {
 	return fmt.Sprintf("contract.%s.nfts.page", contract)
+}
+
+func ConvertWeiToBigFloat(amt *big.Int, decimals uint) *big.Float {
+	if amt == nil {
+		return big.NewFloat(0.0)
+	}
+
+	if amt.Cmp(big.NewInt(0)) < 0 {
+		panic(errors.New("amount is small than 0"))
+	}
+	amtFloat := new(big.Float).SetPrec(1024).SetInt(amt)
+	decimalFloat := new(big.Float).SetPrec(1024).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
+	retFloat := new(big.Float).Quo(amtFloat, decimalFloat)
+	return retFloat
+}
+
+func ConvertWeiToBigFloatNegative(amt *big.Int, decimals uint) *big.Float {
+	if amt == nil {
+		return big.NewFloat(0.0)
+	}
+	amtFloat := new(big.Float).SetPrec(1024).SetInt(amt)
+	decimalFloat := new(big.Float).SetPrec(1024).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
+	retFloat := new(big.Float).Quo(amtFloat, decimalFloat)
+	return retFloat
 }

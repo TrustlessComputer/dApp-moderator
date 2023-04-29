@@ -49,7 +49,10 @@ func init() {
 	}
 
 	mongoCnn := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", c.Databases.Mongo.Scheme, c.Databases.Mongo.User, c.Databases.Mongo.Pass, c.Databases.Mongo.Host)
-	// mongoCnn := "mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb"
+	if c.ENV == "dev" {
+		mongoCnn = "mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb"
+	}
+
 	mongoDbConnection, err := connections.NewMongo(mongoCnn)
 	if err != nil {
 		logger.AtLog().Logger.Error("Cannot connect mongoDB ", zap.Error(err))
