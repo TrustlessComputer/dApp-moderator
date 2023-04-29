@@ -3,22 +3,23 @@ package entity
 import (
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/utils"
-	"math/big"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type SwapPairSwapHistories struct {
 	BaseEntity      `bson:",inline"`
-	TxHash          string    `json:"tx_hash" bson:"tx_hash"`
-	ContractAddress string    `json:"contract_address"  bson:"contract_address"`
-	Timestamp       time.Time `json:"timestamp"  bson:"timestamp"`
-	Sender          string    `json:"sender"  bson:"sender"`
-	To              string    `json:"to"  bson:"to"`
-	Amount0In       *big.Int  `json:"amount0_in"  bson:"amount0_in"`
-	Amount1In       *big.Int  `json:"amount1_in"  bson:"amount1_in"`
-	Amount0Out      *big.Int  `json:"amount0_out"  bson:"amount0_out"`
-	Amount1Out      *big.Int  `json:"amount1_out"  bson:"amount1_out"`
-	Index           uint      `json:"log_index"  bson:"log_index"`
+	TxHash          string               `json:"tx_hash" bson:"tx_hash"`
+	ContractAddress string               `json:"contract_address"  bson:"contract_address"`
+	Timestamp       time.Time            `json:"timestamp"  bson:"timestamp"`
+	Sender          string               `json:"sender"  bson:"sender"`
+	To              string               `json:"to"  bson:"to"`
+	Amount0In       primitive.Decimal128 `json:"amount0_in"  bson:"amount0_in"`
+	Amount1In       primitive.Decimal128 `json:"amount1_in"  bson:"amount1_in"`
+	Amount0Out      primitive.Decimal128 `json:"amount0_out"  bson:"amount0_out"`
+	Amount1Out      primitive.Decimal128 `json:"amount1_out"  bson:"amount1_out"`
+	Index           uint                 `json:"log_index"  bson:"log_index"`
 }
 
 func (t *SwapPairSwapHistories) CollectionName() string {
