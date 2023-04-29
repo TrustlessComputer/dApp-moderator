@@ -1,0 +1,200 @@
+package usecase
+
+import (
+	"context"
+	"dapp-moderator/external/blockchain_api"
+	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils/logger"
+	"strings"
+	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
+)
+
+func (u *Usecase) TcSwapScanEvents(ctx context.Context) error {
+	eventResp, err := u.BlockChainApi.TcSwapEvents(0, 0)
+	if err != nil {
+		return err
+	}
+	errs := u.TcSwapEventsByTransactionEventResp(
+		ctx, eventResp,
+	)
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
+}
+
+func (u *Usecase) TcSwapScanEventsByTransactionHash(ctx context.Context, txHash string) error {
+	eventResp, err := u.BlockChainApi.TcSwapEventsByTransaction(txHash)
+	if err != nil {
+		return err
+	}
+	errs := u.TcSwapEventsByTransactionEventResp(
+		ctx, eventResp,
+	)
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
+}
+
+func (u *Usecase) TcSwapEventsByTransactionEventResp(ctx context.Context, eventResp *blockchain_api.TcSwapEventResp) []error {
+	var err error
+	var errs []error
+	for _, event := range eventResp.PairCreated {
+		err = u.TcSwapCreatedPair(ctx, event)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	for _, event := range eventResp.PairMint {
+		err = u.TcSwapPairCreateEvent(ctx, event, entity.SwapPairEventsTypeMint)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	for _, event := range eventResp.PairBurn {
+		err = u.TcSwapPairCreateEvent(ctx, event, entity.SwapPairEventsTypeBurn)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	for _, event := range eventResp.PairSync {
+		err = u.TcSwapPairCreateSyncEvent(ctx, event)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	for _, event := range eventResp.Swap {
+		err = u.TcSwapPairCreateSwapEvent(ctx, event)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errs
+}
+
+func (u *Usecase) TcSwapCreatedPair(ctx context.Context, eventResp *blockchain_api.TcSwapPairCreatedEventResp) error {
+	// check if token exist
+	dbSwapPair, err := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+		Pair:   strings.ToLower(eventResp.Pair),
+		TxHash: strings.ToLower(eventResp.TxHash),
+	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+
+	if dbSwapPair != nil {
+		return nil
+	} else {
+		swapPair := &entity.SwapPair{}
+		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
+		swapPair.Pair = strings.ToLower(eventResp.Pair)
+		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
+		swapPair.Arg3 = eventResp.Arg3
+		swapPair.Token0 = eventResp.Token0
+		swapPair.Token1 = eventResp.Token1
+		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		_, err = u.Repo.InsertOne(swapPair)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *Usecase) TcSwapPairCreateEvent(ctx context.Context, eventResp *blockchain_api.TcSwapMintBurnEventResp, eventType entity.SwapPairEventsType) error {
+	// check if token exist
+	dbSwapPair, err := u.Repo.FindSwapPairEvents(ctx, entity.SwapPairEventFilter{
+		ContractAddress: strings.ToLower(eventResp.ContractAddress),
+		TxHash:          strings.ToLower(eventResp.TxHash),
+	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+
+	if dbSwapPair != nil {
+		return nil
+	} else {
+		swapPair := &entity.SwapPairEvents{}
+		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
+		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
+		swapPair.Amount0 = eventResp.Amount0
+		swapPair.Amount1 = eventResp.Amount1
+		swapPair.Sender = eventResp.Sender
+		swapPair.To = eventResp.To
+		swapPair.EventType = eventType
+		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		_, err = u.Repo.InsertOne(swapPair)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *blockchain_api.TcSwapSyncEventResp) error {
+	// check if token exist
+	dbSwapPair, err := u.Repo.FindSwapPairSync(ctx, entity.SwapPairSyncFilter{
+		ContractAddress: strings.ToLower(eventResp.ContractAddress),
+		TxHash:          strings.ToLower(eventResp.TxHash),
+	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+
+	if dbSwapPair != nil {
+		return nil
+	} else {
+		swapPair := &entity.SwapPairSync{}
+		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
+		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
+		swapPair.Reserve0 = eventResp.Reserve0
+		swapPair.Reserve1 = eventResp.Reserve1
+		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		_, err = u.Repo.InsertOne(swapPair)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *blockchain_api.TcSwapSwapEventResp) error {
+	// check if token exist
+	dbSwapPair, err := u.Repo.FindSwapPairSwapHistory(ctx, entity.SwapPairSwapHistoriesFilter{
+		ContractAddress: strings.ToLower(eventResp.ContractAddress),
+		TxHash:          strings.ToLower(eventResp.TxHash),
+	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+
+	if dbSwapPair != nil {
+		return nil
+	} else {
+		swapPair := &entity.SwapPairSwapHistories{}
+		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
+		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
+		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		_, err = u.Repo.InsertOne(swapPair)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
+	return nil
+}
