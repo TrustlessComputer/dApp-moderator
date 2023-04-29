@@ -98,6 +98,17 @@ func (h *httpDelivery) RegisterV1Routes() {
 	admin.HandleFunc("/redis", h.deleteAllRedis).Methods("DELETE")
 	admin.HandleFunc("/redis/{key}", h.deleteRedis).Methods("DELETE")
 
+	// uniswap
+	swapRoutes := api.PathPrefix("/swap").Subrouter()
+	swapRoutes.HandleFunc("/scan-event", h.swapScanEvents).Methods("GET")
+	swapRoutes.HandleFunc("/scan", h.swapScanHash).Methods("GET")
+
+	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
+	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
+
+	swapPairRoutes := swapRoutes.PathPrefix("/pair").Subrouter()
+	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
+	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

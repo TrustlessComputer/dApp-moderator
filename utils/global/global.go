@@ -3,6 +3,7 @@ package global
 import (
 	"dapp-moderator/external/bfs_service"
 	"dapp-moderator/external/block_stream"
+	"dapp-moderator/external/blockchain_api"
 	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/external/quicknode"
@@ -33,4 +34,5 @@ type Global struct {
 	TokenExplorer    *token_explorer.TokenExplorer
 	Auth2            *oauth2service.Auth2
 	DiscordClient    *discordclient.Client
+	BlockChainApi    *blockchain_api.BlockChainApi
 }
