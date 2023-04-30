@@ -16,7 +16,8 @@ import (
 )
 
 func (u *Usecase) TcSwapScanEvents(ctx context.Context) error {
-	startBlocks, err := u.Repo.ParseConfigByInt(ctx, "swap_scan_current_block_number")
+	configName := "swap_scan_current_block_number"
+	startBlocks, err := u.Repo.ParseConfigByInt(ctx, configName)
 	if err != nil {
 		return err
 	}
@@ -35,13 +36,51 @@ func (u *Usecase) TcSwapScanEvents(ctx context.Context) error {
 	if len(errs) > 0 {
 		return errs[0]
 	} else {
-		u.TcSwapCreateOrUpdateCurrentScanBlock(ctx, eventResp.LastBlockNumber)
+		u.TcSwapCreateOrUpdateCurrentScanBlock(ctx, eventResp.LastBlockNumber, configName)
+	}
+
+	u.TcSwapScanPairEvents(ctx, startBlocks)
+	return nil
+}
+
+func (u *Usecase) TcSwapScanPairEvents(ctx context.Context, startBlocks int64) error {
+	configName := "swap_scan_pair_current_block_number"
+	currentBlocks, _ := u.Repo.ParseConfigByInt(ctx, configName)
+	if currentBlocks == 0 {
+		currentBlocks = startBlocks
+	}
+	contracts := []string{}
+	pairQuery := entity.SwapPairFilter{}
+	pairQuery.Limit = 10000
+	pairQuery.Page = 1
+
+	pairs, err := u.Repo.FindSwapPairs(ctx, pairQuery)
+	if err != nil {
+		logger.AtLog.Logger.Error("TcSwapScanPairEvents", zap.Error(err))
+		return err
+	}
+	for _, item := range pairs {
+		contracts = append(contracts, item.Pair)
+	}
+	contracts = append(contracts, u.Repo.ParseConfigByString(ctx, "swap_factory_contract_address"))
+	contracts = append(contracts, u.Repo.ParseConfigByString(ctx, "swap_router_contract_address"))
+
+	eventResp, err := u.BlockChainApi.TcSwapEvents(contracts, 0, currentBlocks, 0)
+	if err != nil {
+		return err
+	}
+	errs := u.TcSwapEventsByTransactionEventResp(
+		ctx, eventResp,
+	)
+	if len(errs) > 0 {
+		return errs[0]
+	} else {
+		u.TcSwapCreateOrUpdateCurrentScanBlock(ctx, eventResp.LastBlockNumber, configName)
 	}
 	return nil
 }
 
-func (u *Usecase) TcSwapCreateOrUpdateCurrentScanBlock(ctx context.Context, endBlock int64) error {
-	configName := "swap_scan_current_block_number"
+func (u *Usecase) TcSwapCreateOrUpdateCurrentScanBlock(ctx context.Context, endBlock int64, configName string) error {
 	dbSwapConfig, err := u.Repo.FindSwapConfig(ctx, entity.SwapConfigsFilter{
 		Name: configName,
 	})

@@ -144,12 +144,15 @@ func (c *BlockChainApi) TcSwapEventResp(resp *TcSwapEventResp, log *types.Log) e
 	if err != nil {
 		return err
 	}
-	fmt.Println(log.TxHash.Hex())
+	if log.TxHash.Hex() == "0x5bdcee3e9479bf0409837c41325403bc2a2ecd3b944ceeeb8bbda9ef13fbacfd" {
+		fmt.Println(log.TxHash.Hex())
+	}
 
 	uniswap, err := uniswapfactory.NewUniswapfactory(log.Address, client)
 	if err != nil {
 		return err
 	}
+
 	// ParsePoolCreated
 	{
 		logParsed, err := uniswap.ParsePairCreated(*log)
@@ -328,7 +331,7 @@ func (c *BlockChainApi) TcSwapEvents(contracts []string, numBlocks, startBlock, 
 				return nil, err
 			}
 		}
-		lastNumber -= 25
+		lastNumber -= c.ScanLimitBlockNumber
 	}
 	return resp, nil
 }
