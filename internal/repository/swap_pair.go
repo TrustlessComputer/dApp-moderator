@@ -28,6 +28,12 @@ func (r *Repository) parseSwapPairFilter(filter entity.SwapPairFilter) bson.M {
 	if filter.TxHash != "" {
 		andCond = append(andCond, bson.M{"tx_hash": filter.TxHash})
 	}
+	if filter.Token != "" {
+		andCond = append(andCond, bson.M{"$or": []bson.M{
+			{"token0": filter.Token},
+			{"token1": filter.Token},
+		}})
+	}
 
 	if len(andCond) == 0 {
 		return bson.M{}
@@ -72,8 +78,8 @@ func (r *Repository) UpdateSwapPair(ctx context.Context, pair *entity.SwapPair) 
 	return nil
 }
 
-func (r *Repository) FindTokensInPoolByContracts(ctx context.Context, contracts []string, filter entity.TokenFilter) ([]entity.Token, error) {
-	tokens := []entity.Token{}
+func (r *Repository) FindTokensInPoolByContracts(ctx context.Context, contracts []string, filter entity.TokenFilter) ([]*entity.Token, error) {
+	tokens := []*entity.Token{}
 	// pagination
 	numToSkip := (filter.Page - 1) * filter.Limit
 	// Set the options for the query
@@ -88,7 +94,7 @@ func (r *Repository) FindTokensInPoolByContracts(ctx context.Context, contracts 
 
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		token := entity.Token{}
+		token := &entity.Token{}
 		err = cursor.Decode(token)
 		if err != nil {
 			return nil, err

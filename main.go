@@ -50,7 +50,7 @@ func init() {
 
 	mongoCnn := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", c.Databases.Mongo.Scheme, c.Databases.Mongo.User, c.Databases.Mongo.Pass, c.Databases.Mongo.Host)
 	if c.ENV == "dev" {
-		mongoCnn = "mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb"
+		mongoCnn = "mongodb://127.0.0.1:27017/?retryWrites=true&w=majority"
 	}
 
 	mongoDbConnection, err := connections.NewMongo(mongoCnn)

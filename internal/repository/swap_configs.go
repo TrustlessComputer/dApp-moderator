@@ -4,6 +4,7 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,6 +17,49 @@ func (r *Repository) FindSwapConfig(ctx context.Context, filter entity.SwapConfi
 		return nil, err
 	}
 	return &swapConfigs, nil
+}
+
+func (r *Repository) FindSwapConfigByName(ctx context.Context, configName string) (string, error) {
+	var swapConfigs entity.SwapConfigs
+	filter := entity.SwapConfigsFilter{
+		Name: configName,
+	}
+
+	err := r.DB.Collection(utils.COLLECTION_SWAP_CONFIGS).FindOne(ctx, r.parseSwapConfigFilter(filter)).Decode(&swapConfigs)
+	if err != nil {
+		return "", err
+	}
+	return swapConfigs.Value, nil
+}
+
+func (r *Repository) ParseConfigByInt(ctx context.Context, configName string) (int64, error) {
+	var swapConfigs entity.SwapConfigs
+	filter := entity.SwapConfigsFilter{
+		Name: configName,
+	}
+
+	err := r.DB.Collection(utils.COLLECTION_SWAP_CONFIGS).FindOne(ctx, r.parseSwapConfigFilter(filter)).Decode(&swapConfigs)
+	if err != nil {
+		return 0, err
+	}
+	intValue, err := strconv.ParseInt(swapConfigs.Value, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return intValue, nil
+}
+
+func (r *Repository) ParseConfigByString(ctx context.Context, configName string) string {
+	var swapConfigs entity.SwapConfigs
+	filter := entity.SwapConfigsFilter{
+		Name: configName,
+	}
+
+	err := r.DB.Collection(utils.COLLECTION_SWAP_CONFIGS).FindOne(ctx, r.parseSwapConfigFilter(filter)).Decode(&swapConfigs)
+	if err != nil {
+		return ""
+	}
+	return swapConfigs.Value
 }
 
 func (r *Repository) parseSwapConfigFilter(filter entity.SwapConfigsFilter) bson.M {

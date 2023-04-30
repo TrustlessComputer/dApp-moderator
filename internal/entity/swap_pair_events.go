@@ -15,15 +15,15 @@ const SwapPairEventsTypeBurn SwapPairEventsType = "burn"
 
 type SwapPairEvents struct {
 	BaseEntity      `bson:",inline"`
-	TxHash          string               `json:"tx_hash" bson:"tx_hash"`
-	ContractAddress string               `json:"contract_address"  bson:"contract_address"`
-	Timestamp       time.Time            `json:"timestamp"  bson:"timestamp"`
-	Sender          string               `json:"sender"  bson:"sender"`
-	To              string               `json:"to"  bson:"to"`
-	EventType       SwapPairEventsType   `json:"event_type"  bson:"event_type"`
-	Amount0         primitive.Decimal128 `json:"amount0"  bson:"amount0"`
-	Amount1         primitive.Decimal128 `json:"amount1"  bson:"amount1"`
-	Index           uint                 `json:"log_index"  bson:"log_index"`
+	TxHash          string               `json:"tx_hash" bson:"tx_hash,omitempty"`
+	ContractAddress string               `json:"contract_address"  bson:"contract_address,omitempty"`
+	Timestamp       time.Time            `json:"timestamp"  bson:"timestamp,omitempty"`
+	Sender          string               `json:"sender"  bson:"sender,omitempty"`
+	To              string               `json:"to"  bson:"to,omitempty"`
+	EventType       SwapPairEventsType   `json:"event_type"  bson:"event_type,omitempty"`
+	Amount0         primitive.Decimal128 `json:"amount0"  bson:"amount0,omitempty"`
+	Amount1         primitive.Decimal128 `json:"amount1"  bson:"amount1,omitempty"`
+	Index           uint                 `json:"log_index"  bson:"log_index,omitempty"`
 }
 
 func (t *SwapPairEvents) CollectionName() string {
