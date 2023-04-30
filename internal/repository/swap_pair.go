@@ -78,8 +78,8 @@ func (r *Repository) UpdateSwapPair(ctx context.Context, pair *entity.SwapPair) 
 	return nil
 }
 
-func (r *Repository) FindTokensInPoolByContracts(ctx context.Context, contracts []string, filter entity.TokenFilter) ([]entity.Token, error) {
-	tokens := []entity.Token{}
+func (r *Repository) FindTokensInPoolByContracts(ctx context.Context, contracts []string, filter entity.TokenFilter) ([]*entity.Token, error) {
+	tokens := []*entity.Token{}
 	// pagination
 	numToSkip := (filter.Page - 1) * filter.Limit
 	// Set the options for the query
@@ -94,7 +94,7 @@ func (r *Repository) FindTokensInPoolByContracts(ctx context.Context, contracts 
 
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		token := entity.Token{}
+		token := &entity.Token{}
 		err = cursor.Decode(token)
 		if err != nil {
 			return nil, err
