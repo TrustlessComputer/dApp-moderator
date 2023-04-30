@@ -28,6 +28,12 @@ func (r *Repository) parseSwapPairFilter(filter entity.SwapPairFilter) bson.M {
 	if filter.TxHash != "" {
 		andCond = append(andCond, bson.M{"tx_hash": filter.TxHash})
 	}
+	if filter.Token != "" {
+		andCond = append(andCond, bson.M{"$or": []bson.M{
+			{"token0": filter.Token},
+			{"token1": filter.Token},
+		}})
+	}
 
 	if len(andCond) == 0 {
 		return bson.M{}

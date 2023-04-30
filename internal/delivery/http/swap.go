@@ -97,7 +97,8 @@ func (h *httpDelivery) getTokensInPool(w http.ResponseWriter, r *http.Request) {
 				return nil, err
 			}
 			isTest := req.Query(r, "is_test", "")
-			data, err := h.Usecase.FindTokensInPool(ctx, pagination, isTest)
+			fromToken := req.Query(r, "from_token", "")
+			data, err := h.Usecase.FindTokensInPool(ctx, pagination, fromToken, isTest)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
 				return nil, err

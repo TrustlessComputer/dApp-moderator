@@ -16,23 +16,16 @@ import (
 )
 
 func (u *Usecase) TcSwapScanEvents(ctx context.Context) error {
-	configName := "swap_scan_current_block_number"
-	dbSwapConfig, err := u.Repo.FindSwapConfig(ctx, entity.SwapConfigsFilter{
-		Name: configName,
-	})
-	if err != nil && err != mongo.ErrNoDocuments {
-		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+	startBlocks, err := u.Repo.ParseConfigByInt(ctx, "swap_scan_current_block_number")
+	if err != nil {
 		return err
 	}
-	startBlocks := int64(0)
-	if dbSwapConfig != nil {
-		startBlocks, err = strconv.ParseInt(dbSwapConfig.Value, 10, 64)
-		if err != nil {
-			return err
-		}
-	}
 
-	eventResp, err := u.BlockChainApi.TcSwapEvents(0, startBlocks, 0)
+	contracts := []string{}
+	contracts = append(contracts, u.Repo.ParseConfigByString(ctx, "swap_factory_contract_address"))
+	contracts = append(contracts, u.Repo.ParseConfigByString(ctx, "swap_router_contract_address"))
+
+	eventResp, err := u.BlockChainApi.TcSwapEvents(contracts, 0, startBlocks, 0)
 	if err != nil {
 		return err
 	}

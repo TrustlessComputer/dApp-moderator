@@ -26,6 +26,7 @@ type SwapPairFilter struct {
 	BaseFilters
 	Pair   string
 	TxHash string
+	Token  string
 }
 
 func (t *SwapPairFilter) FromPagination(pag request.PaginationReq) {
