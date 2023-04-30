@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/logger"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
@@ -100,5 +101,56 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 	data = tokens
 
 	logger.AtLog.Logger.Info("FindTokensInPool", zap.Any("data", data))
+	return data, nil
+}
+
+func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, isTest string) (interface{}, error) {
+	var data interface{}
+	query := entity.TokenFilter{}
+	query.FromPagination(filter)
+
+	pairQuery := entity.SwapPairFilter{}
+	pairQuery.Limit = 10000
+	pairQuery.Page = 1
+
+	var reports []*entity.SwapPairReport
+	// if len(contracts) > 0 {
+	// 	tokens, err = u.Repo.FindTokensInPoolByContracts(ctx, contracts, query)
+	// 	if err != nil {
+	// 		logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+	// 		return nil, err
+	// 	}
+	// }
+
+	if len(reports) == 0 && isTest != "" {
+		data, err := u.Repo.FindTokens(ctx, query)
+		if err != nil {
+			logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+			return nil, err
+		}
+
+		for _, i := range data {
+			token0 := &entity.SwapPairReport{}
+			token0.Address = i.Address
+			token0.Decimal = i.Decimal
+			token0.Description = i.Description
+			token0.Index = i.Index
+			token0.Name = i.Name
+			token0.Owner = i.Owner
+			token0.Percent = 24.01
+			token0.Price, _ = primitive.ParseDecimal128("0.001")
+			token0.Volume, _ = primitive.ParseDecimal128("1.12")
+			token0.Slug = i.Slug
+			token0.Symbol = i.Symbol
+			token0.Thumbnail = i.Thumbnail
+			token0.TotalSupply = i.TotalSupply
+			token0.Social = i.Social
+			reports = append(reports, token0)
+		}
+
+	}
+	data = reports
+
+	logger.AtLog.Logger.Info("FindTokensReport", zap.Any("data", data))
 	return data, nil
 }
