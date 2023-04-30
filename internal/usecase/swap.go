@@ -236,6 +236,14 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
 		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
 		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		swapPair.Amount0In, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Amount0In, 18).String())
+		swapPair.Amount0Out, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Amount0Out, 18).String())
+		swapPair.Amount1In, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Amount1In, 18).String())
+		swapPair.Amount1Out, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Amount1Out, 18).String())
+		swapPair.Sender = eventResp.Sender
+		swapPair.To = eventResp.To
+		swapPair.Index = eventResp.Index
+
 		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
