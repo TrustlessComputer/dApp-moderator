@@ -43,7 +43,7 @@ func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.Pa
 	return data, nil
 }
 
-func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.PaginationReq, isTest string) (interface{}, error) {
+func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.PaginationReq, fromToken, isTest string) (interface{}, error) {
 	var data interface{}
 	var err error
 	query := entity.TokenFilter{}
@@ -53,6 +53,9 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 	pairQuery := entity.SwapPairFilter{}
 	pairQuery.Limit = 10000
 	pairQuery.Page = 1
+	if fromToken != "" {
+		pairQuery.Token = fromToken
+	}
 
 	pairs, err := u.Repo.FindSwapPairs(ctx, pairQuery)
 	if err != nil {
@@ -61,8 +64,13 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 	}
 
 	for _, pair := range pairs {
-		contracts = append(contracts, pair.Token0)
-		contracts = append(contracts, pair.Token1)
+		if fromToken == "" || (fromToken != "" && fromToken != pair.Token0) {
+			contracts = append(contracts, pair.Token0)
+		}
+
+		if fromToken == "" || (fromToken != "" && fromToken != pair.Token1) {
+			contracts = append(contracts, pair.Token1)
+		}
 	}
 
 	var tokens []entity.Token

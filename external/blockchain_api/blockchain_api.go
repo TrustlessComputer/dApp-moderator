@@ -27,23 +27,19 @@ type BlockResp struct {
 }
 
 type BlockChainApi struct {
-	BaseURL                      string
-	ChainID                      int64
-	UniswapV2FactoryContractAddr string
-	UniswapV2RouterContractAddr  string
-	client                       *ethclient.Client
-	InterruptMili                int
-	BlockMap                     map[uint64]*BlockResp
-	ScanLimitBlockNumber         int64
+	BaseURL              string
+	ChainID              int64
+	client               *ethclient.Client
+	InterruptMili        int
+	BlockMap             map[uint64]*BlockResp
+	ScanLimitBlockNumber int64
 }
 
 func NewBlockChainApi(conf *config.Config, cache redis.IRedisCache) *BlockChainApi {
 	return &BlockChainApi{
-		BaseURL:                      conf.Swap.BaseURL,
-		UniswapV2FactoryContractAddr: conf.Swap.UniswapV2FactoryContractAddr,
-		UniswapV2RouterContractAddr:  conf.Swap.UniswapV2RouterContractAddr,
-		InterruptMili:                100,
-		ScanLimitBlockNumber:         50,
+		BaseURL:              conf.Swap.BaseURL,
+		InterruptMili:        100,
+		ScanLimitBlockNumber: 50,
 	}
 }
 
@@ -284,15 +280,16 @@ func (c *BlockChainApi) NewTcSwapEventResp() *TcSwapEventResp {
 	return &TcSwapEventResp{}
 }
 
-func (c *BlockChainApi) TcSwapEvents(numBlocks, startBlock, endBlock int64) (*TcSwapEventResp, error) {
+func (c *BlockChainApi) TcSwapEvents(contracts []string, numBlocks, startBlock, endBlock int64) (*TcSwapEventResp, error) {
 	resp := c.NewTcSwapEventResp()
 	client, err := c.getClient()
 	if err != nil {
 		return nil, err
 	}
 	contractAddresses := []common.Address{}
-	contractAddresses = append(contractAddresses, common.HexToAddress(c.UniswapV2FactoryContractAddr))
-	contractAddresses = append(contractAddresses, common.HexToAddress(c.UniswapV2RouterContractAddr))
+	for _, item := range contracts {
+		contractAddresses = append(contractAddresses, common.HexToAddress(item))
+	}
 
 	ctx := context.Background()
 	lastBlock, err := client.HeaderByNumber(ctx, nil)
