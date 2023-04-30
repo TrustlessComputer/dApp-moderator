@@ -10,16 +10,16 @@ import (
 
 type SwapPairSwapHistories struct {
 	BaseEntity      `bson:",inline"`
-	TxHash          string               `json:"tx_hash" bson:"tx_hash"`
-	ContractAddress string               `json:"contract_address"  bson:"contract_address"`
-	Timestamp       time.Time            `json:"timestamp"  bson:"timestamp"`
-	Sender          string               `json:"sender"  bson:"sender"`
-	To              string               `json:"to"  bson:"to"`
-	Amount0In       primitive.Decimal128 `json:"amount0_in"  bson:"amount0_in"`
-	Amount1In       primitive.Decimal128 `json:"amount1_in"  bson:"amount1_in"`
-	Amount0Out      primitive.Decimal128 `json:"amount0_out"  bson:"amount0_out"`
-	Amount1Out      primitive.Decimal128 `json:"amount1_out"  bson:"amount1_out"`
-	Index           uint                 `json:"log_index"  bson:"log_index"`
+	TxHash          string               `json:"tx_hash" bson:"tx_hash,omitempty"`
+	ContractAddress string               `json:"contract_address"  bson:"contract_address,omitempty"`
+	Timestamp       time.Time            `json:"timestamp"  bson:"timestamp,omitempty"`
+	Sender          string               `json:"sender"  bson:"sender,omitempty"`
+	To              string               `json:"to"  bson:"to,omitempty"`
+	Amount0In       primitive.Decimal128 `json:"amount0_in"  bson:"amount0_in,omitempty"`
+	Amount1In       primitive.Decimal128 `json:"amount1_in"  bson:"amount1_in,omitempty"`
+	Amount0Out      primitive.Decimal128 `json:"amount0_out"  bson:"amount0_out,omitempty"`
+	Amount1Out      primitive.Decimal128 `json:"amount1_out"  bson:"amount1_out,omitempty"`
+	Index           uint                 `json:"log_index"  bson:"log_index,omitempty"`
 }
 
 func (t *SwapPairSwapHistories) CollectionName() string {

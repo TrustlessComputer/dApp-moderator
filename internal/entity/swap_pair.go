@@ -4,7 +4,27 @@ import (
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/utils"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+type SwapPairReport struct {
+	Address         string               `json:"address" bson:"address"`
+	TotalSupply     string               `json:"total_supply" bson:"total_supply"`
+	Owner           string               `json:"owner" bson:"owner"` // Owner of a contract (contract address)
+	Decimal         int                  `json:"decimal" bson:"decimal"`
+	DeployedAtBlock int                  `json:"deployed_at_block" bson:"deployed_at_block"`
+	Slug            string               `json:"slug" bson:"slug"`
+	Symbol          string               `json:"symbol" bson:"symbol"`
+	Name            string               `json:"name" bson:"name"`
+	Thumbnail       string               `json:"thumbnail" bson:"thumbnail"`
+	Description     string               `json:"description" bson:"description"`
+	Social          Social               `json:"social" bson:"social"`
+	Index           int64                `json:"index" bson:"index"`
+	Volume          primitive.Decimal128 `json:"volume" bson:"volume"`
+	Price           primitive.Decimal128 `json:"price" bson:"price"`
+	Percent         float64              `json:"percent" bson:"percent"`
+}
 
 type SwapPair struct {
 	BaseEntity      `bson:",inline"`
@@ -26,6 +46,7 @@ type SwapPairFilter struct {
 	BaseFilters
 	Pair   string
 	TxHash string
+	Token  string
 }
 
 func (t *SwapPairFilter) FromPagination(pag request.PaginationReq) {
