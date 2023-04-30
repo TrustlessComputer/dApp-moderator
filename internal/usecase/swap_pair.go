@@ -73,7 +73,7 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 		}
 	}
 
-	var tokens []entity.Token
+	var tokens []*entity.Token
 	if len(contracts) > 0 {
 		tokens, err = u.Repo.FindTokensInPoolByContracts(ctx, contracts, query)
 		if err != nil {
@@ -83,22 +83,17 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 	}
 
 	if len(tokens) == 0 && isTest != "" {
-		tokens, err = u.Repo.FindTokens(ctx, entity.TokenFilter{})
-		if err != nil {
-			logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
-			return nil, err
-		}
-		token0 := entity.Token{}
-		token0.Address = "0x9c24ef17fE784576f2906c9eE28b49d0A9b02532"
+		token0 := &entity.Token{}
+		token0.Address = "0x435bdab1bcB2fcf80e5cF47dba209E28c340c3Bf"
 		token0.Name = "WBTC"
 		token0.Symbol = "WBTC"
 		token0.Decimal = 18
 		tokens = append(tokens, token0)
 
-		token1 := entity.Token{}
-		token1.Address = "0xf50CbEf214ABE8D9a0ba4D8D7914A0511A9e1Aba"
-		token1.Name = "USDT"
-		token1.Symbol = "USDT"
+		token1 := &entity.Token{}
+		token1.Address = "0xA9CBb5F80445ff60faED26bFa37128F91Ac7E0E5"
+		token1.Name = "DUNGT"
+		token1.Symbol = "DUNGT"
 		token1.Decimal = 18
 		tokens = append(tokens, token1)
 	}
