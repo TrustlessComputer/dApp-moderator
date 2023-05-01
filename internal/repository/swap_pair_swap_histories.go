@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (r *Repository) FindSwapPairSwapHistory(ctx context.Context, filter entity.SwapPairSwapHistoriesFilter) (*entity.SwapPairSwapHistories, error) {
@@ -31,4 +32,30 @@ func (r *Repository) parseSwapPairSwapHistories(filter entity.SwapPairSwapHistor
 		return bson.M{}
 	}
 	return bson.M{"$and": andCond}
+}
+
+func (r *Repository) FindTokenReport(ctx context.Context, filter entity.SwapPairFilter) ([]*entity.SwapPairReport, error) {
+	var tokens []*entity.SwapPairReport
+
+	// pagination
+	numToSkip := (filter.Page - 1) * filter.Limit
+	// Set the options for the query
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT).Find(ctx, r.parseSwapPairFilter(filter), options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var token *entity.SwapPairReport
+		err = cursor.Decode(&token)
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, token)
+	}
+	return tokens, nil
 }
