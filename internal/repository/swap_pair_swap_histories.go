@@ -44,7 +44,7 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.SwapPair
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT).Find(ctx, r.parseSwapPairFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_VOLUME).Find(ctx, r.parseSwapPairFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
