@@ -148,6 +148,7 @@ const (
 	COLLECTION_SWAP_HISTORIES     string = "swap_swap_histories"
 	COLLECTION_SWAP_REPORT        string = "swap_token_report_view"
 	COLLECTION_SWAP_REPORT_VOLUME string = "swap_token_report_volume_format_view"
+	COLLECTION_SWAP_REPORT_FINAL  string = "swap_token_report_final_view"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"
 	EVM_NULL_ADDRESS                          string = "0x0000000000000000000000000000000000000000"
