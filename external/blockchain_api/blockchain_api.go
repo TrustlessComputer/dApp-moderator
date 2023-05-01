@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"dapp-moderator/utils/config"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
 	"dapp-moderator/utils/uniswapfactory"
 	"dapp-moderator/utils/uniswappair"
@@ -405,4 +406,28 @@ func (c *BlockChainApi) getBlock(n uint64) (*BlockResp, error) {
 
 func (b *BlockResp) Time() uint64 {
 	return b.time
+}
+
+func (c *BlockChainApi) GetBitcoinPrice() (float64, error) {
+	headers := make(map[string]string)
+	data, _, _, err := helpers.JsonRequest("https://api.coingecko.com/api/v3/simple/price?ids=BITCOIN&vs_currencies=USD", "GET", headers, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	type USDResp struct {
+		Usd float64 `json:"usd"`
+	}
+
+	type CoingeckoResp struct {
+		Bitcoin *USDResp `json:"bitcoin"`
+	}
+
+	resp := &CoingeckoResp{}
+	err = helpers.ParseData(data, resp)
+	if err != nil {
+		return 0, err
+	}
+
+	return resp.Bitcoin.Usd, nil
 }

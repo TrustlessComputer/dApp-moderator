@@ -22,7 +22,11 @@ type SwapPairReport struct {
 	Social          Social               `json:"social" bson:"social"`
 	Index           int64                `json:"index" bson:"index"`
 	Volume          primitive.Decimal128 `json:"volume" bson:"volume"`
+	BtcVolume       float64              `json:"btc_volume" bson:"btc_volume"`
+	UsdVolume       float64              `json:"usd_volume" bson:"usd_volume"`
 	Price           primitive.Decimal128 `json:"price" bson:"price"`
+	BtcPrice        float64              `json:"btc_price" bson:"btc_price"`
+	UsdPrice        float64              `json:"usd_price" bson:"usd_price"`
 	Percent         primitive.Decimal128 `json:"percent" bson:"percent"`
 }
 
