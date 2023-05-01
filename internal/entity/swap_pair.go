@@ -23,7 +23,7 @@ type SwapPairReport struct {
 	Index           int64                `json:"index" bson:"index"`
 	Volume          primitive.Decimal128 `json:"volume" bson:"volume"`
 	Price           primitive.Decimal128 `json:"price" bson:"price"`
-	Percent         float64              `json:"percent" bson:"percent"`
+	Percent         primitive.Decimal128 `json:"percent" bson:"percent"`
 }
 
 type SwapPair struct {
