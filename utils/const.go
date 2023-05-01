@@ -146,6 +146,7 @@ const (
 	COLLECTION_SWAP_PAIR_SYNC   string = "swap_pair_sync"
 	COLLECTION_SWAP_PAIR_EVENTS string = "swap_pair_events"
 	COLLECTION_SWAP_HISTORIES   string = "swap_swap_histories"
+	COLLECTION_SWAP_REPORT      string = "swap_token_report_view"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"
 	EVM_NULL_ADDRESS                          string = "0x0000000000000000000000000000000000000000"
