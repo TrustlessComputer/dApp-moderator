@@ -106,24 +106,20 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 
 func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, isTest string) (interface{}, error) {
 	var data interface{}
-	query := entity.TokenFilter{}
+	query := entity.SwapPairFilter{}
 	query.FromPagination(filter)
 
-	pairQuery := entity.SwapPairFilter{}
-	pairQuery.Limit = 10000
-	pairQuery.Page = 1
-
 	var reports []*entity.SwapPairReport
-	// if len(contracts) > 0 {
-	// 	tokens, err = u.Repo.FindTokensInPoolByContracts(ctx, contracts, query)
-	// 	if err != nil {
-	// 		logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
-	// 		return nil, err
-	// 	}
-	// }
+	reports, err := u.Repo.FindTokenReport(ctx, query)
+	if err != nil {
+		logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+		return nil, err
+	}
 
 	if len(reports) == 0 && isTest != "" {
-		data, err := u.Repo.FindTokens(ctx, query)
+		query1 := entity.TokenFilter{}
+		query1.FromPagination(filter)
+		data, err := u.Repo.FindTokens(ctx, query1)
 		if err != nil {
 			logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
 			return nil, err
