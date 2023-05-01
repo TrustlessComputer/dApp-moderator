@@ -109,6 +109,10 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 			item.BtcVolume = s
 			item.UsdVolume = s * btcPrice
 		}
+
+		if item.Address == "0xfB83c18569fB43f1ABCbae09Baf7090bFFc8CBBD" {
+			item.UsdPrice = btcPrice
+		}
 	}
 
 	logger.AtLog.Logger.Info("FindTokensReport", zap.Any("data", data))
