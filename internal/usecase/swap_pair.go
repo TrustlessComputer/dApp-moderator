@@ -45,7 +45,6 @@ func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.Pa
 }
 
 func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.PaginationReq, fromToken, isTest string) (interface{}, error) {
-	var data interface{}
 	var err error
 	query := entity.TokenFilter{}
 	query.FromPagination(filter)
@@ -74,7 +73,7 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 		}
 	}
 
-	var tokens []*entity.Token
+	tokens := []*entity.Token{}
 	if len(contracts) > 0 {
 		tokens, err = u.Repo.FindTokensInPoolByContracts(ctx, contracts, query)
 		if err != nil {
@@ -83,25 +82,8 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 		}
 	}
 
-	if len(tokens) == 0 && isTest != "" {
-		token0 := &entity.Token{}
-		token0.Address = "0x435bdab1bcB2fcf80e5cF47dba209E28c340c3Bf"
-		token0.Name = "WBTC"
-		token0.Symbol = "WBTC"
-		token0.Decimal = 18
-		tokens = append(tokens, token0)
-
-		token1 := &entity.Token{}
-		token1.Address = "0xA9CBb5F80445ff60faED26bFa37128F91Ac7E0E5"
-		token1.Name = "DUNGT"
-		token1.Symbol = "DUNGT"
-		token1.Decimal = 18
-		tokens = append(tokens, token1)
-	}
-	data = tokens
-
-	logger.AtLog.Logger.Info("FindTokensInPool", zap.Any("data", data))
-	return data, nil
+	logger.AtLog.Logger.Info("FindTokensInPool", zap.Any("data", tokens))
+	return tokens, nil
 }
 
 func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, isTest string) (interface{}, error) {
