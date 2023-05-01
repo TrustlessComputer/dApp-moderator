@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/logger"
+	"strconv"
 
 	"go.uber.org/zap"
 )
@@ -94,6 +95,20 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 	if err != nil {
 		logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
 		return nil, err
+	}
+
+	btcPrice, _ := u.BlockChainApi.GetBitcoinPrice()
+
+	for _, item := range reports {
+		if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {
+			item.BtcPrice = s
+			item.UsdPrice = s * btcPrice
+		}
+
+		if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
+			item.BtcVolume = s
+			item.UsdVolume = s * btcPrice
+		}
 	}
 
 	logger.AtLog.Logger.Info("FindTokensReport", zap.Any("data", data))
