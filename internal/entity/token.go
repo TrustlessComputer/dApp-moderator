@@ -67,7 +67,7 @@ type TokenFilter struct {
 }
 
 func (t *TokenFilter) FromPagination(pag request.PaginationReq) {
-	t.Limit = 100
+	t.Limit = 500
 	if pag.Limit != nil && *pag.Limit > 0 {
 		t.Limit = int64(*pag.Limit)
 	}
