@@ -110,8 +110,8 @@ func (m *middleware) Pagination(next http.Handler) http.Handler {
 				limitInt = tmp
 			}
 
-			if limitInt > 100 {
-				limitInt = 100
+			if limitInt > 500 {
+				limitInt = 500
 			}
 		}
 
