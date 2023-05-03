@@ -46,11 +46,6 @@ func (h *httpDelivery) swapScanHash(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			go h.Usecase.TcSwapScanEventsByTransactionHash(ctx, req.Query(r, "tx_hash", ""))
-			// if err != nil {
-			// 	logger.AtLog.Logger.Error("Tokens", zap.Error(err))
-			// 	return false, err
-			// }
-
 			return true, nil
 		},
 	).ServeHTTP(w, r)
@@ -146,3 +141,29 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
+
+// func (h *httpDelivery) addFrontEndLog(w http.ResponseWriter, r *http.Request) {
+// 	response.NewRESTHandlerTemplate(
+// 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+// 			type FeLogInterface interface {
+// 			}
+// 			type LogData struct {
+// 				Log FeLogInterface
+// 			}
+
+// 			reqBody := &LogData{}
+// 			decoder := json.NewDecoder(r.Body)
+// 			err := decoder.Decode(reqBody.Log)
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 			err = h.Usecase.TcSwapAddFronEndLog(ctx, reqBody)
+// 			if err != nil {
+// 				logger.AtLog.Logger.Error("addFrontEndLog", zap.Error(err))
+// 				return nil, err
+// 			}
+
+// 			return true, nil
+// 		},
+// 	).ServeHTTP(w, r)
+// }
