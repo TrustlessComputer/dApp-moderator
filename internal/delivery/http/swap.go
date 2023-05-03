@@ -142,6 +142,20 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
+func (h *httpDelivery) jobGetBtcPrice(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.TcSwapUpdateBTCPriceJob(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("Tokens", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
 // func (h *httpDelivery) addFrontEndLog(w http.ResponseWriter, r *http.Request) {
 // 	response.NewRESTHandlerTemplate(
 // 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
