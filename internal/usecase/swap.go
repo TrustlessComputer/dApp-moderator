@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -297,6 +298,27 @@ func (u *Usecase) TcSwapAddFronEndLog(ctx context.Context, logBody interface{}) 
 	swapFeLog.Log = logBody
 
 	_, err := u.Repo.InsertOne(swapFeLog)
+	if err != nil {
+		logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (u *Usecase) TcSwapUpdateBTCPriceJob(ctx context.Context) error {
+	configName := "swap_btc_price"
+	dbSwapConfig, err := u.Repo.FindSwapConfig(ctx, entity.SwapConfigsFilter{
+		Name: configName,
+	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+	dbSwapConfig.Name = configName
+	btcPrice, _ := u.BlockChainApi.GetBitcoinPrice()
+
+	dbSwapConfig.Value = fmt.Sprintf("%f", btcPrice)
+	err = u.Repo.UpdateSwapConfig(ctx, dbSwapConfig)
 	if err != nil {
 		logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
 		return err
