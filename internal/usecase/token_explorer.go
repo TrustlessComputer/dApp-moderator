@@ -145,7 +145,7 @@ func (u *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			u.NewTokenNotify(&token)
 		}
 
-		if len(Tokens) <= perPage {
+		if len(Tokens) < perPage {
 			break
 		}
 
