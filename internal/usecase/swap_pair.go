@@ -97,7 +97,8 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 		return nil, err
 	}
 
-	btcPrice, _ := u.BlockChainApi.GetBitcoinPrice()
+	// btcPrice, _ := u.BlockChainApi.GetBitcoinPrice()
+	btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
 
 	for _, item := range reports {
 		if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {

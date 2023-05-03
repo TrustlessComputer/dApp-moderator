@@ -19,3 +19,12 @@ type SwapConfigsFilter struct {
 	Name  string
 	Value string
 }
+
+type SwapFrontEndLog struct {
+	BaseEntity `bson:",inline"`
+	Log        interface{} `json:"log" bson:"log,omitempty"`
+}
+
+func (t *SwapFrontEndLog) CollectionName() string {
+	return utils.COLLECTION_SWAP_FE_LOGS
+}

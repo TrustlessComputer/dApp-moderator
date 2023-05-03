@@ -62,6 +62,22 @@ func (r *Repository) ParseConfigByString(ctx context.Context, configName string)
 	return swapConfigs.Value
 }
 
+func (r *Repository) ParseConfigByFloat64(ctx context.Context, configName string) float64 {
+	var swapConfigs entity.SwapConfigs
+	filter := entity.SwapConfigsFilter{
+		Name: configName,
+	}
+
+	err := r.DB.Collection(utils.COLLECTION_SWAP_CONFIGS).FindOne(ctx, r.parseSwapConfigFilter(filter)).Decode(&swapConfigs)
+	if err != nil {
+		return 0
+	}
+	if s, err := strconv.ParseFloat(swapConfigs.Value, 64); err == nil {
+		return s
+	}
+	return 0
+}
+
 func (r *Repository) parseSwapConfigFilter(filter entity.SwapConfigsFilter) bson.M {
 	andCond := make([]bson.M, 0)
 	// Define your OR query

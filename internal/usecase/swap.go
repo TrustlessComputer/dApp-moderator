@@ -291,3 +291,15 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 	}
 	return nil
 }
+
+func (u *Usecase) TcSwapAddFronEndLog(ctx context.Context, logBody interface{}) error {
+	swapFeLog := &entity.SwapFrontEndLog{}
+	swapFeLog.Log = logBody
+
+	_, err := u.Repo.InsertOne(swapFeLog)
+	if err != nil {
+		logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+		return err
+	}
+	return nil
+}
