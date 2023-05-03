@@ -103,6 +103,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapRoutes.HandleFunc("/scan-event", h.swapScanEvents).Methods("GET")
 	swapRoutes.HandleFunc("/scan-pair-event", h.swapScanPairEvents).Methods("GET")
 	swapRoutes.HandleFunc("/scan", h.swapScanHash).Methods("GET")
+	// swapRoutes.HandleFunc("/fe-log", h.addFrontEndLog).Methods("POST")
 
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
