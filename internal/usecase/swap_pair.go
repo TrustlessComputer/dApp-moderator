@@ -88,6 +88,13 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 	return tokens, nil
 }
 
+func (u *Usecase) ClearCache() error {
+	redisKey := fmt.Sprintf("tc-swap:token-reports-*")
+	u.Cache.Delete(redisKey)
+	return nil
+
+}
+
 func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, isTest string) (interface{}, error) {
 	query := entity.SwapPairFilter{}
 	query.FromPagination(filter)

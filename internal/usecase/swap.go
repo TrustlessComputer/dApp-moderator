@@ -7,6 +7,7 @@ import (
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -112,7 +113,8 @@ func (u *Usecase) TcSwapCreateOrUpdateCurrentScanBlock(ctx context.Context, endB
 	return nil
 }
 
-func (u *Usecase) TcSwapScanEventsByTransactionHash(ctx context.Context, txHash string) error {
+func (u *Usecase) TcSwapScanEventsByTransactionHash(txHash string) error {
+	ctx := context.Background()
 	eventResp, err := u.BlockChainApi.TcSwapEventsByTransaction(txHash)
 	if err != nil {
 		return err
@@ -243,13 +245,43 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 	if dbSwapPair != nil {
 		return nil
 	} else {
-		swapPair := &entity.SwapPairSync{}
-		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
-		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
-		swapPair.Reserve0, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18).String())
-		swapPair.Reserve1, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18).String())
-		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
-		_, err = u.Repo.InsertOne(swapPair)
+		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+
+		pair, _ := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+			Pair: strings.ToLower(eventResp.ContractAddress),
+		})
+
+		var token *entity.Token
+		if pair != nil {
+			tokenAddress := ""
+			if strings.EqualFold(pair.Token0, wbtcContractAddr) {
+				tokenAddress = pair.Token1
+			} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+				tokenAddress = pair.Token0
+			}
+
+			if tokenAddress != "" {
+				token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
+					Address: tokenAddress,
+				})
+			}
+		}
+
+		swapPairSync := &entity.SwapPairSync{}
+		swapPairSync.ContractAddress = strings.ToLower(eventResp.ContractAddress)
+		swapPairSync.TxHash = strings.ToLower(eventResp.TxHash)
+		swapPairSync.Reserve0, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18).String())
+		swapPairSync.Reserve1, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18).String())
+		swapPairSync.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		if token != nil && pair != nil {
+			swapPairSync.Token = token.Address
+			tmpPrice := big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18))
+			if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+				tmpPrice = big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18))
+			}
+			swapPairSync.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+		}
+		_, err = u.Repo.InsertOne(swapPairSync)
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
 			return err
@@ -272,6 +304,28 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 	if dbSwapPair != nil {
 		return nil
 	} else {
+		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+
+		pair, _ := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+			Pair: strings.ToLower(eventResp.ContractAddress),
+		})
+
+		var token *entity.Token
+		if pair != nil {
+			tokenAddress := ""
+			if strings.EqualFold(pair.Token0, wbtcContractAddr) {
+				tokenAddress = pair.Token1
+			} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+				tokenAddress = pair.Token0
+			}
+
+			if tokenAddress != "" {
+				token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
+					Address: tokenAddress,
+				})
+			}
+		}
+
 		swapPair := &entity.SwapPairSwapHistories{}
 		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
 		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
@@ -283,6 +337,21 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 		swapPair.Sender = eventResp.Sender
 		swapPair.To = eventResp.To
 		swapPair.Index = eventResp.Index
+		if token != nil && pair != nil {
+			swapPair.Token = token.Address
+			tmpAmount0 := big.NewFloat(0).Add(helpers.ConvertWeiToBigFloat(eventResp.Amount0In, 18), helpers.ConvertWeiToBigFloat(eventResp.Amount0Out, 18))
+			tmpAmount1 := big.NewFloat(0).Add(helpers.ConvertWeiToBigFloat(eventResp.Amount1In, 18), helpers.ConvertWeiToBigFloat(eventResp.Amount1Out, 18))
+
+			tmpVolume := tmpAmount0
+			tmpPrice := big.NewFloat(0).Quo(tmpAmount0, tmpAmount1)
+			if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+				tmpVolume = tmpAmount1
+				tmpPrice = big.NewFloat(0).Quo(tmpAmount1, tmpAmount0)
+			}
+
+			swapPair.Volume, _ = primitive.ParseDecimal128(tmpVolume.String())
+			swapPair.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+		}
 
 		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {
