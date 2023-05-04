@@ -189,3 +189,31 @@ func (h *httpDelivery) addFrontEndLog(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
+
+func (h *httpDelivery) jobUpdateDataSwapSync(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.UpdateDataSwapSync(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("UpdateDataSwap", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) jobUpdateDataSwapHistory(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.UpdateDataSwapHistory(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("UpdateDataSwapHistory", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
