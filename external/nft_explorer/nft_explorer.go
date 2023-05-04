@@ -158,24 +158,23 @@ func (q *NftExplorer) FillData(nft *NftsResp) {
 	nft.TokenURI = fmt.Sprintf("%s/dapp/api/nft-explorer/collections/%s/nfts/%s", os.Getenv("URL"), nft.ContractAddress, nft.TokenID)
 
 	if strings.Index(nft.ContentType, "image") == -1 {
-		nft.Image = nft.TokenURI
+		if strings.Index(nft.ContentType, "json") != -1 {
+			bytes, _, err := q.CollectionNftContent(nft.ContractAddress, nft.TokenID)
+			if err != nil {
+				return
+			}
+
+			nft.Metadata = string(bytes)
+
+			erc721 := &Erc721{}
+			err = helpers.ParseData(bytes, erc721)
+			if err != nil {
+				return
+			}
+			nft.Image = erc721.Image
+		}
 	}
 
-	if strings.Index(nft.ContentType, "json") != -1 {
-		bytes, _, err := q.CollectionNftContent(nft.ContractAddress, nft.TokenID)
-		if err != nil {
-			return
-		}
-
-		nft.Metadata = string(bytes)
-
-		erc721 := &Erc721{}
-		err = helpers.ParseData(bytes, erc721)
-		if err != nil {
-			return
-		}
-		nft.Image = erc721.Image
-	}
 }
 
 func (q *NftExplorer) FillDataMultiple(nfts []*NftsResp) {
