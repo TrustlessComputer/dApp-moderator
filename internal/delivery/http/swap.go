@@ -2,7 +2,9 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -156,28 +158,25 @@ func (h *httpDelivery) jobGetBtcPrice(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
-// func (h *httpDelivery) addFrontEndLog(w http.ResponseWriter, r *http.Request) {
-// 	response.NewRESTHandlerTemplate(
-// 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-// 			type FeLogInterface interface {
-// 			}
-// 			type LogData struct {
-// 				Log FeLogInterface
-// 			}
+func (h *httpDelivery) addFrontEndLog(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			buf, bodyErr := ioutil.ReadAll(r.Body)
+			var bodyRequest string
+			if bodyErr == nil {
+				bodyRequest = string(buf)
+			}
 
-// 			reqBody := &LogData{}
-// 			decoder := json.NewDecoder(r.Body)
-// 			err := decoder.Decode(reqBody.Log)
-// 			if err != nil {
-// 				return nil, err
-// 			}
-// 			err = h.Usecase.TcSwapAddFronEndLog(ctx, reqBody)
-// 			if err != nil {
-// 				logger.AtLog.Logger.Error("addFrontEndLog", zap.Error(err))
-// 				return nil, err
-// 			}
+			result := make(map[string]interface{})
+			json.Unmarshal([]byte(bodyRequest), &result)
 
-// 			return true, nil
-// 		},
-// 	).ServeHTTP(w, r)
-// }
+			err := h.Usecase.TcSwapAddFronEndLog(ctx, result)
+			if err != nil {
+				logger.AtLog.Logger.Error("addFrontEndLog", zap.Error(err))
+				return nil, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}

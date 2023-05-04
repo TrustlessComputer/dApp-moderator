@@ -293,7 +293,7 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 	return nil
 }
 
-func (u *Usecase) TcSwapAddFronEndLog(ctx context.Context, logBody interface{}) error {
+func (u *Usecase) TcSwapAddFronEndLog(ctx context.Context, logBody map[string]interface{}) error {
 	swapFeLog := &entity.SwapFrontEndLog{}
 	swapFeLog.Log = logBody
 
