@@ -20,6 +20,9 @@ type SwapPairSwapHistories struct {
 	Amount0Out      primitive.Decimal128 `json:"amount0_out"  bson:"amount0_out,omitempty"`
 	Amount1Out      primitive.Decimal128 `json:"amount1_out"  bson:"amount1_out,omitempty"`
 	Index           uint                 `json:"log_index"  bson:"log_index,omitempty"`
+	Token           string               `json:"token" bson:"token,omitempty"`
+	Price           primitive.Decimal128 `json:"price" bson:"price,omitempty"`
+	Volume          primitive.Decimal128 `json:"volume" bson:"volume,omitempty"`
 }
 
 func (t *SwapPairSwapHistories) CollectionName() string {
