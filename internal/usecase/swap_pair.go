@@ -131,7 +131,6 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 			return nil, err
 		}
 
-		// btcPrice, _ := u.BlockChainApi.GetBitcoinPrice()
 		btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
 
 		for _, item := range reports {
@@ -143,6 +142,11 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 			if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
 				item.BtcVolume = s
 				item.UsdVolume = s * btcPrice
+			}
+
+			if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
+				item.BtcTotalVolume = s
+				item.UsdTotalVolume = s * btcPrice
 			}
 
 			if item.Address == "0xfB83c18569fB43f1ABCbae09Baf7090bFFc8CBBD" {
