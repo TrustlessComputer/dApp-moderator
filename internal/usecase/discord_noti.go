@@ -32,7 +32,7 @@ func (u *Usecase) NewTokenNotify(token *entity.Token) error {
 							Inline: false,
 						},
 						{
-							Value:  fmt.Sprintf("**Token Symbal: %v**", token.Symbol),
+							Value:  fmt.Sprintf("**Token Symbol: %v**", token.Symbol),
 							Inline: false,
 						},
 						{
@@ -110,28 +110,37 @@ func (u *Usecase) NewNameNotify(bns *bns_service.NameResp) error {
 }
 
 func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
-	notify := &entity.DiscordNotification{
-		Message: discordclient.Message{
-			Content:   fmt.Sprintf("**NEW ARTIFACT #%s**", nfts.TokenID),
-			Username:  "Satoshi 27",
-			AvatarUrl: "",
-			Embeds: []discordclient.Embed{
-				{
-					Fields: []discordclient.Field{
-						{
-							Value:  fmt.Sprintf("**Owner: [%s](https://explorer.trustless.computer/address/%s/token-transfers)**", utils.ShortenBlockAddress(nfts.Owner), nfts.Owner),
-							Inline: false,
-						},
-						{
-							Value:  fmt.Sprintf("**Type: %s**", nfts.ContentType),
-							Inline: false,
-						},
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**NEW ARTIFACT #%s**", nfts.TokenID),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Owner: [%s](https://explorer.trustless.computer/address/%s/token-transfers)**", utils.ShortenBlockAddress(nfts.Owner), nfts.Owner),
+						Inline: false,
+					},
+					{
+						Value:  fmt.Sprintf("**Type: %s**", nfts.ContentType),
+						Inline: false,
 					},
 				},
 			},
 		},
-		Status: entity.PENDING,
-		Event:  entity.EventNewArtifact,
+	}
+	if nfts.Image != "" {
+		if strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
+			message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+		} else {
+			message.Embeds[0].Image.Url = nfts.Image
+		}
+
+	}
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventNewArtifact,
 	}
 
 	if nfts.Image != "" && strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
@@ -216,6 +225,14 @@ func (u *Usecase) CreateDiscordNotify(notify *entity.DiscordNotification) error 
 func (u *Usecase) TestSendNotify() {
 	env := os.Getenv("ENVIRONMENT")
 	if env == "local" {
-
+		nft := &entity.Nfts{
+			TokenID:     "1",
+			Owner:       "0xb764d696aa52f6a7e6ec6647c7d7a7736f3aff59",
+			Image:       "https://dapp.trustless.computer/dapp/api/nft-explorer/collections/0x7c3cee22435461f3d858af2aa1770ea75403b63e/nfts/1/content",
+			Name:        "test",
+			ContentType: "image/png",
+		}
+		u.NewArtifactNotify(nft)
+		u.JobSendDiscord()
 	}
 }
