@@ -35,18 +35,18 @@ type InscriptionOrdInfoByID struct {
 }
 
 type BlockCypherWalletInfo struct {
-	Address            string  `json:"address"`
-	TotalReceived      int     `json:"total_received"`
-	TotalSent          int     `json:"total_sent"`
-	Balance            int     `json:"balance"`
-	UnconfirmedBalance int     `json:"unconfirmed_balance"`
-	FinalBalance       int     `json:"final_balance"`
-	NTx                int     `json:"n_tx"`
-	UnconfirmedNTx     int     `json:"unconfirmed_n_tx"`
-	FinalNTx           int     `json:"final_n_tx"`
+	Address            string   `json:"address"`
+	TotalReceived      int      `json:"total_received"`
+	TotalSent          int      `json:"total_sent"`
+	Balance            int      `json:"balance"`
+	UnconfirmedBalance int      `json:"unconfirmed_balance"`
+	FinalBalance       int      `json:"final_balance"`
+	NTx                int      `json:"n_tx"`
+	UnconfirmedNTx     int      `json:"unconfirmed_n_tx"`
+	FinalNTx           int      `json:"final_n_tx"`
 	Txrefs             []*TxRef `json:"txrefs"`
-	TxURL              string  `json:"tx_url"`
-	Error              string  `json:"error"`
+	TxURL              string   `json:"tx_url"`
+	Error              string   `json:"error"`
 }
 type TxRef struct {
 	TxHash        string    `json:"tx_hash"`
@@ -109,4 +109,16 @@ type WalletTrackTx struct {
 	Status                string   `json:"status"`
 	Receiver              string   `json:"receiver"`
 	CreatedAt             uint64   `json:"created_at"`
+}
+
+type UTXOFromBlockStream struct {
+	Txid   string `json:"txid"`
+	Vout   int    `json:"vout"`
+	Status struct {
+		Confirmed   bool   `json:"confirmed"`
+		BlockHeight int    `json:"block_height"`
+		BlockHash   string `json:"block_hash"`
+		BlockTime   int    `json:"block_time"`
+	} `json:"status"`
+	Value int `json:"value"`
 }
