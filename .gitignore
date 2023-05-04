@@ -15,7 +15,6 @@ config.yml.bk
 config-dev.yml
 config-staging.yml
 __debug_bin
-main
 gcloud
 dapp-moderator
 config.json
@@ -36,3 +35,9 @@ internal/usecase/usecase_test.go
 utils/config/generative-firebase.json
 test.go
 internal/usecase/cron_handler_test.go
+typechain-types
+node_modules
+cache
+artifacts
+package-lock.json
+yarn.lock

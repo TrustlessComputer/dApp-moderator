@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"dapp-moderator/external/block_stream"
+	"dapp-moderator/external/blockchain_api"
 	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/token_explorer"
 	discordclient "dapp-moderator/utils/discord"
@@ -48,6 +49,10 @@ func init() {
 	}
 
 	mongoCnn := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", c.Databases.Mongo.Scheme, c.Databases.Mongo.User, c.Databases.Mongo.Pass, c.Databases.Mongo.Host)
+	if c.ENV == "dev" {
+		mongoCnn = "mongodb://127.0.0.1:27017/?retryWrites=true&w=majority"
+	}
+
 	mongoDbConnection, err := connections.NewMongo(mongoCnn)
 	if err != nil {
 		logger.AtLog().Logger.Error("Cannot connect mongoDB ", zap.Error(err))
@@ -93,6 +98,7 @@ func startServer() {
 	bns := bns_service.NewBNSService(conf, cache)
 	tke := token_explorer.NewTokenExplorer(conf, cache)
 	dcl := discordclient.NewClient()
+	bca := blockchain_api.NewBlockChainApi(conf, cache)
 
 	auth2Service := oauth2service.NewAuth2()
 	g := global.Global{
@@ -109,6 +115,7 @@ func startServer() {
 		TokenExplorer: tke,
 		Auth2:         auth2Service,
 		DiscordClient: dcl,
+		BlockChainApi: bca,
 	}
 
 	repo, err := repository.NewRepository(&g)

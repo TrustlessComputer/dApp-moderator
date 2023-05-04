@@ -80,8 +80,15 @@ func (h *httpDelivery) RegisterV1Routes() {
 	profileAuth.HandleFunc("/histories", h.confirmProfileHistory).Methods("PUT")
 
 	uploadRoute := api.PathPrefix("/upload").Subrouter()
-	uploadRoute.Use(h.MiddleWare.AuthorizationFunc)
+	// uploadRoute.Use(h.MiddleWare.AuthorizationFunc) // temp pause
 	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
+
+	tools := api.PathPrefix("/tools").Subrouter()
+	tools.HandleFunc("/compile-contract", h.compileContract).Methods("POST")
+
+	dappInfo := api.PathPrefix("/dapp-info").Subrouter()
+	dappInfo.HandleFunc("/create", h.createDAppInfo).Methods("POST")
+	dappInfo.HandleFunc("/list", h.listDAppInfo).Methods("GET")
 
 	//admin
 	admin := api.PathPrefix("/admin").Subrouter()
@@ -91,6 +98,21 @@ func (h *httpDelivery) RegisterV1Routes() {
 	admin.HandleFunc("/redis", h.deleteAllRedis).Methods("DELETE")
 	admin.HandleFunc("/redis/{key}", h.deleteRedis).Methods("DELETE")
 
+	// uniswap
+	swapRoutes := api.PathPrefix("/swap").Subrouter()
+	swapRoutes.HandleFunc("/scan-event", h.swapScanEvents).Methods("GET")
+	swapRoutes.HandleFunc("/btc-price", h.jobGetBtcPrice).Methods("GET")
+	swapRoutes.HandleFunc("/scan-pair-event", h.swapScanPairEvents).Methods("GET")
+	swapRoutes.HandleFunc("/scan", h.swapScanHash).Methods("GET")
+	// swapRoutes.HandleFunc("/fe-log", h.addFrontEndLog).Methods("POST")
+
+	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
+	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
+	swapTokensRoutes.HandleFunc("/report", h.getTokensReport).Methods("GET")
+
+	swapPairRoutes := swapRoutes.PathPrefix("/pair").Subrouter()
+	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
+	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
