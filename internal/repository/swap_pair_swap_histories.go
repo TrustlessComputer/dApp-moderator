@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -58,4 +59,41 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.SwapPair
 		tokens = append(tokens, token)
 	}
 	return tokens, nil
+}
+
+func (r *Repository) FindSwapPairHistories(ctx context.Context, filter entity.SwapPairSwapHistoriesFilter) ([]*entity.SwapPairSwapHistories, error) {
+	var pairs []*entity.SwapPairSwapHistories
+
+	// pagination
+	numToSkip := (filter.Page - 1) * filter.Limit
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).Find(ctx, r.parseSwapPairSwapHistories(filter), options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		pair := &entity.SwapPairSwapHistories{}
+		err = cursor.Decode(pair)
+		if err != nil {
+			return nil, err
+		}
+		pairs = append(pairs, pair)
+	}
+	return pairs, nil
+}
+
+func (r *Repository) UpdateSwapPairHistory(ctx context.Context, sync *entity.SwapPairSwapHistories) error {
+	collectionName := sync.CollectionName()
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"tx_hash": sync.TxHash, "contract_address": sync.ContractAddress}, bson.M{"$set": sync})
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
 }

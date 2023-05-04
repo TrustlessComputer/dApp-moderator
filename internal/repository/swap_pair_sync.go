@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -57,4 +58,16 @@ func (r *Repository) FindSwapPairSyncs(ctx context.Context, filter entity.SwapPa
 		pairs = append(pairs, pair)
 	}
 	return pairs, nil
+}
+
+func (r *Repository) UpdateSwapPairSync(ctx context.Context, sync *entity.SwapPairSync) error {
+	collectionName := sync.CollectionName()
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"tx_hash": sync.TxHash, "contract_address": sync.ContractAddress}, bson.M{"$set": sync})
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
 }
