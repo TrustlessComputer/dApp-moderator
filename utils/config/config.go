@@ -22,6 +22,7 @@ type Config struct {
 	BFSService    string
 	BNSService    string
 	Gcs           *GCS
+	Swap          *SwapConfig
 }
 
 type Context struct {
@@ -64,6 +65,12 @@ type RedisConfig struct {
 	ENV      string
 }
 
+type SwapConfig struct {
+	BaseURL                      string
+	UniswapV2FactoryContractAddr string
+	UniswapV2RouterContractAddr  string
+}
+
 func NewConfig(filePaths ...string) (*Config, error) {
 	if len(filePaths) > 0 {
 		godotenv.Load(filePaths[0])
@@ -94,6 +101,11 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		TokenExplorer: os.Getenv("TOKEN_EXPLORER_URL"),
 		BFSService:    os.Getenv("BFS_SERVICE_URL"),
 		BNSService:    os.Getenv("BNS_SERVICE_URL"),
+		Swap: &SwapConfig{
+			BaseURL:                      os.Getenv("TC_ENDPOINT"),
+			UniswapV2FactoryContractAddr: os.Getenv("SWAP_FACTORY_CONTRACT_ADDR"),
+			UniswapV2RouterContractAddr:  os.Getenv("SWAP_ROUTER_CONTRACT_ADDR"),
+		},
 		Databases: &Databases{
 			Mongo: &DBConnection{
 				Host:   os.Getenv("MONGO_HOST"),

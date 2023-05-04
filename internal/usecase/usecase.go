@@ -3,6 +3,7 @@ package usecase
 import (
 	"dapp-moderator/external/bfs_service"
 	"dapp-moderator/external/block_stream"
+	"dapp-moderator/external/blockchain_api"
 	"dapp-moderator/external/bns_service"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/external/quicknode"
@@ -29,6 +30,7 @@ type Usecase struct {
 	Auth2         *oauth2service.Auth2
 	Storage       googlecloud.IGcstorage
 	DiscordClient *discordclient.Client
+	BlockChainApi *blockchain_api.BlockChainApi
 }
 
 func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error) {
@@ -45,6 +47,7 @@ func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error
 	u.BnsService = global.BnsService
 	u.DiscordClient = global.DiscordClient
 	u.Config = global.Conf
+	u.BlockChainApi = global.BlockChainApi
 	return u, nil
 }
 
