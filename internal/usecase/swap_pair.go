@@ -7,8 +7,11 @@ import (
 	"dapp-moderator/utils/logger"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strconv"
+	"strings"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
@@ -160,4 +163,68 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 		}
 		return reports, nil
 	}
+}
+
+func (u *Usecase) UpdateDataSwap(ctx context.Context) error {
+	pairQuery := entity.SwapPairSyncFilter{}
+	pairQuery.Limit = 1000
+	pairQuery.Page = 1
+
+	pairSyncs, err := u.Repo.FindSwapPairSyncs(ctx, pairQuery)
+	if err != nil {
+		logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+		return err
+	}
+
+	var mapPair map[string]*entity.SwapPair
+	var mapToken map[string]*entity.Token
+
+	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+	for _, pairSync := range pairSyncs {
+		if pairSync != nil && pairSync.Token == "" {
+			var token *entity.Token
+			var pair *entity.SwapPair
+
+			if p, ok := mapPair[strings.ToLower(pairSync.ContractAddress)]; ok {
+				pair = p
+			} else {
+				pair, _ = u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+					Pair: strings.ToLower(pairSync.ContractAddress),
+				})
+				mapPair[strings.ToLower(pairSync.ContractAddress)] = pair
+			}
+
+			if pair != nil {
+				tokenAddress := ""
+				if strings.EqualFold(pair.Token0, wbtcContractAddr) {
+					tokenAddress = pair.Token1
+				} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+					tokenAddress = pair.Token0
+				}
+
+				if tokenAddress != "" {
+					if p, ok := mapToken[tokenAddress]; ok {
+						token = p
+					} else {
+						token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
+							Address: tokenAddress,
+						})
+						mapToken[tokenAddress] = token
+					}
+				}
+			}
+
+			if token != nil && pair != nil {
+				pairSync.Token = token.Address
+				tmpReserce0, exp, _ := pairSync.Reserve0.BigInt()
+				tmpReserce1, _, _ := pairSync.Reserve1.BigInt()
+				tmpPrice := big.NewInt(0).Quo(tmpReserce0, tmpReserce1)
+				if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+					tmpPrice = big.NewInt(0).Quo(tmpReserce1, tmpReserce0)
+				}
+				pairSync.Price, _ = primitive.ParseDecimal128FromBigInt(tmpPrice, exp)
+			}
+		}
+	}
+	return nil
 }
