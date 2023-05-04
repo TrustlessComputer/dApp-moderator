@@ -7,8 +7,11 @@ import (
 	"dapp-moderator/utils/logger"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strconv"
+	"strings"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
@@ -160,4 +163,155 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 		}
 		return reports, nil
 	}
+}
+
+func (u *Usecase) UpdateDataSwapSync(ctx context.Context) error {
+	pairQuery := entity.SwapPairSyncFilter{}
+	pairQuery.Limit = 1000
+	pairQuery.Page = 1
+
+	pairSyncs, err := u.Repo.FindSwapPairSyncs(ctx, pairQuery)
+	if err != nil {
+		logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+		return err
+	}
+
+	mapPair := map[string]*entity.SwapPair{}
+	mapToken := map[string]*entity.Token{}
+
+	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+	for _, pairSync := range pairSyncs {
+		if pairSync != nil && pairSync.Token == "" {
+			var token *entity.Token
+			var pair *entity.SwapPair
+
+			if p, ok := mapPair[strings.ToLower(pairSync.ContractAddress)]; ok {
+				pair = p
+			} else {
+				pair, _ = u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+					Pair: strings.ToLower(pairSync.ContractAddress),
+				})
+				mapPair[strings.ToLower(pairSync.ContractAddress)] = pair
+			}
+
+			if pair != nil {
+				tokenAddress := ""
+				if strings.EqualFold(pair.Token0, wbtcContractAddr) {
+					tokenAddress = pair.Token1
+				} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+					tokenAddress = pair.Token0
+				}
+
+				if tokenAddress != "" {
+					if p, ok := mapToken[tokenAddress]; ok {
+						token = p
+					} else {
+						token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
+							Address: tokenAddress,
+						})
+						mapToken[tokenAddress] = token
+					}
+				}
+			}
+
+			if token != nil && pair != nil {
+				pairSync.Token = token.Address
+				tmpReserce0, _ := new(big.Float).SetString(pairSync.Reserve0.String())
+				tmpReserce1, _ := new(big.Float).SetString(pairSync.Reserve1.String())
+				tmpPrice := big.NewFloat(0).Quo(tmpReserce0, tmpReserce1)
+				if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+					tmpPrice = big.NewFloat(0).Quo(tmpReserce1, tmpReserce0)
+				}
+				pairSync.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+
+				err := u.Repo.UpdateSwapPairSync(ctx, pairSync)
+				if err != nil {
+					logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (u *Usecase) UpdateDataSwapHistory(ctx context.Context) error {
+	pairQuery := entity.SwapPairSwapHistoriesFilter{}
+	pairQuery.Limit = 1000
+	pairQuery.Page = 1
+
+	pairSyncs, err := u.Repo.FindSwapPairHistories(ctx, pairQuery)
+	if err != nil {
+		logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+		return err
+	}
+
+	mapPair := map[string]*entity.SwapPair{}
+	mapToken := map[string]*entity.Token{}
+
+	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+	for _, pairSync := range pairSyncs {
+		if pairSync != nil && pairSync.Token == "" {
+			var token *entity.Token
+			var pair *entity.SwapPair
+
+			if p, ok := mapPair[strings.ToLower(pairSync.ContractAddress)]; ok {
+				pair = p
+			} else {
+				pair, _ = u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+					Pair: strings.ToLower(pairSync.ContractAddress),
+				})
+				mapPair[strings.ToLower(pairSync.ContractAddress)] = pair
+			}
+
+			if pair != nil {
+				tokenAddress := ""
+				if strings.EqualFold(pair.Token0, wbtcContractAddr) {
+					tokenAddress = pair.Token1
+				} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+					tokenAddress = pair.Token0
+				}
+
+				if tokenAddress != "" {
+					if p, ok := mapToken[tokenAddress]; ok {
+						token = p
+					} else {
+						token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
+							Address: tokenAddress,
+						})
+						mapToken[tokenAddress] = token
+					}
+				}
+			}
+
+			if token != nil && pair != nil {
+				pairSync.Token = token.Address
+				tmpAmount0In, _ := new(big.Float).SetString(pairSync.Amount0In.String())
+				tmpAmount0Out, _ := new(big.Float).SetString(pairSync.Amount0Out.String())
+				tmpAmount1In, _ := new(big.Float).SetString(pairSync.Amount1In.String())
+				tmpAmount1Out, _ := new(big.Float).SetString(pairSync.Amount1Out.String())
+
+				tmpAmount0 := big.NewFloat(0).Add(tmpAmount0In, tmpAmount0Out)
+				tmpAmount1 := big.NewFloat(0).Add(tmpAmount1In, tmpAmount1Out)
+
+				tmpVolume := tmpAmount0
+				tmpPrice := big.NewFloat(0).Quo(tmpAmount0, tmpAmount1)
+				if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+					tmpVolume = tmpAmount1
+					tmpPrice = big.NewFloat(0).Quo(tmpAmount1, tmpAmount0)
+				}
+
+				pairSync.Volume, _ = primitive.ParseDecimal128(tmpVolume.String())
+				pairSync.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+
+				err := u.Repo.UpdateSwapPairHistory(ctx, pairSync)
+				if err != nil {
+					logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+					return err
+				}
+			}
+
+		}
+	}
+	return nil
 }
