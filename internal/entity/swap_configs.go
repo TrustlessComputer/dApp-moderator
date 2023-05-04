@@ -22,7 +22,7 @@ type SwapConfigsFilter struct {
 
 type SwapFrontEndLog struct {
 	BaseEntity `bson:",inline"`
-	Log        interface{} `json:"log" bson:"log,omitempty"`
+	Log        map[string]interface{} `json:"log" bson:"log,omitempty"`
 }
 
 func (t *SwapFrontEndLog) CollectionName() string {
