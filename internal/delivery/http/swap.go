@@ -47,7 +47,16 @@ func (h *httpDelivery) swapScanPairEvents(w http.ResponseWriter, r *http.Request
 func (h *httpDelivery) swapScanHash(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			go h.Usecase.TcSwapScanEventsByTransactionHash(ctx, req.Query(r, "tx_hash", ""))
+			go h.Usecase.TcSwapScanEventsByTransactionHash(req.Query(r, "tx_hash", ""))
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) clearCache(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			h.Usecase.ClearCache()
 			return true, nil
 		},
 	).ServeHTTP(w, r)
