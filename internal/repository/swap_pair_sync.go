@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (r *Repository) FindSwapPairSync(ctx context.Context, filter entity.SwapPairSyncFilter) (*entity.SwapPairSync, error) {
@@ -31,4 +32,29 @@ func (r *Repository) parseSwapPairSyncFilter(filter entity.SwapPairSyncFilter) b
 		return bson.M{}
 	}
 	return bson.M{"$and": andCond}
+}
+
+func (r *Repository) FindSwapPairSyncs(ctx context.Context, filter entity.SwapPairSyncFilter) ([]*entity.SwapPairSync, error) {
+	var pairs []*entity.SwapPairSync
+
+	// pagination
+	numToSkip := (filter.Page - 1) * filter.Limit
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR_SYNC).Find(ctx, r.parseSwapPairSyncFilter(filter), options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		pair := &entity.SwapPairSync{}
+		err = cursor.Decode(pair)
+		if err != nil {
+			return nil, err
+		}
+		pairs = append(pairs, pair)
+	}
+	return pairs, nil
 }
