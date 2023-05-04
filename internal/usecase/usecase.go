@@ -46,6 +46,7 @@ func NewUsecase(global *global.Global, r repository.Repository) (*Usecase, error
 	u.Auth2 = global.Auth2
 	u.BnsService = global.BnsService
 	u.DiscordClient = global.DiscordClient
+	u.Config = global.Conf
 	u.BlockChainApi = global.BlockChainApi
 	return u, nil
 }
