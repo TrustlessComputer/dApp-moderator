@@ -97,6 +97,14 @@ func (u *Usecase) ClearCache() error {
 	return nil
 
 }
+func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string,chartType string) (interface{}, error) {
+	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType)
+	if err != nil {
+		//logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+		return reports, nil
+	}
+	return reports, nil
+}
 
 func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address string) (interface{}, error) {
 	query := entity.TokenFilter{}
