@@ -98,11 +98,12 @@ func (u *Usecase) ClearCache() error {
 
 }
 
-func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, isTest string) (interface{}, error) {
-	query := entity.SwapPairFilter{}
+func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address string) (interface{}, error) {
+	query := entity.TokenFilter{}
 	query.FromPagination(filter)
+	query.Address = address
 
-	redisKey := fmt.Sprintf("tc-swap:token-reports-%s-%s", query.Page, query.Limit)
+	redisKey := fmt.Sprintf("tc-swap:token-reports-%d-%d-%s", query.Page, query.Limit, address)
 	exists, err := u.Cache.Exists(redisKey)
 	if err != nil {
 		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
