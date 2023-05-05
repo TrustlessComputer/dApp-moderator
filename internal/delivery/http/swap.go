@@ -234,3 +234,18 @@ func (h *httpDelivery) jobUpdateDataSwapHistory(w http.ResponseWriter, r *http.R
 		},
 	).ServeHTTP(w, r)
 }
+
+func (h *httpDelivery) getSlackReport(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			channel := req.Query(r, "channel", "")
+			err := h.Usecase.TcSwapSlackReport(ctx, channel)
+			if err != nil {
+				logger.AtLog.Logger.Error("getSlackReport", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}

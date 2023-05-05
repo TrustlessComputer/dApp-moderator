@@ -10,6 +10,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func (r *Repository) FindSwapSlackReport(ctx context.Context) (*entity.SwapPairSlackReport, error) {
+	var swapSlackReport entity.SwapPairSlackReport
+	err := r.DB.Collection(utils.COLLECTION_SWAP_REPOR_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
+	if err != nil {
+		return nil, err
+	}
+	return &swapSlackReport, nil
+}
+
 func (r *Repository) FindSwapPair(ctx context.Context, filter entity.SwapPairFilter) (*entity.SwapPair, error) {
 	var swapPair entity.SwapPair
 	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR).FindOne(ctx, r.parseSwapPairFilter(filter)).Decode(&swapPair)
