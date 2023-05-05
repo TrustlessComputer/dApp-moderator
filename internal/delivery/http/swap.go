@@ -153,6 +153,26 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
+
+func (h *httpDelivery) getTokensPrice(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			contractAddress := req.Query(r, "contract_address", "")
+			chartType := req.Query(r, "chart_type", "")
+			data, err := h.Usecase.FindTokensPrice(ctx, contractAddress, chartType)
+			if err != nil {
+				logger.AtLog.Logger.Error("FindTokensReport", zap.Error(err))
+				return nil, err
+			}
+
+			//logger.AtLog.Logger.Info("FindTokensReport", zap.Any("data", data))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+
+
 func (h *httpDelivery) jobGetBtcPrice(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
@@ -183,6 +203,34 @@ func (h *httpDelivery) addFrontEndLog(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				logger.AtLog.Logger.Error("addFrontEndLog", zap.Error(err))
 				return nil, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) jobUpdateDataSwapSync(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.UpdateDataSwapSync(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("UpdateDataSwap", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) jobUpdateDataSwapHistory(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.UpdateDataSwapHistory(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("UpdateDataSwapHistory", zap.Error(err))
+				return false, err
 			}
 
 			return true, nil
