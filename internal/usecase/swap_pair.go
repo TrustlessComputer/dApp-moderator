@@ -97,11 +97,19 @@ func (u *Usecase) ClearCache() error {
 	return nil
 
 }
-func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string,chartType string) (interface{}, error) {
+func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, chartType string) (interface{}, error) {
 	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType)
 	if err != nil {
 		//logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 		return reports, nil
+	}
+	btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
+
+	for _, item := range reports {
+		if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
+			item.BtcPrice = s
+			item.UsdPrice = s * btcPrice
+		}
 	}
 	return reports, nil
 }
