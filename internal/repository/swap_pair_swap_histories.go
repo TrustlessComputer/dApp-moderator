@@ -69,7 +69,9 @@ func (r *Repository) FindTokePrice(ctx context.Context, contract string, chartTy
 
 	// pagination
 	// Set the options for the query
+
 	options := options.Find()
+	options.SetSort(bson.D{{"created_at", 1}})
 	var swapPair entity.SwapPair
 
 	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR).FindOne(ctx, bson.D{
@@ -165,7 +167,7 @@ func updateChartData(h *entity.SwapPairSwapHistories, res []*entity.ChartDataRes
 		var token *entity.ChartDataResp
 		token = new(entity.ChartDataResp)
 		token.Time = t
-		token.Timestamp =  t.Unix()
+		token.Timestamp = t.Unix()
 		token.Close = h.Price
 		token.Open = h.Price
 		volmeString := h.Volume.String()
