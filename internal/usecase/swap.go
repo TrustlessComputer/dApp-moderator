@@ -394,3 +394,14 @@ func (u *Usecase) TcSwapUpdateBTCPriceJob(ctx context.Context) error {
 	}
 	return nil
 }
+
+func (u *Usecase) TcSwapSlackReport(ctx context.Context) error {
+	resp, err := u.Repo.FindSwapSlackReport(ctx)
+	if err != nil {
+		logger.AtLog.Logger.Error("TcSwapSlackReport", zap.Error(err))
+		return err
+	}
+
+	btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
+	return nil
+}
