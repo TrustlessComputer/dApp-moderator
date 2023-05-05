@@ -153,6 +153,26 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
+
+func (h *httpDelivery) getTokensPrice(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			contractAddress := req.Query(r, "contract_address", "")
+			chartType := req.Query(r, "chart_type", "")
+			data, err := h.Usecase.FindTokensPrice(ctx, contractAddress, chartType)
+			if err != nil {
+				logger.AtLog.Logger.Error("FindTokensReport", zap.Error(err))
+				return nil, err
+			}
+
+			//logger.AtLog.Logger.Info("FindTokensReport", zap.Any("data", data))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+
+
 func (h *httpDelivery) jobGetBtcPrice(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
