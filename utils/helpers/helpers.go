@@ -1,11 +1,13 @@
 package helpers
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 	"regexp"
 	"strings"
 
@@ -163,4 +165,35 @@ func ConvertWeiToBigFloatNegative(amt *big.Int, decimals uint) *big.Float {
 	decimalFloat := new(big.Float).SetPrec(1024).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
 	retFloat := new(big.Float).Quo(amtFloat, decimalFloat)
 	return retFloat
+}
+
+func SlackHook(channel, content string) error {
+	slackURL := "https://hooks.slack.com/services/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"
+	go func() error {
+		bodyRequest, err := json.Marshal(map[string]interface{}{
+			"channel":  channel,
+			"username": "tc-report",
+			"text":     content,
+			"icon_url": "http://www.hopabot.com/img/intro-carousel/f2.png",
+		})
+		if err != nil {
+			return err
+		}
+		req, err := http.NewRequest("POST", slackURL, bytes.NewBuffer(bodyRequest))
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		client := &http.Client{}
+		res, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
+		if res.StatusCode != http.StatusOK {
+			return errors.New(res.Status)
+		}
+		return nil
+	}()
+	return nil
 }

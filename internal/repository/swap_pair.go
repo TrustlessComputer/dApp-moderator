@@ -12,7 +12,7 @@ import (
 
 func (r *Repository) FindSwapSlackReport(ctx context.Context) (*entity.SwapPairSlackReport, error) {
 	var swapSlackReport entity.SwapPairSlackReport
-	err := r.DB.Collection(utils.COLLECTION_SWAP_REPOR_SLACK).FindOne(ctx, entity.SwapPairFilter{}).Decode(&swapSlackReport)
+	err := r.DB.Collection(utils.COLLECTION_SWAP_REPOR_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
 	if err != nil {
 		return nil, err
 	}
