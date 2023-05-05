@@ -48,6 +48,7 @@ type SwapPair struct {
 
 type ChartDataResp struct {
 	Time             time.Time            `json:"time"`
+	Timestamp             int64           `json:"timestamp"`
 	VolumeFrom       primitive.Decimal128 `json:"volume_from"`
 	VolumeTo         primitive.Decimal128 `json:"volume_to"`
 	TotalVolume      float64              `json:"total_volume"`
