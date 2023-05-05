@@ -48,14 +48,16 @@ type SwapPair struct {
 
 type ChartDataResp struct {
 	Time             time.Time            `json:"time"`
-	Timestamp             int64           `json:"timestamp"`
+	Timestamp        int64                `json:"timestamp"`
 	VolumeFrom       primitive.Decimal128 `json:"volume_from"`
 	VolumeTo         primitive.Decimal128 `json:"volume_to"`
 	TotalVolume      float64              `json:"total_volume"`
-	High             primitive.Decimal128 `json:"high"`
+	BtcPrice         float64              `json:"btc_price"`
+	UsdPrice         float64              `json:"usd_price"`
 	Low              primitive.Decimal128 `json:"low"`
 	Open             primitive.Decimal128 `json:"open"`
 	Close            primitive.Decimal128 `json:"close"`
+	High             primitive.Decimal128 `json:"high"`
 	ConversionType   string               `json:"conversion_type"`
 	ConversionSymbol string               `json:"conversion_symbol"`
 }
