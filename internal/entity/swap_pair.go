@@ -22,12 +22,16 @@ type SwapPairReport struct {
 	Social          Social               `json:"social" bson:"social"`
 	Index           int64                `json:"index" bson:"index"`
 	Volume          primitive.Decimal128 `json:"volume" bson:"volume"`
+	TotalVolume     primitive.Decimal128 `json:"total_volume" bson:"total_volume"`
 	BtcVolume       float64              `json:"btc_volume" bson:"btc_volume"`
 	UsdVolume       float64              `json:"usd_volume" bson:"usd_volume"`
+	BtcTotalVolume  float64              `json:"btc_total_volume" bson:"btc_total_volume"`
+	UsdTotalVolume  float64              `json:"usd_total_volume" bson:"usd_total_volume"`
 	Price           primitive.Decimal128 `json:"price" bson:"price"`
 	BtcPrice        float64              `json:"btc_price" bson:"btc_price"`
 	UsdPrice        float64              `json:"usd_price" bson:"usd_price"`
 	Percent         primitive.Decimal128 `json:"percent" bson:"percent"`
+	Percent7Day     primitive.Decimal128 `json:"percent_7day" bson:"percent_7day"`
 }
 
 type SwapPair struct {
@@ -42,6 +46,20 @@ type SwapPair struct {
 	Index           uint      `json:"log_index"  bson:"log_index,omitempty"`
 }
 
+type ChartDataResp struct {
+	Time             time.Time            `json:"time"`
+	Timestamp             int64           `json:"timestamp"`
+	VolumeFrom       primitive.Decimal128 `json:"volume_from"`
+	VolumeTo         primitive.Decimal128 `json:"volume_to"`
+	TotalVolume      float64              `json:"total_volume"`
+	High             primitive.Decimal128 `json:"high"`
+	Low              primitive.Decimal128 `json:"low"`
+	Open             primitive.Decimal128 `json:"open"`
+	Close            primitive.Decimal128 `json:"close"`
+	ConversionType   string               `json:"conversion_type"`
+	ConversionSymbol string               `json:"conversion_symbol"`
+}
+
 func (t *SwapPair) CollectionName() string {
 	return utils.COLLECTION_SWAP_PAIR
 }
@@ -51,6 +69,10 @@ type SwapPairFilter struct {
 	Pair   string
 	TxHash string
 	Token  string
+}
+type ChartrFilter struct {
+	BaseFilters
+	contract_address string
 }
 
 func (t *SwapPairFilter) FromPagination(pag request.PaginationReq) {
