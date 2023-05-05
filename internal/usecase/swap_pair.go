@@ -106,7 +106,7 @@ func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, c
 	btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
 
 	for _, item := range reports {
-		if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
+		if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
 			item.BtcPrice = s
 			item.UsdPrice = s * btcPrice
 		}
