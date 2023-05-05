@@ -140,8 +140,8 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
 				return nil, err
 			}
-			isTest := req.Query(r, "is_test", "")
-			data, err := h.Usecase.FindTokensReport(ctx, pagination, isTest)
+			address := req.Query(r, "address", "")
+			data, err := h.Usecase.FindTokensReport(ctx, pagination, address)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensReport", zap.Error(err))
 				return nil, err
@@ -152,7 +152,6 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
-
 
 func (h *httpDelivery) getTokensPrice(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
@@ -170,8 +169,6 @@ func (h *httpDelivery) getTokensPrice(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
-
-
 
 func (h *httpDelivery) jobGetBtcPrice(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
