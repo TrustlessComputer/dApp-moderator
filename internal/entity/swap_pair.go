@@ -56,31 +56,30 @@ type SwapPair struct {
 }
 
 type ChartDataResp struct {
-	Time             time.Time            `json:"time"`
-	Timestamp        int64                `json:"timestamp"`
-	VolumeFrom       primitive.Decimal128 `json:"volume_from"`
-	VolumeTo         primitive.Decimal128 `json:"volume_to"`
-	
-	BtcPrice         float64              `json:"btc_price"`
-	UsdPrice         float64              `json:"usd_price"`
+	Time       time.Time            `json:"time"`
+	Timestamp  int64                `json:"timestamp"`
+	VolumeFrom primitive.Decimal128 `json:"volume_from"`
+	VolumeTo   primitive.Decimal128 `json:"volume_to"`
 
-	Low              primitive.Decimal128 `json:"low"`
-	Open             primitive.Decimal128 `json:"open"`
-	Close            primitive.Decimal128 `json:"close"`
-	High             primitive.Decimal128 `json:"high"`
+	BtcPrice float64 `json:"btc_price"`
+	UsdPrice string  `json:"usd_price"`
 
-	VolumeFromUsd      float64 `json:"volume_from_usd"`
-	VolumeToUsd        float64 `json:"volume_to_usd"`
-	TotalVolumeUsd      float64              `json:"total_volume_usd"`
-	TotalVolume     float64              `json:"total_volume"`
-	LowUsd            float64 `json:"low_usd"`
-	OpenUsd         float64 `json:"open_usd"`
-	CloseUsd         float64 `json:"close_usd"`
-	HighUsd            float64 `json:"high_usd"`
+	Low   primitive.Decimal128 `json:"low"`
+	Open  primitive.Decimal128 `json:"open"`
+	Close primitive.Decimal128 `json:"close"`
+	High  primitive.Decimal128 `json:"high"`
 
+	VolumeFromUsd  string  `json:"volume_from_usd"`
+	VolumeToUsd    string  `json:"volume_to_usd"`
+	TotalVolumeUsd string  `json:"total_volume_usd"`
+	TotalVolume    float64 `json:"total_volume"`
+	LowUsd         string  `json:"low_usd"`
+	OpenUsd        string  `json:"open_usd"`
+	CloseUsd       string  `json:"close_usd"`
+	HighUsd        string  `json:"high_usd"`
 
-	ConversionType   string               `json:"conversion_type"`
-	ConversionSymbol string               `json:"conversion_symbol"`
+	ConversionType   string `json:"conversion_type"`
+	ConversionSymbol string `json:"conversion_symbol"`
 }
 
 func (t *SwapPair) CollectionName() string {

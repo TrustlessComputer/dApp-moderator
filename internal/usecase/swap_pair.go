@@ -108,25 +108,26 @@ func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, c
 	for _, item := range reports {
 		if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
 			item.BtcPrice = s
-			item.UsdPrice = s * btcPrice
-			item.CloseUsd = s * btcPrice
+
+			item.UsdPrice =fmt.Sprint( s * btcPrice)
+			item.CloseUsd =fmt.Sprint(  s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.Open.String(), 64); err == nil {
-			item.OpenUsd = s * btcPrice
+			item.OpenUsd = fmt.Sprint( s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
-			item.HighUsd = s * btcPrice
+			item.HighUsd = fmt.Sprint( s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.Low.String(), 64); err == nil {
-			item.LowUsd = s * btcPrice
+			item.LowUsd = fmt.Sprint( s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.VolumeTo.String(), 64); err == nil {
-			item.VolumeToUsd = s * btcPrice
+			item.VolumeToUsd = fmt.Sprint( s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.VolumeFrom.String(), 64); err == nil {
-			item.VolumeFromUsd = s * btcPrice
+			item.VolumeFromUsd =fmt.Sprint(  s * btcPrice)
 		}
-		item.TotalVolumeUsd = item.TotalVolume*btcPrice
+		item.TotalVolumeUsd = fmt.Sprint( item.TotalVolume*btcPrice)
 	}
 	return reports, nil
 }
