@@ -35,7 +35,7 @@ func (r *Repository) parseSwapPairSwapHistories(filter entity.SwapPairSwapHistor
 	return bson.M{"$and": andCond}
 }
 
-func (r *Repository) FindTokenReport(ctx context.Context, filter entity.SwapPairFilter) ([]*entity.SwapPairReport, error) {
+func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenFilter) ([]*entity.SwapPairReport, error) {
 	var tokens []*entity.SwapPairReport
 
 	// pagination
@@ -45,7 +45,7 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.SwapPair
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_FINAL).Find(ctx, r.parseSwapPairFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_FINAL).Find(ctx, r.parseTokenFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
