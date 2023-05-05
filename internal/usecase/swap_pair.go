@@ -109,7 +109,24 @@ func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, c
 		if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
 			item.BtcPrice = s
 			item.UsdPrice = s * btcPrice
+			item.CloseUsd = s * btcPrice
 		}
+		if s, err := strconv.ParseFloat(item.Open.String(), 64); err == nil {
+			item.OpenUsd = s * btcPrice
+		}
+		if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
+			item.HighUsd = s * btcPrice
+		}
+		if s, err := strconv.ParseFloat(item.Low.String(), 64); err == nil {
+			item.LowUsd = s * btcPrice
+		}
+		if s, err := strconv.ParseFloat(item.VolumeTo.String(), 64); err == nil {
+			item.VolumeToUsd = s * btcPrice
+		}
+		if s, err := strconv.ParseFloat(item.VolumeFrom.String(), 64); err == nil {
+			item.VolumeFromUsd = s * btcPrice
+		}
+		item.TotalVolumeUsd = item.TotalVolume*btcPrice
 	}
 	return reports, nil
 }

@@ -60,13 +60,25 @@ type ChartDataResp struct {
 	Timestamp        int64                `json:"timestamp"`
 	VolumeFrom       primitive.Decimal128 `json:"volume_from"`
 	VolumeTo         primitive.Decimal128 `json:"volume_to"`
-	TotalVolume      float64              `json:"total_volume"`
+	
 	BtcPrice         float64              `json:"btc_price"`
 	UsdPrice         float64              `json:"usd_price"`
+
 	Low              primitive.Decimal128 `json:"low"`
 	Open             primitive.Decimal128 `json:"open"`
 	Close            primitive.Decimal128 `json:"close"`
 	High             primitive.Decimal128 `json:"high"`
+
+	VolumeFromUsd      float64 `json:"volume_from_usd"`
+	VolumeToUsd        float64 `json:"volume_to_usd"`
+	TotalVolumeUsd      float64              `json:"total_volume_usd"`
+	TotalVolume     float64              `json:"total_volume"`
+	LowUsd            float64 `json:"low_usd"`
+	OpenUsd         float64 `json:"open_usd"`
+	CloseUsd         float64 `json:"close_usd"`
+	HighUsd            float64 `json:"high_usd"`
+
+
 	ConversionType   string               `json:"conversion_type"`
 	ConversionSymbol string               `json:"conversion_symbol"`
 }
