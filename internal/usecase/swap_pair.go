@@ -161,7 +161,7 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 			return reports, nil
 		}
-		err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 10*60)
+		err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 5*60)
 		if err != nil {
 			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 			return reports, nil
