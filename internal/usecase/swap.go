@@ -419,10 +419,10 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 		}
 
 		slackString := "*TC Report*\n"
-		slackString += fmt.Sprintf("*Total Volume:* %f | $%f\n", totalVolumeBtc, totalVolumeUsd)
+		slackString += fmt.Sprintf("*Total Volume:* %.2f BTC | $%.2f\n", totalVolumeBtc, totalVolumeUsd)
 		slackString += fmt.Sprintf("*Total Txs:* %d\n", resp.TxTotal)
 		slackString += fmt.Sprintf("*Total Users:* %d\n", resp.UsersTotal)
-		slackString += fmt.Sprintf("*Last 24h Volume:* %f | $%f\n", volume24hBtc, volume24hUsd)
+		slackString += fmt.Sprintf("*Last 24h Volume:* %.2f BTC | $%.2f\n", volume24hBtc, volume24hUsd)
 		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", resp.Tx24h)
 		slackString += fmt.Sprintf("*Last 24h Users:* %d\n", resp.Users24h)
 
