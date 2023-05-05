@@ -46,6 +46,19 @@ type SwapPair struct {
 	Index           uint      `json:"log_index"  bson:"log_index,omitempty"`
 }
 
+type ChartDataResp struct {
+	Time             time.Time            `json:"time"`
+	VolumeFrom       primitive.Decimal128 `json:"volume_from"`
+	VolumeTo         primitive.Decimal128 `json:"volume_to"`
+	TotalVolume      float64              `json:"total_volume"`
+	High             primitive.Decimal128 `json:"high"`
+	Low              primitive.Decimal128 `json:"low"`
+	Open             primitive.Decimal128 `json:"open"`
+	Close            primitive.Decimal128 `json:"close"`
+	ConversionType   string               `json:"conversion_type"`
+	ConversionSymbol string               `json:"conversion_symbol"`
+}
+
 func (t *SwapPair) CollectionName() string {
 	return utils.COLLECTION_SWAP_PAIR
 }
@@ -55,6 +68,10 @@ type SwapPairFilter struct {
 	Pair   string
 	TxHash string
 	Token  string
+}
+type ChartrFilter struct {
+	BaseFilters
+	contract_address string
 }
 
 func (t *SwapPairFilter) FromPagination(pag request.PaginationReq) {
