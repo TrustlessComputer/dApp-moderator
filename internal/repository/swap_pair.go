@@ -12,7 +12,16 @@ import (
 
 func (r *Repository) FindSwapSlackReport(ctx context.Context) (*entity.SwapPairSlackReport, error) {
 	var swapSlackReport entity.SwapPairSlackReport
-	err := r.DB.Collection(utils.COLLECTION_SWAP_REPOR_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
+	err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
+	if err != nil {
+		return nil, err
+	}
+	return &swapSlackReport, nil
+}
+
+func (r *Repository) FindSwapSlackLiquidityReport(ctx context.Context) (*entity.SwapPairSlackLiquidityReport, error) {
+	var swapSlackReport entity.SwapPairSlackLiquidityReport
+	err := r.DB.Collection(utils.COLLECTION_SWAP_LIQUIDITY_REPORT_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
 	if err != nil {
 		return nil, err
 	}

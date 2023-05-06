@@ -401,7 +401,13 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 		logger.AtLog.Logger.Error("TcSwapSlackReport", zap.Error(err))
 		return err
 	}
-	if resp != nil {
+	respLiq, err := u.Repo.FindSwapSlackLiquidityReport(ctx)
+	if err != nil {
+		logger.AtLog.Logger.Error("TcSwapSlackReport", zap.Error(err))
+		return err
+	}
+
+	if resp != nil && respLiq != nil {
 		btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
 
 		totalVolumeBtc := float64(0)
@@ -418,13 +424,35 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 			volume24hBtc = s
 		}
 
-		slackString := "*TC Report*\n"
+		slackString := "*TC SWAP Report*\n"
 		slackString += fmt.Sprintf("*Total Volume:* %.2f BTC | $%.2f\n", totalVolumeBtc, totalVolumeUsd)
 		slackString += fmt.Sprintf("*Total Txs:* %d\n", resp.TxTotal)
 		slackString += fmt.Sprintf("*Total Users:* %d\n", resp.UsersTotal)
 		slackString += fmt.Sprintf("*Last 24h Volume:* %.2f BTC | $%.2f\n", volume24hBtc, volume24hUsd)
 		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", resp.Tx24h)
 		slackString += fmt.Sprintf("*Last 24h Users:* %d\n", resp.Users24h)
+
+		// totalAmountBtc := float64(0)
+		// amount24hBtc := float64(0)
+		// totalAmountUsd := float64(0)
+		// amount24hUsd := float64(0)
+		// if s, err := strconv.ParseFloat(respLiq.AmountTotal.String(), 64); err == nil {
+		// 	totalAmountUsd = s * btcPrice
+		// 	totalAmountBtc = s
+		// }
+
+		// if s, err := strconv.ParseFloat(respLiq.Amount24h.String(), 64); err == nil {
+		// 	amount24hUsd = s * btcPrice
+		// 	amount24hBtc = s
+		// }
+
+		slackString += "\n*TC Liquidity Report*\n"
+		// slackString += fmt.Sprintf("*Total Amount:* %.2f BTC | $%.2f\n", totalAmountBtc, totalAmountUsd)
+		slackString += fmt.Sprintf("*Total Pair:* %d\n", respLiq.PairTotal)
+		slackString += fmt.Sprintf("*Total Txs:* %d\n", respLiq.TxTotal)
+		// slackString += fmt.Sprintf("*Last 24h Amount:* %.2f BTC | $%.2f\n", amount24hBtc, amount24hUsd)
+		slackString += fmt.Sprintf("*Last 24h Pair:* %d\n", respLiq.Pair24h)
+		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", respLiq.Tx24h)
 
 		helpers.SlackHook(channel, slackString)
 	}
