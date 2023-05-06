@@ -43,6 +43,15 @@ type SwapPairSlackReport struct {
 	UsersTotal  int32                `json:"users_total" bson:"users_total"`
 }
 
+type SwapPairSlackLiquidityReport struct {
+	Amount24h   primitive.Decimal128 `json:"amount_24h" bson:"amount_24h"`
+	AmountTotal primitive.Decimal128 `json:"amount_total" bson:"amount_total"`
+	Tx24h       int32                `json:"tx_24h" bson:"tx_24h"`
+	TxTotal     int32                `json:"tx_total" bson:"tx_total"`
+	Pair24h     int32                `json:"pair_24h" bson:"pair_24h"`
+	PairTotal   int32                `json:"pair_total" bson:"pair_total"`
+}
+
 type SwapPair struct {
 	BaseEntity      `bson:",inline"`
 	TxHash          string    `json:"tx_hash"  bson:"tx_hash,omitempty"`
