@@ -118,6 +118,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapPairRoutes := swapRoutes.PathPrefix("/pair").Subrouter()
 	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
 	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
+
+	transactions := api.PathPrefix("/transactions").Subrouter()
+	transactions.HandleFunc("/scan-txs", h.swapTransactions).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
