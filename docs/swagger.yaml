@@ -495,6 +495,21 @@ paths:
       summary: Get name of a wallet-address
       tags:
       - BNS-service
+  /dapp-info/create:
+    get:
+      consumes:
+      - application/json
+      description: update load dapp info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: post dapp info
+      tags:
+      - dapp-service
   /nft-explorer/collections:
     get:
       consumes:
@@ -819,6 +834,27 @@ paths:
       summary: User profile via wallet address
       tags:
       - Profile
+  /profile/wallet/{walletAddress}/allowed-list/existed:
+    get:
+      consumes:
+      - application/json
+      description: Check profile is received faucet
+      parameters:
+      - description: Wallet address
+        in: path
+        name: walletAddress
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Check profile is received faucet
+      tags:
+      - Profile
   /profile/wallet/{walletAddress}/collections:
     get:
       consumes:
@@ -1046,6 +1082,30 @@ paths:
       summary: Get tokens
       tags:
       - token-explorer
+  /tools//compile-contract:
+    get:
+      consumes:
+      - application/json
+      description: Get bns names
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get bns names
+      tags:
+      - BNS-service
   /upload/file:
     post:
       consumes:

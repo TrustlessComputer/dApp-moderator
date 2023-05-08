@@ -332,3 +332,25 @@ func (h *httpDelivery) currentUerProfileHistories(w http.ResponseWriter, r *http
 		},
 	).ServeHTTP(w, r)
 }
+
+// @Summary Check profile is received faucet
+// @Description Check profile is received faucet
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Param walletAddress path string true "Wallet address"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /profile/wallet/{walletAddress}/allowed-list/existed [GET]
+func (h *httpDelivery) profileByWalletExistedAllowedList(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			walletAddress := vars["walletAddress"]
+			profile, err := h.Usecase.ProfileByWalletExistedAllowedList(walletAddress)
+			if err != nil {
+				return nil, err
+			}
+
+			return profile, nil
+		},
+	).ServeHTTP(w, r)
+}
