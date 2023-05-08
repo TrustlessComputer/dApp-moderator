@@ -132,9 +132,12 @@ const (
 	KEY_LISTING_CONTRACT           string = "collection_contract"
 	KEY_BTC_WALLET_INFO            string = "btc_wallet_info"
 
-	COLLECTION_COLLECTIONS   string = "collections"   //ERC721, a collection has many nfts
-	COLLECTION_NFTS          string = "nfts"          //ERC721
-	COLLECTION_NFT_HISTORIES string = "nft_histories" //ERC721 - histories
+	COLLECTION_COLLECTIONS         string = "collections"   //ERC721, a collection has many nfts
+	COLLECTION_NFTS                string = "nfts"          //ERC721
+	COLLECTION_NFT_HISTORIES       string = "nft_histories" //ERC721 - histories
+	COLLECTION_ALLOW_LIST          string = "allow_list"
+	COLLECTION_INSERTED_ALLOW_LIST string = "inserted_allow_list"
+	COLLECTION_FAUCETS             string = "faucets"
 
 	COLLECTION_TOKEN_URI      string = "token_uris"
 	COLLECTION_TOKENS         string = "tokens"
