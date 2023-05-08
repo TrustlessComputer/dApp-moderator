@@ -42,6 +42,17 @@ func (u *Usecase) SwapAddOrUpdateIdo(ctx context.Context, idoReq *request.IdoReq
 		return nil, err
 	}
 
+	isVeried, err := u.verify(idoReq.Signature, token.Address, token.Address)
+	if err != nil {
+		logger.AtLog.Error("SwapAddOrUpdateIdo", zap.Error(err))
+		return nil, err
+	}
+	if !isVeried {
+		err := errors.New("Signature is not valid")
+		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+		return nil, err
+	}
+
 	var ido *entity.SwapIdo
 	if idoReq.ID == "" {
 		query := entity.SwapIdoFilter{}
