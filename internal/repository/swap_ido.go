@@ -91,3 +91,26 @@ func (r *Repository) DetelteSwapIdo(ctx context.Context, filter entity.SwapIdoFi
 	}
 	return nil
 }
+
+func (r *Repository) FindIdoTokens(ctx context.Context, filter entity.TokenFilter) ([]*entity.Token, error) {
+	tokens := []*entity.Token{}
+	numToSkip := (filter.Page - 1) * filter.Limit
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_TOKEN).Find(ctx, r.parseTokenFilter(filter), options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var token entity.Token
+		err = cursor.Decode(&token)
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, &token)
+	}
+	return tokens, nil
+}
