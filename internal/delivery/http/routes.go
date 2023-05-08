@@ -118,9 +118,17 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapPairRoutes := swapRoutes.PathPrefix("/pair").Subrouter()
 	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
 	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
-
+	swapPairRoutes.HandleFunc("/apr", h.getLiquidityApr).Methods("GET")
+	
 	transactions := api.PathPrefix("/transactions").Subrouter()
 	transactions.HandleFunc("/scan-txs", h.swapTransactions).Methods("GET")
+
+	idoRoutes := swapRoutes.PathPrefix("/ido").Subrouter()
+	idoRoutes.HandleFunc("/", h.addOrUpdateSwapIdo).Methods("POST")
+	idoRoutes.HandleFunc("/list", h.findSwapIdoHistories).Methods("GET")
+	idoRoutes.HandleFunc("/detail", h.findSwapIdoDetail).Methods("GET")
+	idoRoutes.HandleFunc("/delete", h.deleteSwapIdo).Methods("DELETE")
+	idoRoutes.HandleFunc("/tokens", h.getSwapIdoTokens).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
