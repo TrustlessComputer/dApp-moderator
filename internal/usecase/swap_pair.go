@@ -320,3 +320,60 @@ func (u *Usecase) UpdateDataSwapHistory(ctx context.Context) error {
 	}
 	return nil
 }
+
+func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{}, error) {
+	var err error
+	aprPercent := float64(0)
+	query := entity.SwapPairFilter{}
+	query.Id = strings.ToLower(pair)
+
+	pairObj, err := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+		Pair: strings.ToLower(pair),
+	})
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapGetPairApr", zap.Error(err))
+		return nil, err
+	}
+
+	if pairObj != nil {
+		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+		pairVolume, err := u.Repo.FindSwapPairVolume(ctx, query)
+		if err != nil {
+			logger.AtLog.Logger.Error("FindSwapPairs", zap.Error(err))
+			return nil, err
+		}
+		if pairVolume != nil {
+			volume24H, _ := new(big.Float).SetString(pairVolume.Volume24H.String())
+			fmt.Println(pairVolume.Volume24H.String())
+			tradingFee24H := big.NewFloat(0).Mul(volume24H, big.NewFloat(0.02))
+			fmt.Println(tradingFee24H.String())
+			tradingFeeYear := big.NewFloat(0).Mul(tradingFee24H, big.NewFloat(365))
+			fmt.Println(tradingFeeYear.String())
+
+			pairLiquidity, err := u.Repo.FindSwapPairCurrentReserve(ctx, query)
+			if err != nil {
+				logger.AtLog.Logger.Error("FindSwapPairs", zap.Error(err))
+				return nil, err
+			}
+
+			poolLiquidity := big.NewFloat(0)
+			if pairLiquidity != nil {
+				if strings.EqualFold(pairObj.Token0, wbtcContractAddr) {
+					poolLiquidity, _ = new(big.Float).SetString(pairLiquidity.Reserve0.String())
+				} else if strings.EqualFold(pairObj.Token1, wbtcContractAddr) {
+					poolLiquidity, _ = new(big.Float).SetString(pairLiquidity.Reserve1.String())
+				}
+				poolLiquidity = big.NewFloat(0).Mul(poolLiquidity, big.NewFloat(2))
+			}
+
+			if poolLiquidity.Cmp(big.NewFloat(0)) != 0 {
+				fmt.Println(poolLiquidity.String())
+				poolApr := big.NewFloat(0).Quo(tradingFeeYear, poolLiquidity)
+				aprPercent, _ = (big.NewFloat(0).Mul(poolApr, big.NewFloat(100))).Float64()
+			}
+		}
+	}
+
+	logger.AtLog.Logger.Info("FindSwapPairs", zap.Any("data", aprPercent))
+	return aprPercent, nil
+}

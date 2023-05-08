@@ -152,6 +152,8 @@ const (
 	COLLECTION_SWAP_REPORT_SLACK           string = "swap_token_report_slack_view"
 	COLLECTION_SWAP_REPORT_FINAL           string = "swap_token_report_final_view"
 	COLLECTION_SWAP_IDO_TOKEN              string = "swap_ido_tokens_view"
+	COLLECTION_SWAP_PAIR_VOLUME            string = "swap_pair_volume_view"
+	COLLECTION_SWAP_PAIR_CURRENT_RESERVE   string = "swap_pair_current_reserve_view"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"
 	EVM_NULL_ADDRESS                          string = "0x0000000000000000000000000000000000000000"

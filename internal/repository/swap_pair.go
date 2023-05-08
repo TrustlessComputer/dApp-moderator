@@ -43,6 +43,9 @@ func (r *Repository) parseSwapPairFilter(filter entity.SwapPairFilter) bson.M {
 	if filter.Pair != "" {
 		andCond = append(andCond, bson.M{"pair": filter.Pair})
 	}
+	if filter.Id != "" {
+		andCond = append(andCond, bson.M{"_id": filter.Id})
+	}
 	if filter.TxHash != "" {
 		andCond = append(andCond, bson.M{"tx_hash": filter.TxHash})
 	}
@@ -120,4 +123,22 @@ func (r *Repository) FindTokensInPoolByContracts(ctx context.Context, contracts 
 		tokens = append(tokens, token)
 	}
 	return tokens, nil
+}
+
+func (r *Repository) FindSwapPairVolume(ctx context.Context, filter entity.SwapPairFilter) (*entity.SwapPairWithVolumeReport, error) {
+	var swapPair entity.SwapPairWithVolumeReport
+	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR_VOLUME).FindOne(ctx, r.parseSwapPairFilter(filter)).Decode(&swapPair)
+	if err != nil {
+		return nil, err
+	}
+	return &swapPair, nil
+}
+
+func (r *Repository) FindSwapPairCurrentReserve(ctx context.Context, filter entity.SwapPairFilter) (*entity.SwapPairReserveReport, error) {
+	var swapPair entity.SwapPairReserveReport
+	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR_CURRENT_RESERVE).FindOne(ctx, r.parseSwapPairFilter(filter)).Decode(&swapPair)
+	if err != nil {
+		return nil, err
+	}
+	return &swapPair, nil
 }
