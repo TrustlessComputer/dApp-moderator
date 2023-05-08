@@ -4,6 +4,7 @@ import "time"
 
 type IdoRequest struct {
 	ID                string    `json:"id"`
+	Signature         string    `json:"signature"`
 	TokenAddress      string    `json:"token_address"`
 	UserWalletAddress string    `json:"user_wallet_address"`
 	StartAt           time.Time `json:"start_at"`
