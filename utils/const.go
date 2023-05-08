@@ -151,6 +151,8 @@ const (
 	COLLECTION_SWAP_REPORT_SLACK           string = "swap_token_report_slack_view"
 	COLLECTION_SWAP_REPORT_FINAL           string = "swap_token_report_final_view"
 
+	TRANSACTIONS string = "transactions"
+
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"
 	EVM_NULL_ADDRESS                          string = "0x0000000000000000000000000000000000000000"
 	PUBSUB_TOKEN_THUMBNAIL                    string = "token_thumbnail"
