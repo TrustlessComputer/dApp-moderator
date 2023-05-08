@@ -49,7 +49,7 @@ func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.Pa
 	return data, nil
 }
 
-func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.PaginationReq, fromToken, isTest string) (interface{}, error) {
+func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.PaginationReq, fromToken string) (interface{}, error) {
 	var err error
 	query := entity.TokenFilter{}
 	query.FromPagination(filter)
@@ -58,9 +58,9 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 	pairQuery := entity.SwapPairFilter{}
 	pairQuery.Limit = 10000
 	pairQuery.Page = 1
-	if fromToken != "" {
-		pairQuery.Token = fromToken
-	}
+	// if fromToken != "" {
+	// 	pairQuery.Token = fromToken
+	// }
 
 	pairs, err := u.Repo.FindSwapPairs(ctx, pairQuery)
 	if err != nil {
@@ -68,13 +68,33 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 		return nil, err
 	}
 
+	isWbtcInArray := false
+	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
 	for _, pair := range pairs {
-		if fromToken == "" || (fromToken != "" && fromToken != pair.Token0) {
+		if fromToken == "" || (fromToken != "" && strings.EqualFold(fromToken, pair.Token1)) {
 			contracts = append(contracts, pair.Token0)
+			if strings.EqualFold(wbtcContractAddr, pair.Token0) {
+				isWbtcInArray = true
+			}
 		}
 
-		if fromToken == "" || (fromToken != "" && fromToken != pair.Token1) {
+		if fromToken == "" || (fromToken != "" && strings.EqualFold(fromToken, pair.Token0)) {
 			contracts = append(contracts, pair.Token1)
+			if strings.EqualFold(wbtcContractAddr, pair.Token1) {
+				isWbtcInArray = true
+			}
+		}
+	}
+
+	if isWbtcInArray && fromToken != "" {
+		for _, pair := range pairs {
+			if strings.EqualFold(wbtcContractAddr, pair.Token0) &&
+				!strings.EqualFold(fromToken, pair.Token1) {
+				contracts = append(contracts, pair.Token1)
+			} else if strings.EqualFold(wbtcContractAddr, pair.Token1) &&
+				!strings.EqualFold(fromToken, pair.Token0) {
+				contracts = append(contracts, pair.Token0)
+			}
 		}
 	}
 
