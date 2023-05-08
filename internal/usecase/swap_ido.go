@@ -160,7 +160,7 @@ func (u *Usecase) SwapFindTokens(ctx context.Context, filter request.PaginationR
 	query.FromPagination(filter)
 	query.CreatedBy = owner
 
-	data, err = u.Repo.FindTokens(ctx, query)
+	data, err = u.Repo.FindIdoTokens(ctx, query)
 
 	if err != nil {
 		logger.AtLog.Logger.Error("Tokens", zap.Error(err))
