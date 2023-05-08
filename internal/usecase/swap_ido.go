@@ -16,6 +16,7 @@ func (u *Usecase) SwapAddOrUpdateIdo(ctx context.Context, idoReq *request.IdoReq
 	var err error
 	user, err := u.Repo.FindUserByWalletAddress(idoReq.UserWalletAddress)
 	if err != nil {
+		err := errors.New("User is not exist")
 		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
 		return nil, err
 	}
@@ -25,10 +26,26 @@ func (u *Usecase) SwapAddOrUpdateIdo(ctx context.Context, idoReq *request.IdoReq
 		return nil, err
 	}
 
+	tokenFilter := entity.TokenFilter{}
+	tokenFilter.Address = idoReq.TokenAddress
+	tokenFilter.CreatedBy = idoReq.UserWalletAddress
+
+	token, err := u.Repo.FindToken(ctx, tokenFilter)
+	if err != nil {
+		err := errors.New("Token is not exist")
+		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+		return nil, err
+	}
+	if token == nil {
+		err := errors.New("Token is not exist")
+		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+		return nil, err
+	}
+
 	var ido *entity.SwapIdo
 	if idoReq.ID == "" {
 		query := entity.SwapIdoFilter{}
-		query.TokenName = strings.ToLower(idoReq.TokenName)
+		query.Address = idoReq.TokenAddress
 		query.WalletAddress = strings.ToLower(idoReq.UserWalletAddress)
 		ido, err = u.Repo.FindSwapIdo(ctx, query)
 		if err != nil && err != mongo.ErrNoDocuments {
@@ -56,7 +73,7 @@ func (u *Usecase) SwapAddOrUpdateIdo(ctx context.Context, idoReq *request.IdoReq
 	ido.Link = idoReq.Link
 	ido.Price = idoReq.Price
 	ido.StartAt = idoReq.StartAt
-	ido.TokenName = idoReq.TokenName
+	ido.Token = *token
 	ido.Twitter = idoReq.Twitter
 	ido.Website = idoReq.Website
 	ido.WhitePaper = idoReq.WhitePaper
@@ -122,5 +139,23 @@ func (u *Usecase) SwapDeleteSwapIdo(ctx context.Context, id string) (interface{}
 		logger.AtLog.Logger.Error("SwapDeleteSwapIdo", zap.Error(err))
 		return nil, err
 	}
+	return data, nil
+}
+
+func (u *Usecase) SwapFindTokens(ctx context.Context, filter request.PaginationReq, owner string) (interface{}, error) {
+	var data interface{}
+	var err error
+	query := entity.TokenFilter{}
+	query.FromPagination(filter)
+	query.CreatedBy = owner
+
+	data, err = u.Repo.FindTokens(ctx, query)
+
+	if err != nil {
+		logger.AtLog.Logger.Error("Tokens", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("Tokens", zap.Any("data", data))
 	return data, nil
 }

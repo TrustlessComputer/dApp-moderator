@@ -31,8 +31,8 @@ func (r *Repository) parseSwapIdoFilter(filter entity.SwapIdoFilter) bson.M {
 		andCond = append(andCond, bson.M{"_id": objectId})
 	}
 
-	if filter.TokenName != "" {
-		andCond = append(andCond, bson.M{"token_name": filter.TokenName})
+	if filter.Address != "" {
+		andCond = append(andCond, bson.M{"address": filter.Address})
 	}
 
 	if filter.WalletAddress != "" {
