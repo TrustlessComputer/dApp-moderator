@@ -570,6 +570,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/dapp-info/create": {
+            "get": {
+                "description": "update load dapp info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dapp-service"
+                ],
+                "summary": "post dapp info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/nft-explorer/collections": {
             "get": {
                 "description": "Get Collections",
@@ -1070,6 +1093,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/profile/wallet/{walletAddress}/allowed-list/existed": {
+            "get": {
+                "description": "Check profile is received faucet",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Check profile is received faucet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "walletAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/wallet/{walletAddress}/collections": {
             "get": {
                 "description": "Current user collections (created collections and collection has the owned nft)",
@@ -1404,6 +1459,43 @@ const docTemplate = `{
                         "type": "string",
                         "description": "page",
                         "name": "key",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tools//compile-contract": {
+            "get": {
+                "description": "Get bns names",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-service"
+                ],
+                "summary": "Get bns names",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
                         "in": "query"
                     }
                 ],
