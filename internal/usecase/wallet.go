@@ -103,7 +103,7 @@ func (u *Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*struct
 				txRefsChan <- tmp
 			}()
 
-			out := fmt.Sprintf("%s:%d", ab.Hash, ab.Index)
+			/*out := fmt.Sprintf("%s:%d", ab.Hash, ab.Index)
 
 			data := &structure.InscriptionByOutput{}
 			if u.Config.ENV == "production" {
@@ -111,7 +111,7 @@ func (u *Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*struct
 				if err != nil {
 					return
 				}
-			}
+			}*/
 
 			tmp.TxHash = ab.Hash
 			tmp.BlockHeight = int(ab.Height)
@@ -119,9 +119,9 @@ func (u *Usecase) GetBTCWalletInfo(ctx context.Context, address string) (*struct
 			tmp.TxOutputN = ab.Index
 			tmp.Value = int(ab.Value)
 
-			if data != nil && len(data.Inscriptions) > 0 {
+			/*if data != nil && len(data.Inscriptions) > 0 {
 				tmp.IsOrdinal = true
-			}
+			}*/
 
 			balance += tmp.Value
 		}(ab, txRefsChan)
