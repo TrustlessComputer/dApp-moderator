@@ -8,7 +8,7 @@ import (
 
 type SwapIdo struct {
 	BaseEntity        `bson:",inline"`
-	TokenName         string    `json:"token_name" bson:"token_name,omitempty"`
+	Token             `json:"token" bson:"token,omitempty"`
 	UserWalletAddress string    `json:"user_wallet_address" bson:"user_wallet_address,omitempty"`
 	StartAt           time.Time `json:"start_at"  bson:"start_at,omitempty"`
 	Price             string    `json:"price" bson:"price,omitempty"`
@@ -26,7 +26,7 @@ func (t *SwapIdo) CollectionName() string {
 type SwapIdoFilter struct {
 	BaseFilters
 	ID            string
-	TokenName     string
+	Address       string
 	WalletAddress string
 }
 

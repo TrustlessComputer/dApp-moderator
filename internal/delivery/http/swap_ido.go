@@ -72,7 +72,7 @@ func (h *httpDelivery) findSwapIdoDetail(w http.ResponseWriter, r *http.Request)
 	).ServeHTTP(w, r)
 }
 
-func (h *httpDelivery) deleteSwapIdoDetail(w http.ResponseWriter, r *http.Request) {
+func (h *httpDelivery) deleteSwapIdo(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			id := req.Query(r, "id", "")
@@ -83,6 +83,29 @@ func (h *httpDelivery) deleteSwapIdoDetail(w http.ResponseWriter, r *http.Reques
 			}
 
 			logger.AtLog.Logger.Info("findSwapIdoDetail", zap.Any("data", data))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) getSwapIdoTokens(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			pagination, ok := iPagination.(request.PaginationReq)
+			if !ok {
+				err := fmt.Errorf("invalid pagination params")
+				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
+				return nil, err
+			}
+			owner := req.Query(r, "owner", "")
+			data, err := h.Usecase.SwapFindTokens(ctx, pagination, owner)
+			if err != nil {
+				logger.AtLog.Logger.Error("Tokens", zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("Tokens", zap.Any("data", data))
 			return data, nil
 		},
 	).ServeHTTP(w, r)

@@ -122,7 +122,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	idoRoutes.HandleFunc("/", h.addOrUpdateSwapIdo).Methods("POST")
 	idoRoutes.HandleFunc("/list", h.findSwapIdoHistories).Methods("GET")
 	idoRoutes.HandleFunc("/detail", h.findSwapIdoDetail).Methods("GET")
-	idoRoutes.HandleFunc("/delete", h.findSwapIdoDetail).Methods("DELETE")
+	idoRoutes.HandleFunc("/delete", h.deleteSwapIdo).Methods("DELETE")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
