@@ -117,6 +117,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapPairRoutes := swapRoutes.PathPrefix("/pair").Subrouter()
 	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
 	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
+	swapPairRoutes.HandleFunc("/apr", h.getLiquidityApr).Methods("GET")
 
 	idoRoutes := swapRoutes.PathPrefix("/ido").Subrouter()
 	idoRoutes.HandleFunc("/", h.addOrUpdateSwapIdo).Methods("POST")
