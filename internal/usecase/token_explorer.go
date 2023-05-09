@@ -67,6 +67,7 @@ func (u *Usecase) UpdateToken(ctx context.Context, address string, req request.U
 	token.Symbol = req.Symbol
 	token.Slug = strings.ToLower(req.Symbol)
 	token.Description = req.Description
+	token.Thumbnail = req.Thumbnail
 
 	token.Social.DisCord = req.Social.DisCord
 	token.Social.Telegram = req.Social.Telegram
@@ -145,7 +146,7 @@ func (u *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			u.NewTokenNotify(&token)
 		}
 
-		if len(Tokens) <= perPage {
+		if len(Tokens) < perPage {
 			break
 		}
 

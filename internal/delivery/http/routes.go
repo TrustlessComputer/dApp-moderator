@@ -69,6 +69,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	//profile
 	profile := api.PathPrefix("/profile").Subrouter()
 	profile.HandleFunc("/wallet/{walletAddress}", h.profileByWallet).Methods("GET")
+	profile.HandleFunc("/wallet/{walletAddress}/allowed-list/existed", h.profileByWalletExistedAllowedList).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}/histories", h.currentUerProfileHistories).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}/collections", h.currentUserProfileCollections).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}/tokens/bought", h.currentUserProfileBoughtTokens).Methods("GET")
@@ -115,11 +116,15 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
 	swapTokensRoutes.HandleFunc("/route", h.getRoutePair).Methods("GET")
 	swapTokensRoutes.HandleFunc("/report", h.getTokensReport).Methods("GET")
+	swapTokensRoutes.HandleFunc("/price", h.getTokensPrice).Methods("GET")
 
 	swapPairRoutes := swapRoutes.PathPrefix("/pair").Subrouter()
 	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
 	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
 	swapPairRoutes.HandleFunc("/apr", h.getLiquidityApr).Methods("GET")
+	
+	transactions := api.PathPrefix("/transactions").Subrouter()
+	transactions.HandleFunc("/scan-txs", h.swapTransactions).Methods("GET")
 
 	idoRoutes := swapRoutes.PathPrefix("/ido").Subrouter()
 	idoRoutes.HandleFunc("/", h.addOrUpdateSwapIdo).Methods("POST")
