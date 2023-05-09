@@ -429,6 +429,24 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 		return err
 	}
 
+	pairReserves, err := u.Repo.FindSwapPairCurrentReserveList(ctx, entity.SwapPairFilter{})
+	if err != nil {
+		logger.AtLog.Logger.Error("FindSwapPairs", zap.Error(err))
+		return err
+	}
+	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+
+	poolBTCLiquidity := big.NewFloat(0)
+	for _, item := range pairReserves {
+		tmpPoolBTCLiquidity := big.NewFloat(0)
+		if strings.EqualFold(item.Token0, wbtcContractAddr) {
+			tmpPoolBTCLiquidity, _ = new(big.Float).SetString(item.Reserve0.String())
+		} else if strings.EqualFold(item.Token1, wbtcContractAddr) {
+			tmpPoolBTCLiquidity, _ = new(big.Float).SetString(item.Reserve1.String())
+		}
+		poolBTCLiquidity = big.NewFloat(0).Add(poolBTCLiquidity, tmpPoolBTCLiquidity)
+	}
+
 	if resp != nil && respLiq != nil {
 		btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
 
@@ -454,25 +472,10 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", resp.Tx24h)
 		slackString += fmt.Sprintf("*Last 24h Users:* %d\n", resp.Users24h)
 
-		// totalAmountBtc := float64(0)
-		// amount24hBtc := float64(0)
-		// totalAmountUsd := float64(0)
-		// amount24hUsd := float64(0)
-		// if s, err := strconv.ParseFloat(respLiq.AmountTotal.String(), 64); err == nil {
-		// 	totalAmountUsd = s * btcPrice
-		// 	totalAmountBtc = s
-		// }
-
-		// if s, err := strconv.ParseFloat(respLiq.Amount24h.String(), 64); err == nil {
-		// 	amount24hUsd = s * btcPrice
-		// 	amount24hBtc = s
-		// }
-
 		slackString += "\n*TC Liquidity Report*\n"
-		// slackString += fmt.Sprintf("*Total Amount:* %.2f BTC | $%.2f\n", totalAmountBtc, totalAmountUsd)
+		slackString += fmt.Sprintf("*Total BTC In Pool:* %.2f BTC\n", poolBTCLiquidity)
 		slackString += fmt.Sprintf("*Total Pair:* %d\n", respLiq.PairTotal)
 		slackString += fmt.Sprintf("*Total Txs:* %d\n", respLiq.TxTotal)
-		// slackString += fmt.Sprintf("*Last 24h Amount:* %.2f BTC | $%.2f\n", amount24hBtc, amount24hUsd)
 		slackString += fmt.Sprintf("*Last 24h Pair:* %d\n", respLiq.Pair24h)
 		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", respLiq.Tx24h)
 
