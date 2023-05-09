@@ -42,7 +42,7 @@ func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.Pa
 	query := entity.SwapPairSwapHistoriesFilter{}
 	query.FromPagination(filter)
 
-	data, err = u.Repo.FindSwapPairSwapHistory(ctx, query)
+	data, err = u.Repo.FindSwapPairHistories(ctx, query)
 
 	if err != nil {
 		logger.AtLog.Logger.Error("TcSwapFindSwapHistories", zap.Error(err))
@@ -278,7 +278,7 @@ func (u *Usecase) UpdateDataSwapHistory(ctx context.Context) error {
 
 	// wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
 	for _, pairSync := range pairSyncs {
-		if pairSync != nil && pairSync.Token == "" {
+		if pairSync != nil && pairSync.Pair == nil {
 			// var token *entity.Token
 			var pair *entity.SwapPair
 

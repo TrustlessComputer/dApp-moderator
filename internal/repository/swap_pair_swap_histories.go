@@ -69,6 +69,7 @@ func (r *Repository) FindSwapPairHistories(ctx context.Context, filter entity.Sw
 	options := options.Find()
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
+	options.SetSort(bson.D{{"timestamp", -1}})
 
 	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).Find(ctx, r.parseSwapPairSwapHistories(filter), options)
 	if err != nil {
