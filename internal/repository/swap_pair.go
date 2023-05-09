@@ -49,10 +49,10 @@ func (r *Repository) parseSwapPairFilter(filter entity.SwapPairFilter) bson.M {
 	if filter.TxHash != "" {
 		andCond = append(andCond, bson.M{"tx_hash": filter.TxHash})
 	}
-	if filter.Token != "" {
+	if filter.FromToken != "" {
 		andCond = append(andCond, bson.M{"$or": []bson.M{
-			{"token0": filter.Token},
-			{"token1": filter.Token},
+			{"token0": filter.FromToken},
+			{"token1": filter.FromToken},
 		}})
 	}
 
@@ -137,6 +137,30 @@ func (r *Repository) FindSwapPairVolume(ctx context.Context, filter entity.SwapP
 func (r *Repository) FindSwapPairCurrentReserve(ctx context.Context, filter entity.SwapPairFilter) (*entity.SwapPairReserveReport, error) {
 	var swapPair entity.SwapPairReserveReport
 	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR_CURRENT_RESERVE).FindOne(ctx, r.parseSwapPairFilter(filter)).Decode(&swapPair)
+	if err != nil {
+		return nil, err
+	}
+	return &swapPair, nil
+}
+
+func (r *Repository) FindSwapPairByTokens(ctx context.Context, fromToken, toToken string) (*entity.SwapPair, error) {
+	var swapPair entity.SwapPair
+	andCond1 := make([]bson.M, 0)
+	andCond1 = append(andCond1, bson.M{"token0": fromToken})
+	andCond1 = append(andCond1, bson.M{"token1": toToken})
+	filter1 := bson.M{"$and": andCond1}
+
+	andCond2 := make([]bson.M, 0)
+	andCond2 = append(andCond2, bson.M{"token0": toToken})
+	andCond2 = append(andCond2, bson.M{"token1": fromToken})
+	filter2 := bson.M{"$and": andCond2}
+
+	orCond := make([]bson.M, 0)
+	orCond = append(orCond, filter1)
+	orCond = append(orCond, filter2)
+
+	filter := bson.M{"$or": orCond}
+	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR).FindOne(ctx, filter).Decode(&swapPair)
 	if err != nil {
 		return nil, err
 	}
