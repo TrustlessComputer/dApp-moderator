@@ -110,7 +110,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapRoutes.HandleFunc("/clear-cache", h.clearCache).Methods("GET")
 	swapRoutes.HandleFunc("/update-sync", h.jobUpdateDataSwapSync).Methods("GET")
 	swapRoutes.HandleFunc("/update-history", h.jobUpdateDataSwapHistory).Methods("GET")
-	// swapRoutes.HandleFunc("/update-pair", h.jobUpdateDataSwapPair).Methods("GET")
+	swapRoutes.HandleFunc("/update-pair", h.jobUpdateDataSwapPair).Methods("GET")
 	swapRoutes.HandleFunc("/update-token", h.jobUpdateDataSwapToken).Methods("GET")
 	swapRoutes.HandleFunc("/fe-log", h.addFrontEndLog).Methods("POST")
 	swapRoutes.HandleFunc("/report/slack", h.getSlackReport).Methods("GET")
