@@ -72,7 +72,7 @@ func (h *httpDelivery) findSwapPairs(w http.ResponseWriter, r *http.Request) {
 				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
 				return nil, err
 			}
-			data, err := h.Usecase.TcSwapFindSwapPairs(ctx, pagination, req.Query(r, "key", ""))
+			data, err := h.Usecase.TcSwapFindSwapPairs(ctx, pagination, req.Query(r, "from_token", ""))
 			if err != nil {
 				logger.AtLog.Logger.Error("TcSwapFindSwapPairs", zap.Error(err))
 				return nil, err

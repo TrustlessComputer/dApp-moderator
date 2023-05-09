@@ -6,20 +6,25 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
 
-func (u *Usecase) TcSwapFindSwapPairs(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
+func (u *Usecase) TcSwapFindSwapPairs(ctx context.Context, filter request.PaginationReq, fromToken string) (interface{}, error) {
 	var data interface{}
 	var err error
 	query := entity.SwapPairFilter{}
 	query.FromPagination(filter)
+	if fromToken != "" {
+		query.FromToken = fromToken
+	}
 
 	data, err = u.Repo.FindSwapPairs(ctx, query)
 
@@ -58,9 +63,6 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 	pairQuery := entity.SwapPairFilter{}
 	pairQuery.Limit = 10000
 	pairQuery.Page = 1
-	// if fromToken != "" {
-	// 	pairQuery.Token = fromToken
-	// }
 
 	pairs, err := u.Repo.FindSwapPairs(ctx, pairQuery)
 	if err != nil {
@@ -396,4 +398,48 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 
 	logger.AtLog.Logger.Info("FindSwapPairs", zap.Any("data", aprPercent))
 	return aprPercent, nil
+}
+
+func (u *Usecase) GetRoutePair(ctx context.Context, fromToken, toToken string) (interface{}, error) {
+	var err error
+
+	listPairs := []*entity.SwapPair{}
+	pair, err := u.Repo.FindSwapPairByTokens(ctx, fromToken, toToken)
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("GetRoutePair", zap.Error(err))
+		return nil, err
+	}
+	if pair != nil {
+		listPairs = append(listPairs, pair)
+	} else {
+		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+		pair1, err := u.Repo.FindSwapPairByTokens(ctx, fromToken, wbtcContractAddr)
+		if err != nil {
+			err := errors.New("Pair is not exist")
+			logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+			return nil, err
+		}
+		if pair1 != nil {
+			listPairs = append(listPairs, pair1)
+		}
+
+		pair2, err := u.Repo.FindSwapPairByTokens(ctx, wbtcContractAddr, toToken)
+		if err != nil {
+			err := errors.New("Pair is not exist")
+			logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+			return nil, err
+		}
+		if pair2 != nil {
+			listPairs = append(listPairs, pair2)
+		}
+	}
+
+	if len(listPairs) == 0 {
+		err := errors.New("Pair is not exist")
+		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("GetRoutePair", zap.Any("data", listPairs))
+	return listPairs, nil
 }
