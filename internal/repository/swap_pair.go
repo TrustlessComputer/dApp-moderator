@@ -62,8 +62,8 @@ func (r *Repository) parseSwapPairFilter(filter entity.SwapPairFilter) bson.M {
 	return bson.M{"$and": andCond}
 }
 
-func (r *Repository) FindSwapPairs(ctx context.Context, filter entity.SwapPairFilter) ([]entity.SwapPair, error) {
-	var pairs []entity.SwapPair
+func (r *Repository) FindSwapPairs(ctx context.Context, filter entity.SwapPairFilter) ([]*entity.SwapPair, error) {
+	var pairs []*entity.SwapPair
 
 	// pagination
 	numToSkip := (filter.Page - 1) * filter.Limit
@@ -82,7 +82,7 @@ func (r *Repository) FindSwapPairs(ctx context.Context, filter entity.SwapPairFi
 		if err != nil {
 			return nil, err
 		}
-		pairs = append(pairs, pair)
+		pairs = append(pairs, &pair)
 	}
 	return pairs, nil
 }

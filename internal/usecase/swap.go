@@ -190,6 +190,16 @@ func (u *Usecase) TcSwapCreatedPair(ctx context.Context, eventResp *blockchain_a
 		swapPair.Token0 = eventResp.Token0
 		swapPair.Token1 = eventResp.Token1
 		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+
+		token0, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: eventResp.Token0})
+		if token0 != nil {
+			swapPair.Token0Obj = *token0
+		}
+
+		token1, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: eventResp.Token1})
+		if token1 != nil {
+			swapPair.Token1Obj = *token1
+		}
 		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))

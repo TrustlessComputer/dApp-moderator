@@ -74,6 +74,8 @@ type SwapPair struct {
 	Pair            string    `json:"pair"  bson:"pair,omitempty"`
 	Arg3            int64     `json:"arg3"  bson:"arg3,omitempty"`
 	Index           uint      `json:"log_index"  bson:"log_index,omitempty"`
+	Token0Obj       Token     `json:"token0_obj"  bson:"token0_obj,omitempty"`
+	Token1Obj       Token     `json:"token1_obj"  bson:"token1_obj,omitempty"`
 }
 
 type ChartDataResp struct {
