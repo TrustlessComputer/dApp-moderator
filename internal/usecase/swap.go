@@ -479,8 +479,55 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 		slackString += fmt.Sprintf("*Last 24h Pair:* %d\n", respLiq.Pair24h)
 		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", respLiq.Tx24h)
 
+		listName := []string{
+			"wbtc_contract_address",
+			"weth_contract_address",
+			"wpepe_contract_address",
+			"wusdc_contract_address",
+			"wordi_contract_address",
+		}
+		dbSwapConfigs, err := u.Repo.FindSwapConfigByListName(ctx, listName)
+		if err != nil && err != mongo.ErrNoDocuments {
+			logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+			return err
+		}
+
+		slackString += "\n*TC Bridge Locked Report*\n"
+		for _, item := range dbSwapConfigs {
+			tmpAmount, _ := new(big.Float).SetString(item.TotalSupply.String())
+			tmpAmountFloat, _ := tmpAmount.Float64()
+			slackString += fmt.Sprintf("*Total %s:* %.2f\n", item.Symbol, tmpAmountFloat)
+		}
+
 		helpers.SlackHook(channel, slackString)
 	}
 
+	return nil
+}
+
+func (u *Usecase) TcSwapUpdateTotalSupplyJob(ctx context.Context) error {
+	listName := []string{
+		"wbtc_contract_address",
+		"weth_contract_address",
+		"wpepe_contract_address",
+		"wusdc_contract_address",
+		"wordi_contract_address",
+	}
+	dbSwapConfigs, err := u.Repo.FindSwapConfigByListName(ctx, listName)
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+	for _, item := range dbSwapConfigs {
+		totalSupply, _ := u.BlockChainApi.Erc20TotalSupply(item.Value)
+		if totalSupply != nil {
+			item.TotalSupply, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(totalSupply, 18).String())
+		}
+		err = u.Repo.UpdateSwapConfig(ctx, item)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
 	return nil
 }
