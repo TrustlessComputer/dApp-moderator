@@ -130,25 +130,25 @@ func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, c
 		if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
 			item.BtcPrice = s
 
-			item.UsdPrice =fmt.Sprint( s * btcPrice)
-			item.CloseUsd =fmt.Sprint(  s * btcPrice)
+			item.UsdPrice = fmt.Sprint(s * btcPrice)
+			item.CloseUsd = fmt.Sprint(s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.Open.String(), 64); err == nil {
-			item.OpenUsd = fmt.Sprint( s * btcPrice)
+			item.OpenUsd = fmt.Sprint(s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
-			item.HighUsd = fmt.Sprint( s * btcPrice)
+			item.HighUsd = fmt.Sprint(s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.Low.String(), 64); err == nil {
-			item.LowUsd = fmt.Sprint( s * btcPrice)
+			item.LowUsd = fmt.Sprint(s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.VolumeTo.String(), 64); err == nil {
-			item.VolumeToUsd = fmt.Sprint( s * btcPrice)
+			item.VolumeToUsd = fmt.Sprint(s * btcPrice)
 		}
 		if s, err := strconv.ParseFloat(item.VolumeFrom.String(), 64); err == nil {
-			item.VolumeFromUsd =fmt.Sprint(  s * btcPrice)
+			item.VolumeFromUsd = fmt.Sprint(s * btcPrice)
 		}
-		item.TotalVolumeUsd = fmt.Sprint( item.TotalVolume*btcPrice)
+		item.TotalVolumeUsd = fmt.Sprint(item.TotalVolume * btcPrice)
 	}
 	return reports, nil
 }
@@ -395,8 +395,8 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 	if pairObj != nil {
 		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
 		pairVolume, err := u.Repo.FindSwapPairVolume(ctx, query)
-		if err != nil {
-			logger.AtLog.Logger.Error("FindSwapPairs", zap.Error(err))
+		if err != nil && err != mongo.ErrNoDocuments {
+			logger.AtLog.Logger.Error("SwapGetPairApr", zap.Error(err))
 			return nil, err
 		}
 		if pairVolume != nil {
@@ -408,8 +408,8 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 			fmt.Println(tradingFeeYear.String())
 
 			pairLiquidity, err := u.Repo.FindSwapPairCurrentReserve(ctx, query)
-			if err != nil {
-				logger.AtLog.Logger.Error("FindSwapPairs", zap.Error(err))
+			if err != nil && err != mongo.ErrNoDocuments {
+				logger.AtLog.Logger.Error("SwapGetPairApr", zap.Error(err))
 				return nil, err
 			}
 
@@ -431,7 +431,7 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 		}
 	}
 
-	logger.AtLog.Logger.Info("FindSwapPairs", zap.Any("data", aprPercent))
+	logger.AtLog.Logger.Info("SwapGetPairApr", zap.Any("data", aprPercent))
 	return aprPercent, nil
 }
 
