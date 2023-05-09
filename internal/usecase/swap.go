@@ -223,6 +223,10 @@ func (u *Usecase) TcSwapPairCreateEvent(ctx context.Context, eventResp *blockcha
 	if dbSwapPair != nil {
 		return nil
 	} else {
+		pair, _ := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+			Pair: strings.ToLower(eventResp.ContractAddress),
+		})
+
 		swapPair := &entity.SwapPairEvents{}
 		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
 		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
@@ -232,6 +236,9 @@ func (u *Usecase) TcSwapPairCreateEvent(ctx context.Context, eventResp *blockcha
 		swapPair.To = eventResp.To
 		swapPair.EventType = eventType
 		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		if pair != nil {
+			swapPair.Pair = pair
+		}
 		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
@@ -290,6 +297,9 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 				tmpPrice = big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18))
 			}
 			swapPairSync.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+		}
+		if pair != nil {
+			swapPairSync.Pair = pair
 		}
 		_, err = u.Repo.InsertOne(swapPairSync)
 		if err != nil {
@@ -361,6 +371,8 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 
 			swapPair.Volume, _ = primitive.ParseDecimal128(tmpVolume.String())
 			swapPair.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+
+			swapPair.Pair = pair
 		}
 
 		_, err = u.Repo.InsertOne(swapPair)

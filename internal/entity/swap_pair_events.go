@@ -24,6 +24,7 @@ type SwapPairEvents struct {
 	Amount0         primitive.Decimal128 `json:"amount0"  bson:"amount0,omitempty"`
 	Amount1         primitive.Decimal128 `json:"amount1"  bson:"amount1,omitempty"`
 	Index           uint                 `json:"log_index"  bson:"log_index,omitempty"`
+	Pair            *SwapPair            `json:"pair" bson:"pair,omitempty"`
 }
 
 func (t *SwapPairEvents) CollectionName() string {
