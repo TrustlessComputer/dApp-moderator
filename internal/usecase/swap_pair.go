@@ -509,3 +509,28 @@ func (u *Usecase) UpdateDataSwapPair(ctx context.Context) error {
 	}
 	return nil
 }
+
+func (u *Usecase) UpdateDataSwapToken(ctx context.Context) error {
+	pairQuery := entity.TokenFilter{}
+	pairQuery.Limit = 10000
+	pairQuery.Page = 1
+
+	tokens, err := u.Repo.FindListTokens(ctx, pairQuery)
+	if err != nil {
+		logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+		return err
+	}
+
+	for _, token := range tokens {
+		if token.Network == "" {
+			token.Network = "TC"
+			token.Priority = 0
+			err := u.Repo.UpdateToken(ctx, token)
+			if err != nil {
+				logger.AtLog.Logger.Error("UpdateDataSwapToken", zap.Error(err))
+				return err
+			}
+		}
+	}
+	return nil
+}
