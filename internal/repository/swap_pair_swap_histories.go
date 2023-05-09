@@ -4,8 +4,11 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"strconv"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -59,6 +62,144 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenFil
 		tokens = append(tokens, token)
 	}
 	return tokens, nil
+}
+
+func (r *Repository) FindTokePrice(ctx context.Context, contract string, chartType string) ([]*entity.ChartDataResp, error) {
+	var tokens []*entity.ChartDataResp
+
+	// pagination
+	// Set the options for the query
+
+	options := options.Find()
+	options.SetSort(bson.D{{"created_at", 1}})
+	var swapPair entity.SwapPair
+
+	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR).FindOne(ctx, bson.D{
+		{"token0", contract},
+		{"token1", "0xfB83c18569fB43f1ABCbae09Baf7090bFFc8CBBD"},
+	}).Decode(&swapPair)
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).Find(ctx, bson.D{
+		{"contract_address", swapPair.Pair},
+	}, options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		//var token *entity.ChartDataResp
+		var h *entity.SwapPairSwapHistories
+		err = cursor.Decode(&h)
+
+		if err != nil {
+			return nil, err
+		}
+		tokens = updateChartData(h, tokens, chartType)
+		//tokens = append(tokens, token)
+	}
+	return tokens, nil
+}
+
+func CompareDecimal128(d1, d2 primitive.Decimal128) int {
+	b1, exp1, err := d1.BigInt()
+	if err != nil {
+		return 0
+	}
+	b2, exp2, err := d2.BigInt()
+	if err != nil {
+		return 0
+	}
+
+	sign := b1.Sign()
+	if sign != b2.Sign() {
+		if b1.Sign() > 0 {
+			return 1
+		} else {
+			return -1
+		}
+	}
+
+	if exp1 == exp2 {
+		return b1.Cmp(b2)
+	}
+
+	if sign < 0 {
+		if exp1 < exp2 {
+			return 1
+		}
+		return -1
+	} else {
+		if exp1 < exp2 {
+			return -1
+		}
+
+		return 1
+	}
+}
+
+func updateChartData(h *entity.SwapPairSwapHistories, res []*entity.ChartDataResp, chartType string) []*entity.ChartDataResp {
+	t := FindTime(*h.CreatedAt, chartType)
+	isExit := false
+	for i, s := range res {
+		if s.Time == t {
+			isExit = true
+			res[i].Close = h.Price
+			volmeString := h.Volume.String()
+			s, _ := strconv.ParseFloat(volmeString, 32)
+
+			res[i].TotalVolume = res[i].TotalVolume + s
+			if CompareDecimal128(res[i].VolumeFrom, h.Volume) > 0 {
+				res[i].VolumeFrom = h.Volume
+			}
+			if CompareDecimal128(res[i].VolumeTo, h.Volume) < 0 {
+				res[i].VolumeTo = h.Volume
+			}
+			if CompareDecimal128(res[i].High, h.Price) < 0 {
+				res[i].High = h.Price
+			}
+			if CompareDecimal128(res[i].Low, h.Price) > 0 {
+				res[i].Low = h.Price
+			}
+			break
+		}
+
+	}
+	if !isExit {
+		var token *entity.ChartDataResp
+		token = new(entity.ChartDataResp)
+		token.Time = t
+		token.Timestamp = t.Unix()
+		token.Close = h.Price
+		token.Open = h.Price
+		volmeString := h.Volume.String()
+		s, _ := strconv.ParseFloat(volmeString, 32)
+		token.TotalVolume = s
+		token.VolumeFrom = h.Volume
+		token.VolumeTo = h.Volume
+		token.High = h.Price
+		token.Low = h.Price
+		token.ConversionSymbol = ""
+		token.ConversionType = ""
+		res = append(res, token)
+	}
+	return res
+}
+
+func FindTime(t time.Time, chartType string) time.Time {
+	year, month, day := t.Date()
+	hr, min, _ := t.Clock()
+	if chartType == "minute" {
+		return time.Date(year, month, day, hr, min, 0, 0, t.Location())
+	}
+	if chartType == "hour" {
+		return time.Date(year, month, day, hr, 0, 0, 0, t.Location())
+	}
+	if chartType == "day" {
+		return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+	}
+	if chartType == "month" {
+		return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+	}
+	return t
 }
 
 func (r *Repository) FindSwapPairHistories(ctx context.Context, filter entity.SwapPairSwapHistoriesFilter) ([]*entity.SwapPairSwapHistories, error) {

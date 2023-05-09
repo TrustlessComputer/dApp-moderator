@@ -30,8 +30,9 @@ type Context struct {
 }
 
 type Databases struct {
-	Postgres *DBConnection
-	Mongo    *DBConnection
+	Postgres        *DBConnection
+	Mongo           *DBConnection
+	GenerativeMongo *DBConnection
 }
 
 type DBConnection struct {
@@ -114,6 +115,15 @@ func NewConfig(filePaths ...string) (*Config, error) {
 				Pass:   os.Getenv("MONGO_PASSWORD"),
 				Name:   os.Getenv("MONGO_DB"),
 				Scheme: os.Getenv("MONGO_SCHEME"),
+			},
+
+			GenerativeMongo: &DBConnection{
+				Host:   os.Getenv("MONGO_GENERATIVE_HOST"),
+				Port:   os.Getenv("MONGO_GENERATIVE_PORT"),
+				User:   os.Getenv("MONGO_GENERATIVE_USER"),
+				Pass:   os.Getenv("MONGO_GENERATIVE_PASSWORD"),
+				Name:   os.Getenv("MONGO_GENERATIVE_DB"),
+				Scheme: os.Getenv("MONGO_GENERATIVE_SCHEME"),
 			},
 		},
 		Redis: RedisConfig{

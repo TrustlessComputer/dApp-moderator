@@ -113,10 +113,44 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 }
 
 func (u *Usecase) ClearCache() error {
-	redisKey := fmt.Sprintf("tc-swap:token-reports-*")
+	redisKey := fmt.Sprintf("tc-swap:token-reports-%!s(int64=1)-%!s(int64=500)")
 	u.Cache.Delete(redisKey)
 	return nil
 
+}
+func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, chartType string) (interface{}, error) {
+	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType)
+	if err != nil {
+		//logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+		return reports, nil
+	}
+	btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
+
+	for _, item := range reports {
+		if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
+			item.BtcPrice = s
+
+			item.UsdPrice =fmt.Sprint( s * btcPrice)
+			item.CloseUsd =fmt.Sprint(  s * btcPrice)
+		}
+		if s, err := strconv.ParseFloat(item.Open.String(), 64); err == nil {
+			item.OpenUsd = fmt.Sprint( s * btcPrice)
+		}
+		if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
+			item.HighUsd = fmt.Sprint( s * btcPrice)
+		}
+		if s, err := strconv.ParseFloat(item.Low.String(), 64); err == nil {
+			item.LowUsd = fmt.Sprint( s * btcPrice)
+		}
+		if s, err := strconv.ParseFloat(item.VolumeTo.String(), 64); err == nil {
+			item.VolumeToUsd = fmt.Sprint( s * btcPrice)
+		}
+		if s, err := strconv.ParseFloat(item.VolumeFrom.String(), 64); err == nil {
+			item.VolumeFromUsd =fmt.Sprint(  s * btcPrice)
+		}
+		item.TotalVolumeUsd = fmt.Sprint( item.TotalVolume*btcPrice)
+	}
+	return reports, nil
 }
 
 func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address string) (interface{}, error) {
