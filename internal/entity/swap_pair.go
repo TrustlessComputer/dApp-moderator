@@ -66,16 +66,14 @@ type SwapPairReserveReport struct {
 
 type SwapPair struct {
 	BaseEntity      `bson:",inline"`
-	TxHash          string               `json:"tx_hash"  bson:"tx_hash,omitempty"`
-	ContractAddress string               `json:"contract_address"  bson:"contract_address,omitempty"`
-	Timestamp       time.Time            `json:"timestamp"  bson:"timestamp,omitempty"`
-	Token0          string               `json:"token0"  bson:"token0,omitempty"`
-	Token1          string               `json:"token1"  bson:"token1,omitempty"`
-	Pair            string               `json:"pair"  bson:"pair,omitempty"`
-	Arg3            int64                `json:"arg3"  bson:"arg3,omitempty"`
-	Index           uint                 `json:"log_index"  bson:"log_index,omitempty"`
-	Reserve0        primitive.Decimal128 `json:"reserve0" bson:"reserve0,omitempty"`
-	Reserve1        primitive.Decimal128 `json:"reserve1" bson:"reserve1,omitempty"`
+	TxHash          string    `json:"tx_hash"  bson:"tx_hash,omitempty"`
+	ContractAddress string    `json:"contract_address"  bson:"contract_address,omitempty"`
+	Timestamp       time.Time `json:"timestamp"  bson:"timestamp,omitempty"`
+	Token0          string    `json:"token0"  bson:"token0,omitempty"`
+	Token1          string    `json:"token1"  bson:"token1,omitempty"`
+	Pair            string    `json:"pair"  bson:"pair,omitempty"`
+	Arg3            int64     `json:"arg3"  bson:"arg3,omitempty"`
+	Index           uint      `json:"log_index"  bson:"log_index,omitempty"`
 }
 
 type ChartDataResp struct {
@@ -111,10 +109,11 @@ func (t *SwapPair) CollectionName() string {
 
 type SwapPairFilter struct {
 	BaseFilters
-	Pair   string
-	TxHash string
-	Token  string
-	Id     string
+	Pair      string
+	TxHash    string
+	FromToken string
+	ToToken   string
+	Id        string
 }
 type ChartrFilter struct {
 	BaseFilters
