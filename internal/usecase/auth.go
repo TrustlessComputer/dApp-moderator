@@ -452,21 +452,22 @@ func (u *Usecase) MemeAllowList(ctx context.Context, userAddress string) {
 				})
 				if err != nil {
 					logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Error(err))
-				}
+					break
+				} else {
+					//Only insert faucet if error doesn't occur. Duplicated key error is handled by unique index.
+					//Insert into faucets collection in generative.
+					fcAmount, _ := settingReward[walletTokenAddress].Int64()
+					fc := &entity.Faucet{
+						Address: userAddress,
+						Amount:  fmt.Sprintf("%v", fcAmount),
+						Source:  "dapp-moderator",
+					}
 
-				//Insert into faucets collection in generative.
-				fcAmount, _ := settingReward[walletTokenAddress].Int64()
-				fc := &entity.Faucet{
-					Address: userAddress,
-					Amount:  fmt.Sprintf("%v", fcAmount),
-					Source:  "dapp-moderator",
+					_, err = u.GenerativeRepo.InsertFaucet(fc)
+					if err != nil {
+						logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Any("faucet", fc), zap.Error(err))
+					}
 				}
-
-				_, err = u.GenerativeRepo.InsertFaucet(fc)
-				if err != nil {
-					logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Any("faucet", fc), zap.Error(err))
-				}
-
 			}
 
 			logger.AtLog.Logger.Error("MemeAllowList", zap.Any("tokens", tokens), zap.String("userAddress", userAddress), zap.Error(err))
