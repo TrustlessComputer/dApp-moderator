@@ -105,3 +105,29 @@ func (r *Repository) UpdateToken(ctx context.Context, token *entity.Token) error
 	}
 	return nil
 }
+
+func (r *Repository) FindListTokens(ctx context.Context, filter entity.TokenFilter) ([]*entity.Token, error) {
+	var tokens []*entity.Token
+
+	// pagination
+	numToSkip := (filter.Page - 1) * filter.Limit
+	// Set the options for the query
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_TOKENS).Find(ctx, r.parseTokenFilter(filter), options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var token entity.Token
+		err = cursor.Decode(&token)
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, &token)
+	}
+	return tokens, nil
+}
