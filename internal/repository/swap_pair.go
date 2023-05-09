@@ -143,6 +143,25 @@ func (r *Repository) FindSwapPairCurrentReserve(ctx context.Context, filter enti
 	return &swapPair, nil
 }
 
+func (r *Repository) FindSwapPairCurrentReserveList(ctx context.Context, filter entity.SwapPairFilter) ([]*entity.SwapPairReserveReport, error) {
+	reserves := []*entity.SwapPairReserveReport{}
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR_CURRENT_RESERVE).Find(ctx, r.parseSwapPairFilter(filter))
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		reserve := entity.SwapPairReserveReport{}
+		err = cursor.Decode(&reserve)
+		if err != nil {
+			return nil, err
+		}
+		reserves = append(reserves, &reserve)
+	}
+	return reserves, nil
+}
+
 func (r *Repository) FindSwapPairByTokens(ctx context.Context, fromToken, toToken string) (*entity.SwapPair, error) {
 	var swapPair entity.SwapPair
 	andCond1 := make([]bson.M, 0)

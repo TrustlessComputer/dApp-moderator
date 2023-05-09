@@ -63,7 +63,7 @@ func init() {
 
 	generativeMongoCnn := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", c.Databases.GenerativeMongo.Scheme, c.Databases.GenerativeMongo.User, c.Databases.GenerativeMongo.Pass, c.Databases.GenerativeMongo.Host)
 	if c.ENV == "dev" {
-		mongoCnn = "mongodb://127.0.0.1:27017/?retryWrites=true&w=majority"
+		generativeMongoCnn = "mongodb://127.0.0.1:27017/?retryWrites=true&w=majority"
 	}
 
 	gccnn, err := connections.NewMongo(generativeMongoCnn)
