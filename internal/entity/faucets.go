@@ -4,6 +4,7 @@ import "dapp-moderator/utils"
 
 type Faucet struct {
 	BaseEntity  `bson:",inline"`
+	UUID        string `json:"uuid" bson:"uuid"`
 	Tx          string `bson:"tx" json:"tcTx"`
 	BtcTx       string `bson:"btc_tx" json:"btcTx"`
 	Nonce       int64  `bson:"nonce" json:"-"`

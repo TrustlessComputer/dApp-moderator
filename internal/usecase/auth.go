@@ -444,12 +444,15 @@ func (u *Usecase) MemeAllowList(ctx context.Context, userAddress string) {
 				}
 
 				//Insert into created allowed list
-				u.Repo.CreateInsertedAllowList(&entity.InsertedAllowList{
+				_, err := u.Repo.CreateInsertedAllowList(&entity.InsertedAllowList{
 					WalletAddress: userAddress,
 					TokenAddress:  walletTokenAddress,
 					Decimals:      walletToken.Decimals,
 					Balance:       walletToken.Balance,
 				})
+				if err != nil {
+					logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Error(err))
+				}
 
 				//Insert into faucets collection in generative.
 				fcAmount, _ := settingReward[walletTokenAddress].Int64()
@@ -458,7 +461,11 @@ func (u *Usecase) MemeAllowList(ctx context.Context, userAddress string) {
 					Amount:  fmt.Sprintf("%v", fcAmount),
 					Source:  "dapp-moderator",
 				}
-				u.GenerativeRepo.InsertFaucet(fc)
+
+				_, err = u.GenerativeRepo.InsertFaucet(fc)
+				if err != nil {
+					logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Any("faucet", fc), zap.Error(err))
+				}
 
 			}
 
