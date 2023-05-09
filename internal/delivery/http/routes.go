@@ -102,13 +102,15 @@ func (h *httpDelivery) RegisterV1Routes() {
 	// uniswap
 	swapRoutes := api.PathPrefix("/swap").Subrouter()
 	swapRoutes.HandleFunc("/scan-event", h.swapScanEvents).Methods("GET")
+	swapRoutes.HandleFunc("/total-supply", h.jobUpdateTotalSupply).Methods("GET")
+
 	swapRoutes.HandleFunc("/btc-price", h.jobGetBtcPrice).Methods("GET")
 	swapRoutes.HandleFunc("/scan-pair-event", h.swapScanPairEvents).Methods("GET")
 	swapRoutes.HandleFunc("/scan", h.swapScanHash).Methods("GET")
 	swapRoutes.HandleFunc("/clear-cache", h.clearCache).Methods("GET")
-	swapRoutes.HandleFunc("/update-sync", h.jobUpdateDataSwapSync).Methods("GET")
-	swapRoutes.HandleFunc("/update-history", h.jobUpdateDataSwapHistory).Methods("GET")
-	swapRoutes.HandleFunc("/update-pair", h.jobUpdateDataSwapPair).Methods("GET")
+	// swapRoutes.HandleFunc("/update-sync", h.jobUpdateDataSwapSync).Methods("GET")
+	// swapRoutes.HandleFunc("/update-history", h.jobUpdateDataSwapHistory).Methods("GET")
+	// swapRoutes.HandleFunc("/update-pair", h.jobUpdateDataSwapPair).Methods("GET")
 	swapRoutes.HandleFunc("/fe-log", h.addFrontEndLog).Methods("POST")
 	swapRoutes.HandleFunc("/report/slack", h.getSlackReport).Methods("GET")
 
@@ -122,7 +124,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
 	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
 	swapPairRoutes.HandleFunc("/apr", h.getLiquidityApr).Methods("GET")
-	
+
 	transactions := api.PathPrefix("/transactions").Subrouter()
 	transactions.HandleFunc("/scan-txs", h.swapTransactions).Methods("GET")
 

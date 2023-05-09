@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"dapp-moderator/utils/config"
+	"dapp-moderator/utils/erc20"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
 	"dapp-moderator/utils/uniswapfactory"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -282,6 +284,23 @@ func (c *BlockChainApi) TcSwapEventResp(resp *TcSwapEventResp, log *types.Log) e
 
 func (c *BlockChainApi) NewTcSwapEventResp() *TcSwapEventResp {
 	return &TcSwapEventResp{}
+}
+
+func (c *BlockChainApi) Erc20TotalSupply(erc20Addr string) (*big.Int, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	instance, err := erc20.NewErc20(common.HexToAddress(erc20Addr), client)
+	if err != nil {
+		return nil, err
+	}
+	c.Interrupt()
+	balance, err := instance.TotalSupply(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	return balance, nil
 }
 
 func (c *BlockChainApi) TcSwapEvents(contracts []string, numBlocks, startBlock, endBlock int64) (*TcSwapEventResp, error) {
