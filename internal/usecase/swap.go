@@ -519,24 +519,24 @@ func (u *Usecase) TcSwapUpdateTotalSupplyJob(ctx context.Context) error {
 		return err
 	}
 
-	listContractAddress := []string{}
-	for _, item := range dbSwapConfigs {
-		listContractAddress = append(listContractAddress, item.Value)
-	}
+	// listContractAddress := []string{}
+	// for _, item := range dbSwapConfigs {
+	// 	listContractAddress = append(listContractAddress, item.Value)
+	// }
 
-	listTokens, _ := u.Repo.FindTokensByContracts(ctx, listContractAddress)
-	for _, item := range listTokens {
-		totalSupply, _ := u.BlockChainApi.Erc20TotalSupply(item.Address)
-		if totalSupply != nil {
-			// item.TotalSupply = helpers.ConvertWeiToBigFloat(totalSupply, 18).String()
-			item.TotalSupply = totalSupply.String()
-		}
-		err = u.Repo.UpdateToken(ctx, item)
-		if err != nil {
-			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
-			return err
-		}
-	}
+	// listTokens, _ := u.Repo.FindTokensByContracts(ctx, listContractAddress)
+	// for _, item := range listTokens {
+	// 	totalSupply, _ := u.BlockChainApi.Erc20TotalSupply(item.Address)
+	// 	if totalSupply != nil {
+	// 		// item.TotalSupply = helpers.ConvertWeiToBigFloat(totalSupply, 18).String()
+	// 		item.TotalSupply = totalSupply.String()
+	// 	}
+	// 	err = u.Repo.UpdateToken(ctx, item)
+	// 	if err != nil {
+	// 		logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+	// 		return err
+	// 	}
+	// }
 
 	for _, item := range dbSwapConfigs {
 		totalSupply, _ := u.BlockChainApi.Erc20TotalSupply(item.Value)
