@@ -528,7 +528,8 @@ func (u *Usecase) TcSwapUpdateTotalSupplyJob(ctx context.Context) error {
 	for _, item := range listTokens {
 		totalSupply, _ := u.BlockChainApi.Erc20TotalSupply(item.Address)
 		if totalSupply != nil {
-			item.TotalSupply = helpers.ConvertWeiToBigFloat(totalSupply, 18).String()
+			// item.TotalSupply = helpers.ConvertWeiToBigFloat(totalSupply, 18).String()
+			item.TotalSupply = totalSupply.String()
 		}
 		err = u.Repo.UpdateToken(ctx, item)
 		if err != nil {
