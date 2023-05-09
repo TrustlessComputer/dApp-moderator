@@ -32,6 +32,8 @@ type SwapPairReport struct {
 	UsdPrice        float64              `json:"usd_price" bson:"usd_price"`
 	Percent         primitive.Decimal128 `json:"percent" bson:"percent"`
 	Percent7Day     primitive.Decimal128 `json:"percent_7day" bson:"percent_7day"`
+	Network         string               `json:"network" bson:"network"`
+	Priority        int                  `json:"priority" bson:"priority"`
 }
 
 type SwapPairSlackReport struct {
