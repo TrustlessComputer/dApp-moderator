@@ -30,6 +30,8 @@ type Token struct {
 	Description string `json:"description" bson:"description"`
 	Social      Social `json:"social" bson:"social"`
 	Index       int64  `json:"index" bson:"index"`
+	Network     string `json:"network" bson:"network"`
+	Priority    int64  `json:"priority" bson:"priority"`
 }
 
 func (t *Token) CollectionName() string {
