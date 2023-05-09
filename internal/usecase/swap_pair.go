@@ -443,3 +443,34 @@ func (u *Usecase) GetRoutePair(ctx context.Context, fromToken, toToken string) (
 	logger.AtLog.Logger.Info("GetRoutePair", zap.Any("data", listPairs))
 	return listPairs, nil
 }
+
+func (u *Usecase) UpdateDataSwapPair(ctx context.Context) error {
+	pairQuery := entity.SwapPairFilter{}
+	pairQuery.Limit = 10000
+	pairQuery.Page = 1
+
+	pairs, err := u.Repo.FindSwapPairs(ctx, pairQuery)
+	if err != nil {
+		logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+		return err
+	}
+
+	for _, pair := range pairs {
+		token0, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: pair.Token0})
+		if token0 != nil {
+			pair.Token0Obj = *token0
+		}
+
+		token1, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: pair.Token1})
+		if token1 != nil {
+			pair.Token1Obj = *token1
+		}
+
+		err := u.Repo.UpdateSwapPair(ctx, pair)
+		if err != nil {
+			logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+			return err
+		}
+	}
+	return nil
+}
