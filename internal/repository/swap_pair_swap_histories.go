@@ -32,23 +32,29 @@ func (r *Repository) parseSwapPairSwapHistories(filter entity.SwapPairSwapHistor
 		andCond = append(andCond, bson.M{"tx_hash": filter.TxHash})
 	}
 
+	if filter.Token != "" {
+		andCond = append(andCond, bson.M{"token": filter.Token})
+	}
+
 	if len(andCond) == 0 {
 		return bson.M{}
 	}
 	return bson.M{"$and": andCond}
 }
 
-func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenFilter) ([]*entity.SwapPairReport, error) {
+func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenReportFilter) ([]*entity.SwapPairReport, error) {
 	var tokens []*entity.SwapPairReport
-
-	// pagination
 	numToSkip := (filter.Page - 1) * filter.Limit
-	// Set the options for the query
 	options := options.Find()
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
+	if filter.SortBy != "" {
+		options.SetSort(bson.D{{filter.SortBy, filter.SortType}})
+	} else {
+		options.SetSort(bson.D{{"priority", -1}, {"total_volume", -1}, {"percent_7day", -1}})
+	}
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_FINAL).Find(ctx, r.parseTokenFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_FINAL).Find(ctx, r.parseTokenReportFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
@@ -62,6 +68,22 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenFil
 		tokens = append(tokens, token)
 	}
 	return tokens, nil
+}
+
+func (r *Repository) parseTokenReportFilter(filter entity.TokenReportFilter) bson.M {
+	andCond := make([]bson.M, 0)
+	if filter.Address != "" {
+		andCond = append(andCond, bson.M{"address": filter.Address})
+	}
+
+	if filter.CreatedBy != "" {
+		andCond = append(andCond, bson.M{"owner": filter.CreatedBy})
+	}
+
+	if len(andCond) == 0 {
+		return bson.M{}
+	}
+	return bson.M{"$and": andCond}
 }
 
 func (r *Repository) FindTokePrice(ctx context.Context, contract string, chartType string) ([]*entity.ChartDataResp, error) {

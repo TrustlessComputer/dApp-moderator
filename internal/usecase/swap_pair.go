@@ -36,11 +36,12 @@ func (u *Usecase) TcSwapFindSwapPairs(ctx context.Context, filter request.Pagina
 	return data, nil
 }
 
-func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
+func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.PaginationReq, tokenContractAddress string) (interface{}, error) {
 	var data interface{}
 	var err error
 	query := entity.SwapPairSwapHistoriesFilter{}
 	query.FromPagination(filter)
+	query.Token = tokenContractAddress
 
 	data, err = u.Repo.FindSwapPairHistories(ctx, query)
 
@@ -153,12 +154,14 @@ func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, c
 	return reports, nil
 }
 
-func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address string) (interface{}, error) {
-	query := entity.TokenFilter{}
+func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address, sortBy string, sortType int) (interface{}, error) {
+	query := entity.TokenReportFilter{}
 	query.FromPagination(filter)
 	query.Address = address
+	query.SortBy = sortBy
+	query.SortType = sortType
 
-	redisKey := fmt.Sprintf("tc-swap:token-reports-%d-%d-%s", query.Page, query.Limit, address)
+	redisKey := fmt.Sprintf("tc-swap:token-reports-%d-%d-%s-%s-%d", query.Page, query.Limit, address, sortBy, sortType)
 	exists, err := u.Cache.Exists(redisKey)
 	if err != nil {
 		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
@@ -179,7 +182,6 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 			return nil, err
 		}
 		return reports, nil
-
 	} else {
 		reports, err := u.Repo.FindTokenReport(ctx, query)
 		if err != nil {
@@ -401,11 +403,8 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 		}
 		if pairVolume != nil {
 			volume24H, _ := new(big.Float).SetString(pairVolume.Volume24H.String())
-			fmt.Println(pairVolume.Volume24H.String())
 			tradingFee24H := big.NewFloat(0).Mul(volume24H, big.NewFloat(0.02))
-			fmt.Println(tradingFee24H.String())
 			tradingFeeYear := big.NewFloat(0).Mul(tradingFee24H, big.NewFloat(365))
-			fmt.Println(tradingFeeYear.String())
 
 			pairLiquidity, err := u.Repo.FindSwapPairCurrentReserve(ctx, query)
 			if err != nil && err != mongo.ErrNoDocuments {
