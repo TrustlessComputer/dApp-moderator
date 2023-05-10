@@ -27,7 +27,7 @@ type SwapPairSwapHistories struct {
 }
 
 func (t *SwapPairSwapHistories) CollectionName() string {
-	return utils.COLLECTION_SWAP_HISTORIES
+	return utils.COLLECTION_SWAP_TOKEN_TRANSFER_HISTORY
 }
 
 type SwapPairSwapHistoriesFilter struct {

@@ -157,6 +157,7 @@ const (
 	COLLECTION_SWAP_IDO_TOKEN              string = "swap_ido_tokens_view"
 	COLLECTION_SWAP_PAIR_VOLUME            string = "swap_pair_volume_view"
 	COLLECTION_SWAP_PAIR_CURRENT_RESERVE   string = "swap_pair_current_reserve_view"
+	COLLECTION_SWAP_TOKEN_TRANSFER_HISTORY string = "swap_token_transfer_histories"
 
 	TRANSACTIONS string = "transactions"
 
