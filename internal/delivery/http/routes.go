@@ -101,6 +101,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	// uniswap
 	swapRoutes := api.PathPrefix("/swap").Subrouter()
+	swapRoutes.HandleFunc("/tm-scan-event", h.swapTmTokenScanEvents).Methods("GET")
 	swapRoutes.HandleFunc("/scan-event", h.swapScanEvents).Methods("GET")
 	swapRoutes.HandleFunc("/total-supply", h.jobUpdateTotalSupply).Methods("GET")
 
@@ -135,6 +136,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	idoRoutes.HandleFunc("/detail", h.findSwapIdoDetail).Methods("GET")
 	idoRoutes.HandleFunc("/delete", h.deleteSwapIdo).Methods("DELETE")
 	idoRoutes.HandleFunc("/tokens", h.getSwapIdoTokens).Methods("GET")
+
+	tmRoutes := swapRoutes.PathPrefix("/tm").Subrouter()
+	tmRoutes.HandleFunc("/histories", h.findTmTokenHistories).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
