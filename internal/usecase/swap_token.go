@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"dapp-moderator/external/blockchain_api"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
@@ -83,4 +84,22 @@ func (u *Usecase) TcTmTokenCreatedTransfer(ctx context.Context, eventResp *block
 		}
 	}
 	return nil
+}
+
+func (u *Usecase) TcTmTokenTransferHistories(ctx context.Context, filter request.PaginationReq, userAddress string) (interface{}, error) {
+	var data interface{}
+	var err error
+	query := entity.SwapTmTransferHistoriesFilter{}
+	query.FromPagination(filter)
+	query.UserAddress = userAddress
+
+	data, err = u.Repo.FindTmTransferHistories(ctx, query)
+
+	if err != nil {
+		logger.AtLog.Logger.Error("TcTmTokenTransferHistories", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("TcTmTokenTransferHistories", zap.Any("data", data))
+	return data, nil
 }
