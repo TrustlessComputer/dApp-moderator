@@ -99,6 +99,21 @@ type TcSwapEventResp struct {
 	LastBlockNumber int64                         `json:"last_block_number"`
 }
 
+type TcTmTokenTransferEventResp struct {
+	TxHash          string   `json:"tx_hash"`
+	ContractAddress string   `json:"contract_address"`
+	Timestamp       uint64   `json:"timestamp"`
+	From            string   `json:"from"`
+	To              string   `json:"to"`
+	Value           *big.Int `json:"value"`
+	Index           uint     `json:"log_index"`
+}
+
+type TcTmTokenEventResp struct {
+	Transfer        []*TcTmTokenTransferEventResp `json:"transfer"`
+	LastBlockNumber int64                         `json:"last_block_number"`
+}
+
 func (c *BlockChainApi) getClient() (*ethclient.Client, error) {
 	if c.client == nil {
 		client, err := ethclient.Dial(c.BaseURL)
@@ -146,9 +161,6 @@ func (c *BlockChainApi) TcSwapEventResp(resp *TcSwapEventResp, log *types.Log) e
 	client, err := c.getClient()
 	if err != nil {
 		return err
-	}
-	if log.TxHash.Hex() == "0x5bdcee3e9479bf0409837c41325403bc2a2ecd3b944ceeeb8bbda9ef13fbacfd" {
-		fmt.Println(log.TxHash.Hex())
 	}
 
 	uniswap, err := uniswapfactory.NewUniswapfactory(log.Address, client)
@@ -449,4 +461,98 @@ func (c *BlockChainApi) GetBitcoinPrice() (float64, error) {
 	}
 
 	return resp.Bitcoin.Usd, nil
+}
+
+func (c *BlockChainApi) TcTmTokenEvents(contracts []string, numBlocks, startBlock, endBlock int64) (*TcTmTokenEventResp, error) {
+	resp := c.NewTcTmTokenEventResp()
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	contractAddresses := []common.Address{}
+	for _, item := range contracts {
+		contractAddresses = append(contractAddresses, common.HexToAddress(item))
+	}
+
+	ctx := context.Background()
+	lastBlock, err := client.HeaderByNumber(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	lastNumber := lastBlock.Number.Int64()
+	if endBlock != 0 && endBlock <= lastNumber {
+		lastNumber = endBlock
+	}
+
+	resp.LastBlockNumber = lastNumber
+
+	if startBlock != 0 {
+		numBlocks = lastNumber - (startBlock - 10)
+	}
+
+	num := (numBlocks / c.ScanLimitBlockNumber) + 1
+	for i := int64(0); i < num; i++ {
+		c.Interrupt()
+		logs, err := client.FilterLogs(
+			ctx,
+			ethereum.FilterQuery{
+				FromBlock: big.NewInt(lastNumber - c.ScanLimitBlockNumber),
+				ToBlock:   big.NewInt(lastNumber),
+				Addresses: contractAddresses,
+				Topics:    [][]common.Hash{},
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+		for _, log := range logs {
+			err = c.TcTmTokenEventResp(resp, &log)
+			if err != nil {
+				return nil, err
+			}
+		}
+		lastNumber -= c.ScanLimitBlockNumber
+	}
+	return resp, nil
+}
+
+func (c *BlockChainApi) NewTcTmTokenEventResp() *TcTmTokenEventResp {
+	return &TcTmTokenEventResp{}
+}
+
+func (c *BlockChainApi) TcTmTokenEventResp(resp *TcTmTokenEventResp, log *types.Log) error {
+	client, err := c.getClient()
+	if err != nil {
+		return err
+	}
+
+	erc20, err := erc20.NewErc20(log.Address, client)
+	if err != nil {
+		return err
+	}
+
+	// ParseTransfer
+	{
+		logParsed, err := erc20.ParseTransfer(*log)
+		if err == nil {
+			block, err := c.getBlock(log.BlockNumber)
+			if err != nil {
+				return err
+			}
+			resp.Transfer = append(
+				resp.Transfer,
+				&TcTmTokenTransferEventResp{
+					TxHash:          log.TxHash.Hex(),
+					ContractAddress: logParsed.Raw.Address.Hex(),
+					Timestamp:       block.Time(),
+					From:            logParsed.From.Hex(),
+					To:              logParsed.To.Hex(),
+					Value:           logParsed.Value,
+					Index:           log.Index,
+				},
+			)
+		}
+	}
+
+	return nil
 }

@@ -101,6 +101,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	// uniswap
 	swapRoutes := api.PathPrefix("/swap").Subrouter()
+	swapRoutes.HandleFunc("/tm-scan-event", h.swapTmTokenScanEvents).Methods("GET")
 	swapRoutes.HandleFunc("/scan-event", h.swapScanEvents).Methods("GET")
 	swapRoutes.HandleFunc("/total-supply", h.jobUpdateTotalSupply).Methods("GET")
 
