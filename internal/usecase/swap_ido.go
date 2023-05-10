@@ -42,7 +42,7 @@ func (u *Usecase) SwapAddOrUpdateIdo(ctx context.Context, idoReq *request.IdoReq
 		return nil, err
 	}
 
-	isVeried, err := u.verify(idoReq.Signature, token.Address, token.Address)
+	isVeried, err := u.verify(idoReq.Signature, user.WalletAddress, token.Address)
 	if err != nil {
 		logger.AtLog.Error("SwapAddOrUpdateIdo", zap.Error(err))
 		return nil, err
