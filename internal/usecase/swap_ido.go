@@ -42,7 +42,7 @@ func (u *Usecase) SwapAddOrUpdateIdo(ctx context.Context, idoReq *request.IdoReq
 		return nil, err
 	}
 
-	isVeried, err := u.verify(idoReq.Signature, token.Address, token.Address)
+	isVeried, err := u.verify(idoReq.Signature, user.WalletAddress, token.Address)
 	if err != nil {
 		logger.AtLog.Error("SwapAddOrUpdateIdo", zap.Error(err))
 		return nil, err
@@ -111,6 +111,7 @@ func (u *Usecase) SwapFindSwapIdoHistories(ctx context.Context, filter request.P
 	var err error
 	query := entity.SwapIdoFilter{}
 	query.FromPagination(filter)
+	query.CheckStartTime = true
 
 	idos, err := u.Repo.FindSwapIdos(ctx, query)
 	if err != nil && err != mongo.ErrNoDocuments {
@@ -139,16 +140,49 @@ func (u *Usecase) SwapFindSwapIdoDetail(ctx context.Context, id string) (interfa
 	return data, nil
 }
 
-func (u *Usecase) SwapDeleteSwapIdo(ctx context.Context, id string) (interface{}, error) {
+func (u *Usecase) SwapDeleteSwapIdo(ctx context.Context, id, address, signature string) (interface{}, error) {
 	var data interface{}
 	var err error
 	query := entity.SwapIdoFilter{}
 	query.ID = id
 
-	err = u.Repo.DetelteSwapIdo(ctx, query)
+	user, err := u.Repo.FindUserByWalletAddress(address)
 	if err != nil {
-		logger.AtLog.Logger.Error("SwapDeleteSwapIdo", zap.Error(err))
+		err := errors.New("User is not exist")
+		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
 		return nil, err
+	}
+	if user == nil {
+		err := errors.New("User is not exist")
+		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+		return nil, err
+	}
+
+	queryIdo := entity.SwapIdoFilter{}
+	queryIdo.ID = id
+
+	idoObj, err := u.Repo.FindSwapIdo(ctx, query)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapFindSwapIdoDetail", zap.Error(err))
+		return nil, err
+	}
+
+	if idoObj != nil {
+		isVeried, err := u.verify(signature, user.WalletAddress, idoObj.Address)
+		if err != nil {
+			logger.AtLog.Error("SwapAddOrUpdateIdo", zap.Error(err))
+			return nil, err
+		}
+		if !isVeried {
+			err := errors.New("Signature is not valid")
+			logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+			return nil, err
+		}
+		err = u.Repo.DetelteSwapIdo(ctx, query)
+		if err != nil {
+			logger.AtLog.Logger.Error("SwapDeleteSwapIdo", zap.Error(err))
+			return nil, err
+		}
 	}
 	return data, nil
 }
@@ -156,9 +190,21 @@ func (u *Usecase) SwapDeleteSwapIdo(ctx context.Context, id string) (interface{}
 func (u *Usecase) SwapFindTokens(ctx context.Context, filter request.PaginationReq, owner string) (interface{}, error) {
 	var data interface{}
 	var err error
-	query := entity.TokenFilter{}
+
+	queryIdo := entity.SwapIdoFilter{}
+	queryIdo.FromPagination(filter)
+	queryIdo.WalletAddress = owner
+
+	idos, _ := u.Repo.FindSwapIdos(ctx, queryIdo)
+	tokens := []string{}
+	for _, item := range idos {
+		tokens = append(tokens, item.Address)
+	}
+
+	query := entity.IdoTokenFilter{}
 	query.FromPagination(filter)
 	query.CreatedBy = owner
+	query.Address = tokens
 
 	data, err = u.Repo.FindIdoTokens(ctx, query)
 
