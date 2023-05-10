@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/logger"
 	"fmt"
+	"os"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -145,7 +146,11 @@ func (u *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 				logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
 				return toPage, nil
 			}
-			u.NewTokenNotify(&token)
+
+			if os.Getenv("ENV") != "production" {
+				u.NewTokenNotify(&token)
+			}
+
 		}
 
 		if len(Tokens) < perPage {
