@@ -140,16 +140,49 @@ func (u *Usecase) SwapFindSwapIdoDetail(ctx context.Context, id string) (interfa
 	return data, nil
 }
 
-func (u *Usecase) SwapDeleteSwapIdo(ctx context.Context, id string) (interface{}, error) {
+func (u *Usecase) SwapDeleteSwapIdo(ctx context.Context, id, address, signature string) (interface{}, error) {
 	var data interface{}
 	var err error
 	query := entity.SwapIdoFilter{}
 	query.ID = id
 
-	err = u.Repo.DetelteSwapIdo(ctx, query)
+	user, err := u.Repo.FindUserByWalletAddress(address)
 	if err != nil {
-		logger.AtLog.Logger.Error("SwapDeleteSwapIdo", zap.Error(err))
+		err := errors.New("User is not exist")
+		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
 		return nil, err
+	}
+	if user == nil {
+		err := errors.New("User is not exist")
+		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+		return nil, err
+	}
+
+	queryIdo := entity.SwapIdoFilter{}
+	queryIdo.ID = id
+
+	idoObj, err := u.Repo.FindSwapIdo(ctx, query)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapFindSwapIdoDetail", zap.Error(err))
+		return nil, err
+	}
+
+	if idoObj != nil {
+		isVeried, err := u.verify(signature, user.WalletAddress, idoObj.Address)
+		if err != nil {
+			logger.AtLog.Error("SwapAddOrUpdateIdo", zap.Error(err))
+			return nil, err
+		}
+		if !isVeried {
+			err := errors.New("Signature is not valid")
+			logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+			return nil, err
+		}
+		err = u.Repo.DetelteSwapIdo(ctx, query)
+		if err != nil {
+			logger.AtLog.Logger.Error("SwapDeleteSwapIdo", zap.Error(err))
+			return nil, err
+		}
 	}
 	return data, nil
 }

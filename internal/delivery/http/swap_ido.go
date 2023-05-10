@@ -76,7 +76,9 @@ func (h *httpDelivery) deleteSwapIdo(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			id := req.Query(r, "id", "")
-			data, err := h.Usecase.SwapDeleteSwapIdo(ctx, id)
+			signature := req.Query(r, "signature", "")
+			address := req.Query(r, "address", "")
+			data, err := h.Usecase.SwapDeleteSwapIdo(ctx, id, address, signature)
 			if err != nil {
 				logger.AtLog.Logger.Error("findSwapIdoDetail", zap.Error(err))
 				return nil, err
