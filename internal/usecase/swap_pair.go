@@ -154,12 +154,14 @@ func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, c
 	return reports, nil
 }
 
-func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address string) (interface{}, error) {
-	query := entity.TokenFilter{}
+func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address, sortBy string, sortType int) (interface{}, error) {
+	query := entity.TokenReportFilter{}
 	query.FromPagination(filter)
 	query.Address = address
+	query.SortBy = sortBy
+	query.SortType = sortType
 
-	redisKey := fmt.Sprintf("tc-swap:token-reports-%d-%d-%s", query.Page, query.Limit, address)
+	redisKey := fmt.Sprintf("tc-swap:token-reports-%d-%d-%s-%s-%d", query.Page, query.Limit, address, sortBy, sortType)
 	exists, err := u.Cache.Exists(redisKey)
 	if err != nil {
 		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
@@ -180,7 +182,6 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 			return nil, err
 		}
 		return reports, nil
-
 	} else {
 		reports, err := u.Repo.FindTokenReport(ctx, query)
 		if err != nil {
