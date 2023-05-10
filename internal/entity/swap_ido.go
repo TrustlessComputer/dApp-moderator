@@ -25,12 +25,31 @@ func (t *SwapIdo) CollectionName() string {
 
 type SwapIdoFilter struct {
 	BaseFilters
-	ID            string
-	Address       string
-	WalletAddress string
+	ID             string
+	Address        string
+	WalletAddress  string
+	CheckStartTime bool
 }
 
 func (t *SwapIdoFilter) FromPagination(pag request.PaginationReq) {
+	t.Limit = 100
+	if pag.Limit != nil && *pag.Limit > 0 {
+		t.Limit = int64(*pag.Limit)
+	}
+
+	t.Page = 1
+	if pag.Page != nil && *pag.Page > 0 {
+		t.Page = int64(*pag.Page)
+	}
+}
+
+type IdoTokenFilter struct {
+	BaseFilters
+	CreatedBy string
+	Address   []string
+}
+
+func (t *IdoTokenFilter) FromPagination(pag request.PaginationReq) {
 	t.Limit = 100
 	if pag.Limit != nil && *pag.Limit > 0 {
 		t.Limit = int64(*pag.Limit)

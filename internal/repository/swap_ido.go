@@ -5,6 +5,8 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"log"
+	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -36,7 +38,11 @@ func (r *Repository) parseSwapIdoFilter(filter entity.SwapIdoFilter) bson.M {
 	}
 
 	if filter.WalletAddress != "" {
-		andCond = append(andCond, bson.M{"user_wallet_address": filter.WalletAddress})
+		andCond = append(andCond, bson.M{"user_wallet_address": strings.ToLower(filter.WalletAddress)})
+	}
+
+	if filter.CheckStartTime {
+		andCond = append(andCond, bson.M{"start_at": bson.M{"$gte": time.Now()}})
 	}
 
 	if len(andCond) == 0 {
@@ -52,6 +58,7 @@ func (r *Repository) FindSwapIdos(ctx context.Context, filter entity.SwapIdoFilt
 	options := options.Find()
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
+	options.SetSort(bson.D{{"start_at", 1}})
 
 	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO).Find(ctx, r.parseSwapIdoFilter(filter), options)
 	if err != nil {
@@ -92,14 +99,14 @@ func (r *Repository) DetelteSwapIdo(ctx context.Context, filter entity.SwapIdoFi
 	return nil
 }
 
-func (r *Repository) FindIdoTokens(ctx context.Context, filter entity.TokenFilter) ([]*entity.Token, error) {
+func (r *Repository) FindIdoTokens(ctx context.Context, filter entity.IdoTokenFilter) ([]*entity.Token, error) {
 	tokens := []*entity.Token{}
 	numToSkip := (filter.Page - 1) * filter.Limit
 	options := options.Find()
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_TOKEN).Find(ctx, r.parseTokenFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_TOKEN).Find(ctx, r.parseIdoTokenFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
@@ -113,4 +120,22 @@ func (r *Repository) FindIdoTokens(ctx context.Context, filter entity.TokenFilte
 		tokens = append(tokens, &token)
 	}
 	return tokens, nil
+}
+
+func (r *Repository) parseIdoTokenFilter(filter entity.IdoTokenFilter) bson.M {
+
+	andCond := make([]bson.M, 0)
+
+	if filter.CreatedBy != "" {
+		andCond = append(andCond, bson.M{"owner": filter.CreatedBy})
+	}
+
+	if len(filter.Address) > 0 {
+		andCond = append(andCond, bson.M{"token.address": bson.M{"$nin": filter.Address}})
+	}
+
+	if len(andCond) == 0 {
+		return bson.M{}
+	}
+	return bson.M{"$and": andCond}
 }
