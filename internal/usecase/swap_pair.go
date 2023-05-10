@@ -36,11 +36,12 @@ func (u *Usecase) TcSwapFindSwapPairs(ctx context.Context, filter request.Pagina
 	return data, nil
 }
 
-func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.PaginationReq, key string) (interface{}, error) {
+func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.PaginationReq, tokenContractAddress string) (interface{}, error) {
 	var data interface{}
 	var err error
 	query := entity.SwapPairSwapHistoriesFilter{}
 	query.FromPagination(filter)
+	query.Token = tokenContractAddress
 
 	data, err = u.Repo.FindSwapPairHistories(ctx, query)
 
@@ -401,11 +402,8 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 		}
 		if pairVolume != nil {
 			volume24H, _ := new(big.Float).SetString(pairVolume.Volume24H.String())
-			fmt.Println(pairVolume.Volume24H.String())
 			tradingFee24H := big.NewFloat(0).Mul(volume24H, big.NewFloat(0.02))
-			fmt.Println(tradingFee24H.String())
 			tradingFeeYear := big.NewFloat(0).Mul(tradingFee24H, big.NewFloat(365))
-			fmt.Println(tradingFeeYear.String())
 
 			pairLiquidity, err := u.Repo.FindSwapPairCurrentReserve(ctx, query)
 			if err != nil && err != mongo.ErrNoDocuments {

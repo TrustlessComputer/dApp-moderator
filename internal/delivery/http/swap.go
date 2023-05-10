@@ -94,7 +94,7 @@ func (h *httpDelivery) findSwapHistories(w http.ResponseWriter, r *http.Request)
 				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
 				return nil, err
 			}
-			data, err := h.Usecase.TcSwapFindSwapHistories(ctx, pagination, req.Query(r, "key", ""))
+			data, err := h.Usecase.TcSwapFindSwapHistories(ctx, pagination, req.Query(r, "contract_address", ""))
 			if err != nil {
 				logger.AtLog.Logger.Error("TcSwapFindSwapHistories", zap.Error(err))
 				return nil, err

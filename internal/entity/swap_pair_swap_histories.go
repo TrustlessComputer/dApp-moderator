@@ -34,6 +34,7 @@ type SwapPairSwapHistoriesFilter struct {
 	BaseFilters
 	ContractAddress string
 	TxHash          string
+	Token           string
 }
 
 func (t *SwapPairSwapHistoriesFilter) FromPagination(pag request.PaginationReq) {
