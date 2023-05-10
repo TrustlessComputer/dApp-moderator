@@ -111,6 +111,7 @@ func (u *Usecase) SwapFindSwapIdoHistories(ctx context.Context, filter request.P
 	var err error
 	query := entity.SwapIdoFilter{}
 	query.FromPagination(filter)
+	query.CheckStartTime = true
 
 	idos, err := u.Repo.FindSwapIdos(ctx, query)
 	if err != nil && err != mongo.ErrNoDocuments {
@@ -156,9 +157,21 @@ func (u *Usecase) SwapDeleteSwapIdo(ctx context.Context, id string) (interface{}
 func (u *Usecase) SwapFindTokens(ctx context.Context, filter request.PaginationReq, owner string) (interface{}, error) {
 	var data interface{}
 	var err error
-	query := entity.TokenFilter{}
+
+	queryIdo := entity.SwapIdoFilter{}
+	queryIdo.FromPagination(filter)
+	queryIdo.WalletAddress = owner
+
+	idos, _ := u.Repo.FindSwapIdos(ctx, queryIdo)
+	tokens := []string{}
+	for _, item := range idos {
+		tokens = append(tokens, item.Address)
+	}
+
+	query := entity.IdoTokenFilter{}
 	query.FromPagination(filter)
 	query.CreatedBy = owner
+	query.Address = tokens
 
 	data, err = u.Repo.FindIdoTokens(ctx, query)
 
