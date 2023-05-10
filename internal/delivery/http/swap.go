@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"go.uber.org/zap"
 
@@ -94,7 +95,7 @@ func (h *httpDelivery) findSwapHistories(w http.ResponseWriter, r *http.Request)
 				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
 				return nil, err
 			}
-			data, err := h.Usecase.TcSwapFindSwapHistories(ctx, pagination, req.Query(r, "key", ""))
+			data, err := h.Usecase.TcSwapFindSwapHistories(ctx, pagination, req.Query(r, "contract_address", ""))
 			if err != nil {
 				logger.AtLog.Logger.Error("TcSwapFindSwapHistories", zap.Error(err))
 				return nil, err
@@ -140,7 +141,10 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 				return nil, err
 			}
 			address := req.Query(r, "address", "")
-			data, err := h.Usecase.FindTokensReport(ctx, pagination, address)
+			sortCollum := req.Query(r, "sort", "")
+			sortTypePrams := req.Query(r, "sort_type", "-1")
+			sortType, _ := strconv.Atoi(sortTypePrams)
+			data, err := h.Usecase.FindTokensReport(ctx, pagination, address, sortCollum, sortType)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensReport", zap.Error(err))
 				return nil, err
