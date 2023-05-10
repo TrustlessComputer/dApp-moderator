@@ -26,15 +26,15 @@ func (u *Usecase) AddressBalance(ctx context.Context, walletAddress string) ([]s
 			continue
 		}
 
-		out := fmt.Sprintf("%s:%d", output.Hash, output.Index)
+		/*out := fmt.Sprintf("%s:%d", output.Hash, output.Index)
 		data, err := u.GetInscriptionByOutput(out)
 		if err != nil {
 			continue
-		}
+		}*/
 
-		if len(data.Inscriptions) > 0 {
+		/*if len(data.Inscriptions) > 0 {
 			tmp.IsOrdinal = true
-		}
+		}*/
 
 		resp = append(resp, *tmp)
 
