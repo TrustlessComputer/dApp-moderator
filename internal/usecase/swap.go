@@ -372,6 +372,8 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 			swapPair.Volume, _ = primitive.ParseDecimal128(tmpVolume.String())
 			swapPair.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
 
+		}
+		if pair != nil {
 			swapPair.Pair = pair
 		}
 
