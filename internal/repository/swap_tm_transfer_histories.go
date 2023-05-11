@@ -28,15 +28,6 @@ func (r *Repository) parseTmTransferHistories(filter entity.SwapTmTransferHistor
 		andCond = append(andCond, bson.M{"index": filter.Index})
 	}
 
-	if filter.UserAddress != "" {
-		orCond := make([]bson.M, 0)
-		orCond = append(orCond, bson.M{"from": filter.UserAddress})
-		orCond = append(orCond, bson.M{"to": filter.UserAddress})
-		filterOr := bson.M{"$or": orCond}
-
-		andCond = append(andCond, filterOr)
-	}
-
 	if len(andCond) == 0 {
 		return bson.M{}
 	}
