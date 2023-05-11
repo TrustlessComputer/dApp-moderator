@@ -122,6 +122,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapTokensRoutes.HandleFunc("/report", h.getTokensReport).Methods("GET")
 	swapTokensRoutes.HandleFunc("/price", h.getTokensPrice).Methods("GET")
 
+	userRoutes := swapRoutes.PathPrefix("/user").Subrouter()
+	userRoutes.HandleFunc("/trade-histories", h.findUserSwapHistories).Methods("GET")
+
 	swapPairRoutes := swapRoutes.PathPrefix("/pair").Subrouter()
 	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
 	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
