@@ -91,6 +91,31 @@ func (r *Repository) FindSwapIdos(ctx context.Context, filter entity.SwapIdoFilt
 	return idos, nil
 }
 
+func (r *Repository) FindSwapIdosView(ctx context.Context, filter entity.SwapIdoFilter) ([]*entity.SwapIdo, error) {
+	idos := []*entity.SwapIdo{}
+	// pagination
+	numToSkip := (filter.Page - 1) * filter.Limit
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+	options.SetSort(bson.D{{"start_at", 1}})
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_LIST_VIEW).Find(ctx, r.parseSwapIdoFilter(filter), options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var pair entity.SwapIdo
+		err = cursor.Decode(&pair)
+		if err != nil {
+			return nil, err
+		}
+		idos = append(idos, &pair)
+	}
+	return idos, nil
+}
+
 func (r *Repository) UpdateSwapIdo(ctx context.Context, pair *entity.SwapIdo) error {
 	collectionName := pair.CollectionName()
 	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"_id": pair.ID}, bson.M{"$set": pair})
