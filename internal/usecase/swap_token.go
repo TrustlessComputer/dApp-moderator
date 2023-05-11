@@ -59,7 +59,6 @@ func (u *Usecase) TcTmTokenCreatedTransfer(ctx context.Context, eventResp *block
 	// check if token exist
 	dbSwapPair, err := u.Repo.FindTmTransferHistory(ctx, entity.SwapTmTransferHistoriesFilter{
 		TxHash: strings.ToLower(eventResp.TxHash),
-		Index:  eventResp.Index,
 	})
 	if err != nil && err != mongo.ErrNoDocuments {
 		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
