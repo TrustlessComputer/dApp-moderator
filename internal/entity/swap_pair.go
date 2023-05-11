@@ -9,31 +9,34 @@ import (
 )
 
 type SwapPairReport struct {
-	Address         string               `json:"address" bson:"address"`
-	TotalSupply     string               `json:"total_supply" bson:"total_supply"`
-	Owner           string               `json:"owner" bson:"owner"` // Owner of a contract (contract address)
-	Decimal         int                  `json:"decimal" bson:"decimal"`
-	DeployedAtBlock int                  `json:"deployed_at_block" bson:"deployed_at_block"`
-	Slug            string               `json:"slug" bson:"slug"`
-	Symbol          string               `json:"symbol" bson:"symbol"`
-	Name            string               `json:"name" bson:"name"`
-	Thumbnail       string               `json:"thumbnail" bson:"thumbnail"`
-	Description     string               `json:"description" bson:"description"`
-	Social          Social               `json:"social" bson:"social"`
-	Index           int64                `json:"index" bson:"index"`
-	Volume          primitive.Decimal128 `json:"volume" bson:"volume"`
-	TotalVolume     primitive.Decimal128 `json:"total_volume" bson:"total_volume"`
-	BtcVolume       float64              `json:"btc_volume" bson:"btc_volume"`
-	UsdVolume       float64              `json:"usd_volume" bson:"usd_volume"`
-	BtcTotalVolume  float64              `json:"btc_total_volume" bson:"btc_total_volume"`
-	UsdTotalVolume  float64              `json:"usd_total_volume" bson:"usd_total_volume"`
-	Price           primitive.Decimal128 `json:"price" bson:"price"`
-	BtcPrice        float64              `json:"btc_price" bson:"btc_price"`
-	UsdPrice        float64              `json:"usd_price" bson:"usd_price"`
-	Percent         primitive.Decimal128 `json:"percent" bson:"percent"`
-	Percent7Day     primitive.Decimal128 `json:"percent_7day" bson:"percent_7day"`
-	Network         string               `json:"network" bson:"network"`
-	Priority        int                  `json:"priority" bson:"priority"`
+	Address           string               `json:"address" bson:"address"`
+	TotalSupply       string               `json:"total_supply" bson:"total_supply"`
+	TotalSupplyNumber primitive.Decimal128 `json:"total_supply_number" bson:"total_supply_number"`
+	Owner             string               `json:"owner" bson:"owner"` // Owner of a contract (contract address)
+	Decimal           int                  `json:"decimal" bson:"decimal"`
+	DeployedAtBlock   int                  `json:"deployed_at_block" bson:"deployed_at_block"`
+	Slug              string               `json:"slug" bson:"slug"`
+	Symbol            string               `json:"symbol" bson:"symbol"`
+	Name              string               `json:"name" bson:"name"`
+	Thumbnail         string               `json:"thumbnail" bson:"thumbnail"`
+	Description       string               `json:"description" bson:"description"`
+	Social            Social               `json:"social" bson:"social"`
+	Index             int64                `json:"index" bson:"index"`
+	Volume            primitive.Decimal128 `json:"volume" bson:"volume"`
+	TotalVolume       primitive.Decimal128 `json:"total_volume" bson:"total_volume"`
+	BtcVolume         float64              `json:"btc_volume" bson:"btc_volume"`
+	UsdVolume         float64              `json:"usd_volume" bson:"usd_volume"`
+	BtcTotalVolume    float64              `json:"btc_total_volume" bson:"btc_total_volume"`
+	UsdTotalVolume    float64              `json:"usd_total_volume" bson:"usd_total_volume"`
+	MarketCap         primitive.Decimal128 `json:"market_cap" bson:"market_cap"`
+	UsdMarketCap      float64              `json:"usd_market_cap" bson:"usd_market_cap"`
+	Price             primitive.Decimal128 `json:"price" bson:"price"`
+	BtcPrice          float64              `json:"btc_price" bson:"btc_price"`
+	UsdPrice          float64              `json:"usd_price" bson:"usd_price"`
+	Percent           primitive.Decimal128 `json:"percent" bson:"percent"`
+	Percent7Day       primitive.Decimal128 `json:"percent_7day" bson:"percent_7day"`
+	Network           string               `json:"network" bson:"network"`
+	Priority          int                  `json:"priority" bson:"priority"`
 }
 
 type SwapPairSlackReport struct {
