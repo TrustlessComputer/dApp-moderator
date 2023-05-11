@@ -23,6 +23,15 @@ func (r *Repository) FindSwapIdo(ctx context.Context, filter entity.SwapIdoFilte
 	return &swapIdo, nil
 }
 
+func (r *Repository) FindSwapIdoListView(ctx context.Context, filter entity.SwapIdoFilter) (*entity.SwapIdo, error) {
+	var swapIdo entity.SwapIdo
+	err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_LIST_VIEW).FindOne(ctx, r.parseSwapIdoFilter(filter)).Decode(&swapIdo)
+	if err != nil {
+		return nil, err
+	}
+	return &swapIdo, nil
+}
+
 func (r *Repository) parseSwapIdoFilter(filter entity.SwapIdoFilter) bson.M {
 	andCond := make([]bson.M, 0)
 	if filter.ID != "" {
@@ -37,12 +46,18 @@ func (r *Repository) parseSwapIdoFilter(filter entity.SwapIdoFilter) bson.M {
 		andCond = append(andCond, bson.M{"token.address": filter.Address})
 	}
 
+	if filter.Status != "" {
+		andCond = append(andCond, bson.M{"status": filter.Status})
+	}
+
 	if filter.WalletAddress != "" {
 		andCond = append(andCond, bson.M{"user_wallet_address": strings.ToLower(filter.WalletAddress)})
 	}
 
-	if filter.CheckStartTime {
+	if filter.CheckStartTime > 0 {
 		andCond = append(andCond, bson.M{"start_at": bson.M{"$gte": time.Now()}})
+	} else if filter.CheckStartTime < 0 {
+		andCond = append(andCond, bson.M{"start_at": bson.M{"$lte": time.Now()}})
 	}
 
 	if len(andCond) == 0 {
