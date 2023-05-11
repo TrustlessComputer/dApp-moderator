@@ -24,12 +24,16 @@ func (r *Repository) FindSwapPairSwapHistory(ctx context.Context, filter entity.
 
 func (r *Repository) parseSwapPairSwapHistories(filter entity.SwapPairSwapHistoriesFilter) bson.M {
 	andCond := make([]bson.M, 0)
-	// Define your OR query
 	if filter.ContractAddress != "" {
 		andCond = append(andCond, bson.M{"contract_address": filter.ContractAddress})
 	}
+
 	if filter.TxHash != "" {
 		andCond = append(andCond, bson.M{"tx_hash": filter.TxHash})
+	}
+
+	if filter.UserAddress != "" {
+		andCond = append(andCond, bson.M{"to": filter.UserAddress})
 	}
 
 	if filter.Token != "" {
