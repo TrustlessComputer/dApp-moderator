@@ -114,7 +114,7 @@ func (u *Usecase) SwapFindSwapIdoHistories(ctx context.Context, filter request.P
 	query.FromPagination(filter)
 	// query.CheckStartTime = true
 
-	idos, err := u.Repo.FindSwapIdoListView(ctx, query)
+	idos, err := u.Repo.FindSwapIdosView(ctx, query)
 	if err != nil && err != mongo.ErrNoDocuments {
 		logger.AtLog.Logger.Error("SwapFindSwapIdoHistories", zap.Error(err))
 		return nil, err
