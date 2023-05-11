@@ -210,6 +210,10 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 				item.UsdTotalVolume = s * btcPrice
 			}
 
+			if s, err := strconv.ParseFloat(item.MarketCap.String(), 64); err == nil {
+				item.UsdMarketCap = s * btcPrice
+			}
+
 			if item.Address == "0xfB83c18569fB43f1ABCbae09Baf7090bFFc8CBBD" {
 				item.UsdPrice = btcPrice
 			}
