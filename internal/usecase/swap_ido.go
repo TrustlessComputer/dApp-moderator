@@ -88,6 +88,7 @@ func (u *Usecase) SwapAddOrUpdateIdo(ctx context.Context, idoReq *request.IdoReq
 	ido.Twitter = idoReq.Twitter
 	ido.Website = idoReq.Website
 	ido.WhitePaper = idoReq.WhitePaper
+	ido.Status = entity.SwapIdoStatusUpcoming
 
 	if idoReq.ID == "" {
 		_, err = u.Repo.InsertOne(ido)
@@ -111,9 +112,9 @@ func (u *Usecase) SwapFindSwapIdoHistories(ctx context.Context, filter request.P
 	var err error
 	query := entity.SwapIdoFilter{}
 	query.FromPagination(filter)
-	query.CheckStartTime = true
+	// query.CheckStartTime = true
 
-	idos, err := u.Repo.FindSwapIdos(ctx, query)
+	idos, err := u.Repo.FindSwapIdoListView(ctx, query)
 	if err != nil && err != mongo.ErrNoDocuments {
 		logger.AtLog.Logger.Error("SwapFindSwapIdoHistories", zap.Error(err))
 		return nil, err

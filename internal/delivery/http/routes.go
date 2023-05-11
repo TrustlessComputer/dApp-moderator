@@ -116,6 +116,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapRoutes.HandleFunc("/fe-log", h.addFrontEndLog).Methods("POST")
 	swapRoutes.HandleFunc("/report/slack", h.getSlackReport).Methods("GET")
 
+	jobRoutes := swapRoutes.PathPrefix("/job").Subrouter()
+	jobRoutes.HandleFunc("/update-ido", h.swapJobUpdateIdoStatus).Methods("GET")
+
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
 	swapTokensRoutes.HandleFunc("/route", h.getRoutePair).Methods("GET")

@@ -151,6 +151,7 @@ const (
 	COLLECTION_SWAP_PAIR_EVENTS            string = "swap_pair_events"
 	COLLECTION_SWAP_HISTORIES              string = "swap_swap_histories"
 	COLLECTION_SWAP_IDO                    string = "swap_swap_ido"
+	COLLECTION_SWAP_IDO_LIST_VIEW          string = "swap_ido_list_view"
 	COLLECTION_SWAP_LIQUIDITY_REPORT_SLACK string = "swap_liquidity_report_view"
 	COLLECTION_SWAP_REPORT_SLACK           string = "swap_token_report_slack_view"
 	COLLECTION_SWAP_REPORT_FINAL           string = "swap_token_report_final_view"
