@@ -27,12 +27,13 @@ type SwapPairSwapHistories struct {
 }
 
 func (t *SwapPairSwapHistories) CollectionName() string {
-	return utils.COLLECTION_SWAP_TOKEN_TRANSFER_HISTORY
+	return utils.COLLECTION_SWAP_HISTORIES
 }
 
 type SwapPairSwapHistoriesFilter struct {
 	BaseFilters
 	ContractAddress string
+	UserAddress     string
 	TxHash          string
 	Token           string
 }
