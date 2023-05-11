@@ -36,12 +36,15 @@ func (u *Usecase) TcSwapFindSwapPairs(ctx context.Context, filter request.Pagina
 	return data, nil
 }
 
-func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.PaginationReq, tokenContractAddress string) (interface{}, error) {
+func (u *Usecase) TcSwapFindSwapHistories(ctx context.Context, filter request.PaginationReq,
+	tokenAddress, pariAddress, userAddress string) (interface{}, error) {
 	var data interface{}
 	var err error
 	query := entity.SwapPairSwapHistoriesFilter{}
 	query.FromPagination(filter)
-	query.Token = tokenContractAddress
+	query.Token = tokenAddress
+	query.ContractAddress = pariAddress
+	query.UserAddress = userAddress
 
 	data, err = u.Repo.FindSwapPairHistories(ctx, query)
 

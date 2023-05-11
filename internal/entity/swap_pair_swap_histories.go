@@ -33,6 +33,7 @@ func (t *SwapPairSwapHistories) CollectionName() string {
 type SwapPairSwapHistoriesFilter struct {
 	BaseFilters
 	ContractAddress string
+	UserAddress     string
 	TxHash          string
 	Token           string
 }
