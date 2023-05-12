@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	cloud.google.com/go/storage v1.29.0
+	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/aws/aws-sdk-go v1.44.211
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/btcutil v1.0.2
@@ -46,6 +47,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
+	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect

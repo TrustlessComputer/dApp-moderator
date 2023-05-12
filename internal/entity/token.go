@@ -30,6 +30,8 @@ type Token struct {
 	Description string `json:"description" bson:"description"`
 	Social      Social `json:"social" bson:"social"`
 	Index       int64  `json:"index" bson:"index"`
+	Network     string `json:"network" bson:"network"`
+	Priority    int64  `json:"priority" bson:"priority"`
 }
 
 func (t *Token) CollectionName() string {
@@ -66,7 +68,27 @@ type TokenFilter struct {
 	CreatedBy string
 }
 
+type TokenReportFilter struct {
+	BaseFilters
+	Address   string
+	CreatedBy string
+	SortBy    string
+	SortType  int
+}
+
 func (t *TokenFilter) FromPagination(pag request.PaginationReq) {
+	t.Limit = 500
+	if pag.Limit != nil && *pag.Limit > 0 {
+		t.Limit = int64(*pag.Limit)
+	}
+
+	t.Page = 1
+	if pag.Page != nil && *pag.Page > 0 {
+		t.Page = int64(*pag.Page)
+	}
+}
+
+func (t *TokenReportFilter) FromPagination(pag request.PaginationReq) {
 	t.Limit = 500
 	if pag.Limit != nil && *pag.Limit > 0 {
 		t.Limit = int64(*pag.Limit)

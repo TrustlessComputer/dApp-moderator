@@ -69,6 +69,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	//profile
 	profile := api.PathPrefix("/profile").Subrouter()
 	profile.HandleFunc("/wallet/{walletAddress}", h.profileByWallet).Methods("GET")
+	profile.HandleFunc("/wallet/{walletAddress}/allowed-list/existed", h.profileByWalletExistedAllowedList).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}/histories", h.currentUerProfileHistories).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}/collections", h.currentUserProfileCollections).Methods("GET")
 	profile.HandleFunc("/wallet/{walletAddress}/tokens/bought", h.currentUserProfileBoughtTokens).Methods("GET")
@@ -100,23 +101,50 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	// uniswap
 	swapRoutes := api.PathPrefix("/swap").Subrouter()
+	swapRoutes.HandleFunc("/tm-scan-event", h.swapTmTokenScanEvents).Methods("GET")
 	swapRoutes.HandleFunc("/scan-event", h.swapScanEvents).Methods("GET")
+	swapRoutes.HandleFunc("/total-supply", h.jobUpdateTotalSupply).Methods("GET")
+
 	swapRoutes.HandleFunc("/btc-price", h.jobGetBtcPrice).Methods("GET")
 	swapRoutes.HandleFunc("/scan-pair-event", h.swapScanPairEvents).Methods("GET")
 	swapRoutes.HandleFunc("/scan", h.swapScanHash).Methods("GET")
 	swapRoutes.HandleFunc("/clear-cache", h.clearCache).Methods("GET")
 	swapRoutes.HandleFunc("/update-sync", h.jobUpdateDataSwapSync).Methods("GET")
 	swapRoutes.HandleFunc("/update-history", h.jobUpdateDataSwapHistory).Methods("GET")
+	swapRoutes.HandleFunc("/update-pair", h.jobUpdateDataSwapPair).Methods("GET")
+	swapRoutes.HandleFunc("/update-token", h.jobUpdateDataSwapToken).Methods("GET")
 	swapRoutes.HandleFunc("/fe-log", h.addFrontEndLog).Methods("POST")
+	swapRoutes.HandleFunc("/report/slack", h.getSlackReport).Methods("GET")
+
+	swapTransactions := swapRoutes.PathPrefix("/transactions").Subrouter()
+	swapTransactions.HandleFunc("/pending", h.findPendingTransactionHistories).Methods("GET")
 
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
+	swapTokensRoutes.HandleFunc("/route", h.getRoutePair).Methods("GET")
 	swapTokensRoutes.HandleFunc("/report", h.getTokensReport).Methods("GET")
 	swapTokensRoutes.HandleFunc("/price", h.getTokensPrice).Methods("GET")
+
+	userRoutes := swapRoutes.PathPrefix("/user").Subrouter()
+	userRoutes.HandleFunc("/trade-histories", h.findUserSwapHistories).Methods("GET")
 
 	swapPairRoutes := swapRoutes.PathPrefix("/pair").Subrouter()
 	swapPairRoutes.HandleFunc("/list", h.findSwapPairs).Methods("GET")
 	swapPairRoutes.HandleFunc("/trade-histories", h.findSwapHistories).Methods("GET")
+	swapPairRoutes.HandleFunc("/apr", h.getLiquidityApr).Methods("GET")
+
+	transactions := api.PathPrefix("/transactions").Subrouter()
+	transactions.HandleFunc("/scan-txs", h.swapTransactions).Methods("GET")
+
+	idoRoutes := swapRoutes.PathPrefix("/ido").Subrouter()
+	idoRoutes.HandleFunc("/", h.addOrUpdateSwapIdo).Methods("POST")
+	idoRoutes.HandleFunc("/list", h.findSwapIdoHistories).Methods("GET")
+	idoRoutes.HandleFunc("/detail", h.findSwapIdoDetail).Methods("GET")
+	idoRoutes.HandleFunc("/delete", h.deleteSwapIdo).Methods("DELETE")
+	idoRoutes.HandleFunc("/tokens", h.getSwapIdoTokens).Methods("GET")
+
+	tmRoutes := swapRoutes.PathPrefix("/tm").Subrouter()
+	tmRoutes.HandleFunc("/histories", h.findTmTokenHistories).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"go.uber.org/zap"
 
@@ -15,6 +16,20 @@ import (
 	"dapp-moderator/utils/logger"
 	req "dapp-moderator/utils/request"
 )
+
+func (h *httpDelivery) swapTmTokenScanEvents(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.TcSwaTmTokenpScanEvents(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("Tokens", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
 
 func (h *httpDelivery) swapScanEvents(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
@@ -72,7 +87,7 @@ func (h *httpDelivery) findSwapPairs(w http.ResponseWriter, r *http.Request) {
 				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
 				return nil, err
 			}
-			data, err := h.Usecase.TcSwapFindSwapPairs(ctx, pagination, req.Query(r, "key", ""))
+			data, err := h.Usecase.TcSwapFindSwapPairs(ctx, pagination, req.Query(r, "from_token", ""))
 			if err != nil {
 				logger.AtLog.Logger.Error("TcSwapFindSwapPairs", zap.Error(err))
 				return nil, err
@@ -94,7 +109,8 @@ func (h *httpDelivery) findSwapHistories(w http.ResponseWriter, r *http.Request)
 				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
 				return nil, err
 			}
-			data, err := h.Usecase.TcSwapFindSwapHistories(ctx, pagination, req.Query(r, "key", ""))
+			tokenAddress := req.Query(r, "contract_address", "")
+			data, err := h.Usecase.TcSwapFindSwapHistories(ctx, pagination, tokenAddress, "", "")
 			if err != nil {
 				logger.AtLog.Logger.Error("TcSwapFindSwapHistories", zap.Error(err))
 				return nil, err
@@ -116,9 +132,8 @@ func (h *httpDelivery) getTokensInPool(w http.ResponseWriter, r *http.Request) {
 				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
 				return nil, err
 			}
-			isTest := req.Query(r, "is_test", "")
 			fromToken := req.Query(r, "from_token", "")
-			data, err := h.Usecase.FindTokensInPool(ctx, pagination, fromToken, isTest)
+			data, err := h.Usecase.FindTokensInPool(ctx, pagination, fromToken)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
 				return nil, err
@@ -141,7 +156,10 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 				return nil, err
 			}
 			address := req.Query(r, "address", "")
-			data, err := h.Usecase.FindTokensReport(ctx, pagination, address)
+			sortCollum := req.Query(r, "sort", "")
+			sortTypePrams := req.Query(r, "sort_type", "-1")
+			sortType, _ := strconv.Atoi(sortTypePrams)
+			data, err := h.Usecase.FindTokensReport(ctx, pagination, address, sortCollum, sortType)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensReport", zap.Error(err))
 				return nil, err
@@ -231,6 +249,87 @@ func (h *httpDelivery) jobUpdateDataSwapHistory(w http.ResponseWriter, r *http.R
 			}
 
 			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) getSlackReport(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			channel := req.Query(r, "channel", "")
+			err := h.Usecase.TcSwapSlackReport(ctx, channel)
+			if err != nil {
+				logger.AtLog.Logger.Error("getSlackReport", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) jobUpdateDataSwapPair(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.UpdateDataSwapPair(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("jobUpdateDataSwapPair", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) jobUpdateDataSwapToken(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.UpdateDataSwapToken(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("jobUpdateDataSwapToken", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) jobUpdateTotalSupply(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.TcSwapUpdateTotalSupplyJob(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("Tokens", zap.Error(err))
+				return false, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) findPendingTransactionHistories(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			pagination, ok := iPagination.(request.PaginationReq)
+			if !ok {
+				err := fmt.Errorf("invalid pagination params")
+				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
+				return nil, err
+			}
+			txs := req.Query(r, "txs", "")
+
+			data, err := h.Usecase.PendingTransactionHistories(ctx, pagination, txs)
+			if err != nil {
+				logger.AtLog.Logger.Error("findPendingTransactionHistories", zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("findPendingTransactionHistories", zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }

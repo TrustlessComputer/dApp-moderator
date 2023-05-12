@@ -15,7 +15,7 @@ import (
 // @Param limit query int false "limit"
 // @Param page query int false "page"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /bns-service/names [GET]
+// @Router /tools//compile-contract [GET]
 func (h *httpDelivery) compileContract(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {

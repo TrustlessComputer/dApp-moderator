@@ -24,12 +24,20 @@ func (r *Repository) FindSwapPairSwapHistory(ctx context.Context, filter entity.
 
 func (r *Repository) parseSwapPairSwapHistories(filter entity.SwapPairSwapHistoriesFilter) bson.M {
 	andCond := make([]bson.M, 0)
-	// Define your OR query
 	if filter.ContractAddress != "" {
 		andCond = append(andCond, bson.M{"contract_address": filter.ContractAddress})
 	}
+
 	if filter.TxHash != "" {
 		andCond = append(andCond, bson.M{"tx_hash": filter.TxHash})
+	}
+
+	if filter.UserAddress != "" {
+		andCond = append(andCond, bson.M{"to": filter.UserAddress})
+	}
+
+	if filter.Token != "" {
+		andCond = append(andCond, bson.M{"token": filter.Token})
 	}
 
 	if len(andCond) == 0 {
@@ -38,17 +46,19 @@ func (r *Repository) parseSwapPairSwapHistories(filter entity.SwapPairSwapHistor
 	return bson.M{"$and": andCond}
 }
 
-func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenFilter) ([]*entity.SwapPairReport, error) {
+func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenReportFilter) ([]*entity.SwapPairReport, error) {
 	var tokens []*entity.SwapPairReport
-
-	// pagination
 	numToSkip := (filter.Page - 1) * filter.Limit
-	// Set the options for the query
 	options := options.Find()
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
+	if filter.SortBy != "" {
+		options.SetSort(bson.D{{filter.SortBy, filter.SortType}})
+	} else {
+		options.SetSort(bson.D{{"priority", -1}, {"total_volume", -1}, {"percent_7day", -1}})
+	}
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_FINAL).Find(ctx, r.parseTokenFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_REPORT_FINAL).Find(ctx, r.parseTokenReportFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
@@ -64,12 +74,30 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenFil
 	return tokens, nil
 }
 
+func (r *Repository) parseTokenReportFilter(filter entity.TokenReportFilter) bson.M {
+	andCond := make([]bson.M, 0)
+	if filter.Address != "" {
+		andCond = append(andCond, bson.M{"address": filter.Address})
+	}
+
+	if filter.CreatedBy != "" {
+		andCond = append(andCond, bson.M{"owner": filter.CreatedBy})
+	}
+
+	if len(andCond) == 0 {
+		return bson.M{}
+	}
+	return bson.M{"$and": andCond}
+}
+
 func (r *Repository) FindTokePrice(ctx context.Context, contract string, chartType string) ([]*entity.ChartDataResp, error) {
 	var tokens []*entity.ChartDataResp
 
 	// pagination
 	// Set the options for the query
+
 	options := options.Find()
+	options.SetSort(bson.D{{"created_at", 1}})
 	var swapPair entity.SwapPair
 
 	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR).FindOne(ctx, bson.D{
@@ -165,7 +193,7 @@ func updateChartData(h *entity.SwapPairSwapHistories, res []*entity.ChartDataRes
 		var token *entity.ChartDataResp
 		token = new(entity.ChartDataResp)
 		token.Time = t
-		token.Timestamp =  t.Unix()
+		token.Timestamp = t.Unix()
 		token.Close = h.Price
 		token.Open = h.Price
 		volmeString := h.Volume.String()
@@ -208,6 +236,7 @@ func (r *Repository) FindSwapPairHistories(ctx context.Context, filter entity.Sw
 	options := options.Find()
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
+	options.SetSort(bson.D{{"timestamp", -1}})
 
 	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).Find(ctx, r.parseSwapPairSwapHistories(filter), options)
 	if err != nil {
