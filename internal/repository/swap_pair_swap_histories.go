@@ -53,7 +53,7 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenRep
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
 	if filter.SortBy != "" {
-		options.SetSort(bson.D{{filter.SortBy, filter.SortType}})
+		options.SetSort(bson.D{{"priority", -1}, {filter.SortBy, filter.SortType}})
 	} else {
 		options.SetSort(bson.D{{"priority", -1}, {"total_volume", -1}, {"percent_7day", -1}})
 	}
