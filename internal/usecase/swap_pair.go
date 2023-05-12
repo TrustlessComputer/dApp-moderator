@@ -529,7 +529,7 @@ func (u *Usecase) UpdateDataSwapToken(ctx context.Context) error {
 
 	for _, token := range tokens {
 		if token.Network == "" {
-			token.Network = "TC"
+			token.Network = "Bitcoin - TC"
 			token.Priority = 0
 			err := u.Repo.UpdateToken(ctx, token)
 			if err != nil {
