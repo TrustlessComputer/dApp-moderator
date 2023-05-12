@@ -58,7 +58,7 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenRep
 		options.SetSort(bson.D{{"priority", -1}, {"total_volume", -1}, {"percent_7day", -1}})
 	}
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_FINAL).Find(ctx, r.parseTokenReportFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_REPORT_FINAL).Find(ctx, r.parseTokenReportFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
