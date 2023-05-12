@@ -309,3 +309,27 @@ func (h *httpDelivery) jobUpdateTotalSupply(w http.ResponseWriter, r *http.Reque
 		},
 	).ServeHTTP(w, r)
 }
+
+func (h *httpDelivery) findPendingTransactionHistories(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			pagination, ok := iPagination.(request.PaginationReq)
+			if !ok {
+				err := fmt.Errorf("invalid pagination params")
+				logger.AtLog.Logger.Error("invalid pagination params", zap.Error(err))
+				return nil, err
+			}
+			txs := req.Query(r, "txs", "")
+
+			data, err := h.Usecase.PendingTransactionHistories(ctx, pagination, txs)
+			if err != nil {
+				logger.AtLog.Logger.Error("findPendingTransactionHistories", zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("findPendingTransactionHistories", zap.Any("data", data))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}

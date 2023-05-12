@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"dapp-moderator/external/blockchain_api"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
@@ -115,6 +116,18 @@ func (u *Usecase) TcSwapCreateOrUpdateCurrentScanBlock(ctx context.Context, endB
 
 func (u *Usecase) TcSwapScanEventsByTransactionHash(txHash string) error {
 	ctx := context.Background()
+	pendingTx, _ := u.Repo.FindSwapPendingTransaction(ctx, entity.SwapPendingTransactionsFilter{TxHash: []string{txHash}})
+	if pendingTx == nil {
+		pendingTx := &entity.SwapPendingTransactions{}
+		pendingTx.Timestamp = time.Now()
+		pendingTx.TxHash = txHash
+		_, err := u.Repo.InsertOne(pendingTx)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
+
 	eventResp, err := u.BlockChainApi.TcSwapEventsByTransaction(txHash)
 	if err != nil {
 		return err
@@ -552,4 +565,22 @@ func (u *Usecase) TcSwapUpdateTotalSupplyJob(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func (u *Usecase) PendingTransactionHistories(ctx context.Context, filter request.PaginationReq, txs string) (interface{}, error) {
+	var data interface{}
+	var err error
+	query := entity.SwapPendingTransactionsFilter{}
+	query.FromPagination(filter)
+	if txs != "" {
+		query.TxHash = strings.Split(txs, ",")
+	}
+	data, err = u.Repo.FindSwapPendingTransactionList(ctx, query)
+	if err != nil {
+		logger.AtLog.Logger.Error("PendingTransactionHistories", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("PendingTransactionHistories", zap.Any("data", data))
+	return data, nil
 }

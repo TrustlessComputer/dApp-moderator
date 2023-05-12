@@ -25,7 +25,7 @@ func (r *Repository) FindSwapIdo(ctx context.Context, filter entity.SwapIdoFilte
 
 func (r *Repository) FindSwapIdoListView(ctx context.Context, filter entity.SwapIdoFilter) (*entity.SwapIdo, error) {
 	var swapIdo entity.SwapIdo
-	err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_LIST_VIEW).FindOne(ctx, r.parseSwapIdoFilter(filter)).Decode(&swapIdo)
+	err := r.DB.Collection(utils.VIEW_SWAP_IDO_LIST_VIEW).FindOne(ctx, r.parseSwapIdoFilter(filter)).Decode(&swapIdo)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (r *Repository) FindSwapIdosView(ctx context.Context, filter entity.SwapIdo
 	options.SetLimit(filter.Limit)
 	options.SetSort(bson.D{{"start_at", 1}})
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_LIST_VIEW).Find(ctx, r.parseSwapIdoFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_IDO_LIST_VIEW).Find(ctx, r.parseSwapIdoFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (r *Repository) FindIdoTokens(ctx context.Context, filter entity.IdoTokenFi
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_TOKEN).Find(ctx, r.parseIdoTokenFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_IDO_TOKEN).Find(ctx, r.parseIdoTokenFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
