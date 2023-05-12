@@ -106,7 +106,7 @@ func (r *Repository) FindIdoTokens(ctx context.Context, filter entity.IdoTokenFi
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO_TOKEN).Find(ctx, r.parseIdoTokenFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_IDO_TOKEN).Find(ctx, r.parseIdoTokenFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
