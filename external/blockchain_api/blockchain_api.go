@@ -680,7 +680,7 @@ func (c *BlockChainApi) TcSwapGetAmountIn(routerAddress string, amountOut, reser
 	return amountIn, nil
 }
 
-func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountIn, amountOutMin *big.Int, trader, fromToken, toToken string) (string, error) {
+func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountIn, amountOutMin *big.Int, trader, prkHex, fromToken, toToken string) (string, error) {
 	client, err := c.getClient()
 	if err != nil {
 		return "", err
@@ -692,7 +692,6 @@ func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountI
 	}
 	c.Interrupt()
 
-	prkHex := ""
 	pbkHex, prk, err := c.parsePrkAuth(prkHex)
 	if err != nil {
 		return "", err

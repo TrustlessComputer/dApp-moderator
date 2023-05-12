@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (r *Repository) FindSwapWallet(ctx context.Context, filter entity.SwapWalletAddressFilter) (*entity.SwapWalletAddress, error) {
@@ -40,4 +41,16 @@ func (r *Repository) parseSwapWalletFilter(filter entity.SwapWalletAddressFilter
 		return bson.M{}
 	}
 	return bson.M{"$and": andCond}
+}
+
+func (r *Repository) UpdateWallet(ctx context.Context, wallet *entity.SwapWalletAddress) error {
+	collectionName := wallet.CollectionName()
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"_id": wallet.ID}, bson.M{"$set": wallet})
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
 }

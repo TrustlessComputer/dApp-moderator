@@ -584,3 +584,63 @@ func (u *Usecase) PendingTransactionHistories(ctx context.Context, filter reques
 	logger.AtLog.Logger.Info("PendingTransactionHistories", zap.Any("data", data))
 	return data, nil
 }
+
+func (u *Usecase) SwapAddOrUpdateWalletAddress(ctx context.Context, walletReq *request.SwapWalletAddressRequest) (interface{}, error) {
+	var err error
+	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, walletReq.WalletAddress)
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+		return false, err
+	}
+
+	isCreated := false
+	if wallet == nil {
+		isCreated = true
+		wallet = &entity.SwapWalletAddress{}
+	}
+	wallet.Address = strings.ToLower(walletReq.WalletAddress)
+
+	ciphertext, err := helpers.GetAESEncrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, walletReq.WalletAddressPrivateKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+		return nil, err
+	}
+
+	wallet.Prk = ciphertext
+	if isCreated {
+		_, err = u.Repo.InsertOne(wallet)
+		if err != nil {
+			logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+			return nil, err
+		}
+	} else {
+		err = u.Repo.UpdateWallet(ctx, wallet)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return nil, err
+		}
+	}
+
+	logger.AtLog.Logger.Info("SwapAddOrUpdateWalletAddress", zap.Any("data", true))
+	return true, nil
+}
+
+func (u *Usecase) SwapGetWalletAddress(ctx context.Context, walletAddress string) (interface{}, error) {
+	var err error
+	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, walletAddress)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
+		return false, err
+	}
+
+	plaintext, err := helpers.GetAESDecrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, wallet.Prk)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
+		return nil, err
+	}
+
+	fmt.Printf("plaintext: %s\n", plaintext)
+	wallet.Prk = string(plaintext)
+
+	return wallet, nil
+}

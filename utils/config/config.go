@@ -67,7 +67,9 @@ type RedisConfig struct {
 }
 
 type SwapConfig struct {
-	BaseURL string
+	BaseURL   string
+	SecretKey string
+	IvKey     string
 }
 
 func NewConfig(filePaths ...string) (*Config, error) {
@@ -101,7 +103,9 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		BFSService:    os.Getenv("BFS_SERVICE_URL"),
 		BNSService:    os.Getenv("BNS_SERVICE_URL"),
 		Swap: &SwapConfig{
-			BaseURL: os.Getenv("TC_ENDPOINT"),
+			BaseURL:   os.Getenv("TC_ENDPOINT"),
+			SecretKey: os.Getenv("SWAP_SECRET_KEY"),
+			IvKey:     os.Getenv("SWAP_IV_KEY"),
 		},
 		Databases: &Databases{
 			Mongo: &DBConnection{
