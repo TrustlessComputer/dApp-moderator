@@ -145,6 +145,10 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	tmRoutes := swapRoutes.PathPrefix("/tm").Subrouter()
 	tmRoutes.HandleFunc("/histories", h.findTmTokenHistories).Methods("GET")
+
+	walletRoutes := swapRoutes.PathPrefix("/wallet").Subrouter()
+	walletRoutes.HandleFunc("/update", h.addOrUpdateSwapWallet).Methods("PUT")
+	walletRoutes.HandleFunc("/detail", h.getSwapWallet).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
