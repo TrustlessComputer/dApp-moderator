@@ -11,7 +11,7 @@ type SwapWalletAddress struct {
 }
 
 func (t *SwapWalletAddress) CollectionName() string {
-	return utils.COLLECTION_SWAP_CONFIGS
+	return utils.COLLECTION_SWAP_WALLET_ADDRESS
 }
 
 type SwapWalletAddressFilter struct {
