@@ -5,7 +5,9 @@ import (
 	"dapp-moderator/external/block_stream"
 	"dapp-moderator/external/blockchain_api"
 	"dapp-moderator/external/bns_service"
+	moralis2 "dapp-moderator/external/moralis"
 	"dapp-moderator/external/token_explorer"
+	"dapp-moderator/internal/generative_respository"
 	discordclient "dapp-moderator/utils/discord"
 	"fmt"
 	"os"
@@ -33,11 +35,11 @@ import (
 	"dapp-moderator/utils/redis"
 
 	"github.com/gorilla/mux"
-	migrate "github.com/xakep666/mongo-migrate"
 )
 
 var logger _logger.Ilogger
 var mongoConnection connections.IConnection
+var generativeMongoConnection connections.IConnection
 var conf *config.Config
 
 func init() {
@@ -59,8 +61,20 @@ func init() {
 		panic(err)
 	}
 
+	generativeMongoCnn := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", c.Databases.GenerativeMongo.Scheme, c.Databases.GenerativeMongo.User, c.Databases.GenerativeMongo.Pass, c.Databases.GenerativeMongo.Host)
+	if c.ENV == "dev" {
+		generativeMongoCnn = "mongodb://127.0.0.1:27017/?retryWrites=true&w=majority"
+	}
+
+	gccnn, err := connections.NewMongo(generativeMongoCnn)
+	if err != nil {
+		logger.AtLog().Logger.Error("Cannot connect mongoDB ", zap.Error(err))
+		panic(err)
+	}
+
 	conf = c
 	mongoConnection = mongoDbConnection
+	generativeMongoConnection = gccnn
 }
 
 // @title tcDAPP APIs
@@ -99,23 +113,26 @@ func startServer() {
 	tke := token_explorer.NewTokenExplorer(conf, cache)
 	dcl := discordclient.NewClient()
 	bca := blockchain_api.NewBlockChainApi(conf, cache)
+	moralis := moralis2.NewMoralisService(cache)
 
 	auth2Service := oauth2service.NewAuth2()
 	g := global.Global{
-		MuxRouter:     r,
-		Conf:          conf,
-		DBConnection:  mongoConnection,
-		Cache:         cache,
-		GCS:           gcs,
-		QuickNode:     qn,
-		BlockStream:   bst,
-		NftExplorer:   nex,
-		BfsService:    bfs,
-		BnsService:    bns,
-		TokenExplorer: tke,
-		Auth2:         auth2Service,
-		DiscordClient: dcl,
-		BlockChainApi: bca,
+		MuxRouter:              r,
+		Conf:                   conf,
+		DBConnection:           mongoConnection,
+		GenerativeDBConnection: generativeMongoConnection,
+		Cache:                  cache,
+		GCS:                    gcs,
+		QuickNode:              qn,
+		BlockStream:            bst,
+		NftExplorer:            nex,
+		BfsService:             bfs,
+		BnsService:             bns,
+		TokenExplorer:          tke,
+		Auth2:                  auth2Service,
+		DiscordClient:          dcl,
+		BlockChainApi:          bca,
+		Moralis:                moralis,
 	}
 
 	repo, err := repository.NewRepository(&g)
@@ -124,13 +141,19 @@ func startServer() {
 		return
 	}
 
-	// migration
-	migrate.SetDatabase(repo.DB)
-	if migrateErr := migrate.Up(-1); migrateErr != nil {
-		logger.AtLog().Error("migrate failed", zap.Error(err))
+	generativeRepo, err := generative_respository.NewGenerativeRepository(&g)
+	if err != nil {
+		logger.AtLog().Logger.Error("Cannot init repository", zap.Error(err))
+		return
 	}
 
-	uc, err := usecase.NewUsecase(&g, *repo)
+	// migration - we don't need this
+	//migrate.SetDatabase(repo.DB)
+	//if migrateErr := migrate.Up(-1); migrateErr != nil {
+	//	logger.AtLog().Error("migrate failed", zap.Error(err))
+	//}
+
+	uc, err := usecase.NewUsecase(&g, repo, generativeRepo)
 	if err != nil {
 		logger.AtLog().Error("LoadUsecases - Cannot init usecase", zap.Error(err))
 		return

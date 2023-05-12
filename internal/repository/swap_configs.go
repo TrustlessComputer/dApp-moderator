@@ -102,3 +102,24 @@ func (r *Repository) UpdateSwapConfig(ctx context.Context, cf *entity.SwapConfig
 	}
 	return nil
 }
+
+func (r *Repository) FindSwapConfigByListName(ctx context.Context, contracts []string) ([]*entity.SwapConfigs, error) {
+	tokens := []*entity.SwapConfigs{}
+
+	f := bson.D{{"name", bson.M{"$in": contracts}}}
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_CONFIGS).Find(ctx, f)
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		token := &entity.SwapConfigs{}
+		err = cursor.Decode(token)
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, token)
+	}
+	return tokens, nil
+}

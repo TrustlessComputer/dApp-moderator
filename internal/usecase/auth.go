@@ -12,6 +12,8 @@ import (
 	"dapp-moderator/utils/oauth2service"
 	"errors"
 	"fmt"
+	"math"
+	"math/big"
 	"strings"
 	"time"
 
@@ -74,6 +76,7 @@ func (u *Usecase) GenerateMessage(ctx context.Context, data *structure.GenerateM
 
 func (u *Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessage) (*structure.VerifyResponse, error) {
 	logger.AtLog.Info("VerifyMessage", zap.Any("walletAddress", data.Address))
+
 	if data.Signature == "" {
 		return nil, errors.New("invalid params: Signature")
 	}
@@ -121,6 +124,8 @@ func (u *Usecase) VerifyMessage(ctx context.Context, data *structure.VerifyMessa
 		IsVerified:   isVeried,
 	}
 
+	//check MEME allow list here
+	go u.MemeAllowList(ctx, data.Address)
 	return &verified, nil
 }
 
@@ -232,6 +237,29 @@ func (u *Usecase) GetUserProfileByWalletAddress(userAddr string) (*entity.Users,
 	}
 	logger.AtLog.Info("GetUserProfileByBtcAddressTaproot", zap.String("userAddr", userAddr), zap.Any("user", user))
 	return user, nil
+}
+
+func (u *Usecase) ProfileByWalletExistedAllowedList(userAddr string) (*bool, error) {
+	inserted := false
+	logger.AtLog.Info("ProfileByWalletExistedAllowedList", zap.String("userAddr", userAddr))
+
+	insertedAL, err := u.Repo.GetInsertedAllowList(userAddr)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			logger.AtLog.Error("ProfileByWalletExistedAllowedList", zap.String("userAddr", userAddr), zap.Error(err))
+			return &inserted, nil
+		}
+
+		logger.AtLog.Error("ProfileByWalletExistedAllowedList", zap.String("userAddr", userAddr), zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Info("ProfileByWalletExistedAllowedList", zap.String("userAddr", userAddr), zap.Any("inserted", inserted))
+	if insertedAL != nil {
+		inserted = true
+	}
+
+	return &inserted, nil
 }
 
 func (u *Usecase) CreateUserHistory(ctx context.Context, data *structure.CreateHistoryMessage) (*entity.UserHistories, error) {
@@ -348,4 +376,106 @@ func (u *Usecase) ConfirmUserHistory(ctx context.Context, userAddr string, txHas
 
 	logger.AtLog.Info("ConfirmUserHistory", zap.Any("txHashData", txHashData), zap.String("userAddr", userAddr), zap.Any("histories", len(resp)))
 	return resp, nil
+}
+
+func (u *Usecase) MemeAllowList(ctx context.Context, userAddress string) {
+	userAddress = strings.ToLower(userAddress)
+	//check user is inserted into this allow list
+	_, err := u.Repo.GetInsertedAllowList(userAddress)
+	if err != nil {
+
+		// if he didn't register to the allow list
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			meme, err := u.Repo.GetAllAllowList()
+			if err != nil {
+				logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Error(err))
+				return
+			}
+
+			// our setting
+			settingBalance := make(map[string]*big.Float)
+			settingReward := make(map[string]*big.Float)
+			settingDecimal := make(map[string]int)
+
+			al := []string{}
+			for _, item := range meme {
+				tkAddress := strings.ToLower(item.Address)
+
+				al = append(al, tkAddress)
+
+				thresHold := new(big.Float)
+				thresHold.SetString(item.Threshold)
+				pow18 := math.Pow10(item.ThresholdDecimal) //1e18 = 10^18
+				pow := big.NewFloat(pow18)
+				thresHold = thresHold.Mul(thresHold, pow)
+
+				rw := new(big.Float)
+				powRw18 := math.Pow10(item.RewardDecimal) //1e18 = 10^18
+				powRw := big.NewFloat(powRw18)
+				rw.SetString(item.Reward)
+				rw = rw.Mul(rw, powRw)
+
+				settingBalance[tkAddress] = thresHold
+				settingDecimal[tkAddress] = item.ThresholdDecimal
+				settingReward[tkAddress] = rw
+			}
+
+			tokens, err := u.Moralis.Erc20TokenBalanceByWallet(userAddress, al)
+			if err != nil {
+				logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Error(err))
+				return
+			}
+
+			for _, walletToken := range tokens {
+				walletTokenAddress := strings.ToLower(walletToken.TokenAddress)
+
+				//check decimal is equal with setting decimal
+				if walletToken.Decimals != settingDecimal[walletTokenAddress] {
+					continue
+				}
+
+				wlBalance := new(big.Float)
+				wlBalance.SetString(walletToken.Balance)
+
+				sBalance := settingBalance[walletTokenAddress]
+
+				if wlBalance.Cmp(sBalance) == -1 { // balance of wallet < balance of setting
+					continue
+				}
+
+				//Insert into created allowed list
+				_, err := u.Repo.CreateInsertedAllowList(&entity.InsertedAllowList{
+					WalletAddress: userAddress,
+					TokenAddress:  walletTokenAddress,
+					Decimals:      walletToken.Decimals,
+					Balance:       walletToken.Balance,
+				})
+				if err != nil {
+					logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Error(err))
+					break
+				} else {
+					//Only insert faucet if error doesn't occur. Duplicated key error is handled by unique index.
+					//Insert into faucets collection in generative.
+					fcAmount, _ := settingReward[walletTokenAddress].Int64()
+					fc := &entity.Faucet{
+						Address: userAddress,
+						Amount:  fmt.Sprintf("%v", fcAmount),
+						Source:  "dapp-moderator",
+					}
+
+					_, err = u.GenerativeRepo.InsertFaucet(fc)
+					if err != nil {
+						logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Any("faucet", fc), zap.Error(err))
+					}
+				}
+			}
+
+			logger.AtLog.Logger.Error("MemeAllowList", zap.Any("tokens", tokens), zap.String("userAddress", userAddress), zap.Error(err))
+			return
+		}
+
+		logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Error(err))
+		return
+	}
+
 }

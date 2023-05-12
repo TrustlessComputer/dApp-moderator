@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"dapp-moderator/external/blockchain_api"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
@@ -115,6 +116,18 @@ func (u *Usecase) TcSwapCreateOrUpdateCurrentScanBlock(ctx context.Context, endB
 
 func (u *Usecase) TcSwapScanEventsByTransactionHash(txHash string) error {
 	ctx := context.Background()
+	pendingTx, _ := u.Repo.FindSwapPendingTransaction(ctx, entity.SwapPendingTransactionsFilter{TxHash: []string{txHash}})
+	if pendingTx == nil {
+		pendingTx := &entity.SwapPendingTransactions{}
+		pendingTx.Timestamp = time.Now()
+		pendingTx.TxHash = txHash
+		_, err := u.Repo.InsertOne(pendingTx)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
+
 	eventResp, err := u.BlockChainApi.TcSwapEventsByTransaction(txHash)
 	if err != nil {
 		return err
@@ -190,6 +203,16 @@ func (u *Usecase) TcSwapCreatedPair(ctx context.Context, eventResp *blockchain_a
 		swapPair.Token0 = eventResp.Token0
 		swapPair.Token1 = eventResp.Token1
 		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+
+		token0, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: eventResp.Token0})
+		if token0 != nil {
+			swapPair.Token0Obj = *token0
+		}
+
+		token1, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: eventResp.Token1})
+		if token1 != nil {
+			swapPair.Token1Obj = *token1
+		}
 		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
@@ -213,6 +236,10 @@ func (u *Usecase) TcSwapPairCreateEvent(ctx context.Context, eventResp *blockcha
 	if dbSwapPair != nil {
 		return nil
 	} else {
+		pair, _ := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
+			Pair: strings.ToLower(eventResp.ContractAddress),
+		})
+
 		swapPair := &entity.SwapPairEvents{}
 		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
 		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
@@ -222,6 +249,9 @@ func (u *Usecase) TcSwapPairCreateEvent(ctx context.Context, eventResp *blockcha
 		swapPair.To = eventResp.To
 		swapPair.EventType = eventType
 		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		if pair != nil {
+			swapPair.Pair = pair
+		}
 		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
@@ -280,6 +310,9 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 				tmpPrice = big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18))
 			}
 			swapPairSync.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+		}
+		if pair != nil {
+			swapPairSync.Pair = pair
 		}
 		_, err = u.Repo.InsertOne(swapPairSync)
 		if err != nil {
@@ -351,6 +384,10 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 
 			swapPair.Volume, _ = primitive.ParseDecimal128(tmpVolume.String())
 			swapPair.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+
+		}
+		if pair != nil {
+			swapPair.Pair = pair
 		}
 
 		_, err = u.Repo.InsertOne(swapPair)
@@ -393,4 +430,157 @@ func (u *Usecase) TcSwapUpdateBTCPriceJob(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
+	resp, err := u.Repo.FindSwapSlackReport(ctx)
+	if err != nil {
+		logger.AtLog.Logger.Error("TcSwapSlackReport", zap.Error(err))
+		return err
+	}
+	respLiq, err := u.Repo.FindSwapSlackLiquidityReport(ctx)
+	if err != nil {
+		logger.AtLog.Logger.Error("TcSwapSlackReport", zap.Error(err))
+		return err
+	}
+
+	pairReserves, err := u.Repo.FindSwapPairCurrentReserveList(ctx, entity.SwapPairFilter{})
+	if err != nil {
+		logger.AtLog.Logger.Error("FindSwapPairs", zap.Error(err))
+		return err
+	}
+	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+
+	poolBTCLiquidity := big.NewFloat(0)
+	for _, item := range pairReserves {
+		tmpPoolBTCLiquidity := big.NewFloat(0)
+		if strings.EqualFold(item.Token0, wbtcContractAddr) {
+			tmpPoolBTCLiquidity, _ = new(big.Float).SetString(item.Reserve0.String())
+		} else if strings.EqualFold(item.Token1, wbtcContractAddr) {
+			tmpPoolBTCLiquidity, _ = new(big.Float).SetString(item.Reserve1.String())
+		}
+		poolBTCLiquidity = big.NewFloat(0).Add(poolBTCLiquidity, tmpPoolBTCLiquidity)
+	}
+
+	if resp != nil && respLiq != nil {
+		btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
+
+		totalVolumeBtc := float64(0)
+		volume24hBtc := float64(0)
+		totalVolumeUsd := float64(0)
+		volume24hUsd := float64(0)
+		if s, err := strconv.ParseFloat(resp.VolumeTotal.String(), 64); err == nil {
+			totalVolumeUsd = s * btcPrice
+			totalVolumeBtc = s
+		}
+
+		if s, err := strconv.ParseFloat(resp.Volume24h.String(), 64); err == nil {
+			volume24hUsd = s * btcPrice
+			volume24hBtc = s
+		}
+
+		slackString := "*TC SWAP Report*\n"
+		slackString += fmt.Sprintf("*Total Volume:* %.2f BTC | $%.2f\n", totalVolumeBtc, totalVolumeUsd)
+		slackString += fmt.Sprintf("*Total Txs:* %d\n", resp.TxTotal)
+		slackString += fmt.Sprintf("*Total Users:* %d\n", resp.UsersTotal)
+		slackString += fmt.Sprintf("*Last 24h Volume:* %.2f BTC | $%.2f\n", volume24hBtc, volume24hUsd)
+		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", resp.Tx24h)
+		slackString += fmt.Sprintf("*Last 24h Users:* %d\n", resp.Users24h)
+
+		slackString += "\n*TC Liquidity Report*\n"
+		slackString += fmt.Sprintf("*Total BTC In Pool:* %.2f BTC\n", poolBTCLiquidity)
+		slackString += fmt.Sprintf("*Total Pair:* %d\n", respLiq.PairTotal)
+		slackString += fmt.Sprintf("*Total Txs:* %d\n", respLiq.TxTotal)
+		slackString += fmt.Sprintf("*Last 24h Pair:* %d\n", respLiq.Pair24h)
+		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", respLiq.Tx24h)
+
+		listName := []string{
+			"wbtc_contract_address",
+			"weth_contract_address",
+			"wpepe_contract_address",
+			"wusdc_contract_address",
+			"wordi_contract_address",
+		}
+		dbSwapConfigs, err := u.Repo.FindSwapConfigByListName(ctx, listName)
+		if err != nil && err != mongo.ErrNoDocuments {
+			logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+			return err
+		}
+
+		slackString += "\n*TC Bridge Locked Report*\n"
+		for _, item := range dbSwapConfigs {
+			tmpAmount, _ := new(big.Float).SetString(item.TotalSupply.String())
+			tmpAmountFloat, _ := tmpAmount.Float64()
+			slackString += fmt.Sprintf("*Total %s:* %.2f\n", item.Symbol, tmpAmountFloat)
+		}
+
+		helpers.SlackHook(channel, slackString)
+	}
+
+	return nil
+}
+
+func (u *Usecase) TcSwapUpdateTotalSupplyJob(ctx context.Context) error {
+	listName := []string{
+		"wbtc_contract_address",
+		"weth_contract_address",
+		"wpepe_contract_address",
+		"wusdc_contract_address",
+		"wordi_contract_address",
+	}
+	dbSwapConfigs, err := u.Repo.FindSwapConfigByListName(ctx, listName)
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+
+	// listContractAddress := []string{}
+	// for _, item := range dbSwapConfigs {
+	// 	listContractAddress = append(listContractAddress, item.Value)
+	// }
+
+	// listTokens, _ := u.Repo.FindTokensByContracts(ctx, listContractAddress)
+	// for _, item := range listTokens {
+	// 	totalSupply, _ := u.BlockChainApi.Erc20TotalSupply(item.Address)
+	// 	if totalSupply != nil {
+	// 		// item.TotalSupply = helpers.ConvertWeiToBigFloat(totalSupply, 18).String()
+	// 		item.TotalSupply = totalSupply.String()
+	// 	}
+	// 	err = u.Repo.UpdateToken(ctx, item)
+	// 	if err != nil {
+	// 		logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+	// 		return err
+	// 	}
+	// }
+
+	for _, item := range dbSwapConfigs {
+		totalSupply, _ := u.BlockChainApi.Erc20TotalSupply(item.Value)
+		if totalSupply != nil {
+			item.TotalSupply, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(totalSupply, 18).String())
+		}
+		err = u.Repo.UpdateSwapConfig(ctx, item)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *Usecase) PendingTransactionHistories(ctx context.Context, filter request.PaginationReq, txs string) (interface{}, error) {
+	var data interface{}
+	var err error
+	query := entity.SwapPendingTransactionsFilter{}
+	query.FromPagination(filter)
+	if txs != "" {
+		query.TxHash = strings.Split(txs, ",")
+	}
+	data, err = u.Repo.FindSwapPendingTransactionList(ctx, query)
+	if err != nil {
+		logger.AtLog.Logger.Error("PendingTransactionHistories", zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("PendingTransactionHistories", zap.Any("data", data))
+	return data, nil
 }

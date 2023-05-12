@@ -23,6 +23,7 @@ type SwapPairSwapHistories struct {
 	Token           string               `json:"token" bson:"token,omitempty"`
 	Price           primitive.Decimal128 `json:"price" bson:"price,omitempty"`
 	Volume          primitive.Decimal128 `json:"volume" bson:"volume,omitempty"`
+	Pair            *SwapPair            `json:"pair" bson:"pair,omitempty"`
 }
 
 func (t *SwapPairSwapHistories) CollectionName() string {
@@ -32,7 +33,9 @@ func (t *SwapPairSwapHistories) CollectionName() string {
 type SwapPairSwapHistoriesFilter struct {
 	BaseFilters
 	ContractAddress string
+	UserAddress     string
 	TxHash          string
+	Token           string
 }
 
 func (t *SwapPairSwapHistoriesFilter) FromPagination(pag request.PaginationReq) {
