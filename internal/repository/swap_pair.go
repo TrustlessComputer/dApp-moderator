@@ -12,7 +12,7 @@ import (
 
 func (r *Repository) FindSwapSlackReport(ctx context.Context) (*entity.SwapPairSlackReport, error) {
 	var swapSlackReport entity.SwapPairSlackReport
-	err := r.DB.Collection(utils.COLLECTION_SWAP_REPORT_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
+	err := r.DB.Collection(utils.VIEW_SWAP_REPORT_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +21,7 @@ func (r *Repository) FindSwapSlackReport(ctx context.Context) (*entity.SwapPairS
 
 func (r *Repository) FindSwapSlackLiquidityReport(ctx context.Context) (*entity.SwapPairSlackLiquidityReport, error) {
 	var swapSlackReport entity.SwapPairSlackLiquidityReport
-	err := r.DB.Collection(utils.COLLECTION_SWAP_LIQUIDITY_REPORT_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
+	err := r.DB.Collection(utils.VIEW_SWAP_LIQUIDITY_REPORT_SLACK).FindOne(ctx, bson.M{}).Decode(&swapSlackReport)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (r *Repository) FindTokensInPoolByContracts(ctx context.Context, contracts 
 
 func (r *Repository) FindSwapPairVolume(ctx context.Context, filter entity.SwapPairFilter) (*entity.SwapPairWithVolumeReport, error) {
 	var swapPair entity.SwapPairWithVolumeReport
-	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR_VOLUME).FindOne(ctx, r.parseSwapPairFilter(filter)).Decode(&swapPair)
+	err := r.DB.Collection(utils.VIEW_SWAP_PAIR_VOLUME).FindOne(ctx, r.parseSwapPairFilter(filter)).Decode(&swapPair)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (r *Repository) FindSwapPairVolume(ctx context.Context, filter entity.SwapP
 
 func (r *Repository) FindSwapPairCurrentReserve(ctx context.Context, filter entity.SwapPairFilter) (*entity.SwapPairReserveReport, error) {
 	var swapPair entity.SwapPairReserveReport
-	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR_CURRENT_RESERVE).FindOne(ctx, r.parseSwapPairFilter(filter)).Decode(&swapPair)
+	err := r.DB.Collection(utils.VIEW_SWAP_PAIR_CURRENT_RESERVE).FindOne(ctx, r.parseSwapPairFilter(filter)).Decode(&swapPair)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func (r *Repository) FindSwapPairCurrentReserve(ctx context.Context, filter enti
 
 func (r *Repository) FindSwapPairCurrentReserveList(ctx context.Context, filter entity.SwapPairFilter) ([]*entity.SwapPairReserveReport, error) {
 	reserves := []*entity.SwapPairReserveReport{}
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR_CURRENT_RESERVE).Find(ctx, r.parseSwapPairFilter(filter))
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_PAIR_CURRENT_RESERVE).Find(ctx, r.parseSwapPairFilter(filter))
 	if err != nil {
 		return nil, err
 	}
