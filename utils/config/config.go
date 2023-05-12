@@ -67,9 +67,7 @@ type RedisConfig struct {
 }
 
 type SwapConfig struct {
-	BaseURL                      string
-	UniswapV2FactoryContractAddr string
-	UniswapV2RouterContractAddr  string
+	BaseURL string
 }
 
 func NewConfig(filePaths ...string) (*Config, error) {
@@ -103,9 +101,7 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		BFSService:    os.Getenv("BFS_SERVICE_URL"),
 		BNSService:    os.Getenv("BNS_SERVICE_URL"),
 		Swap: &SwapConfig{
-			BaseURL:                      os.Getenv("TC_ENDPOINT"),
-			UniswapV2FactoryContractAddr: os.Getenv("SWAP_FACTORY_CONTRACT_ADDR"),
-			UniswapV2RouterContractAddr:  os.Getenv("SWAP_ROUTER_CONTRACT_ADDR"),
+			BaseURL: os.Getenv("TC_ENDPOINT"),
 		},
 		Databases: &Databases{
 			Mongo: &DBConnection{
