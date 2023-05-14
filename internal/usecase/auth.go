@@ -456,6 +456,14 @@ func (u *Usecase) MemeAllowList(ctx context.Context, userAddress string) {
 				} else {
 					//Only insert faucet if error doesn't occur. Duplicated key error is handled by unique index.
 					//Insert into faucets collection in generative.
+					//Check userAddress is inserted with "dapp-moderator"
+					faucetExisted, _ := u.GenerativeRepo.FindDappFaucet(userAddress, "dapp-moderator")
+					if faucetExisted != nil { // faucet existed
+						err := errors.New(fmt.Sprintf("%s is exist in Dapp faucet", userAddress))
+						logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Error(err))
+						break
+					}
+
 					fcAmount, _ := settingReward[walletTokenAddress].Int64()
 					fc := &entity.Faucet{
 						Address: userAddress,
@@ -470,12 +478,10 @@ func (u *Usecase) MemeAllowList(ctx context.Context, userAddress string) {
 				}
 			}
 
-			logger.AtLog.Logger.Error("MemeAllowList", zap.Any("tokens", tokens), zap.String("userAddress", userAddress), zap.Error(err))
+			logger.AtLog.Logger.Info("MemeAllowList", zap.Any("tokens", tokens), zap.String("userAddress", userAddress))
 			return
 		}
 
-		logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Error(err))
-		return
 	}
 
 }
