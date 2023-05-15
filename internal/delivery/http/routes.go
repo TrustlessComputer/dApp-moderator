@@ -119,6 +119,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapTransactions := swapRoutes.PathPrefix("/transactions").Subrouter()
 	swapTransactions.HandleFunc("/pending", h.findPendingTransactionHistories).Methods("GET")
 
+	jobRoutes := swapRoutes.PathPrefix("/job").Subrouter()
+	jobRoutes.HandleFunc("/update-ido", h.swapJobUpdateIdoStatus).Methods("GET")
+
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
 	swapTokensRoutes.HandleFunc("/route", h.getRoutePair).Methods("GET")

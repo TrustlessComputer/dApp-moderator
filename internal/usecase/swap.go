@@ -7,6 +7,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -643,4 +644,114 @@ func (u *Usecase) SwapGetWalletAddress(ctx context.Context, walletAddress string
 	wallet.Prk = string(plaintext)
 
 	return wallet, nil
+}
+
+func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.SwapWrapTOkenContractAddrConfig, error) {
+	redisKey := "tc-swap:wrap-token-config"
+	exists, err := u.Cache.Exists(redisKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+		return nil, err
+	}
+	if *exists {
+		dataInCache, err := u.Cache.GetData(redisKey)
+		if err != nil {
+			logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+			return nil, err
+		}
+
+		b := []byte(*dataInCache)
+		config := &entity.SwapWrapTOkenContractAddrConfig{}
+		err = json.Unmarshal(b, config)
+		if err != nil {
+			return nil, err
+		}
+		return config, nil
+	} else {
+		config := &entity.SwapWrapTOkenContractAddrConfig{}
+		configs, err := u.Repo.FindSwapConfigByListName(ctx, []string{
+			"wbtc_contract_address",
+			"weth_contract_address",
+			"wpepe_contract_address",
+			"wusdc_contract_address",
+			"wordi_contract_address",
+		})
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return nil, err
+		}
+		for _, item := range configs {
+			token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: item.Value})
+			switch item.Name {
+			case "wbtc_contract_address":
+				config.WbtcContractAddr = item.Value
+				config.WbtcToken = token
+			case "weth_contract_address":
+				config.WethContractAddr = item.Value
+				config.WbtcToken = token
+			case "wpepe_contract_address":
+				config.WpepeContractAddr = item.Value
+				config.WbtcToken = token
+			case "wusdc_contract_address":
+				config.WusdcContractAddr = item.Value
+				config.WbtcToken = token
+			case "wordi_contract_address":
+				config.WordiContractAddr = item.Value
+				config.WbtcToken = token
+			}
+		}
+
+		reportsStr, err := json.Marshal(&config)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return config, nil
+		}
+		err = u.Cache.SetStringData(redisKey, string(reportsStr))
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return config, nil
+		}
+
+		return config, nil
+	}
+}
+
+func (u *Usecase) TcSwapGetBaseTokenOnPair(ctx context.Context, pair *entity.SwapPair) (*entity.Token, *entity.Token, int, error) {
+	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
+	var token *entity.Token
+	var baseToken *entity.Token
+	baseIndex := int(0)
+	if pair != nil {
+		tokenAddress := ""
+		if strings.EqualFold(pair.Token0, config.WbtcContractAddr) {
+			tokenAddress = pair.Token1
+			baseToken = config.WbtcToken
+		} else if strings.EqualFold(pair.Token1, config.WbtcContractAddr) {
+			baseIndex = 1
+			tokenAddress = pair.Token0
+			baseToken = config.WbtcToken
+		}
+		// else if strings.EqualFold(pair.Token0, config.WethContractAddr) {
+		// 	tokenAddress = pair.Token1
+		// 	baseToken = config.WethToken
+		// } else if strings.EqualFold(pair.Token1, config.WethContractAddr) {
+		// 	baseIndex = 1
+		// 	tokenAddress = pair.Token0
+		// 	baseToken = config.WethToken
+		// } else if strings.EqualFold(pair.Token0, config.WusdcContractAddr) {
+		// 	tokenAddress = pair.Token1
+		// 	baseToken = config.WusdcToken
+		// } else if strings.EqualFold(pair.Token1, config.WusdcContractAddr) {
+		// 	baseIndex = 1
+		// 	tokenAddress = pair.Token0
+		// 	baseToken = config.WusdcToken
+		// }
+
+		if tokenAddress != "" {
+			token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
+				Address: tokenAddress,
+			})
+		}
+	}
+	return token, baseToken, baseIndex, nil
 }
