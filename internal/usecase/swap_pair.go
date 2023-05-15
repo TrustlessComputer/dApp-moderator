@@ -274,6 +274,7 @@ func (u *Usecase) UpdateDataSwapSync(ctx context.Context) error {
 					tmpPrice = big.NewFloat(0).Quo(tmpReserce1, tmpReserce0)
 				}
 				pairSync.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+				pairSync.BaseTokenSymbol = baseToken.Symbol
 			}
 			pairSync.Pair = pair
 

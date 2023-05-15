@@ -54,7 +54,7 @@ func (r *Repository) FindSwapBotConfigs(ctx context.Context, filter entity.SwapB
 	return idos, nil
 }
 
-func (r *Repository) UpdateSwapBotConfig(ctx context.Context, pair *entity.SwapIdo) error {
+func (r *Repository) UpdateSwapBotConfig(ctx context.Context, pair *entity.SwapBotConfig) error {
 	collectionName := pair.CollectionName()
 	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"_id": pair.ID}, bson.M{"$set": pair})
 	if err != nil {
