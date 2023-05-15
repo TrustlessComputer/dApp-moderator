@@ -276,26 +276,14 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 	if dbSwapPair != nil {
 		return nil
 	} else {
-		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
-
 		pair, _ := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
 			Pair: strings.ToLower(eventResp.ContractAddress),
 		})
 
-		var token *entity.Token
-		if pair != nil {
-			tokenAddress := ""
-			if strings.EqualFold(pair.Token0, wbtcContractAddr) {
-				tokenAddress = pair.Token1
-			} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
-				tokenAddress = pair.Token0
-			}
-
-			if tokenAddress != "" {
-				token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
-					Address: tokenAddress,
-				})
-			}
+		token, baseToken, baseIndex, err := u.TcSwapGetBaseTokenOnPair(ctx, pair)
+		if err != nil {
+			logger.AtLog.Logger.Error("TcSwapPairCreateSwapEvent", zap.Error(err))
+			return err
 		}
 
 		swapPairSync := &entity.SwapPairSync{}
@@ -304,13 +292,14 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 		swapPairSync.Reserve0, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18).String())
 		swapPairSync.Reserve1, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18).String())
 		swapPairSync.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
-		if token != nil && pair != nil {
+		if token != nil && pair != nil && baseToken != nil {
 			swapPairSync.Token = token.Address
 			tmpPrice := big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18))
-			if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+			if baseIndex == 1 {
 				tmpPrice = big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18))
 			}
 			swapPairSync.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+			swapPairSync.BaseTokenSymbol = baseToken.Symbol
 		}
 		if pair != nil {
 			swapPairSync.Pair = pair
@@ -338,26 +327,14 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 	if dbSwapPair != nil {
 		return nil
 	} else {
-		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
-
 		pair, _ := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
 			Pair: strings.ToLower(eventResp.ContractAddress),
 		})
 
-		var token *entity.Token
-		if pair != nil {
-			tokenAddress := ""
-			if strings.EqualFold(pair.Token0, wbtcContractAddr) {
-				tokenAddress = pair.Token1
-			} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
-				tokenAddress = pair.Token0
-			}
-
-			if tokenAddress != "" {
-				token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
-					Address: tokenAddress,
-				})
-			}
+		token, baseToken, baseIndex, err := u.TcSwapGetBaseTokenOnPair(ctx, pair)
+		if err != nil {
+			logger.AtLog.Logger.Error("TcSwapPairCreateSwapEvent", zap.Error(err))
+			return err
 		}
 
 		swapPair := &entity.SwapPairSwapHistories{}
@@ -371,20 +348,21 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 		swapPair.Sender = eventResp.Sender
 		swapPair.To = eventResp.To
 		swapPair.Index = eventResp.Index
-		if token != nil && pair != nil {
+		if token != nil && pair != nil && baseToken != nil {
 			swapPair.Token = token.Address
 			tmpAmount0 := big.NewFloat(0).Add(helpers.ConvertWeiToBigFloat(eventResp.Amount0In, 18), helpers.ConvertWeiToBigFloat(eventResp.Amount0Out, 18))
 			tmpAmount1 := big.NewFloat(0).Add(helpers.ConvertWeiToBigFloat(eventResp.Amount1In, 18), helpers.ConvertWeiToBigFloat(eventResp.Amount1Out, 18))
 
 			tmpVolume := tmpAmount0
 			tmpPrice := big.NewFloat(0).Quo(tmpAmount0, tmpAmount1)
-			if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+			if baseIndex == 1 {
 				tmpVolume = tmpAmount1
 				tmpPrice = big.NewFloat(0).Quo(tmpAmount1, tmpAmount0)
 			}
 
 			swapPair.Volume, _ = primitive.ParseDecimal128(tmpVolume.String())
 			swapPair.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+			swapPair.BaseTokenSymbol = baseToken.Symbol
 
 		}
 		if pair != nil {
@@ -706,7 +684,7 @@ func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.S
 			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 			return config, nil
 		}
-		err = u.Cache.SetStringData(redisKey, string(reportsStr))
+		err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 60*60)
 		if err != nil {
 			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 			return config, nil
