@@ -15,3 +15,8 @@ type IdoRequest struct {
 	WhitePaper        string    `json:"white_papper"`
 	Discord           string    `json:"discord"`
 }
+
+type SwapWalletAddressRequest struct {
+	WalletAddress           string `json:"address"`
+	WalletAddressPrivateKey string `json:"prk_key"`
+}
