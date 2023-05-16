@@ -372,3 +372,22 @@ func (h *httpDelivery) getSwapWallet(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
+
+func (h *httpDelivery) addSwapBotConfig(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			var reqBody request.SwapBotConfigRequest
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
+			}
+			err = h.Usecase.AddSwapBotConfig(ctx, &reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
