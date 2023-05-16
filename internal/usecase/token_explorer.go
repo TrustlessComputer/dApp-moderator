@@ -138,7 +138,7 @@ func (u *Usecase) CrawToken(ctx context.Context, fromPage int) (int, error) {
 			countInt++
 			token.Index = countInt
 			token.Priority = 0
-			token.Network = "TC"
+			token.Network = "Bitcoin - TC"
 			// save token to DB
 			_, err = u.Repo.InsertOne(&token)
 			if err != nil {
