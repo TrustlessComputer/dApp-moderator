@@ -1,11 +1,15 @@
 package entity
 
 type SwapIdoStatus string
+type SwapBaseTokenSymbol string
 
 const (
 	SwapIdoStatusUpcoming SwapIdoStatus = "upcoming"
 	SwapIdoStatusStated   SwapIdoStatus = "started"
 	SwapIdoStatusFinished SwapIdoStatus = "finished"
+
+	SwapBaseTokenSymbolWBTC SwapBaseTokenSymbol = "WBTC"
+	SwapBaseTokenSymbolWETH SwapBaseTokenSymbol = "ETH"
 )
 
 type SwapWrapTOkenContractAddrConfig struct {

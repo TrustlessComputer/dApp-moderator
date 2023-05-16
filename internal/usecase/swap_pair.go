@@ -188,6 +188,8 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 		}
 		return reports, nil
 	} else {
+		wtokenConfig, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
+
 		reports, err := u.Repo.FindTokenReport(ctx, query)
 		if err != nil {
 			logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
@@ -195,29 +197,57 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 		}
 
 		btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
+		ethPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_eth_price")
 
 		for _, item := range reports {
-			if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {
-				item.BtcPrice = s
-				item.UsdPrice = s * btcPrice
+			if item.BaseTokenSymbol == "" {
+				item.BaseTokenSymbol = string(entity.SwapBaseTokenSymbolWBTC)
 			}
 
-			if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
-				item.BtcVolume = s
-				item.UsdVolume = s * btcPrice
+			if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWBTC) {
+				if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {
+					item.BtcPrice = s
+					item.UsdPrice = s * btcPrice
+				}
+
+				if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
+					item.BtcVolume = s
+					item.UsdVolume = s * btcPrice
+				}
+
+				if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
+					item.BtcTotalVolume = s
+					item.UsdTotalVolume = s * btcPrice
+				}
+
+				if s, err := strconv.ParseFloat(item.MarketCap.String(), 64); err == nil {
+					item.UsdMarketCap = s * btcPrice
+				}
+			} else if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
+				if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {
+					item.EthPrice = s
+					item.UsdPrice = s * ethPrice
+				}
+
+				if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
+					item.EthVolume = s
+					item.UsdVolume = s * ethPrice
+				}
+
+				if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
+					item.EthTotalVolume = s
+					item.UsdTotalVolume = s * ethPrice
+				}
+
+				if s, err := strconv.ParseFloat(item.MarketCap.String(), 64); err == nil {
+					item.UsdMarketCap = s * ethPrice
+				}
 			}
 
-			if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
-				item.BtcTotalVolume = s
-				item.UsdTotalVolume = s * btcPrice
-			}
-
-			if s, err := strconv.ParseFloat(item.MarketCap.String(), 64); err == nil {
-				item.UsdMarketCap = s * btcPrice
-			}
-
-			if item.Address == "0xfB83c18569fB43f1ABCbae09Baf7090bFFc8CBBD" {
+			if item.Address == wtokenConfig.WbtcContractAddr {
 				item.UsdPrice = btcPrice
+			} else if item.Address == wtokenConfig.WethContractAddr {
+				item.UsdPrice = ethPrice
 			}
 		}
 
