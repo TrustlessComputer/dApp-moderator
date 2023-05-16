@@ -163,6 +163,7 @@ const (
 	VIEW_SWAP_IDO_TOKEN              string = "swap_ido_tokens_view"
 	VIEW_SWAP_PAIR_VOLUME            string = "swap_pair_volume_view"
 	VIEW_SWAP_PAIR_CURRENT_RESERVE   string = "swap_pair_current_reserve_view"
+	VIEW_SWAP_PAIR_APR               string = "swap_pair_apr_view"
 
 	TRANSACTIONS string = "transactions"
 

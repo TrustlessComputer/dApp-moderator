@@ -4,6 +4,7 @@ import (
 	"context"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
 	"errors"
@@ -280,8 +281,9 @@ func (u *Usecase) UpdateDataSwapSync(ctx context.Context) error {
 
 			err = u.Repo.UpdateSwapPairSync(ctx, pairSync)
 			if err != nil {
+				fmt.Printf(pairSync.Id())
 				logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
-				return err
+				// return err
 			}
 		}
 		// }
@@ -344,8 +346,9 @@ func (u *Usecase) UpdateDataSwapHistory(ctx context.Context) error {
 
 			err = u.Repo.UpdateSwapPairHistory(ctx, pairSync)
 			if err != nil {
-				logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
-				return err
+				fmt.Println(pairSync.Id())
+				// logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
+				// return err
 			}
 		}
 
@@ -408,6 +411,17 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 	return aprPercent, nil
 }
 
+func (u *Usecase) SwapGetPairAprListReport(ctx context.Context, filter request.PaginationReq) (interface{}, error) {
+	query := entity.TokenReportFilter{}
+	query.FromPagination(filter)
+	reports, err := u.Repo.FindPairAprReport(ctx, query)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapGetPairAprListReport", zap.Error(err))
+		return nil, err
+	}
+	return reports, nil
+}
+
 func (u *Usecase) GetRoutePair(ctx context.Context, fromToken, toToken string) (interface{}, error) {
 	var err error
 
@@ -464,6 +478,15 @@ func (u *Usecase) UpdateDataSwapPair(ctx context.Context) error {
 	}
 
 	for _, pair := range pairs {
+		reserve0, reserve1, err := u.BlockChainApi.TcSwapGetReserves(pair.Pair)
+		if err != nil {
+			logger.AtLog.Logger.Error("DoJobSwapBot", zap.Error(err))
+			return err
+		}
+
+		tmpReserve0 := helpers.ConvertWeiToBigFloat(reserve0, 18)
+		tmpReserve1 := helpers.ConvertWeiToBigFloat(reserve1, 18)
+
 		token0, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: pair.Token0})
 		if token0 != nil {
 			pair.Token0Obj = *token0
@@ -473,8 +496,10 @@ func (u *Usecase) UpdateDataSwapPair(ctx context.Context) error {
 		if token1 != nil {
 			pair.Token1Obj = *token1
 		}
+		pair.Reserve0, _ = primitive.ParseDecimal128(tmpReserve0.String())
+		pair.Reserve1, _ = primitive.ParseDecimal128(tmpReserve1.String())
 
-		err := u.Repo.UpdateSwapPair(ctx, pair)
+		err = u.Repo.UpdateSwapPair(ctx, pair)
 		if err != nil {
 			logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
 			return err
