@@ -12,7 +12,7 @@ import (
 
 func (r *Repository) FindSwapBotConfig(ctx context.Context, filter entity.SwapBotConfigFilter) (*entity.SwapBotConfig, error) {
 	var swapIdo entity.SwapBotConfig
-	err := r.DB.Collection(utils.COLLECTION_SWAP_IDO).FindOne(ctx, r.parseSwapBotFilter(filter)).Decode(&swapIdo)
+	err := r.DB.Collection(utils.COLLECTION_SWAP_BOT_CONFIG).FindOne(ctx, r.parseSwapBotFilter(filter)).Decode(&swapIdo)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (r *Repository) FindSwapBotConfigs(ctx context.Context, filter entity.SwapB
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
 
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO).Find(ctx, r.parseSwapBotFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_BOT_CONFIG).Find(ctx, r.parseSwapBotFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}

@@ -164,7 +164,7 @@ const (
 	VIEW_SWAP_PAIR_VOLUME            string = "swap_pair_volume_view"
 	VIEW_SWAP_PAIR_CURRENT_RESERVE   string = "swap_pair_current_reserve_view"
 	VIEW_SWAP_IDO_LIST_VIEW          string = "swap_ido_list_view"
-	
+	VIEW_SWAP_PAIR_APR               string = "swap_pair_apr_view"
 	TRANSACTIONS string = "transactions"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"

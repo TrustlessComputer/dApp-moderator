@@ -387,6 +387,23 @@ func (c *BlockChainApi) Erc20TotalSupply(erc20Addr string) (*big.Int, error) {
 	return balance, nil
 }
 
+func (c *BlockChainApi) Erc20GetCoinBalance(erc20Addr, accountAddress string) (*big.Int, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	instance, err := erc20.NewErc20(common.HexToAddress(erc20Addr), client)
+	if err != nil {
+		return nil, err
+	}
+	c.Interrupt()
+	balance, err := instance.BalanceOf(&bind.CallOpts{}, common.HexToAddress(accountAddress))
+	if err != nil {
+		return nil, err
+	}
+	return balance, nil
+}
+
 func (c *BlockChainApi) TcSwapEvents(contracts []string, numBlocks, startBlock, endBlock int64) (*TcSwapEventResp, error) {
 	resp := c.NewTcSwapEventResp()
 	client, err := c.getClient()
@@ -707,8 +724,8 @@ func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountI
 	}
 	auth := bind.NewKeyedTransactor(prk)
 	auth.Nonce = big.NewInt(int64(nonceAuth))
-	auth.Value = big.NewInt(0)      // in wei
-	auth.GasLimit = uint64(8000000) // in units
+	auth.Value = big.NewInt(0)         // in wei
+	auth.GasLimit = uint64(2500000000) // in units
 	auth.GasPrice = gasPrice
 	auth.Signer = c.DefaultSignerFn(prk)
 
@@ -719,6 +736,9 @@ func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountI
 	deadline := big.NewInt(time.Now().Unix() + 60*30)
 	traderAddres := common.HexToAddress(trader)
 	// estimate tx
+	fmt.Printf(`amountIn=%s`, amountIn.String())
+	fmt.Printf(`amountOutMin=%s`, amountOutMin.String())
+
 	{
 		pAbi, err := abi.JSON(strings.NewReader(uniswaprouter.UniswaprouterABI))
 		if err != nil {

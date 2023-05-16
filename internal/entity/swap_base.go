@@ -9,11 +9,13 @@ const (
 )
 
 type SwapWrapTOkenContractAddrConfig struct {
-	WbtcContractAddr  string
-	WethContractAddr  string
-	WusdcContractAddr string
-	WpepeContractAddr string
-	WordiContractAddr string
+	WbtcContractAddr    string
+	WethContractAddr    string
+	WusdcContractAddr   string
+	WpepeContractAddr   string
+	WordiContractAddr   string
+	RouterContractAddr  string
+	FactoryContractAddr string
 
 	WbtcToken  *Token
 	WethToken  *Token
