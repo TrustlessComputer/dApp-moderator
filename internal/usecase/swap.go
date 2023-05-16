@@ -7,6 +7,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -275,26 +276,14 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 	if dbSwapPair != nil {
 		return nil
 	} else {
-		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
-
 		pair, _ := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
 			Pair: strings.ToLower(eventResp.ContractAddress),
 		})
 
-		var token *entity.Token
-		if pair != nil {
-			tokenAddress := ""
-			if strings.EqualFold(pair.Token0, wbtcContractAddr) {
-				tokenAddress = pair.Token1
-			} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
-				tokenAddress = pair.Token0
-			}
-
-			if tokenAddress != "" {
-				token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
-					Address: tokenAddress,
-				})
-			}
+		token, baseToken, baseIndex, err := u.TcSwapGetBaseTokenOnPair(ctx, pair)
+		if err != nil {
+			logger.AtLog.Logger.Error("TcSwapPairCreateSwapEvent", zap.Error(err))
+			return err
 		}
 
 		swapPairSync := &entity.SwapPairSync{}
@@ -303,13 +292,14 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 		swapPairSync.Reserve0, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18).String())
 		swapPairSync.Reserve1, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18).String())
 		swapPairSync.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
-		if token != nil && pair != nil {
+		if token != nil && pair != nil && baseToken != nil {
 			swapPairSync.Token = token.Address
 			tmpPrice := big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18))
-			if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+			if baseIndex == 1 {
 				tmpPrice = big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18))
 			}
 			swapPairSync.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+			swapPairSync.BaseTokenSymbol = baseToken.Symbol
 		}
 		if pair != nil {
 			swapPairSync.Pair = pair
@@ -337,26 +327,14 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 	if dbSwapPair != nil {
 		return nil
 	} else {
-		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
-
 		pair, _ := u.Repo.FindSwapPair(ctx, entity.SwapPairFilter{
 			Pair: strings.ToLower(eventResp.ContractAddress),
 		})
 
-		var token *entity.Token
-		if pair != nil {
-			tokenAddress := ""
-			if strings.EqualFold(pair.Token0, wbtcContractAddr) {
-				tokenAddress = pair.Token1
-			} else if strings.EqualFold(pair.Token1, wbtcContractAddr) {
-				tokenAddress = pair.Token0
-			}
-
-			if tokenAddress != "" {
-				token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
-					Address: tokenAddress,
-				})
-			}
+		token, baseToken, baseIndex, err := u.TcSwapGetBaseTokenOnPair(ctx, pair)
+		if err != nil {
+			logger.AtLog.Logger.Error("TcSwapPairCreateSwapEvent", zap.Error(err))
+			return err
 		}
 
 		swapPair := &entity.SwapPairSwapHistories{}
@@ -370,20 +348,21 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 		swapPair.Sender = eventResp.Sender
 		swapPair.To = eventResp.To
 		swapPair.Index = eventResp.Index
-		if token != nil && pair != nil {
+		if token != nil && pair != nil && baseToken != nil {
 			swapPair.Token = token.Address
 			tmpAmount0 := big.NewFloat(0).Add(helpers.ConvertWeiToBigFloat(eventResp.Amount0In, 18), helpers.ConvertWeiToBigFloat(eventResp.Amount0Out, 18))
 			tmpAmount1 := big.NewFloat(0).Add(helpers.ConvertWeiToBigFloat(eventResp.Amount1In, 18), helpers.ConvertWeiToBigFloat(eventResp.Amount1Out, 18))
 
 			tmpVolume := tmpAmount0
 			tmpPrice := big.NewFloat(0).Quo(tmpAmount0, tmpAmount1)
-			if strings.EqualFold(pair.Token1, wbtcContractAddr) {
+			if baseIndex == 1 {
 				tmpVolume = tmpAmount1
 				tmpPrice = big.NewFloat(0).Quo(tmpAmount1, tmpAmount0)
 			}
 
 			swapPair.Volume, _ = primitive.ParseDecimal128(tmpVolume.String())
 			swapPair.Price, _ = primitive.ParseDecimal128(tmpPrice.String())
+			swapPair.BaseTokenSymbol = baseToken.Symbol
 
 		}
 		if pair != nil {
@@ -583,4 +562,180 @@ func (u *Usecase) PendingTransactionHistories(ctx context.Context, filter reques
 
 	logger.AtLog.Logger.Info("PendingTransactionHistories", zap.Any("data", data))
 	return data, nil
+}
+
+func (u *Usecase) SwapAddOrUpdateWalletAddress(ctx context.Context, walletReq *request.SwapWalletAddressRequest) (interface{}, error) {
+	var err error
+	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, walletReq.WalletAddress)
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+		return false, err
+	}
+
+	isCreated := false
+	if wallet == nil {
+		isCreated = true
+		wallet = &entity.SwapWalletAddress{}
+	}
+	wallet.Address = strings.ToLower(walletReq.WalletAddress)
+
+	ciphertext, err := helpers.GetAESEncrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, walletReq.WalletAddressPrivateKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+		return nil, err
+	}
+
+	wallet.Prk = ciphertext
+	if isCreated {
+		_, err = u.Repo.InsertOne(wallet)
+		if err != nil {
+			logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+			return nil, err
+		}
+	} else {
+		err = u.Repo.UpdateWallet(ctx, wallet)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return nil, err
+		}
+	}
+
+	logger.AtLog.Logger.Info("SwapAddOrUpdateWalletAddress", zap.Any("data", true))
+	return true, nil
+}
+
+func (u *Usecase) SwapGetWalletAddress(ctx context.Context, walletAddress string) (*entity.SwapWalletAddress, error) {
+	var err error
+	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, walletAddress)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
+		return nil, err
+	}
+
+	plaintext, err := helpers.GetAESDecrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, wallet.Prk)
+	if err != nil {
+		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
+		return nil, err
+	}
+
+	fmt.Printf("plaintext: %s\n", plaintext)
+	wallet.Prk = string(plaintext)
+
+	return wallet, nil
+}
+
+func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.SwapWrapTOkenContractAddrConfig, error) {
+	redisKey := "tc-swap:wrap-token-config"
+	exists, err := u.Cache.Exists(redisKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+		return nil, err
+	}
+	if *exists {
+		dataInCache, err := u.Cache.GetData(redisKey)
+		if err != nil {
+			logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+			return nil, err
+		}
+
+		b := []byte(*dataInCache)
+		config := &entity.SwapWrapTOkenContractAddrConfig{}
+		err = json.Unmarshal(b, config)
+		if err != nil {
+			return nil, err
+		}
+		return config, nil
+	} else {
+		config := &entity.SwapWrapTOkenContractAddrConfig{}
+		configs, err := u.Repo.FindSwapConfigByListName(ctx, []string{
+			"wbtc_contract_address",
+			"weth_contract_address",
+			"wpepe_contract_address",
+			"wusdc_contract_address",
+			"wordi_contract_address",
+			"swap_router_contract_address",
+			"swap_factory_contract_address",
+		})
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return nil, err
+		}
+		for _, item := range configs {
+			token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: item.Value})
+			switch item.Name {
+			case "wbtc_contract_address":
+				config.WbtcContractAddr = item.Value
+				config.WbtcToken = token
+			case "weth_contract_address":
+				config.WethContractAddr = item.Value
+				config.WethToken = token
+			case "wpepe_contract_address":
+				config.WpepeContractAddr = item.Value
+				config.WpepeToken = token
+			case "wusdc_contract_address":
+				config.WusdcContractAddr = item.Value
+				config.WusdcToken = token
+			case "wordi_contract_address":
+				config.WordiContractAddr = item.Value
+				config.WordiToken = token
+			case "swap_router_contract_address":
+				config.RouterContractAddr = item.Value
+			case "swap_factory_contract_address":
+				config.FactoryContractAddr = item.Value
+			}
+		}
+
+		reportsStr, err := json.Marshal(&config)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return config, nil
+		}
+		err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 60*60)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return config, nil
+		}
+
+		return config, nil
+	}
+}
+
+func (u *Usecase) TcSwapGetBaseTokenOnPair(ctx context.Context, pair *entity.SwapPair) (*entity.Token, *entity.Token, int, error) {
+	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
+	var token *entity.Token
+	var baseToken *entity.Token
+	baseIndex := int(0)
+	if pair != nil {
+		tokenAddress := ""
+		if strings.EqualFold(pair.Token0, config.WbtcContractAddr) {
+			tokenAddress = pair.Token1
+			baseToken = config.WbtcToken
+		} else if strings.EqualFold(pair.Token1, config.WbtcContractAddr) {
+			baseIndex = 1
+			tokenAddress = pair.Token0
+			baseToken = config.WbtcToken
+		}
+		// else if strings.EqualFold(pair.Token0, config.WethContractAddr) {
+		// 	tokenAddress = pair.Token1
+		// 	baseToken = config.WethToken
+		// } else if strings.EqualFold(pair.Token1, config.WethContractAddr) {
+		// 	baseIndex = 1
+		// 	tokenAddress = pair.Token0
+		// 	baseToken = config.WethToken
+		// } else if strings.EqualFold(pair.Token0, config.WusdcContractAddr) {
+		// 	tokenAddress = pair.Token1
+		// 	baseToken = config.WusdcToken
+		// } else if strings.EqualFold(pair.Token1, config.WusdcContractAddr) {
+		// 	baseIndex = 1
+		// 	tokenAddress = pair.Token0
+		// 	baseToken = config.WusdcToken
+		// }
+
+		if tokenAddress != "" {
+			token, _ = u.Repo.FindToken(ctx, entity.TokenFilter{
+				Address: tokenAddress,
+			})
+		}
+	}
+	return token, baseToken, baseIndex, nil
 }

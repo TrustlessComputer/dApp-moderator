@@ -15,3 +15,15 @@ type IdoRequest struct {
 	WhitePaper        string    `json:"white_papper"`
 	Discord           string    `json:"discord"`
 }
+
+type SwapWalletAddressRequest struct {
+	WalletAddress           string `json:"address"`
+	WalletAddressPrivateKey string `json:"prk_key"`
+}
+
+type SwapBotConfigRequest struct {
+	Pair     string  `json:"pair"`
+	Address  string  `json:"address"`
+	MinValue float64 `json:"min_value"`
+	MaxValue float64 `json:"max_value"`
+}
