@@ -24,3 +24,16 @@ func (h *httpDelivery) swapJobUpdateIdoStatus(w http.ResponseWriter, r *http.Req
 		},
 	).ServeHTTP(w, r)
 }
+
+func (h *httpDelivery) swapJobAutoTrade(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			err := h.Usecase.DoJobSwapBot(ctx)
+			if err != nil {
+				logger.AtLog.Logger.Error("swapJobUpdateIdoStatus", zap.Error(err))
+				return nil, err
+			}
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}

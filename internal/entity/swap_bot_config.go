@@ -8,16 +8,19 @@ import (
 )
 
 type SwapBotConfig struct {
-	BaseEntity    `bson:",inline"`
-	Address       string `json:"address" bson:"address,omitempty"`
-	SwapPair      `json:"pair" bson:"pair,omitempty"`
-	Enabled       bool                 `json:"enabled" bson:"enabled,omitempty"`
-	BeginPrice    primitive.Decimal128 `json:"begin_price" bson:"begin_price,omitempty"`
-	BeginReserve0 primitive.Decimal128 `json:"begin_reserve0" bson:"begin_reserve0,omitempty"`
-	BeginReserve1 primitive.Decimal128 `json:"begin_reserve1" bson:"begin_reserve1,omitempty"`
-	CurrentDate   string               `json:"current_date" bson:"current_date,omitempty"`
-	MinValue      primitive.Decimal128 `json:"min_value" bson:"min_value,omitempty"`
-	MaxValue      primitive.Decimal128 `json:"max_value" bson:"max_value,omitempty"`
+	BaseEntity     `bson:",inline"`
+	Address        string `json:"address" bson:"address,omitempty"`
+	SwapPair       `json:"pair" bson:"pair,omitempty"`
+	Enabled        bool                 `json:"enabled" bson:"enabled,omitempty"`
+	BeginPrice     primitive.Decimal128 `json:"begin_price" bson:"begin_price,omitempty"`
+	BeginReserve0  primitive.Decimal128 `json:"begin_reserve0" bson:"begin_reserve0,omitempty"`
+	BeginReserve1  primitive.Decimal128 `json:"begin_reserve1" bson:"begin_reserve1,omitempty"`
+	CurrentDate    string               `json:"current_date" bson:"current_date,omitempty"`
+	MinValue       float64              `json:"min_value" bson:"min_value,omitempty"`
+	MaxValue       float64              `json:"max_value" bson:"max_value,omitempty"`
+	ExpectValue    float64              `json:"expect_value" bson:"expect_value,omitempty"`
+	ExpectReserve0 primitive.Decimal128 `json:"expect_reserve0" bson:"expect_reserve0,omitempty"`
+	ExpectReserve1 primitive.Decimal128 `json:"expect_reserve1" bson:"expect_reserve1,omitempty"`
 }
 
 func (t *SwapBotConfig) CollectionName() string {

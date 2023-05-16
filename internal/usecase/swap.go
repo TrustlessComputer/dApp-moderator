@@ -604,12 +604,12 @@ func (u *Usecase) SwapAddOrUpdateWalletAddress(ctx context.Context, walletReq *r
 	return true, nil
 }
 
-func (u *Usecase) SwapGetWalletAddress(ctx context.Context, walletAddress string) (interface{}, error) {
+func (u *Usecase) SwapGetWalletAddress(ctx context.Context, walletAddress string) (*entity.SwapWalletAddress, error) {
 	var err error
 	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, walletAddress)
 	if err != nil {
 		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
-		return false, err
+		return nil, err
 	}
 
 	plaintext, err := helpers.GetAESDecrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, wallet.Prk)
@@ -653,6 +653,8 @@ func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.S
 			"wpepe_contract_address",
 			"wusdc_contract_address",
 			"wordi_contract_address",
+			"swap_router_contract_address",
+			"swap_factory_contract_address",
 		})
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
@@ -666,16 +668,20 @@ func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.S
 				config.WbtcToken = token
 			case "weth_contract_address":
 				config.WethContractAddr = item.Value
-				config.WbtcToken = token
+				config.WethToken = token
 			case "wpepe_contract_address":
 				config.WpepeContractAddr = item.Value
-				config.WbtcToken = token
+				config.WpepeToken = token
 			case "wusdc_contract_address":
 				config.WusdcContractAddr = item.Value
-				config.WbtcToken = token
+				config.WusdcToken = token
 			case "wordi_contract_address":
 				config.WordiContractAddr = item.Value
-				config.WbtcToken = token
+				config.WordiToken = token
+			case "swap_router_contract_address":
+				config.RouterContractAddr = item.Value
+			case "swap_factory_contract_address":
+				config.FactoryContractAddr = item.Value
 			}
 		}
 
