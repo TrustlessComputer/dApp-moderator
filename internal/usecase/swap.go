@@ -390,8 +390,22 @@ func (u *Usecase) TcSwapAddFronEndLog(ctx context.Context, logBody map[string]in
 	return nil
 }
 
-func (u *Usecase) TcSwapUpdateBTCPriceJob(ctx context.Context) error {
-	configName := "swap_btc_price"
+func (u *Usecase) TcSwapUpdateWrapTokenPriceJob(ctx context.Context) error {
+	err := u.TcSwapUpdateBTCPriceJob(ctx, "swap_btc_price")
+	if err != nil {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+
+	err = u.TcSwapUpdateBTCPriceJob(ctx, "swap_eth_price")
+	if err != nil {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (u *Usecase) TcSwapUpdateBTCPriceJob(ctx context.Context, configName string) error {
 	dbSwapConfig, err := u.Repo.FindSwapConfig(ctx, entity.SwapConfigsFilter{
 		Name: configName,
 	})
@@ -400,7 +414,12 @@ func (u *Usecase) TcSwapUpdateBTCPriceJob(ctx context.Context) error {
 		return err
 	}
 	dbSwapConfig.Name = configName
-	btcPrice, _ := u.BlockChainApi.GetBitcoinPrice()
+	var btcPrice float64
+	if configName == "swap_btc_price" {
+		btcPrice, _ = u.BlockChainApi.GetBitcoinPrice()
+	} else if configName == "swap_eth_price" {
+		btcPrice, _ = u.BlockChainApi.GetEthereumPrice()
+	}
 
 	dbSwapConfig.Value = fmt.Sprintf("%f", btcPrice)
 	err = u.Repo.UpdateSwapConfig(ctx, dbSwapConfig)
@@ -714,15 +733,15 @@ func (u *Usecase) TcSwapGetBaseTokenOnPair(ctx context.Context, pair *entity.Swa
 			baseIndex = 1
 			tokenAddress = pair.Token0
 			baseToken = config.WbtcToken
+		} else if strings.EqualFold(pair.Token0, config.WethContractAddr) {
+			tokenAddress = pair.Token1
+			baseToken = config.WethToken
+		} else if strings.EqualFold(pair.Token1, config.WethContractAddr) {
+			baseIndex = 1
+			tokenAddress = pair.Token0
+			baseToken = config.WethToken
 		}
-		// else if strings.EqualFold(pair.Token0, config.WethContractAddr) {
-		// 	tokenAddress = pair.Token1
-		// 	baseToken = config.WethToken
-		// } else if strings.EqualFold(pair.Token1, config.WethContractAddr) {
-		// 	baseIndex = 1
-		// 	tokenAddress = pair.Token0
-		// 	baseToken = config.WethToken
-		// } else if strings.EqualFold(pair.Token0, config.WusdcContractAddr) {
+		// else if strings.EqualFold(pair.Token0, config.WusdcContractAddr) {
 		// 	tokenAddress = pair.Token1
 		// 	baseToken = config.WusdcToken
 		// } else if strings.EqualFold(pair.Token1, config.WusdcContractAddr) {

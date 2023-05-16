@@ -191,7 +191,7 @@ func (h *httpDelivery) getTokensPrice(w http.ResponseWriter, r *http.Request) {
 func (h *httpDelivery) jobGetBtcPrice(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			err := h.Usecase.TcSwapUpdateBTCPriceJob(ctx)
+			err := h.Usecase.TcSwapUpdateWrapTokenPriceJob(ctx)
 			if err != nil {
 				logger.AtLog.Logger.Error("Tokens", zap.Error(err))
 				return false, err

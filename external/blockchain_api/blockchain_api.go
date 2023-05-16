@@ -552,6 +552,30 @@ func (c *BlockChainApi) GetBitcoinPrice() (float64, error) {
 	return resp.Bitcoin.Usd, nil
 }
 
+func (c *BlockChainApi) GetEthereumPrice() (float64, error) {
+	headers := make(map[string]string)
+	data, _, _, err := helpers.JsonRequest("https://api.coingecko.com/api/v3/simple/price?ids=ETHEREUM&vs_currencies=USD", "GET", headers, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	type USDResp struct {
+		Usd float64 `json:"usd"`
+	}
+
+	type CoingeckoResp struct {
+		Bitcoin *USDResp `json:"bitcoin"`
+	}
+
+	resp := &CoingeckoResp{}
+	err = helpers.ParseData(data, resp)
+	if err != nil {
+		return 0, err
+	}
+
+	return resp.Bitcoin.Usd, nil
+}
+
 func (c *BlockChainApi) TcTmTokenEvents(contracts []string, numBlocks, startBlock, endBlock int64) (*TcTmTokenEventResp, error) {
 	resp := c.NewTcTmTokenEventResp()
 	client, err := c.getClient()
