@@ -185,3 +185,31 @@ func (r *Repository) FindSwapPairByTokens(ctx context.Context, fromToken, toToke
 	}
 	return &swapPair, nil
 }
+
+func (r *Repository) FindPairAprReport(ctx context.Context, filter entity.TokenReportFilter) ([]*entity.SwapPairAprReport, error) {
+	var tokens []*entity.SwapPairAprReport
+	numToSkip := (filter.Page - 1) * filter.Limit
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+	if filter.SortBy != "" {
+		options.SetSort(bson.D{{filter.SortBy, filter.SortType}})
+	} else {
+		options.SetSort(bson.D{{"apr", -1}})
+	}
+
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_PAIR_APR).Find(ctx, r.parseTokenReportFilter(filter), options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var token *entity.SwapPairAprReport
+		err = cursor.Decode(&token)
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, token)
+	}
+	return tokens, nil
+}
