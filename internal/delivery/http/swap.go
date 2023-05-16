@@ -333,3 +333,61 @@ func (h *httpDelivery) findPendingTransactionHistories(w http.ResponseWriter, r 
 		},
 	).ServeHTTP(w, r)
 }
+
+func (h *httpDelivery) addOrUpdateSwapWallet(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			var reqBody request.SwapWalletAddressRequest
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
+			}
+			res, err := h.Usecase.SwapAddOrUpdateWalletAddress(ctx, &reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) getSwapWallet(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			var reqBody request.SwapWalletAddressRequest
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
+			}
+			address := req.Query(r, "address", "")
+			res, err := h.Usecase.SwapGetWalletAddress(ctx, address)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) addSwapBotConfig(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			var reqBody request.SwapBotConfigRequest
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
+			}
+			err = h.Usecase.AddSwapBotConfig(ctx, &reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
