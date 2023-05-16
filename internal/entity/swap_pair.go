@@ -42,18 +42,22 @@ type SwapPairReport struct {
 	Volume            primitive.Decimal128 `json:"volume" bson:"volume"`
 	TotalVolume       primitive.Decimal128 `json:"total_volume" bson:"total_volume"`
 	BtcVolume         float64              `json:"btc_volume" bson:"btc_volume"`
+	EthVolume         float64              `json:"eth_volume" bson:"eth_volume"`
 	UsdVolume         float64              `json:"usd_volume" bson:"usd_volume"`
 	BtcTotalVolume    float64              `json:"btc_total_volume" bson:"btc_total_volume"`
+	EthTotalVolume    float64              `json:"eth_total_volume" bson:"eth_total_volume"`
 	UsdTotalVolume    float64              `json:"usd_total_volume" bson:"usd_total_volume"`
 	MarketCap         primitive.Decimal128 `json:"market_cap" bson:"market_cap"`
 	UsdMarketCap      float64              `json:"usd_market_cap" bson:"usd_market_cap"`
 	Price             primitive.Decimal128 `json:"price" bson:"price"`
 	BtcPrice          float64              `json:"btc_price" bson:"btc_price"`
+	EthPrice          float64              `json:"eth_price" bson:"eth_price"`
 	UsdPrice          float64              `json:"usd_price" bson:"usd_price"`
 	Percent           primitive.Decimal128 `json:"percent" bson:"percent"`
 	Percent7Day       primitive.Decimal128 `json:"percent_7day" bson:"percent_7day"`
 	Network           string               `json:"network" bson:"network"`
 	Priority          int                  `json:"priority" bson:"priority"`
+	BaseTokenSymbol   string               `json:"base_token_symbol"  bson:"base_token_symbol,omitempty"`
 }
 
 type SwapPairSlackReport struct {
