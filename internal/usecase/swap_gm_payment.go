@@ -5,18 +5,26 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"errors"
 	"math/big"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
 func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (interface{}, error) {
-	var data interface{}
 	var err error
 	query := entity.SwapUserGmBalanceFilter{}
 	query.Address = strings.ToLower(userAddress)
+
+	startTime := u.Repo.ParseConfigByTime(ctx, "gm_payment_start_time")
+	if time.Now().Before(*startTime) {
+		err = errors.New("invalid start time")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
 
 	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
 	adminWallet, err := u.SwapGetWalletAddress(ctx, config.GmPaymentAdminAddr)
@@ -25,14 +33,14 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		return nil, err
 	}
 
-	userBalance, err := u.Repo.FindUserGmBalance(ctx, query)
-	if err != nil {
+	userBalance, _ := u.Repo.FindUserGmBalance(ctx, query)
+	if userBalance == nil {
+		err = errors.New("GM Balance not found")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
 
 	resp := entity.SwapUserGmClaimSignature{}
-
 	if userBalance != nil {
 		mgAmount, _ := big.NewFloat(0).SetString(userBalance.Balance.String())
 		chainId, _ := big.NewFloat(0).SetString(config.GmPaymentChainId)
@@ -61,7 +69,7 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		return resp, nil
 	}
 
-	logger.AtLog.Logger.Info("SwapFindSwapIdoDetail", zap.Any("data", data))
+	logger.AtLog.Logger.Info("GmPaymentClaim", zap.Any("data", resp))
 	return resp, nil
 }
 

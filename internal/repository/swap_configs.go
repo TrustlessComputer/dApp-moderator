@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"strconv"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -60,6 +61,24 @@ func (r *Repository) ParseConfigByString(ctx context.Context, configName string)
 		return ""
 	}
 	return swapConfigs.Value
+}
+
+func (r *Repository) ParseConfigByTime(ctx context.Context, configName string) *time.Time {
+	var swapConfigs entity.SwapConfigs
+	filter := entity.SwapConfigsFilter{
+		Name: configName,
+	}
+
+	err := r.DB.Collection(utils.COLLECTION_SWAP_CONFIGS).FindOne(ctx, r.parseSwapConfigFilter(filter)).Decode(&swapConfigs)
+	if err != nil {
+		return nil
+	}
+	layout := "2006-01-02T15:04:05"
+	t, err := time.Parse(layout, swapConfigs.Value)
+	if err != nil {
+		return nil
+	}
+	return &t
 }
 
 func (r *Repository) ParseConfigByFloat64(ctx context.Context, configName string) float64 {

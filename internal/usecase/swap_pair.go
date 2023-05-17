@@ -439,25 +439,59 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 func (u *Usecase) SwapGetPairAprListReport(ctx context.Context, filter request.PaginationReq) (interface{}, error) {
 	query := entity.TokenReportFilter{}
 	query.FromPagination(filter)
-	reports, err := u.Repo.FindPairAprReport(ctx, query)
-	btcPrice, ethPrice := u.GetWrapTokenPriceBySymbol(ctx)
-
-	for _, item := range reports {
-		tmUsdPrice := float64(0)
-		if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
-			tmUsdPrice = ethPrice
-		} else if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWBTC) {
-			tmUsdPrice = btcPrice
-		}
-		if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
-			item.UsdVolume = s * tmUsdPrice
-		}
-	}
+	redisKey := fmt.Sprintf("tc-swap:pair-apr-reports-%d-%d", query.Page, query.Limit)
+	exists, err := u.Cache.Exists(redisKey)
 	if err != nil {
-		logger.AtLog.Logger.Error("SwapGetPairAprListReport", zap.Error(err))
-		return nil, err
+		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+		return 0, err
 	}
-	return reports, nil
+
+	if *exists {
+		dataInCache, err := u.Cache.GetData(redisKey)
+		if err != nil {
+			logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+			return nil, err
+		}
+
+		b := []byte(*dataInCache)
+		reports := []entity.SwapPairAprReport{}
+		err = json.Unmarshal(b, &reports)
+		if err != nil {
+			return nil, err
+		}
+		return reports, nil
+	} else {
+		btcPrice, ethPrice := u.GetWrapTokenPriceBySymbol(ctx)
+		reports, err := u.Repo.FindPairAprReport(ctx, query)
+		if err != nil {
+			logger.AtLog.Logger.Error("SwapGetPairAprListReport", zap.Error(err))
+			return nil, err
+		}
+		for _, item := range reports {
+			tmUsdPrice := float64(0)
+			if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
+				tmUsdPrice = ethPrice
+			} else if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWBTC) {
+				tmUsdPrice = btcPrice
+			}
+			if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
+				item.UsdVolume = s * tmUsdPrice
+			}
+		}
+
+		reportsStr, err := json.Marshal(&reports)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return reports, nil
+		}
+		err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 5*60)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return reports, nil
+		}
+		return reports, nil
+	}
+
 }
 
 func (u *Usecase) GetRoutePair(ctx context.Context, fromToken, toToken string) (interface{}, error) {
