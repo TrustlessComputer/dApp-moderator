@@ -157,6 +157,7 @@ const (
 	COLLECTION_SWAP_BOT_CONFIG             string = "swap_bot_config"
 	COLLECTION_SWAP_BOT_TRANSACTION        string = "swap_bot_transaction"
 	COLLECTION_SWAP_USER_GM_BALANCE        string = "swap_user_gm_balance"
+	COLLECTION_SWAP_USER_GM_PAID           string = "swap_user_gm_paid"
 
 	VIEW_SWAP_LIQUIDITY_REPORT_SLACK string = "swap_liquidity_report_view"
 	VIEW_SWAP_REPORT_SLACK           string = "swap_token_report_slack_view"
