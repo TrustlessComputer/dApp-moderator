@@ -31,6 +31,8 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		return nil, err
 	}
 
+	resp := entity.SwapUserGmClaimSignature{}
+
 	if userBalance != nil {
 		mgAmount, _ := big.NewFloat(0).SetString(userBalance.Balance.String())
 		chainId, _ := big.NewFloat(0).SetString(config.GmPaymentChainId)
@@ -50,11 +52,17 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		if !strings.HasPrefix(adminSign, "0x") {
 			adminSign = "0x" + adminSign
 		}
-		return adminSign, nil
+
+		resp = entity.SwapUserGmClaimSignature{
+			Signature: adminSign,
+			Amount:    helpers.EtherToWei(mgAmount).String(),
+		}
+
+		return resp, nil
 	}
 
 	logger.AtLog.Logger.Info("SwapFindSwapIdoDetail", zap.Any("data", data))
-	return "", nil
+	return resp, nil
 }
 
 func (u *Usecase) AddTestGmbalance(ctx context.Context, userAddress string) (interface{}, error) {

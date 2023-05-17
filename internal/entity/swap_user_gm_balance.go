@@ -7,6 +7,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type SwapUserGmClaimSignature struct {
+	Amount    string `json:"amount" bson:"amount"`
+	Signature string `json:"signature" bson:"signature"`
+}
+
 type SwapUserGmBalance struct {
 	BaseEntity  `bson:",inline"`
 	UserAddress string               `json:"user_address" bson:"user_address,omitempty"`
