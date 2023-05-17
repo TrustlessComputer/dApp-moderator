@@ -153,6 +153,9 @@ const (
 	COLLECTION_SWAP_IDO                    string = "swap_swap_ido"
 	COLLECTION_SWAP_PENDING_TRANSACTION    string = "swap_pending_transaction"
 	COLLECTION_SWAP_TOKEN_TRANSFER_HISTORY string = "swap_token_transfer_histories"
+	COLLECTION_SWAP_WALLET_ADDRESS         string = "swap_wallet_address"
+	COLLECTION_SWAP_BOT_CONFIG             string = "swap_bot_config"
+	COLLECTION_SWAP_BOT_TRANSACTION        string = "swap_bot_transaction"
 
 	VIEW_SWAP_LIQUIDITY_REPORT_SLACK string = "swap_liquidity_report_view"
 	VIEW_SWAP_REPORT_SLACK           string = "swap_token_report_slack_view"
@@ -160,6 +163,7 @@ const (
 	VIEW_SWAP_IDO_TOKEN              string = "swap_ido_tokens_view"
 	VIEW_SWAP_PAIR_VOLUME            string = "swap_pair_volume_view"
 	VIEW_SWAP_PAIR_CURRENT_RESERVE   string = "swap_pair_current_reserve_view"
+	VIEW_SWAP_PAIR_APR               string = "swap_pair_apr_view"
 
 	TRANSACTIONS string = "transactions"
 

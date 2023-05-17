@@ -9,14 +9,16 @@ import (
 type SwapIdo struct {
 	BaseEntity        `bson:",inline"`
 	Token             `json:"token" bson:"token,omitempty"`
-	UserWalletAddress string    `json:"user_wallet_address" bson:"user_wallet_address,omitempty"`
-	StartAt           time.Time `json:"start_at"  bson:"start_at,omitempty"`
-	Price             string    `json:"price" bson:"price,omitempty"`
-	Link              string    `json:"link" bson:"link,omitempty"`
-	Website           string    `json:"website" bson:"website,omitempty"`
-	Twitter           string    `json:"twitter" bson:"twitter,omitempty"`
-	WhitePaper        string    `json:"white_papper" bson:"white_papper,omitempty"`
-	Discord           string    `json:"discord" bson:"discord,omitempty"`
+	Pair              *SwapPair     `json:"pair" bson:"pair,omitempty"`
+	UserWalletAddress string        `json:"user_wallet_address" bson:"user_wallet_address,omitempty"`
+	StartAt           time.Time     `json:"start_at"  bson:"start_at,omitempty"`
+	Price             string        `json:"price" bson:"price,omitempty"`
+	Link              string        `json:"link" bson:"link,omitempty"`
+	Website           string        `json:"website" bson:"website,omitempty"`
+	Twitter           string        `json:"twitter" bson:"twitter,omitempty"`
+	WhitePaper        string        `json:"white_papper" bson:"white_papper,omitempty"`
+	Discord           string        `json:"discord" bson:"discord,omitempty"`
+	Status            SwapIdoStatus `json:"status" bson:"status,omitempty"`
 }
 
 func (t *SwapIdo) CollectionName() string {
@@ -28,7 +30,8 @@ type SwapIdoFilter struct {
 	ID             string
 	Address        string
 	WalletAddress  string
-	CheckStartTime bool
+	CheckStartTime int
+	Status         SwapIdoStatus
 }
 
 func (t *SwapIdoFilter) FromPagination(pag request.PaginationReq) {

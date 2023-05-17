@@ -3,23 +3,29 @@ package blockchain_api
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
 	"dapp-moderator/utils/config"
 	"dapp-moderator/utils/erc20"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
 	"dapp-moderator/utils/uniswapfactory"
 	"dapp-moderator/utils/uniswappair"
+	"dapp-moderator/utils/uniswaprouter"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -123,6 +129,72 @@ func (c *BlockChainApi) getClient() (*ethclient.Client, error) {
 		c.client = client
 	}
 	return c.client, nil
+}
+
+func (c *BlockChainApi) parsePrkAuth(prkHex string) (common.Address, *ecdsa.PrivateKey, error) {
+	prk, err := crypto.HexToECDSA(prkHex)
+	if err != nil {
+		return common.Address{}, nil, err
+	}
+	pbk, ok := prk.Public().(*ecdsa.PublicKey)
+	if !ok {
+		return common.Address{}, nil, errors.New("error casting public key to ECDSA")
+	}
+	pbkHex := crypto.PubkeyToAddress(*pbk)
+	return pbkHex, prk, nil
+}
+
+func (c *BlockChainApi) getGasPrice() (*big.Int, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	c.Interrupt()
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	gasPrice = gasPrice.Mul(gasPrice, big.NewInt(12))
+	gasPrice = gasPrice.Div(gasPrice, big.NewInt(10))
+	return gasPrice, nil
+}
+
+func (c *BlockChainApi) WaitMined(hash string) error {
+	time.Sleep(5 * time.Second)
+	client, err := c.getClient()
+	if err != nil {
+		return err
+	}
+	tx, _, err := client.TransactionByHash(context.Background(), common.HexToHash(hash))
+	if err != nil {
+		return err
+	}
+	r, err := bind.WaitMined(context.Background(), client, tx)
+	if err != nil {
+		return err
+	}
+	if r.Status != types.ReceiptStatusSuccessful {
+		return errors.New("transaction is not Successful")
+	}
+	return nil
+}
+
+func (c *BlockChainApi) DefaultSignerFn(prk *ecdsa.PrivateKey) bind.SignerFn {
+	return func(a common.Address, t *types.Transaction) (*types.Transaction, error) {
+		client, err := c.getClient()
+		if err != nil {
+			return nil, err
+		}
+		chainID, err := client.NetworkID(context.Background())
+		if err != nil {
+			return nil, err
+		}
+		signedTx, err := types.SignTx(t, types.NewEIP155Signer(chainID), prk)
+		if err != nil {
+			return nil, err
+		}
+		return signedTx, nil
+	}
 }
 
 func (c *BlockChainApi) doWithAuth(req *http.Request) (*http.Response, error) {
@@ -315,6 +387,23 @@ func (c *BlockChainApi) Erc20TotalSupply(erc20Addr string) (*big.Int, error) {
 	return balance, nil
 }
 
+func (c *BlockChainApi) Erc20GetCoinBalance(erc20Addr, accountAddress string) (*big.Int, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	instance, err := erc20.NewErc20(common.HexToAddress(erc20Addr), client)
+	if err != nil {
+		return nil, err
+	}
+	c.Interrupt()
+	balance, err := instance.BalanceOf(&bind.CallOpts{}, common.HexToAddress(accountAddress))
+	if err != nil {
+		return nil, err
+	}
+	return balance, nil
+}
+
 func (c *BlockChainApi) TcSwapEvents(contracts []string, numBlocks, startBlock, endBlock int64) (*TcSwapEventResp, error) {
 	resp := c.NewTcSwapEventResp()
 	client, err := c.getClient()
@@ -463,6 +552,30 @@ func (c *BlockChainApi) GetBitcoinPrice() (float64, error) {
 	return resp.Bitcoin.Usd, nil
 }
 
+func (c *BlockChainApi) GetEthereumPrice() (float64, error) {
+	headers := make(map[string]string)
+	data, _, _, err := helpers.JsonRequest("https://api.coingecko.com/api/v3/simple/price?ids=ETHEREUM&vs_currencies=USD", "GET", headers, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	type USDResp struct {
+		Usd float64 `json:"usd"`
+	}
+
+	type CoingeckoResp struct {
+		Bitcoin *USDResp `json:"ethereum"`
+	}
+
+	resp := &CoingeckoResp{}
+	err = helpers.ParseData(data, resp)
+	if err != nil {
+		return 0, err
+	}
+
+	return resp.Bitcoin.Usd, nil
+}
+
 func (c *BlockChainApi) TcTmTokenEvents(contracts []string, numBlocks, startBlock, endBlock int64) (*TcTmTokenEventResp, error) {
 	resp := c.NewTcTmTokenEventResp()
 	client, err := c.getClient()
@@ -555,4 +668,140 @@ func (c *BlockChainApi) TcTmTokenEventResp(resp *TcTmTokenEventResp, log *types.
 	}
 
 	return nil
+}
+
+func (c *BlockChainApi) TcSwapGetReserves(pairAddress string) (*big.Int, *big.Int, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, nil, err
+	}
+	instance, err := uniswappair.NewUniswappair(common.HexToAddress(pairAddress), client)
+	if err != nil {
+		return nil, nil, err
+	}
+	c.Interrupt()
+	reserve, err := instance.GetReserves(&bind.CallOpts{})
+	if err != nil {
+		return nil, nil, err
+	}
+	return reserve.Reserve0, reserve.Reserve1, nil
+}
+
+func (c *BlockChainApi) TcSwapGetAmountOut(routerAddress string, amountIn, reserveIn, reserveOut *big.Int) (*big.Int, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	instance, err := uniswaprouter.NewUniswaprouter(common.HexToAddress(routerAddress), client)
+	if err != nil {
+		return nil, err
+	}
+	c.Interrupt()
+	amountOut, err := instance.GetAmountOut(&bind.CallOpts{}, amountIn, reserveIn, reserveOut)
+	if err != nil {
+		return nil, err
+	}
+	return amountOut, nil
+}
+
+func (c *BlockChainApi) TcSwapGetAmountIn(routerAddress string, amountOut, reserveIn, reserveOut *big.Int) (*big.Int, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	instance, err := uniswaprouter.NewUniswaprouter(common.HexToAddress(routerAddress), client)
+	if err != nil {
+		return nil, err
+	}
+	c.Interrupt()
+	amountIn, err := instance.GetAmountIn(&bind.CallOpts{}, amountOut, reserveIn, reserveOut)
+	if err != nil {
+		return nil, err
+	}
+	return amountIn, nil
+}
+
+func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountIn, amountOutMin *big.Int, trader, prkHex, fromToken, toToken string) (string, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return "", err
+	}
+	routerContractAddress := common.HexToAddress(routerAddress)
+	instance, err := uniswaprouter.NewUniswaprouter(routerContractAddress, client)
+	if err != nil {
+		return "", err
+	}
+	c.Interrupt()
+
+	pbkHex, prk, err := c.parsePrkAuth(prkHex)
+	if err != nil {
+		return "", err
+	}
+	gasPrice, err := c.getGasPrice()
+	if err != nil {
+		return "", err
+	}
+
+	nonceAuth, err := client.NonceAt(context.Background(), pbkHex, nil)
+	if err != nil {
+		return "", err
+	}
+	auth := bind.NewKeyedTransactor(prk)
+	auth.Nonce = big.NewInt(int64(nonceAuth))
+	auth.Value = big.NewInt(0)         // in wei
+	auth.GasLimit = uint64(2500000000) // in units
+	auth.GasPrice = gasPrice
+	auth.Signer = c.DefaultSignerFn(prk)
+
+	path := []common.Address{
+		common.HexToAddress(fromToken),
+		common.HexToAddress(toToken),
+	}
+	deadline := big.NewInt(time.Now().Unix() + 60*30)
+	traderAddres := common.HexToAddress(trader)
+	// estimate tx
+	fmt.Printf(`amountIn=%s`, amountIn.String())
+	fmt.Printf(`amountOutMin=%s`, amountOutMin.String())
+
+	{
+		pAbi, err := abi.JSON(strings.NewReader(uniswaprouter.UniswaprouterABI))
+		if err != nil {
+			return "", err
+		}
+		data, err := pAbi.Pack(
+			"swapExactTokensForTokens",
+			amountIn, amountOutMin, path, traderAddres, deadline,
+		)
+		if err != nil {
+			return "", err
+		}
+		c.Interrupt()
+		gasUsed, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
+			From: pbkHex,
+			To:   &routerContractAddress,
+			Data: data,
+		})
+		if err != nil {
+			return "", err
+		}
+		// // check fee <= 0.0003 ETH
+		// limitGas := big.NewInt(int64(configs.GetHighGasConfig() * 1e18))
+		limitGas := big.NewInt(int64(0.003 * 1e18))
+		if new(big.Int).Mul(big.NewInt(int64(gasUsed)), gasPrice).Cmp(limitGas) > 0 {
+			estGas := new(big.Int).Mul(big.NewInt(int64(gasUsed)), gasPrice)
+			return estGas.String(), errors.New("gas fee is too expensive")
+		}
+		auth.GasLimit = gasUsed * 12 / 10 // more 20%
+	}
+	c.Interrupt()
+
+	tnx, err := instance.SwapExactTokensForTokens(auth, amountIn, amountOutMin, path, traderAddres, deadline)
+	if err != nil {
+		return "", err
+	}
+	err = c.WaitMined(tnx.Hash().Hex())
+	if err != nil {
+		return "", err
+	}
+	return tnx.Hash().Hex(), nil
 }
