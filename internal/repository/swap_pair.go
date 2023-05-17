@@ -187,7 +187,7 @@ func (r *Repository) FindSwapPairByTokens(ctx context.Context, fromToken, toToke
 }
 
 func (r *Repository) FindPairAprReport(ctx context.Context, filter entity.TokenReportFilter) ([]*entity.SwapPairAprReport, error) {
-	var tokens []*entity.SwapPairAprReport
+	tokens := []*entity.SwapPairAprReport{}
 	numToSkip := (filter.Page - 1) * filter.Limit
 	options := options.Find()
 	options.SetSkip(numToSkip)
