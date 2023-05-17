@@ -47,6 +47,9 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 			return nil, err
 		}
+		if !strings.HasPrefix(adminSign, "0x") {
+			adminSign = "0x" + adminSign
+		}
 		return adminSign, nil
 	}
 
