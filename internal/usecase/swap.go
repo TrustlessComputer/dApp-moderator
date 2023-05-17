@@ -29,6 +29,7 @@ func (u *Usecase) TcSwapScanEvents(ctx context.Context) error {
 	contracts := []string{}
 	contracts = append(contracts, u.Repo.ParseConfigByString(ctx, "swap_factory_contract_address"))
 	contracts = append(contracts, u.Repo.ParseConfigByString(ctx, "swap_router_contract_address"))
+	contracts = append(contracts, u.Repo.ParseConfigByString(ctx, "gm_payment_contract_address"))
 
 	eventResp, err := u.BlockChainApi.TcSwapEvents(contracts, 0, startBlocks, 0)
 	if err != nil {
@@ -179,6 +180,13 @@ func (u *Usecase) TcSwapEventsByTransactionEventResp(ctx context.Context, eventR
 			errs = append(errs, err)
 		}
 	}
+
+	for _, event := range eventResp.GmPaymentPaid {
+		err = u.TcGmPaymentPaidEvent(ctx, event)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
 	return errs
 }
 
@@ -305,6 +313,37 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 			swapPairSync.Pair = pair
 		}
 		_, err = u.Repo.InsertOne(swapPairSync)
+		if err != nil {
+			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *Usecase) TcGmPaymentPaidEvent(ctx context.Context, eventResp *blockchain_api.TcGmPaymentPaidEventResp) error {
+	// check if token exist
+	dbSwapPair, err := u.Repo.FindUserGmPaid(ctx, entity.SwapUserGmPaidFilter{
+		Address: strings.ToLower(eventResp.User),
+		TxHash:  strings.ToLower(eventResp.TxHash),
+	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		logger.AtLog.Logger.Error("Find mongo entity failed", zap.Error(err))
+		return err
+	}
+
+	if dbSwapPair != nil {
+		return nil
+	} else {
+
+		swapPair := &entity.SwapUserGmPaid{}
+		swapPair.ContractAddress = strings.ToLower(eventResp.ContractAddress)
+		swapPair.TxHash = strings.ToLower(eventResp.TxHash)
+		swapPair.UserAddress = strings.ToLower(eventResp.User)
+		swapPair.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
+		swapPair.Amount, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.AmountGM, 18).String())
+
+		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
 			return err
