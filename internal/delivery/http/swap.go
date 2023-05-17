@@ -159,7 +159,8 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 			sortCollum := req.Query(r, "sort", "")
 			sortTypePrams := req.Query(r, "sort_type", "-1")
 			sortType, _ := strconv.Atoi(sortTypePrams)
-			data, err := h.Usecase.FindTokensReport(ctx, pagination, address, sortCollum, sortType)
+			search := req.Query(r, "search", "")
+			data, err := h.Usecase.FindTokensReport(ctx, pagination, address, search, sortCollum, sortType)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensReport", zap.Error(err))
 				return nil, err
@@ -402,6 +403,34 @@ func (h *httpDelivery) addSwapBotConfig(w http.ResponseWriter, r *http.Request) 
 			}
 
 			return true, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) gmPaymentClaim(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			address := req.Query(r, "address", "")
+			res, err := h.Usecase.GmPaymentClaim(ctx, address)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) addTestGmPaymentBalance(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			address := req.Query(r, "address", "")
+			res, err := h.Usecase.AddTestGmbalance(ctx, address)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
 		},
 	).ServeHTTP(w, r)
 }

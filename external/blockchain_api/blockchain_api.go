@@ -6,6 +6,7 @@ import (
 	"crypto/ecdsa"
 	"dapp-moderator/utils/config"
 	"dapp-moderator/utils/erc20"
+	"dapp-moderator/utils/gmpayment"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
 	"dapp-moderator/utils/uniswapfactory"
@@ -24,6 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -96,12 +98,22 @@ type TcSwapSyncEventResp struct {
 	Index           uint     `json:"log_index"`
 }
 
+type TcGmPaymentPaidEventResp struct {
+	TxHash          string   `json:"tx_hash"`
+	ContractAddress string   `json:"contract_address"`
+	Timestamp       uint64   `json:"timestamp"`
+	AmountGM        *big.Int `json:"amount_gm"`
+	User            string   `json:"user"`
+	Index           uint     `json:"log_index"`
+}
+
 type TcSwapEventResp struct {
 	PairCreated     []*TcSwapPairCreatedEventResp `json:"pair_created"`
 	Swap            []*TcSwapSwapEventResp        `json:"swap"`
 	PairMint        []*TcSwapMintBurnEventResp    `json:"mint"`
 	PairBurn        []*TcSwapMintBurnEventResp    `json:"burn"`
 	PairSync        []*TcSwapSyncEventResp        `json:"sync"`
+	GmPaymentPaid   []*TcGmPaymentPaidEventResp   `json:"gm_paid"`
 	LastBlockNumber int64                         `json:"last_block_number"`
 }
 
@@ -357,6 +369,33 @@ func (c *BlockChainApi) TcSwapEventResp(resp *TcSwapEventResp, log *types.Log) e
 					Timestamp:       block.Time(),
 					Reserve0:        logParsed.Reserve0,
 					Reserve1:        logParsed.Reserve1,
+					Index:           log.Index,
+				},
+			)
+		}
+	}
+
+	instance, err := gmpayment.NewGmpayment(log.Address, client)
+	if err != nil {
+		return err
+	}
+
+	// ParsePaid
+	{
+		logParsed, err := instance.ParsePaid(*log)
+		if err == nil {
+			block, err := c.getBlock(log.BlockNumber)
+			if err != nil {
+				return err
+			}
+			resp.GmPaymentPaid = append(
+				resp.GmPaymentPaid,
+				&TcGmPaymentPaidEventResp{
+					TxHash:          log.TxHash.Hex(),
+					ContractAddress: logParsed.Raw.Address.Hex(),
+					Timestamp:       block.Time(),
+					AmountGM:        logParsed.AmountGM,
+					User:            logParsed.User.Hex(),
 					Index:           log.Index,
 				},
 			)
@@ -804,4 +843,42 @@ func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountI
 		return "", err
 	}
 	return tnx.Hash().Hex(), nil
+}
+
+/////////////GM PAYMENT
+func (c *BlockChainApi) SignWithEthereum(privateKey string, dataBytes []byte) (string, error) {
+	signBytes := append([]byte("\x19Ethereum Signed Message:\n32"), dataBytes...)
+	hash := crypto.Keccak256Hash(signBytes)
+	prk, err := crypto.HexToECDSA(privateKey)
+	if err != nil {
+		return "", err
+	}
+	signature, err := crypto.Sign(hash.Bytes(), prk)
+	if err != nil {
+		return "", err
+	}
+	signature[crypto.RecoveryIDOffset] += 27
+	sigHex := hexutil.Encode(signature)
+	sigHex = sigHex[2:]
+	return sigHex, nil
+}
+
+func (c *BlockChainApi) GmPaymentSignMessage(contractAddr, adminAddrr, adminPrk, userAddrr, tokenAddr string, chainID, amount *big.Int) (string, error) {
+	datas := []byte{}
+	datas = append(datas, common.HexToHash(contractAddr).Bytes()...)
+	datas = append(datas, common.BytesToHash(chainID.Bytes()).Bytes()...)
+	datas = append(datas, common.HexToHash(adminAddrr).Bytes()...)
+	datas = append(datas, common.HexToHash(userAddrr).Bytes()...)
+	datas = append(datas, common.HexToHash(tokenAddr).Bytes()...)
+	datas = append(datas, common.BytesToHash(amount.Bytes()).Bytes()...)
+
+	dataByteHash := crypto.Keccak256Hash(
+		datas,
+	)
+	signature, err := c.SignWithEthereum(adminPrk, dataByteHash.Bytes())
+	if err != nil {
+		return "", err
+	}
+
+	return signature, nil
 }
