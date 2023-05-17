@@ -10,19 +10,19 @@ import (
 
 type SwapPairAprReport struct {
 	BaseEntity      `bson:",inline"`
-	ContractAddress string               `json:"contract_address"`
-	Timestamp       time.Time            `json:"timestamp"`
-	Token0          string               `json:"token0"`
-	Token1          string               `json:"token1"`
-	Pair            string               `json:"pair"`
-	Index           uint                 `json:"log_index"`
-	Token0Obj       Token                `json:"token0_obj"`
-	Token1Obj       Token                `json:"token1_obj"`
-	Reserve0        primitive.Decimal128 `json:"reserve0"`
-	Volume          primitive.Decimal128 `json:"volume"`
-	TradingFee      primitive.Decimal128 `json:"trading_fee"`
-	Liquidity       primitive.Decimal128 `json:"liquidity"`
-	Apr             primitive.Decimal128 `json:"apr"`
+	ContractAddress string               `json:"contract_address" bson:"contract_address"`
+	Timestamp       time.Time            `json:"timestamp" bson:"timestamp"`
+	Token0          string               `json:"token0" bson:"token0"`
+	Token1          string               `json:"token1" bson:"token1"`
+	Pair            string               `json:"pair" bson:"pair"`
+	Token0Obj       *Token               `json:"token0_obj" bson:"token0_obj"`
+	Token1Obj       *Token               `json:"token1_obj" bson:"token1_obj"`
+	Reserve0        primitive.Decimal128 `json:"reserve0" bson:"reserve0"`
+	Reserve1        primitive.Decimal128 `json:"reserve1" bson:"reserve1"`
+	Volume          primitive.Decimal128 `json:"volume" bson:"volume"`
+	TradingFee      primitive.Decimal128 `json:"trading_fee" bson:"trading_fee"`
+	Liquidity       primitive.Decimal128 `json:"liquidity" bson:"liquidity"`
+	Apr             primitive.Decimal128 `json:"apr" bson:"apr"`
 }
 
 type SwapPairReport struct {
@@ -99,8 +99,8 @@ type SwapPair struct {
 	Pair            string               `json:"pair"  bson:"pair,omitempty"`
 	Arg3            int64                `json:"arg3"  bson:"arg3,omitempty"`
 	Index           uint                 `json:"log_index"  bson:"log_index,omitempty"`
-	Token0Obj       Token                `json:"token0_obj"  bson:"token0_obj,omitempty"`
-	Token1Obj       Token                `json:"token1_obj"  bson:"token1_obj,omitempty"`
+	Token0Obj       *Token               `json:"token0_obj"  bson:"token0_obj,omitempty"`
+	Token1Obj       *Token               `json:"token1_obj"  bson:"token1_obj,omitempty"`
 	Reserve0        primitive.Decimal128 `json:"reserve0" bson:"reserve0"`
 	Reserve1        primitive.Decimal128 `json:"reserve1" bson:"reserve1"`
 }
