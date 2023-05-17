@@ -436,10 +436,12 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 	return aprPercent, nil
 }
 
-func (u *Usecase) SwapGetPairAprListReport(ctx context.Context, filter request.PaginationReq) (interface{}, error) {
+func (u *Usecase) SwapGetPairAprListReport(ctx context.Context, filter request.PaginationReq, search string) (interface{}, error) {
 	query := entity.TokenReportFilter{}
 	query.FromPagination(filter)
-	redisKey := fmt.Sprintf("tc-swap:pair-apr-reports-%d-%d", query.Page, query.Limit)
+	query.Search = search
+
+	redisKey := fmt.Sprintf("tc-swap:pair-apr-reports-%d-%d-%s", query.Page, query.Limit, search)
 	exists, err := u.Cache.Exists(redisKey)
 	if err != nil {
 		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
