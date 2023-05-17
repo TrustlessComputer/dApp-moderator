@@ -87,6 +87,15 @@ func (r *Repository) parseTokenReportFilter(filter entity.TokenReportFilter) bso
 		andCond = append(andCond, bson.M{"owner": filter.CreatedBy})
 	}
 
+	if filter.Search != "" {
+		andCond = append(andCond, bson.M{"$or": []bson.M{
+			{"symbol": primitive.Regex{Pattern: filter.Search, Options: "i"}},
+			{"name": primitive.Regex{Pattern: filter.Search, Options: "i"}},
+			{"address": primitive.Regex{Pattern: filter.Search, Options: "i"}},
+			{"owner": primitive.Regex{Pattern: filter.Search, Options: "i"}},
+		}})
+	}
+
 	if len(andCond) == 0 {
 		return bson.M{}
 	}

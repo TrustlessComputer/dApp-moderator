@@ -166,14 +166,15 @@ func (u *Usecase) GetWrapTokenPriceBySymbol(ctx context.Context) (float64, float
 	return btcPrice, ethPrice
 }
 
-func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address, sortBy string, sortType int) (interface{}, error) {
+func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address, search, sortBy string, sortType int) (interface{}, error) {
 	query := entity.TokenReportFilter{}
 	query.FromPagination(filter)
 	query.Address = address
 	query.SortBy = sortBy
 	query.SortType = sortType
+	query.Search = search
 
-	redisKey := fmt.Sprintf("tc-swap:token-reports-%d-%d-%s-%s-%d", query.Page, query.Limit, address, sortBy, sortType)
+	redisKey := fmt.Sprintf("tc-swap:token-reports-%d-%d-%s-%s-%s-%d", query.Page, query.Limit, address, search, sortBy, sortType)
 	exists, err := u.Cache.Exists(redisKey)
 	if err != nil {
 		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
