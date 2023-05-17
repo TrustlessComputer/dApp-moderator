@@ -37,6 +37,7 @@ type SwapPairSwapHistoriesFilter struct {
 	UserAddress     string
 	TxHash          string
 	Token           string
+	Symbol          string
 }
 
 func (t *SwapPairSwapHistoriesFilter) FromPagination(pag request.PaginationReq) {
