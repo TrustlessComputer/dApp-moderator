@@ -75,6 +75,7 @@ type TokenReportFilter struct {
 	CreatedBy string
 	SortBy    string
 	SortType  int
+	Search    string
 }
 
 func (t *TokenFilter) FromPagination(pag request.PaginationReq) {
