@@ -98,12 +98,22 @@ type TcSwapSyncEventResp struct {
 	Index           uint     `json:"log_index"`
 }
 
+type TcGmPaymentPaidEventResp struct {
+	TxHash          string   `json:"tx_hash"`
+	ContractAddress string   `json:"contract_address"`
+	Timestamp       uint64   `json:"timestamp"`
+	AmountGM        *big.Int `json:"amount_gm"`
+	User            string   `json:"user"`
+	Index           uint     `json:"log_index"`
+}
+
 type TcSwapEventResp struct {
 	PairCreated     []*TcSwapPairCreatedEventResp `json:"pair_created"`
 	Swap            []*TcSwapSwapEventResp        `json:"swap"`
 	PairMint        []*TcSwapMintBurnEventResp    `json:"mint"`
 	PairBurn        []*TcSwapMintBurnEventResp    `json:"burn"`
 	PairSync        []*TcSwapSyncEventResp        `json:"sync"`
+	GmPaymentPaid   []*TcGmPaymentPaidEventResp   `json:"gm_paid"`
 	LastBlockNumber int64                         `json:"last_block_number"`
 }
 
@@ -359,6 +369,33 @@ func (c *BlockChainApi) TcSwapEventResp(resp *TcSwapEventResp, log *types.Log) e
 					Timestamp:       block.Time(),
 					Reserve0:        logParsed.Reserve0,
 					Reserve1:        logParsed.Reserve1,
+					Index:           log.Index,
+				},
+			)
+		}
+	}
+
+	instance, err := gmpayment.NewGmpayment(log.Address, client)
+	if err != nil {
+		return err
+	}
+
+	// ParsePaid
+	{
+		logParsed, err := instance.ParsePaid(*log)
+		if err == nil {
+			block, err := c.getBlock(log.BlockNumber)
+			if err != nil {
+				return err
+			}
+			resp.GmPaymentPaid = append(
+				resp.GmPaymentPaid,
+				&TcGmPaymentPaidEventResp{
+					TxHash:          log.TxHash.Hex(),
+					ContractAddress: logParsed.Raw.Address.Hex(),
+					Timestamp:       block.Time(),
+					AmountGM:        logParsed.AmountGM,
+					User:            logParsed.User.Hex(),
 					Index:           log.Index,
 				},
 			)
@@ -809,56 +846,6 @@ func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountI
 }
 
 /////////////GM PAYMENT
-type TcGmPaymentPaidEventResp struct {
-	TxHash          string   `json:"tx_hash"`
-	ContractAddress string   `json:"contract_address"`
-	Timestamp       uint64   `json:"timestamp"`
-	AmountGM        *big.Int `json:"amount_gm"`
-	User            string   `json:"user"`
-	Index           uint     `json:"log_index"`
-}
-
-type TcGmPaymentEventResp struct {
-	Paid            []*TcGmPaymentPaidEventResp `json:"paid"`
-	LastBlockNumber int64                       `json:"last_block_number"`
-}
-
-func (c *BlockChainApi) TcGmPaymentEventResp(resp *TcGmPaymentEventResp, log *types.Log) error {
-	client, err := c.getClient()
-	if err != nil {
-		return err
-	}
-
-	instance, err := gmpayment.NewGmpayment(log.Address, client)
-	if err != nil {
-		return err
-	}
-
-	// ParsePaid
-	{
-		logParsed, err := instance.ParsePaid(*log)
-		if err == nil {
-			block, err := c.getBlock(log.BlockNumber)
-			if err != nil {
-				return err
-			}
-			resp.Paid = append(
-				resp.Paid,
-				&TcGmPaymentPaidEventResp{
-					TxHash:          log.TxHash.Hex(),
-					ContractAddress: logParsed.Raw.Address.Hex(),
-					Timestamp:       block.Time(),
-					AmountGM:        logParsed.AmountGM,
-					User:            logParsed.User.Hex(),
-					Index:           log.Index,
-				},
-			)
-		}
-	}
-
-	return nil
-}
-
 func (c *BlockChainApi) SignWithEthereum(privateKey string, dataBytes []byte) (string, error) {
 	signBytes := append([]byte("\x19Ethereum Signed Message:\n32"), dataBytes...)
 	hash := crypto.Keccak256Hash(signBytes)
