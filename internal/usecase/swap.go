@@ -207,12 +207,12 @@ func (u *Usecase) TcSwapCreatedPair(ctx context.Context, eventResp *blockchain_a
 
 		token0, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: eventResp.Token0})
 		if token0 != nil {
-			swapPair.Token0Obj = *token0
+			swapPair.Token0Obj = token0
 		}
 
 		token1, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: eventResp.Token1})
 		if token1 != nil {
-			swapPair.Token1Obj = *token1
+			swapPair.Token1Obj = token1
 		}
 		_, err = u.Repo.InsertOne(swapPair)
 		if err != nil {
