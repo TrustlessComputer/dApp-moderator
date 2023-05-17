@@ -510,14 +510,18 @@ func (u *Usecase) UpdateDataSwapPair(ctx context.Context) error {
 		tmpReserve0 := helpers.ConvertWeiToBigFloat(reserve0, 18)
 		tmpReserve1 := helpers.ConvertWeiToBigFloat(reserve1, 18)
 
-		token0, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: pair.Token0})
-		if token0 != nil {
-			pair.Token0Obj = *token0
+		if pair.Token0Obj == nil {
+			token0, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: pair.Token0})
+			if token0 != nil {
+				pair.Token0Obj = token0
+			}
 		}
 
-		token1, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: pair.Token1})
-		if token1 != nil {
-			pair.Token1Obj = *token1
+		if pair.Token1Obj == nil {
+			token1, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: pair.Token1})
+			if token1 != nil {
+				pair.Token1Obj = token1
+			}
 		}
 		pair.Reserve0, _ = primitive.ParseDecimal128(tmpReserve0.String())
 		pair.Reserve1, _ = primitive.ParseDecimal128(tmpReserve1.String())
@@ -531,27 +535,86 @@ func (u *Usecase) UpdateDataSwapPair(ctx context.Context) error {
 	return nil
 }
 
-func (u *Usecase) UpdateDataSwapToken(ctx context.Context) error {
-	pairQuery := entity.TokenFilter{}
+func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
+	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
+	pairQuery := entity.SwapPairFilter{}
 	pairQuery.Limit = 10000
 	pairQuery.Page = 1
+	pairQuery.FromToken = config.WbtcContractAddr
 
-	tokens, err := u.Repo.FindListTokens(ctx, pairQuery)
+	//base WBTC
+	pairs, err := u.Repo.FindSwapPairs(ctx, pairQuery)
 	if err != nil {
 		logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
 		return err
 	}
 
-	for _, token := range tokens {
-		if token.Network == "" {
-			token.Network = "Bitcoin - TC"
-			token.Priority = 0
-			err := u.Repo.UpdateToken(ctx, token)
+	for _, pair := range pairs {
+		tmpTokenAddr := pair.Token0
+		baseToken := pair.Token1Obj
+		if strings.EqualFold(pair.Token0, config.WbtcContractAddr) {
+			tmpTokenAddr = pair.Token1
+			baseToken = pair.Token0Obj
+		}
+		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
+		if token != nil && token.BaseTokenSymbol == "" {
+			token.BaseTokenSymbol = baseToken.Symbol
+			err = u.Repo.UpdateToken(ctx, token)
 			if err != nil {
-				logger.AtLog.Logger.Error("UpdateDataSwapToken", zap.Error(err))
+				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+				return err
+			}
+		}
+	}
+
+	pairQuery.FromToken = config.WethContractAddr
+	ethPairs, err := u.Repo.FindSwapPairs(ctx, pairQuery)
+	if err != nil {
+		logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+		return err
+	}
+
+	for _, pair := range ethPairs {
+		tmpTokenAddr := pair.Token0
+		baseToken := pair.Token1Obj
+		if strings.EqualFold(pair.Token0, config.WbtcContractAddr) {
+			tmpTokenAddr = pair.Token1
+			baseToken = pair.Token0Obj
+		}
+		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
+		if token != nil && token.BaseTokenSymbol == "" {
+			token.BaseTokenSymbol = baseToken.Symbol
+			err = u.Repo.UpdateToken(ctx, token)
+			if err != nil {
+				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
 				return err
 			}
 		}
 	}
 	return nil
 }
+
+// func (u *Usecase) UpdateDataSwapToken(ctx context.Context) error {
+// 	pairQuery := entity.TokenFilter{}
+// 	pairQuery.Limit = 10000
+// 	pairQuery.Page = 1
+
+// 	tokens, err := u.Repo.FindListTokens(ctx, pairQuery)
+// 	if err != nil {
+// 		logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+// 		return err
+// 	}
+
+// 	for _, token := range tokens {
+// 		if token.Network == "" {
+// 			token.Network = "Bitcoin - TC"
+// 			token.Priority = 0
+// 			err := u.Repo.UpdateToken(ctx, token)
+// 			if err != nil {
+// 				logger.AtLog.Logger.Error("UpdateDataSwapToken", zap.Error(err))
+// 				return err
+// 			}
+// 		}
+// 	}
+// 	return nil
+// }
