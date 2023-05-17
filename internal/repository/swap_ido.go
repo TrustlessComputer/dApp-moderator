@@ -23,6 +23,15 @@ func (r *Repository) FindSwapIdo(ctx context.Context, filter entity.SwapIdoFilte
 	return &swapIdo, nil
 }
 
+func (r *Repository) FindSwapIdoView(ctx context.Context, filter entity.SwapIdoFilter) (*entity.SwapIdo, error) {
+	var swapIdo entity.SwapIdo
+	err := r.DB.Collection(utils.VIEW_SWAP_IDO_TOKEN).FindOne(ctx, r.parseSwapIdoFilter(filter)).Decode(&swapIdo)
+	if err != nil {
+		return nil, err
+	}
+	return &swapIdo, nil
+}
+
 func (r *Repository) parseSwapIdoFilter(filter entity.SwapIdoFilter) bson.M {
 	andCond := make([]bson.M, 0)
 	if filter.ID != "" {
@@ -37,12 +46,18 @@ func (r *Repository) parseSwapIdoFilter(filter entity.SwapIdoFilter) bson.M {
 		andCond = append(andCond, bson.M{"token.address": filter.Address})
 	}
 
+	if filter.Status != "" {
+		andCond = append(andCond, bson.M{"status": filter.Status})
+	}
+
 	if filter.WalletAddress != "" {
 		andCond = append(andCond, bson.M{"user_wallet_address": strings.ToLower(filter.WalletAddress)})
 	}
 
-	if filter.CheckStartTime {
+	if filter.CheckStartTime > 0 {
 		andCond = append(andCond, bson.M{"start_at": bson.M{"$gte": time.Now()}})
+	} else if filter.CheckStartTime < 0 {
+		andCond = append(andCond, bson.M{"start_at": bson.M{"$lte": time.Now()}})
 	}
 
 	if len(andCond) == 0 {
@@ -61,6 +76,31 @@ func (r *Repository) FindSwapIdos(ctx context.Context, filter entity.SwapIdoFilt
 	options.SetSort(bson.D{{"start_at", 1}})
 
 	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_IDO).Find(ctx, r.parseSwapIdoFilter(filter), options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var pair entity.SwapIdo
+		err = cursor.Decode(&pair)
+		if err != nil {
+			return nil, err
+		}
+		idos = append(idos, &pair)
+	}
+	return idos, nil
+}
+
+func (r *Repository) FindSwapIdosView(ctx context.Context, filter entity.SwapIdoFilter) ([]*entity.SwapIdo, error) {
+	idos := []*entity.SwapIdo{}
+	// pagination
+	numToSkip := (filter.Page - 1) * filter.Limit
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+	options.SetSort(bson.D{{"start_at", 1}})
+
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_IDO_TOKEN).Find(ctx, r.parseSwapIdoFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}

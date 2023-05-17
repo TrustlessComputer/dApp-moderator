@@ -19,6 +19,7 @@ type SwapPairSync struct {
 	Token           string               `json:"token" bson:"token,omitempty"`
 	Price           primitive.Decimal128 `json:"price" bson:"price,omitempty"`
 	Pair            *SwapPair            `json:"pair" bson:"pair,omitempty"`
+	BaseTokenSymbol string               `json:"base_token_symbol"  bson:"base_token_symbol,omitempty"`
 }
 
 func (t *SwapPairSync) CollectionName() string {
