@@ -13,17 +13,20 @@ const (
 )
 
 type SwapWrapTOkenContractAddrConfig struct {
-	WbtcContractAddr    string
-	WethContractAddr    string
-	WusdcContractAddr   string
-	WpepeContractAddr   string
-	WordiContractAddr   string
-	RouterContractAddr  string
-	FactoryContractAddr string
-
-	WbtcToken  *Token
-	WethToken  *Token
-	WusdcToken *Token
-	WpepeToken *Token
-	WordiToken *Token
+	WbtcContractAddr      string
+	WethContractAddr      string
+	WusdcContractAddr     string
+	WpepeContractAddr     string
+	WordiContractAddr     string
+	RouterContractAddr    string
+	FactoryContractAddr   string
+	GmPaymentContractAddr string
+	GmTokenContractAddr   string
+	GmPaymentAdminAddr    string
+	GmPaymentChainId      string
+	WbtcToken             *Token
+	WethToken             *Token
+	WusdcToken            *Token
+	WpepeToken            *Token
+	WordiToken            *Token
 }

@@ -155,6 +155,10 @@ func (h *httpDelivery) RegisterV1Routes() {
 	walletRoutes := swapRoutes.PathPrefix("/wallet").Subrouter()
 	walletRoutes.HandleFunc("/update", h.addOrUpdateSwapWallet).Methods("PUT")
 	walletRoutes.HandleFunc("/detail", h.getSwapWallet).Methods("GET")
+
+	gmRoutes := swapRoutes.PathPrefix("/gm").Subrouter()
+	gmRoutes.HandleFunc("/claim", h.gmPaymentClaim).Methods("GET")
+	// gmRoutes.HandleFunc("/add-test", h.addTestGmPaymentBalance).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
