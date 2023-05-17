@@ -94,8 +94,6 @@ func main() {
 		}
 	}()
 
-	// log.Println("init sentry ...")
-	// sentry.InitSentry(conf)
 	startServer()
 }
 
