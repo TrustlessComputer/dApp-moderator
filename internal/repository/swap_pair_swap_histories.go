@@ -9,7 +9,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -40,6 +39,10 @@ func (r *Repository) parseSwapPairSwapHistories(filter entity.SwapPairSwapHistor
 		andCond = append(andCond, bson.M{"token": filter.Token})
 	}
 
+	if filter.Symbol != "" {
+		andCond = append(andCond, bson.M{"base_token_symbol": bson.M{"$ne": filter.Symbol}})
+	}
+
 	if len(andCond) == 0 {
 		return bson.M{}
 	}
@@ -53,7 +56,7 @@ func (r *Repository) FindTokenReport(ctx context.Context, filter entity.TokenRep
 	options.SetSkip(numToSkip)
 	options.SetLimit(filter.Limit)
 	if filter.SortBy != "" {
-		options.SetSort(bson.D{{"priority", -1}, {filter.SortBy, filter.SortType}})
+		options.SetSort(bson.D{{filter.SortBy, filter.SortType}})
 	} else {
 		options.SetSort(bson.D{{"priority", -1}, {"total_volume", -1}, {"percent_7day", -1}})
 	}
@@ -256,12 +259,12 @@ func (r *Repository) FindSwapPairHistories(ctx context.Context, filter entity.Sw
 
 func (r *Repository) UpdateSwapPairHistory(ctx context.Context, sync *entity.SwapPairSwapHistories) error {
 	collectionName := sync.CollectionName()
-	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"tx_hash": sync.TxHash, "contract_address": sync.ContractAddress}, bson.M{"$set": sync})
-	if err != nil {
-		return err
-	}
-	if result.MatchedCount == 0 {
-		return mongo.ErrNoDocuments
-	}
+	r.DB.Collection(collectionName).FindOneAndUpdate(ctx, bson.M{"tx_hash": sync.TxHash, "contract_address": sync.ContractAddress}, bson.M{"$set": sync}, nil)
+	// if err != nil {
+	// 	return err
+	// }
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
