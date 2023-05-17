@@ -208,30 +208,30 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 				item.BaseTokenSymbol = string(entity.SwapBaseTokenSymbolWBTC)
 			}
 
-			tmUsdPrice := btcPrice
+			tmUsdPrice := float64(0)
 			if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
 				tmUsdPrice = ethPrice
+			} else if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWBTC) {
+				tmUsdPrice = btcPrice
 			}
 
-			if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWBTC) {
-				if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {
-					item.BtcPrice = s
-					item.UsdPrice = s * tmUsdPrice
-				}
+			if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {
+				item.BtcPrice = s
+				item.UsdPrice = s * tmUsdPrice
+			}
 
-				if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
-					item.BtcVolume = s
-					item.UsdVolume = s * tmUsdPrice
-				}
+			if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
+				item.BtcVolume = s
+				item.UsdVolume = s * tmUsdPrice
+			}
 
-				if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
-					item.BtcTotalVolume = s
-					item.UsdTotalVolume = s * tmUsdPrice
-				}
+			if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
+				item.BtcTotalVolume = s
+				item.UsdTotalVolume = s * tmUsdPrice
+			}
 
-				if s, err := strconv.ParseFloat(item.MarketCap.String(), 64); err == nil {
-					item.UsdMarketCap = s * tmUsdPrice
-				}
+			if s, err := strconv.ParseFloat(item.MarketCap.String(), 64); err == nil {
+				item.UsdMarketCap = s * tmUsdPrice
 			}
 
 			if item.Address == wtokenConfig.WbtcContractAddr {
@@ -259,8 +259,9 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 
 func (u *Usecase) UpdateDataSwapSync(ctx context.Context) error {
 	pairQuery := entity.SwapPairSyncFilter{}
-	pairQuery.Limit = 1000
+	pairQuery.Limit = 2000
 	pairQuery.Page = 1
+	pairQuery.Symbol = "WBTC"
 
 	pairSyncs, err := u.Repo.FindSwapPairSyncs(ctx, pairQuery)
 	if err != nil {
@@ -314,8 +315,9 @@ func (u *Usecase) UpdateDataSwapSync(ctx context.Context) error {
 
 func (u *Usecase) UpdateDataSwapHistory(ctx context.Context) error {
 	pairQuery := entity.SwapPairSwapHistoriesFilter{}
-	pairQuery.Limit = 1000
+	pairQuery.Limit = 2000
 	pairQuery.Page = 1
+	pairQuery.Symbol = "WBTC"
 
 	pairSyncs, err := u.Repo.FindSwapPairHistories(ctx, pairQuery)
 	if err != nil {

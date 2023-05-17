@@ -28,6 +28,9 @@ func (r *Repository) parseSwapPairSyncFilter(filter entity.SwapPairSyncFilter) b
 	if filter.TxHash != "" {
 		andCond = append(andCond, bson.M{"tx_hash": filter.TxHash})
 	}
+	if filter.Symbol != "" {
+		andCond = append(andCond, bson.M{"base_token_symbol": bson.M{"$ne": filter.Symbol}})
+	}
 
 	if len(andCond) == 0 {
 		return bson.M{}
