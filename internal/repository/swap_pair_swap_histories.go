@@ -39,6 +39,10 @@ func (r *Repository) parseSwapPairSwapHistories(filter entity.SwapPairSwapHistor
 		andCond = append(andCond, bson.M{"token": filter.Token})
 	}
 
+	if filter.Symbol != "" {
+		andCond = append(andCond, bson.M{"base_token_symbol": bson.M{"$ne": filter.Symbol}})
+	}
+
 	if len(andCond) == 0 {
 		return bson.M{}
 	}
