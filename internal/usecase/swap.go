@@ -625,7 +625,7 @@ func (u *Usecase) SwapAddOrUpdateWalletAddress(ctx context.Context, walletReq *r
 
 func (u *Usecase) SwapGetWalletAddress(ctx context.Context, walletAddress string) (*entity.SwapWalletAddress, error) {
 	var err error
-	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, walletAddress)
+	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, strings.ToLower(walletAddress))
 	if err != nil {
 		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
 		return nil, err
@@ -674,6 +674,10 @@ func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.S
 			"wordi_contract_address",
 			"swap_router_contract_address",
 			"swap_factory_contract_address",
+			"gm_payment_contract_address",
+			"gm_token_contract_address",
+			"gm_payment_admin_address",
+			"gm_payment_chain_id",
 		})
 		if err != nil {
 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
@@ -701,6 +705,14 @@ func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.S
 				config.RouterContractAddr = item.Value
 			case "swap_factory_contract_address":
 				config.FactoryContractAddr = item.Value
+			case "gm_payment_contract_address":
+				config.GmPaymentContractAddr = item.Value
+			case "gm_token_contract_address":
+				config.GmTokenContractAddr = item.Value
+			case "gm_payment_chain_id":
+				config.GmPaymentChainId = item.Value
+			case "gm_payment_admin_address":
+				config.GmPaymentAdminAddr = item.Value
 			}
 		}
 
