@@ -2,7 +2,11 @@ package helpers
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/md5"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +19,7 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcutil"
+	"github.com/ethereum/go-ethereum/params"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -143,6 +148,20 @@ func NftsOfContractPageKey(contract string) string {
 	return fmt.Sprintf("contract.%s.nfts.page", contract)
 }
 
+func EtherToWei(eth *big.Float) *big.Int {
+	if eth == nil {
+		return big.NewInt(0.0)
+	}
+
+	truncInt, _ := eth.Int(nil)
+	truncInt = new(big.Int).Mul(truncInt, big.NewInt(params.Ether))
+	fracStr := strings.Split(fmt.Sprintf("%.18f", eth), ".")[1]
+	fracStr += strings.Repeat("0", 18-len(fracStr))
+	fracInt, _ := new(big.Int).SetString(fracStr, 10)
+	wei := new(big.Int).Add(truncInt, fracInt)
+	return wei
+}
+
 func ConvertWeiToBigFloat(amt *big.Int, decimals uint) *big.Float {
 	if amt == nil {
 		return big.NewFloat(0.0)
@@ -196,4 +215,87 @@ func SlackHook(channel, content string) error {
 		return nil
 	}()
 	return nil
+}
+
+// GetAESDecrypted decrypts given text in AES 256 CBC
+func GetAESDecrypted(key, iv, encrypted string) ([]byte, error) {
+	ciphertext, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher([]byte(key))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext)%aes.BlockSize != 0 {
+		return nil, fmt.Errorf("block size cant be zero")
+	}
+
+	mode := cipher.NewCBCDecrypter(block, []byte(iv))
+	mode.CryptBlocks(ciphertext, ciphertext)
+	// ciphertext = PKCS5UnPadding(ciphertext)
+
+	return ciphertext, nil
+}
+
+// // PKCS5UnPadding  pads a certain blob of data with necessary data to be used in AES block cipher
+// func PKCS5UnPadding(src []byte) []byte {
+// 	length := len(src)
+// 	unpadding := int(src[length-1])
+
+// 	return src[:(length - unpadding)]
+// }
+
+// GetAESEncrypted encrypts given text in AES 256 CBC
+func GetAESEncrypted(key, iv, plaintext string) (string, error) {
+	var plainTextBlock []byte
+	length := len(plaintext)
+	if length%16 != 0 {
+		extendBlock := 16 - (length % 16)
+		plainTextBlock = make([]byte, length+extendBlock)
+		copy(plainTextBlock[length:], bytes.Repeat([]byte{uint8(extendBlock)}, extendBlock))
+	} else {
+		plainTextBlock = make([]byte, length)
+	}
+
+	copy(plainTextBlock, plaintext)
+	block, err := aes.NewCipher([]byte(key))
+
+	if err != nil {
+		return "", err
+	}
+
+	ciphertext := make([]byte, len(plainTextBlock))
+	mode := cipher.NewCBCEncrypter(block, []byte(iv))
+	mode.CryptBlocks(ciphertext, plainTextBlock)
+
+	str := base64.StdEncoding.EncodeToString(ciphertext)
+
+	return str, nil
+}
+
+func EncryptAES(key []byte, plaintext string) string {
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		return ""
+	}
+	out := make([]byte, len(plaintext))
+	c.Encrypt(out, []byte(plaintext))
+	return hex.EncodeToString(out)
+}
+
+func DecryptAES(key []byte, ct string) string {
+	ciphertext, _ := hex.DecodeString(ct)
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		return ""
+	}
+	pt := make([]byte, len(ciphertext))
+	c.Decrypt(pt, ciphertext)
+	s := string(pt[:])
+	fmt.Println("DECRYPTED:", s)
+	return s
 }
