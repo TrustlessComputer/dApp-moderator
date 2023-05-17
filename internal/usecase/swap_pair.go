@@ -119,11 +119,12 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 }
 
 func (u *Usecase) ClearCache() error {
-	redisKey := fmt.Sprintf("tc-swap:token-reports-%!s(int64=1)-%!s(int64=500)")
+	redisKey := "tc-swap:wrap-token-config"
 	u.Cache.Delete(redisKey)
 	return nil
 
 }
+
 func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, chartType string) (interface{}, error) {
 	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType)
 	if err != nil {
@@ -438,6 +439,19 @@ func (u *Usecase) SwapGetPairAprListReport(ctx context.Context, filter request.P
 	query := entity.TokenReportFilter{}
 	query.FromPagination(filter)
 	reports, err := u.Repo.FindPairAprReport(ctx, query)
+	btcPrice, ethPrice := u.GetWrapTokenPriceBySymbol(ctx)
+
+	for _, item := range reports {
+		tmUsdPrice := float64(0)
+		if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
+			tmUsdPrice = ethPrice
+		} else if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWBTC) {
+			tmUsdPrice = btcPrice
+		}
+		if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
+			item.UsdVolume = s * tmUsdPrice
+		}
+	}
 	if err != nil {
 		logger.AtLog.Logger.Error("SwapGetPairAprListReport", zap.Error(err))
 		return nil, err
