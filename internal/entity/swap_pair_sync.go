@@ -30,6 +30,7 @@ type SwapPairSyncFilter struct {
 	BaseFilters
 	ContractAddress string
 	TxHash          string
+	Symbol          string
 }
 
 func (t *SwapPairSyncFilter) FromPagination(pag request.PaginationReq) {
