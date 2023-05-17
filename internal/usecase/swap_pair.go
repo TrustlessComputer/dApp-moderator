@@ -119,7 +119,7 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 }
 
 func (u *Usecase) ClearCache() error {
-	redisKey := fmt.Sprintf("tc-swap:token-reports-%!s(int64=1)-%!s(int64=500)")
+	redisKey := "tc-swap:wrap-token-config"
 	u.Cache.Delete(redisKey)
 	return nil
 
