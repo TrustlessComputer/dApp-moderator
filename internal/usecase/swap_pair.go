@@ -159,6 +159,12 @@ func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, c
 	return reports, nil
 }
 
+func (u *Usecase) GetWrapTokenPriceBySymbol(ctx context.Context) (float64, float64) {
+	btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
+	ethPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_eth_price")
+	return btcPrice, ethPrice
+}
+
 func (u *Usecase) FindTokensReport(ctx context.Context, filter request.PaginationReq, address, sortBy string, sortType int) (interface{}, error) {
 	query := entity.TokenReportFilter{}
 	query.FromPagination(filter)
@@ -195,60 +201,45 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 			logger.AtLog.Logger.Error("FindTokensInPool", zap.Error(err))
 			return nil, err
 		}
-
-		btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
-		ethPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_eth_price")
+		btcPrice, ethPrice := u.GetWrapTokenPriceBySymbol(ctx)
 
 		for _, item := range reports {
 			if item.BaseTokenSymbol == "" {
 				item.BaseTokenSymbol = string(entity.SwapBaseTokenSymbolWBTC)
 			}
 
+			tmUsdPrice := btcPrice
+			if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
+				tmUsdPrice = ethPrice
+			}
+
 			if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWBTC) {
 				if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {
 					item.BtcPrice = s
-					item.UsdPrice = s * btcPrice
+					item.UsdPrice = s * tmUsdPrice
 				}
 
 				if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
 					item.BtcVolume = s
-					item.UsdVolume = s * btcPrice
+					item.UsdVolume = s * tmUsdPrice
 				}
 
 				if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
 					item.BtcTotalVolume = s
-					item.UsdTotalVolume = s * btcPrice
+					item.UsdTotalVolume = s * tmUsdPrice
 				}
 
 				if s, err := strconv.ParseFloat(item.MarketCap.String(), 64); err == nil {
-					item.UsdMarketCap = s * btcPrice
-				}
-			} else if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
-				if s, err := strconv.ParseFloat(item.Price.String(), 64); err == nil {
-					item.EthPrice = s
-					item.UsdPrice = s * ethPrice
-				}
-
-				if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
-					item.EthVolume = s
-					item.UsdVolume = s * ethPrice
-				}
-
-				if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
-					item.EthTotalVolume = s
-					item.UsdTotalVolume = s * ethPrice
-				}
-
-				if s, err := strconv.ParseFloat(item.MarketCap.String(), 64); err == nil {
-					item.UsdMarketCap = s * ethPrice
+					item.UsdMarketCap = s * tmUsdPrice
 				}
 			}
 
 			if item.Address == wtokenConfig.WbtcContractAddr {
 				item.UsdPrice = btcPrice
-			} else if item.Address == wtokenConfig.WethContractAddr {
-				item.UsdPrice = ethPrice
 			}
+			// else if item.Address == wtokenConfig.WethContractAddr {
+			// 	item.UsdPrice = ethPrice
+			// }
 		}
 
 		logger.AtLog.Logger.Info("FindTokensReport", zap.Any("data", reports))

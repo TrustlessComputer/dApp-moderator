@@ -564,7 +564,7 @@ func (c *BlockChainApi) GetEthereumPrice() (float64, error) {
 	}
 
 	type CoingeckoResp struct {
-		Bitcoin *USDResp `json:"bitcoin"`
+		Bitcoin *USDResp `json:"ethereum"`
 	}
 
 	resp := &CoingeckoResp{}
