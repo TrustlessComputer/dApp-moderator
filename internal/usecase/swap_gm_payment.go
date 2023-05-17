@@ -43,14 +43,14 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	resp := entity.SwapUserGmClaimSignature{}
 	if userBalance != nil {
 		mgAmount, _ := big.NewFloat(0).SetString(userBalance.Balance.String())
-		chainId, _ := big.NewFloat(0).SetString(config.GmPaymentChainId)
+		chainId, _ := new(big.Int).SetString(config.GmPaymentChainId, 10)
 		adminSign, err := u.BlockChainApi.GmPaymentSignMessage(
 			config.GmPaymentContractAddr,
 			config.GmPaymentAdminAddr,
 			adminWallet.Prk,
 			userAddress,
 			config.GmTokenContractAddr,
-			helpers.EtherToWei(chainId),
+			chainId,
 			helpers.EtherToWei(mgAmount),
 		)
 		if err != nil {
