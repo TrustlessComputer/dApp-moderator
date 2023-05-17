@@ -24,14 +24,15 @@ type Token struct {
 	Slug            string `json:"slug" bson:"slug"`
 
 	// edit able
-	Symbol      string `json:"symbol" bson:"symbol"`
-	Name        string `json:"name" bson:"name"`
-	Thumbnail   string `json:"thumbnail" bson:"thumbnail"`
-	Description string `json:"description" bson:"description"`
-	Social      Social `json:"social" bson:"social"`
-	Index       int64  `json:"index" bson:"index"`
-	Network     string `json:"network" bson:"network"`
-	Priority    int64  `json:"priority" bson:"priority"`
+	Symbol          string `json:"symbol" bson:"symbol"`
+	Name            string `json:"name" bson:"name"`
+	Thumbnail       string `json:"thumbnail" bson:"thumbnail"`
+	Description     string `json:"description" bson:"description"`
+	Social          Social `json:"social" bson:"social"`
+	Index           int64  `json:"index" bson:"index"`
+	Network         string `json:"network" bson:"network"`
+	Priority        int64  `json:"priority" bson:"priority"`
+	BaseTokenSymbol string `json:"base_token_symbol" bson:"base_token_symbol,omitempty"`
 }
 
 func (t *Token) CollectionName() string {
