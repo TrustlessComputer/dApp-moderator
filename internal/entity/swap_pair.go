@@ -20,9 +20,11 @@ type SwapPairAprReport struct {
 	Reserve0        primitive.Decimal128 `json:"reserve0" bson:"reserve0"`
 	Reserve1        primitive.Decimal128 `json:"reserve1" bson:"reserve1"`
 	Volume          primitive.Decimal128 `json:"volume" bson:"volume"`
+	UsdVolume       float64              `json:"usd_volume" bson:"usd_volume"`
 	TradingFee      primitive.Decimal128 `json:"trading_fee" bson:"trading_fee"`
 	Liquidity       primitive.Decimal128 `json:"liquidity" bson:"liquidity"`
 	Apr             primitive.Decimal128 `json:"apr" bson:"apr"`
+	BaseTokenSymbol string               `json:"base_token_symbol"  bson:"base_token_symbol,omitempty"`
 }
 
 type SwapPairReport struct {
