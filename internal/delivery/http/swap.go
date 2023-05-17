@@ -405,3 +405,31 @@ func (h *httpDelivery) addSwapBotConfig(w http.ResponseWriter, r *http.Request) 
 		},
 	).ServeHTTP(w, r)
 }
+
+func (h *httpDelivery) gmPaymentClaim(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			address := req.Query(r, "address", "")
+			res, err := h.Usecase.GmPaymentClaim(ctx, address)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) addTestGmPaymentBalance(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			address := req.Query(r, "address", "")
+			res, err := h.Usecase.AddTestGmbalance(ctx, address)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		},
+	).ServeHTTP(w, r)
+}
