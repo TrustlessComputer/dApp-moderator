@@ -41,7 +41,8 @@ func (h *httpDelivery) getListLiquidityAprReport(w http.ResponseWriter, r *http.
 				return nil, err
 			}
 
-			data, err := h.Usecase.SwapGetPairAprListReport(ctx, pagination)
+			search := req.Query(r, "search", "")
+			data, err := h.Usecase.SwapGetPairAprListReport(ctx, pagination, search)
 			if err != nil {
 				logger.AtLog.Logger.Error("getListLiquidityAprReport", zap.Error(err))
 				return nil, err

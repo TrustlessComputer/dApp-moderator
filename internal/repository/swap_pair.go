@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -198,7 +199,7 @@ func (r *Repository) FindPairAprReport(ctx context.Context, filter entity.TokenR
 		options.SetSort(bson.D{{"apr", -1}})
 	}
 
-	cursor, err := r.DB.Collection(utils.VIEW_SWAP_PAIR_APR).Find(ctx, r.parseTokenReportFilter(filter), options)
+	cursor, err := r.DB.Collection(utils.VIEW_SWAP_PAIR_APR).Find(ctx, r.parsePairAprReportFilter(filter), options)
 	if err != nil {
 		return nil, err
 	}
@@ -212,4 +213,21 @@ func (r *Repository) FindPairAprReport(ctx context.Context, filter entity.TokenR
 		tokens = append(tokens, token)
 	}
 	return tokens, nil
+}
+
+func (r *Repository) parsePairAprReportFilter(filter entity.TokenReportFilter) bson.M {
+	andCond := make([]bson.M, 0)
+	if filter.Search != "" {
+		andCond = append(andCond, bson.M{"$or": []bson.M{
+			{"token0_obj.symbol": primitive.Regex{Pattern: filter.Search, Options: "i"}},
+			{"token0_obj.name": primitive.Regex{Pattern: filter.Search, Options: "i"}},
+			{"token1_obj.symbol": primitive.Regex{Pattern: filter.Search, Options: "i"}},
+			{"token1_obj.name": primitive.Regex{Pattern: filter.Search, Options: "i"}},
+		}})
+	}
+
+	if len(andCond) == 0 {
+		return bson.M{}
+	}
+	return bson.M{"$and": andCond}
 }
