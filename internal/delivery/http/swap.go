@@ -159,7 +159,8 @@ func (h *httpDelivery) getTokensReport(w http.ResponseWriter, r *http.Request) {
 			sortCollum := req.Query(r, "sort", "")
 			sortTypePrams := req.Query(r, "sort_type", "-1")
 			sortType, _ := strconv.Atoi(sortTypePrams)
-			data, err := h.Usecase.FindTokensReport(ctx, pagination, address, sortCollum, sortType)
+			search := req.Query(r, "search", "")
+			data, err := h.Usecase.FindTokensReport(ctx, pagination, address, search, sortCollum, sortType)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensReport", zap.Error(err))
 				return nil, err
