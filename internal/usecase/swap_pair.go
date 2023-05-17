@@ -477,6 +477,10 @@ func (u *Usecase) SwapGetPairAprListReport(ctx context.Context, filter request.P
 			if s, err := strconv.ParseFloat(item.Volume.String(), 64); err == nil {
 				item.UsdVolume = s * tmUsdPrice
 			}
+
+			if s, err := strconv.ParseFloat(item.TotalVolume.String(), 64); err == nil {
+				item.UsdTotalVolume = s * tmUsdPrice
+			}
 		}
 
 		reportsStr, err := json.Marshal(&reports)

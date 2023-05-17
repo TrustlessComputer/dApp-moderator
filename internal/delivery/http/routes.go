@@ -158,7 +158,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	gmRoutes := swapRoutes.PathPrefix("/gm").Subrouter()
 	gmRoutes.HandleFunc("/claim", h.gmPaymentClaim).Methods("GET")
-	gmRoutes.HandleFunc("/add-test", h.addTestGmPaymentBalance).Methods("GET")
+	// gmRoutes.HandleFunc("/add-test", h.addTestGmPaymentBalance).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
