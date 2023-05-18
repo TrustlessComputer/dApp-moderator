@@ -407,7 +407,7 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 	}
 
 	if pairObj != nil {
-		wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+		config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
 		pairVolume, err := u.Repo.FindSwapPairVolume(ctx, query)
 		if err != nil && err != mongo.ErrNoDocuments {
 			logger.AtLog.Logger.Error("SwapGetPairApr", zap.Error(err))
@@ -426,9 +426,13 @@ func (u *Usecase) SwapGetPairApr(ctx context.Context, pair string) (interface{},
 
 			poolLiquidity := big.NewFloat(0)
 			if pairLiquidity != nil {
-				if strings.EqualFold(pairObj.Token0, wbtcContractAddr) {
+				if strings.EqualFold(pairObj.Token0, config.WbtcContractAddr) {
 					poolLiquidity, _ = new(big.Float).SetString(pairLiquidity.Reserve0.String())
-				} else if strings.EqualFold(pairObj.Token1, wbtcContractAddr) {
+				} else if strings.EqualFold(pairObj.Token1, config.WbtcContractAddr) {
+					poolLiquidity, _ = new(big.Float).SetString(pairLiquidity.Reserve1.String())
+				} else if strings.EqualFold(pairObj.Token0, config.WethContractAddr) {
+					poolLiquidity, _ = new(big.Float).SetString(pairLiquidity.Reserve0.String())
+				} else if strings.EqualFold(pairObj.Token1, config.WethContractAddr) {
 					poolLiquidity, _ = new(big.Float).SetString(pairLiquidity.Reserve1.String())
 				}
 				poolLiquidity = big.NewFloat(0).Mul(poolLiquidity, big.NewFloat(2))
