@@ -90,6 +90,8 @@ const (
 	SIGNED_EMAIL              string = "signed_email"
 	SERVICE_API_KEY           string = "service_key"
 	TRACER_EMAIL              string = "email"
+	XRECAPTCHA                string = "x-recaptcha"
+	RECAPTCHA                 string = "recaptcha"
 
 	CODE_LENGTH         int    = 3
 	WORK_STATION        string = "working_place"
