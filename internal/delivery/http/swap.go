@@ -421,6 +421,34 @@ func (h *httpDelivery) gmPaymentClaim(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
+func (h *httpDelivery) gmPaymentClaimTestnet(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			address := req.Query(r, "address", "")
+			res, err := h.Usecase.GmPaymentClaimTestnet(ctx, address)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) gmPaymentClaimTestMainnet(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			address := req.Query(r, "address", "")
+			res, err := h.Usecase.GmPaymentClaimTestMainnet(ctx, address)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		},
+	).ServeHTTP(w, r)
+}
+
 func (h *httpDelivery) addGmPaymentBalance(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
