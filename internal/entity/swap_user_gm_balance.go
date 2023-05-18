@@ -17,6 +17,8 @@ type SwapUserGmBalance struct {
 	UserAddress string               `json:"user_address" bson:"user_address,omitempty"`
 	Balance     primitive.Decimal128 `json:"balance" bson:"balance"`
 	IsContract  bool                 `json:"is_contract" bson:"is_contract"`
+	BalanceSign string               `json:"balance_sign" bson:"balance_sign"`
+	Signature   string               `json:"signature" bson:"signature"`
 }
 
 func (t *SwapUserGmBalance) CollectionName() string {

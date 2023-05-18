@@ -43,11 +43,11 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	query.Address = strings.ToLower(userAddress)
 
 	startTime := u.Repo.ParseConfigByTime(ctx, "gm_payment_start_time")
-	if time.Now().Before(*startTime) {
-		err = errors.New("invalid start time")
-		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-		return nil, err
-	}
+	// if time.Now().Before(*startTime) {
+	// 	err = errors.New("invalid start time")
+	// 	logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+	// 	return nil, err
+	// }
 
 	dbPaidGm, _ := u.Repo.FindUserGmPaid(ctx, entity.SwapUserGmPaidFilter{
 		Address: strings.ToLower(userAddress),
@@ -60,9 +60,11 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	}
 
 	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	encryptedText, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
-	walletCipherKey, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
+	// encryptedText, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
+	// walletCipherKey, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
 
+	encryptedText := "AAAAAAAAAADBKOfbj4B7wdqlEc/JYV/nBrm4kcpE23mEU3vG/8ir3aVCYL+ttlCtA6hzWpwgr/ZFTdNPaMPA7+daCmTliWbD"
+	walletCipherKey := "au3Cao8NSguLZAgIpZkquvrVyjutEzct"
 	if encryptedText == "" || walletCipherKey == "" {
 		err = errors.New("Cannot get encrypted key")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
@@ -276,8 +278,69 @@ func (u *Usecase) GmPaymentClaimTestMainnet(ctx context.Context, userAddress str
 	return resp, nil
 }
 
+func (u *Usecase) GmPaymentGenerateSignature(ctx context.Context) (interface{}, error) {
+	var err error
+	query := entity.SwapUserGmBalanceFilter{}
+	userBalances, _ := u.Repo.FindListUserGmBalance(ctx, query)
+
+	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
+	encryptedText, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
+	walletCipherKey, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
+
+	if encryptedText == "" || walletCipherKey == "" {
+		err = errors.New("Cannot get encrypted key")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	decryptedPrk, err := helpers.DecryptToString(encryptedText, walletCipherKey)
+	if err != nil {
+		err = errors.New("Cannot decrypted prk")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	resp := entity.SwapUserGmClaimSignature{}
+	for _, userBalance := range userBalances {
+		mgAmount, _ := big.NewFloat(0).SetString(userBalance.Balance.String())
+		chainId, _ := new(big.Int).SetString(config.GmPaymentChainId, 10)
+		adminSign, err := u.BlockChainApi.GmPaymentSignMessage(
+			config.GmPaymentContractAddr,
+			config.GmPaymentAdminAddr,
+			decryptedPrk,
+			userBalance.UserAddress,
+			config.GmTokenContractAddr,
+			chainId,
+			helpers.EtherToWei(mgAmount),
+		)
+		if err != nil {
+			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+			return nil, err
+		}
+		if !strings.HasPrefix(adminSign, "0x") {
+			adminSign = "0x" + adminSign
+		}
+
+		// resp = entity.SwapUserGmClaimSignature{
+		// 	Signature: adminSign,
+		// 	Amount:    helpers.EtherToWei(mgAmount).String(),
+		// }
+
+		userBalance.BalanceSign = helpers.EtherToWei(mgAmount).String()
+		userBalance.Signature = adminSign
+		err = u.Repo.UpdateSwapUserGmBalance(ctx, userBalance)
+		if err != nil {
+			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+			return nil, err
+		}
+	}
+
+	logger.AtLog.Logger.Info("GmPaymentClaim", zap.Any("data", resp))
+	return resp, nil
+}
+
 func (u *Usecase) AddGmbalanceFromFile(ctx context.Context) error {
-	f, err := os.Open("/Users/autonomous/Desktop/gm_results.csv")
+	f, err := os.Open("/Users/autonomous/Desktop/gm_results_38_first.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -302,10 +365,6 @@ func (u *Usecase) AddGmbalanceFromFile(ctx context.Context) error {
 				swapPairSync.IsContract = true
 			}
 			listData = append(listData, swapPairSync)
-			// _, err := u.Repo.InsertOne(swapPairSync)
-			// if err != nil {
-			// 	fmt.Println(err)
-			// }
 		}
 	}
 	u.Repo.InsertMany(listData)
