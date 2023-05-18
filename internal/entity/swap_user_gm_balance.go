@@ -16,6 +16,7 @@ type SwapUserGmBalance struct {
 	BaseEntity  `bson:",inline"`
 	UserAddress string               `json:"user_address" bson:"user_address,omitempty"`
 	Balance     primitive.Decimal128 `json:"balance" bson:"balance"`
+	IsContract  bool                 `json:"is_contract" bson:"is_contract"`
 }
 
 func (t *SwapUserGmBalance) CollectionName() string {

@@ -31,14 +31,14 @@ func (u *Usecase) TestGG(ctx context.Context) (interface{}, error) {
 	// 	return nil, err
 	// }
 
-	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_PRIVATE_KEY"))
+	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
 	if err != nil {
 		err = errors.New("Cannot get encryptedText")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
 
-	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_SALT"))
+	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
 	if err != nil {
 		err = errors.New("Cannot get encryptedText")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
@@ -76,14 +76,14 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	}
 
 	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_PRIVATE_KEY"))
+	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
 	if err != nil {
 		err = errors.New("Cannot get encryptedText")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
 
-	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_SALT"))
+	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
 	if err != nil {
 		err = errors.New("Cannot get encryptedText")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
@@ -108,6 +108,16 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		err = errors.New("GM Balance not found")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
+	}
+
+	if userBalance.IsContract {
+		timeIn := startTime.Add(time.Minute * time.Duration(15))
+		if time.Now().Before(timeIn) {
+			time.Sleep(time.Minute * time.Duration(5))
+			err = errors.New("Bad request")
+			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+			return nil, err
+		}
 	}
 
 	resp := entity.SwapUserGmClaimSignature{}
