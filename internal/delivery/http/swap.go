@@ -421,16 +421,15 @@ func (h *httpDelivery) gmPaymentClaim(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
-func (h *httpDelivery) addTestGmPaymentBalance(w http.ResponseWriter, r *http.Request) {
+func (h *httpDelivery) addGmPaymentBalance(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			address := req.Query(r, "address", "")
-			res, err := h.Usecase.AddTestGmbalance(ctx, address)
+			err := h.Usecase.AddGmbalanceFromFile(ctx)
 			if err != nil {
 				return nil, err
 			}
 
-			return res, nil
+			return true, nil
 		},
 	).ServeHTTP(w, r)
 }
