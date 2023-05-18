@@ -125,6 +125,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	jobRoutes.HandleFunc("/update-ido", h.swapJobUpdateIdoStatus).Methods("GET")
 	// jobRoutes.HandleFunc("/auto-trade", h.swapJobAutoTrade).Methods("GET")
 	jobRoutes.HandleFunc("/test-api", h.testAPI).Methods("GET")
+	jobRoutes.HandleFunc("/claim", h.gmPaymentClaim).Methods("GET")
 
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
