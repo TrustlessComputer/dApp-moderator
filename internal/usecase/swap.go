@@ -622,65 +622,65 @@ func (u *Usecase) PendingTransactionHistories(ctx context.Context, filter reques
 	return data, nil
 }
 
-func (u *Usecase) SwapAddOrUpdateWalletAddress(ctx context.Context, walletReq *request.SwapWalletAddressRequest) (interface{}, error) {
-	var err error
-	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, walletReq.WalletAddress)
-	if err != nil && err != mongo.ErrNoDocuments {
-		logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
-		return false, err
-	}
+// func (u *Usecase) SwapAddOrUpdateWalletAddress(ctx context.Context, walletReq *request.SwapWalletAddressRequest) (interface{}, error) {
+// 	var err error
+// 	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, walletReq.WalletAddress)
+// 	if err != nil && err != mongo.ErrNoDocuments {
+// 		logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+// 		return false, err
+// 	}
 
-	isCreated := false
-	if wallet == nil {
-		isCreated = true
-		wallet = &entity.SwapWalletAddress{}
-	}
-	wallet.Address = strings.ToLower(walletReq.WalletAddress)
+// 	isCreated := false
+// 	if wallet == nil {
+// 		isCreated = true
+// 		wallet = &entity.SwapWalletAddress{}
+// 	}
+// 	wallet.Address = strings.ToLower(walletReq.WalletAddress)
 
-	ciphertext, err := helpers.GetAESEncrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, walletReq.WalletAddressPrivateKey)
-	if err != nil {
-		logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
-		return nil, err
-	}
+// 	ciphertext, err := helpers.GetAESEncrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, walletReq.WalletAddressPrivateKey)
+// 	if err != nil {
+// 		logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+// 		return nil, err
+// 	}
 
-	wallet.Prk = ciphertext
-	if isCreated {
-		_, err = u.Repo.InsertOne(wallet)
-		if err != nil {
-			logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
-			return nil, err
-		}
-	} else {
-		err = u.Repo.UpdateWallet(ctx, wallet)
-		if err != nil {
-			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
-			return nil, err
-		}
-	}
+// 	wallet.Prk = ciphertext
+// 	if isCreated {
+// 		_, err = u.Repo.InsertOne(wallet)
+// 		if err != nil {
+// 			logger.AtLog.Logger.Error("SwapAddOrUpdateWalletAddress", zap.Error(err))
+// 			return nil, err
+// 		}
+// 	} else {
+// 		err = u.Repo.UpdateWallet(ctx, wallet)
+// 		if err != nil {
+// 			logger.AtLog.Logger.Error("Insert mongo entity failed", zap.Error(err))
+// 			return nil, err
+// 		}
+// 	}
 
-	logger.AtLog.Logger.Info("SwapAddOrUpdateWalletAddress", zap.Any("data", true))
-	return true, nil
-}
+// 	logger.AtLog.Logger.Info("SwapAddOrUpdateWalletAddress", zap.Any("data", true))
+// 	return true, nil
+// }
 
-func (u *Usecase) SwapGetWalletAddress(ctx context.Context, walletAddress string) (*entity.SwapWalletAddress, error) {
-	var err error
-	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, strings.ToLower(walletAddress))
-	if err != nil {
-		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
-		return nil, err
-	}
+// func (u *Usecase) SwapGetWalletAddress(ctx context.Context, walletAddress string) (*entity.SwapWalletAddress, error) {
+// 	var err error
+// 	wallet, err := u.Repo.FindSwapWalletByAddress(ctx, strings.ToLower(walletAddress))
+// 	if err != nil {
+// 		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
+// 		return nil, err
+// 	}
 
-	plaintext, err := helpers.GetAESDecrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, wallet.Prk)
-	if err != nil {
-		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
-		return nil, err
-	}
+// 	plaintext, err := helpers.GetAESDecrypted(u.Config.Swap.SecretKey, u.Config.Swap.IvKey, wallet.Prk)
+// 	if err != nil {
+// 		logger.AtLog.Logger.Error("SwapGetWalletAddress", zap.Error(err))
+// 		return nil, err
+// 	}
 
-	fmt.Printf("plaintext: %s\n", plaintext)
-	wallet.Prk = string(plaintext)
+// 	fmt.Printf("plaintext: %s\n", plaintext)
+// 	wallet.Prk = string(plaintext)
 
-	return wallet, nil
-}
+// 	return wallet, nil
+// }
 
 func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.SwapWrapTOkenContractAddrConfig, error) {
 	redisKey := "tc-swap:wrap-token-config"
