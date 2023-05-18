@@ -124,7 +124,8 @@ func (h *httpDelivery) RegisterV1Routes() {
 	jobRoutes.Use(h.MiddleWare.SwapAuthorizationJobFunc)
 	jobRoutes.HandleFunc("/update-ido", h.swapJobUpdateIdoStatus).Methods("GET")
 	// jobRoutes.HandleFunc("/auto-trade", h.swapJobAutoTrade).Methods("GET")
-	jobRoutes.HandleFunc("/test-api", h.testAPI).Methods("GET")
+	// jobRoutes.HandleFunc("/test-api", h.testAPI).Methods("GET")
+	// jobRoutes.HandleFunc("/add-gm-balance", h.addGmPaymentBalance).Methods("GET")
 
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
@@ -160,7 +161,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	// walletRoutes.HandleFunc("/detail", h.getSwapWallet).Methods("GET")
 
 	gmRoutes := swapRoutes.PathPrefix("/gm").Subrouter()
-	// gmRoutes.Use(h.MiddleWare.SwapRecaptchaV2Middleware)
+	gmRoutes.Use(h.MiddleWare.SwapRecaptchaV2Middleware)
 	gmRoutes.HandleFunc("/claim", h.gmPaymentClaim).Methods("GET")
 	// gmRoutes.HandleFunc("/add-test", h.addTestGmPaymentBalance).Methods("GET")
 }

@@ -5,7 +5,10 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"encoding/csv"
 	"errors"
+	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"strings"
@@ -31,16 +34,14 @@ func (u *Usecase) TestGG(ctx context.Context) (interface{}, error) {
 	// 	return nil, err
 	// }
 
-	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_PRIVATE_KEY"))
+	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
 	if err != nil {
-		err = errors.New("Cannot get encryptedText")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
 
-	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_SALT"))
+	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
 	if err != nil {
-		err = errors.New("Cannot get encryptedText")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
@@ -76,16 +77,11 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	}
 
 	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_PRIVATE_KEY"))
-	if err != nil {
-		err = errors.New("Cannot get encryptedText")
-		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-		return nil, err
-	}
+	encryptedText, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
+	walletCipherKey, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
 
-	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_SALT"))
-	if err != nil {
-		err = errors.New("Cannot get encryptedText")
+	if encryptedText == "" || walletCipherKey == "" {
+		err = errors.New("Cannot get encrypted key")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
@@ -108,6 +104,16 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		err = errors.New("GM Balance not found")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
+	}
+
+	if userBalance.IsContract {
+		timeIn := startTime.Add(time.Minute * time.Duration(15))
+		if time.Now().Before(timeIn) {
+			time.Sleep(time.Minute * time.Duration(5))
+			err = errors.New("Bad request")
+			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+			return nil, err
+		}
 	}
 
 	resp := entity.SwapUserGmClaimSignature{}
@@ -143,6 +149,37 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	return resp, nil
 }
 
+func (u *Usecase) GetGoogleSecretKey(keyName string) (string, error) {
+	redisKey := fmt.Sprintf("tc-swap:google-secret-key-%s", keyName)
+	exists, err := u.Cache.Exists(redisKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+		return "", err
+	}
+	if *exists {
+		encryptedText, err := u.Cache.GetData(redisKey)
+		if err != nil {
+			logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+			return "", err
+		}
+		return *encryptedText, nil
+	} else {
+		encryptedText, err := helpers.GetGoogleSecretKey(keyName)
+		if err != nil {
+			err = errors.New("Cannot get encryptedText")
+			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+			return "", err
+		}
+		err = u.Cache.SetStringDataWithExpTime(redisKey, encryptedText, 60*60)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return encryptedText, nil
+		}
+
+		return encryptedText, nil
+	}
+}
+
 func (u *Usecase) AddTestGmbalance(ctx context.Context, userAddress string) (interface{}, error) {
 	swapPairSync := &entity.SwapUserGmBalance{}
 	swapPairSync.UserAddress = strings.ToLower(userAddress)
@@ -153,4 +190,40 @@ func (u *Usecase) AddTestGmbalance(ctx context.Context, userAddress string) (int
 		return false, nil
 	}
 	return true, nil
+}
+
+func (u *Usecase) AddGmbalanceFromFile(ctx context.Context) error {
+	f, err := os.Open("/Users/autonomous/Desktop/gm_results.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// remember to close the file at the end of the program
+	defer f.Close()
+
+	// read csv values using csv.Reader
+	csvReader := csv.NewReader(f)
+	data, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	listData := []entity.IEntity{}
+	for i, row := range data {
+		if i != 0 {
+			swapPairSync := &entity.SwapUserGmBalance{}
+			swapPairSync.UserAddress = strings.ToLower(row[0])
+			swapPairSync.Balance, _ = primitive.ParseDecimal128(row[1])
+			swapPairSync.IsContract = false
+			if row[2] == "1" {
+				swapPairSync.IsContract = true
+			}
+			listData = append(listData, swapPairSync)
+			// _, err := u.Repo.InsertOne(swapPairSync)
+			// if err != nil {
+			// 	fmt.Println(err)
+			// }
+		}
+	}
+	u.Repo.InsertMany(listData)
+	return nil
 }
