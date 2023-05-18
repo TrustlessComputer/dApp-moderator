@@ -9,7 +9,7 @@ const (
 	SwapIdoStatusFinished SwapIdoStatus = "finished"
 
 	SwapBaseTokenSymbolWBTC SwapBaseTokenSymbol = "WBTC"
-	SwapBaseTokenSymbolWETH SwapBaseTokenSymbol = "ETH"
+	SwapBaseTokenSymbolWETH SwapBaseTokenSymbol = "WETH"
 )
 
 type SwapWrapTOkenContractAddrConfig struct {
