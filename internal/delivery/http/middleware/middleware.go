@@ -16,6 +16,7 @@ import (
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"dapp-moderator/utils/recaptcha"
 	"dapp-moderator/utils/redis"
 
 	"go.uber.org/zap"
@@ -27,6 +28,7 @@ type IMiddleware interface {
 	Pagination(next http.Handler) http.Handler
 	ValidateAccessToken(next http.Handler) http.Handler
 	SwapAuthorizationJobFunc(next http.Handler) http.Handler
+	SwapRecaptchaV2Middleware(next http.Handler) http.Handler
 }
 
 type middleware struct {
@@ -34,6 +36,7 @@ type middleware struct {
 	response         response.IHttpResponse
 	cache            redis.IRedisCache
 	cacheAuthService redis.IRedisCache
+	recaptcha        recaptcha.ReCAPTCHA
 }
 
 func NewMiddleware(uc usecase.Usecase, g *global.Global) *middleware {
@@ -42,6 +45,7 @@ func NewMiddleware(uc usecase.Usecase, g *global.Global) *middleware {
 	m.response = response.NewHttpResponse()
 	m.cache = g.Cache
 	m.cacheAuthService = g.CacheAuthService
+	m.recaptcha, _ = recaptcha.NewReCAPTCHA(uc.Config.Swap.RecaptchaSecretKey, recaptcha.V2, 30*time.Second)
 	return m
 }
 
@@ -212,6 +216,38 @@ func (m *middleware) SwapAuthorizationJobFunc(next http.Handler) http.Handler {
 		if jobToken != token {
 			err = errors.New("Unauthorized")
 			logger.AtLog.Logger.Error("accessToken", zap.Error(err))
+			m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
+			return
+		}
+		wrapped := wrapResponseWriter(w)
+
+		next.ServeHTTP(wrapped, r.WithContext(ctx))
+	}
+	return http.HandlerFunc(fn)
+}
+
+//Authorization for cron job
+func (m *middleware) SwapRecaptchaV2Middleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		var err error
+		token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
+		if token == "" {
+			err = errors.New("Token is empty")
+		}
+
+		recaptcha := r.Header.Get(utils.RECAPTCHA)
+		if recaptcha == "" {
+			recaptcha = r.Header.Get(utils.XRECAPTCHA)
+			if recaptcha == "" {
+				err = errors.New("RECAPTCHA is empty")
+				m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
+				return
+			}
+		}
+		err = m.recaptcha.Verify(recaptcha)
+		if err != nil {
+			err = errors.New("RECAPTCHA is invalid")
 			m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
 			return
 		}
