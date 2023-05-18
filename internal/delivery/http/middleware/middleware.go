@@ -231,11 +231,6 @@ func (m *middleware) SwapRecaptchaV2Middleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		var err error
-		token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
-		if token == "" {
-			err = errors.New("Token is empty")
-		}
-
 		recaptcha := r.Header.Get(utils.RECAPTCHA)
 		if recaptcha == "" {
 			recaptcha = r.Header.Get(utils.XRECAPTCHA)

@@ -75,20 +75,30 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 		return nil, err
 	}
 
+	mapBlackListContract := make(map[string]string)
+	listBlackList, _ := u.Repo.FindBlackListTokens(ctx, entity.SwapBlackListokenFilter{BaseFilters: entity.BaseFilters{Limit: 10000, Page: 1}})
+	for _, item := range listBlackList {
+		mapBlackListContract[item.Address] = "1"
+	}
+
 	isWbtcInArray := false
 	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
 	for _, pair := range pairs {
 		if fromToken == "" || (fromToken != "" && strings.EqualFold(fromToken, pair.Token1)) {
-			contracts = append(contracts, pair.Token0)
-			if strings.EqualFold(wbtcContractAddr, pair.Token0) {
-				isWbtcInArray = true
+			if _, ok := mapBlackListContract[pair.Token0]; !ok {
+				contracts = append(contracts, pair.Token0)
+				if strings.EqualFold(wbtcContractAddr, pair.Token0) {
+					isWbtcInArray = true
+				}
 			}
 		}
 
 		if fromToken == "" || (fromToken != "" && strings.EqualFold(fromToken, pair.Token0)) {
-			contracts = append(contracts, pair.Token1)
-			if strings.EqualFold(wbtcContractAddr, pair.Token1) {
-				isWbtcInArray = true
+			if _, ok := mapBlackListContract[pair.Token1]; !ok {
+				contracts = append(contracts, pair.Token1)
+				if strings.EqualFold(wbtcContractAddr, pair.Token1) {
+					isWbtcInArray = true
+				}
 			}
 		}
 	}
