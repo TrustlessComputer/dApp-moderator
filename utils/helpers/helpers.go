@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
@@ -15,6 +16,8 @@ import (
 	"regexp"
 	"strings"
 
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
@@ -298,4 +301,27 @@ func DecryptAES(key []byte, ct string) string {
 	s := string(pt[:])
 	fmt.Println("DECRYPTED:", s)
 	return s
+}
+
+func GetGoogleSecretKey(name string) (string, error) {
+	// Create the client.
+	ctx := context.Background()
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
+
+	// Build the request.
+	req := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: name,
+	}
+
+	// Call the API.
+	result, err := client.AccessSecretVersion(ctx, req)
+	if err != nil {
+		return "", err
+	}
+
+	return string(result.Payload.Data), nil
 }
