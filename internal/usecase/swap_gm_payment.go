@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"errors"
+	"fmt"
 	"math/big"
 	"os"
 	"strings"
@@ -76,16 +77,11 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	}
 
 	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
-	if err != nil {
-		err = errors.New("Cannot get encryptedText")
-		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-		return nil, err
-	}
+	encryptedText, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
+	walletCipherKey, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
 
-	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
-	if err != nil {
-		err = errors.New("Cannot get encryptedText")
+	if encryptedText == "" || walletCipherKey == "" {
+		err = errors.New("Cannot get encrypted key")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
@@ -151,6 +147,37 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 
 	logger.AtLog.Logger.Info("GmPaymentClaim", zap.Any("data", resp))
 	return resp, nil
+}
+
+func (u *Usecase) GetGoogleSecretKey(keyName string) (string, error) {
+	redisKey := fmt.Sprintf("tc-swap:google-secret-key-%s", keyName)
+	exists, err := u.Cache.Exists(redisKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+		return "", err
+	}
+	if *exists {
+		encryptedText, err := u.Cache.GetData(redisKey)
+		if err != nil {
+			logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+			return "", err
+		}
+		return *encryptedText, nil
+	} else {
+		encryptedText, err := helpers.GetGoogleSecretKey(keyName)
+		if err != nil {
+			err = errors.New("Cannot get encryptedText")
+			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+			return "", err
+		}
+		err = u.Cache.SetStringDataWithExpTime(redisKey, encryptedText, 60*60)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return encryptedText, nil
+		}
+
+		return encryptedText, nil
+	}
 }
 
 func (u *Usecase) AddTestGmbalance(ctx context.Context, userAddress string) (interface{}, error) {
