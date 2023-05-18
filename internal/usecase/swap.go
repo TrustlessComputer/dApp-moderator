@@ -760,7 +760,7 @@ func (u *Usecase) TcSwapGetWrapTokenContractAddr(ctx context.Context) (*entity.S
 			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 			return config, nil
 		}
-		err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 60*60)
+		err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 30*60)
 		if err != nil {
 			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 			return config, nil
