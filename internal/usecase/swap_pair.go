@@ -107,10 +107,14 @@ func (u *Usecase) FindTokensInPool(ctx context.Context, filter request.Paginatio
 		for _, pair := range pairs {
 			if strings.EqualFold(wbtcContractAddr, pair.Token0) &&
 				!strings.EqualFold(fromToken, pair.Token1) {
-				contracts = append(contracts, pair.Token1)
+				if _, ok := mapBlackListContract[pair.Token1]; !ok {
+					contracts = append(contracts, pair.Token1)
+				}
 			} else if strings.EqualFold(wbtcContractAddr, pair.Token1) &&
 				!strings.EqualFold(fromToken, pair.Token0) {
-				contracts = append(contracts, pair.Token0)
+				if _, ok := mapBlackListContract[pair.Token0]; !ok {
+					contracts = append(contracts, pair.Token0)
+				}
 			}
 		}
 	}
