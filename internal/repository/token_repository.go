@@ -131,3 +131,29 @@ func (r *Repository) FindListTokens(ctx context.Context, filter entity.TokenFilt
 	}
 	return tokens, nil
 }
+
+func (r *Repository) FindBlackListTokens(ctx context.Context, filter entity.SwapBlackListokenFilter) ([]*entity.SwapBlackListToken, error) {
+	tokens := []*entity.SwapBlackListToken{}
+
+	// pagination
+	numToSkip := (filter.Page - 1) * filter.Limit
+	// Set the options for the query
+	options := options.Find()
+	options.SetSkip(numToSkip)
+	options.SetLimit(filter.Limit)
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_BLACKLIST_TOKENS).Find(ctx, bson.M{}, options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var token entity.SwapBlackListToken
+		err = cursor.Decode(&token)
+		if err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, &token)
+	}
+	return tokens, nil
+}

@@ -5,8 +5,10 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"encoding/csv"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"strings"
@@ -188,4 +190,40 @@ func (u *Usecase) AddTestGmbalance(ctx context.Context, userAddress string) (int
 		return false, nil
 	}
 	return true, nil
+}
+
+func (u *Usecase) AddGmbalanceFromFile(ctx context.Context) error {
+	f, err := os.Open("/Users/autonomous/Desktop/gm_results.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// remember to close the file at the end of the program
+	defer f.Close()
+
+	// read csv values using csv.Reader
+	csvReader := csv.NewReader(f)
+	data, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	listData := []entity.IEntity{}
+	for i, row := range data {
+		if i != 0 {
+			swapPairSync := &entity.SwapUserGmBalance{}
+			swapPairSync.UserAddress = strings.ToLower(row[0])
+			swapPairSync.Balance, _ = primitive.ParseDecimal128(row[1])
+			swapPairSync.IsContract = false
+			if row[2] == "1" {
+				swapPairSync.IsContract = true
+			}
+			listData = append(listData, swapPairSync)
+			// _, err := u.Repo.InsertOne(swapPairSync)
+			// if err != nil {
+			// 	fmt.Println(err)
+			// }
+		}
+	}
+	u.Repo.InsertMany(listData)
+	return nil
 }
