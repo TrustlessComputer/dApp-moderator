@@ -7,12 +7,51 @@ import (
 	"dapp-moderator/utils/logger"
 	"errors"
 	"math/big"
+	"os"
 	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
+
+func (u *Usecase) TestGG(ctx context.Context) (interface{}, error) {
+	// prk := "1c373998059152166f8d4c7fcfb42c5403360668d45b6acc922ef4c2c1a67f7d"
+	// prkEncrypted, err := helpers.EncryptToString(prk, os.Getenv("GM_PAYMENT_SALT"))
+	// if err != nil {
+	// 	err = errors.New("Cannot get encryptedText")
+	// 	logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+	// 	return nil, err
+	// }
+
+	// decryptedPrk, err := helpers.DecryptToString("AAAAAAAAAADBKOfbj4B7wdqlEc/JYV/nBrm4kcpE23mEU3vG/8ir3aVCYL+ttlCtA6hzWpwgr/ZFTdNPaMPA7+daCmTliWbD", "au3Cao8NSguLZAgIpZkquvrVyjutEzct")
+	// if err != nil {
+	// 	err = errors.New("Cannot decrypted prk")
+	// 	logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+	// 	return nil, err
+	// }
+
+	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_PRIVATE_KEY"))
+	if err != nil {
+		err = errors.New("Cannot get encryptedText")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_SALT"))
+	if err != nil {
+		err = errors.New("Cannot get encryptedText")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	m := make(map[string]string)
+	m["GM_PAYMENT_PRIVATE_KEY"] = encryptedText
+	m["GM_PAYMENT_SALT"] = walletCipherKey
+	// m["PRK"] = prkEncrypted
+	// m["decryptedPrk"] = decryptedPrk
+	return m, nil
+}
 
 func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (interface{}, error) {
 	var err error
@@ -26,12 +65,43 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		return nil, err
 	}
 
-	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	adminWallet, err := u.SwapGetWalletAddress(ctx, config.GmPaymentAdminAddr)
-	if err != nil {
+	dbPaidGm, _ := u.Repo.FindUserGmPaid(ctx, entity.SwapUserGmPaidFilter{
+		Address: strings.ToLower(userAddress),
+	})
+
+	if dbPaidGm != nil {
+		err = errors.New("User is already claimed")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
+
+	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
+	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_PRIVATE_KEY"))
+	if err != nil {
+		err = errors.New("Cannot get encryptedText")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GM_PAYMENT_SALT"))
+	if err != nil {
+		err = errors.New("Cannot get encryptedText")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	decryptedPrk, err := helpers.DecryptToString(encryptedText, walletCipherKey)
+	if err != nil {
+		err = errors.New("Cannot decrypted prk")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	// adminWallet, err := u.SwapGetWalletAddress(ctx, config.GmPaymentAdminAddr)
+	// if err != nil {
+	// 	logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+	// 	return nil, err
+	// }
 
 	userBalance, _ := u.Repo.FindUserGmBalance(ctx, query)
 	if userBalance == nil {
@@ -47,7 +117,7 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		adminSign, err := u.BlockChainApi.GmPaymentSignMessage(
 			config.GmPaymentContractAddr,
 			config.GmPaymentAdminAddr,
-			adminWallet.Prk,
+			decryptedPrk,
 			userAddress,
 			config.GmTokenContractAddr,
 			chainId,

@@ -67,9 +67,9 @@ type RedisConfig struct {
 }
 
 type SwapConfig struct {
-	BaseURL   string
-	SecretKey string
-	IvKey     string
+	BaseURL            string
+	RecaptchaSecretKey string
+	JobAuthToken       string
 }
 
 func NewConfig(filePaths ...string) (*Config, error) {
@@ -103,9 +103,9 @@ func NewConfig(filePaths ...string) (*Config, error) {
 		BFSService:    os.Getenv("BFS_SERVICE_URL"),
 		BNSService:    os.Getenv("BNS_SERVICE_URL"),
 		Swap: &SwapConfig{
-			BaseURL:   os.Getenv("TC_ENDPOINT"),
-			SecretKey: os.Getenv("SWAP_SECRET_KEY"),
-			IvKey:     os.Getenv("SWAP_IV_KEY"),
+			BaseURL:            os.Getenv("TC_ENDPOINT"),
+			RecaptchaSecretKey: os.Getenv("SWAP_RECAPTCHA_SECRET_KEY"),
+			JobAuthToken:       os.Getenv("SWAP_JOB_AUTH_TOKEN"),
 		},
 		Databases: &Databases{
 			Mongo: &DBConnection{
