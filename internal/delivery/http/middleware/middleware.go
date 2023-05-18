@@ -26,6 +26,7 @@ type IMiddleware interface {
 	AuthorizationFunc(next http.Handler) http.Handler
 	Pagination(next http.Handler) http.Handler
 	ValidateAccessToken(next http.Handler) http.Handler
+	SwapAuthorizationJobFunc(next http.Handler) http.Handler
 }
 
 type middleware struct {
@@ -189,4 +190,34 @@ func (m *middleware) ValidateToken(w http.ResponseWriter, r *http.Request) (*res
 	ctx = context.WithValue(ctx, utils.SIGNED_USER_ID, p.Uid)
 	wrapped := wrapResponseWriter(w)
 	return wrapped, &ctx, nil
+}
+
+//Authorization for cron job
+func (m *middleware) SwapAuthorizationJobFunc(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		var err error
+		token := helpers.ReplaceToken(r.Header.Get(utils.AUTH_TOKEN))
+		if token == "" {
+			err = errors.New("Token is empty")
+		}
+
+		if err != nil {
+			logger.AtLog.Logger.Error("accessToken", zap.Error(err))
+			m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
+			return
+		}
+
+		jobToken := m.usecase.Config.Swap.JobAuthToken
+		if jobToken != token {
+			err = errors.New("Unauthorized")
+			logger.AtLog.Logger.Error("accessToken", zap.Error(err))
+			m.response.RespondWithError(w, http.StatusUnauthorized, response.Error, err)
+			return
+		}
+		wrapped := wrapResponseWriter(w)
+
+		next.ServeHTTP(wrapped, r.WithContext(ctx))
+	}
+	return http.HandlerFunc(fn)
 }

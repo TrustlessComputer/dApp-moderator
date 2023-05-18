@@ -121,6 +121,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapTransactions.HandleFunc("/pending", h.findPendingTransactionHistories).Methods("GET")
 
 	jobRoutes := swapRoutes.PathPrefix("/job").Subrouter()
+	jobRoutes.Use(h.MiddleWare.SwapAuthorizationJobFunc)
 	jobRoutes.HandleFunc("/update-ido", h.swapJobUpdateIdoStatus).Methods("GET")
 	jobRoutes.HandleFunc("/auto-trade", h.swapJobAutoTrade).Methods("GET")
 
@@ -153,8 +154,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	tmRoutes.HandleFunc("/histories", h.findTmTokenHistories).Methods("GET")
 
 	walletRoutes := swapRoutes.PathPrefix("/wallet").Subrouter()
+	walletRoutes.Use(h.MiddleWare.SwapAuthorizationJobFunc)
 	walletRoutes.HandleFunc("/update", h.addOrUpdateSwapWallet).Methods("PUT")
-	walletRoutes.HandleFunc("/detail", h.getSwapWallet).Methods("GET")
+	// walletRoutes.HandleFunc("/detail", h.getSwapWallet).Methods("GET")
 
 	gmRoutes := swapRoutes.PathPrefix("/gm").Subrouter()
 	gmRoutes.HandleFunc("/claim", h.gmPaymentClaim).Methods("GET")
