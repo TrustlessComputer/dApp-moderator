@@ -34,14 +34,12 @@ func (u *Usecase) TestGG(ctx context.Context) (interface{}, error) {
 
 	encryptedText, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
 	if err != nil {
-		err = errors.New("Cannot get encryptedText")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
 
 	walletCipherKey, err := helpers.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
 	if err != nil {
-		err = errors.New("Cannot get encryptedText")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
