@@ -449,6 +449,19 @@ func (h *httpDelivery) gmPaymentClaimTestMainnet(w http.ResponseWriter, r *http.
 	).ServeHTTP(w, r)
 }
 
+func (h *httpDelivery) generateAdminSign(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			res, err := h.Usecase.GmPaymentGenerateSignature(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		},
+	).ServeHTTP(w, r)
+}
+
 func (h *httpDelivery) addGmPaymentBalance(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
