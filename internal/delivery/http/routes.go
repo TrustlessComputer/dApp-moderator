@@ -166,6 +166,10 @@ func (h *httpDelivery) RegisterV1Routes() {
 	gmRoutes := swapRoutes.PathPrefix("/gm").Subrouter()
 	gmRoutes.Use(h.MiddleWare.SwapRecaptchaV2Middleware)
 	gmRoutes.HandleFunc("/claim", h.gmPaymentClaim).Methods("GET")
+
+	// evm bytescode check
+	evmRoutes := api.PathPrefix("/evm").Subrouter()
+	evmRoutes.HandleFunc("/bytescode", h.checkEvmBytescode).Methods("POST")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {
