@@ -126,7 +126,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	// jobRoutes.HandleFunc("/claim-test-mainnet", h.gmPaymentClaimTestMainnet).Methods("GET")
 	// jobRoutes.HandleFunc("/generate-sign", h.generateAdminSign).Methods("GET")
 	// jobRoutes.HandleFunc("/test-api", h.testAPI).Methods("GET")
-	jobRoutes.HandleFunc("/add-gm-balance", h.addGmPaymentBalance).Methods("GET")
+	// jobRoutes.HandleFunc("/add-gm-balance", h.addGmPaymentBalance).Methods("GET")
 	jobRoutes.HandleFunc("/update-token", h.jobUpdateDataToken).Methods("GET")
 
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
