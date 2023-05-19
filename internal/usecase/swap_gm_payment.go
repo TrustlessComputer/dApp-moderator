@@ -164,17 +164,8 @@ func (u *Usecase) GmPaymentClaimTestnet(ctx context.Context, userAddress string)
 	query := entity.SwapUserGmBalanceFilter{}
 	query.Address = strings.ToLower(userAddress)
 
-	// config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	// userBalance, _ := u.Repo.FindUserGmBalance(ctx, query)
-	// if userBalance == nil {
-	// 	err = errors.New("GM Balance not found")
-	// 	logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-	// 	return nil, err
-	// }
-
 	decryptedPrk := "1c373998059152166f8d4c7fcfb42c5403360668d45b6acc922ef4c2c1a67f7d"
 	resp := entity.SwapUserGmClaimSignature{}
-	// if userBalance != nil {
 	mgAmount, _ := big.NewFloat(0).SetString("0.01")
 	chainId, _ := new(big.Int).SetString("22213", 10)
 	adminSign, err := u.BlockChainApi.GmPaymentSignMessage(
@@ -199,10 +190,6 @@ func (u *Usecase) GmPaymentClaimTestnet(ctx context.Context, userAddress string)
 		Amount:    helpers.EtherToWei(mgAmount).String(),
 	}
 
-	return resp, nil
-	// }
-
-	logger.AtLog.Logger.Info("GmPaymentClaim", zap.Any("data", resp))
 	return resp, nil
 }
 
