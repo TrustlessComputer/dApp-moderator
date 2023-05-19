@@ -161,36 +161,75 @@ func (u *Usecase) GetGoogleSecretKey(keyName string) (string, error) {
 
 func (u *Usecase) GmPaymentClaimTestnet(ctx context.Context, userAddress string) (interface{}, error) {
 	var err error
-	query := entity.SwapUserGmBalanceFilter{}
-	query.Address = strings.ToLower(userAddress)
+	user1Addr := "0x670543A06bf013138C2AB47605C339e87181B65d"
+	mgAmount1, _ := big.NewFloat(0).SetString("0.1")
 
-	decryptedPrk := "1c373998059152166f8d4c7fcfb42c5403360668d45b6acc922ef4c2c1a67f7d"
-	resp := entity.SwapUserGmClaimSignature{}
-	mgAmount, _ := big.NewFloat(0).SetString("0.01")
+	user2Addr := "0x94d2172638014C7D0C3C4eA0535391AdED049Fd1"
+	mgAmount2, _ := big.NewFloat(0).SetString("0.2")
+
+	contractAddr := "0xBAd802Afa594e6bbFECf7248ED031617F86171D9"
+	// adminAddr := "0xBD91528e1B91AdbddF9f049e4CF5A5D9A45F1B8B"
+	// decryptedPrk := "1c373998059152166f8d4c7fcfb42c5403360668d45b6acc922ef4c2c1a67f7d"
+	adminAddr := "0x825794e9cca48352ED02599400170E990CAE3A04"
+	decryptedPrk := "aa613f99e94701131fa99a864f7ffa3ea99674e23cadf9f4738929bff0eec775"
+	tokenAddr := "0x13f86cbF0476e1D867342adE6d60164F8E26c14F"
+
+	// mgAmount, _ := big.NewFloat(0).SetString("0.01")
 	chainId, _ := new(big.Int).SetString("22213", 10)
-	adminSign, err := u.BlockChainApi.GmPaymentSignMessage(
-		"",
-		"0xBD91528e1B91AdbddF9f049e4CF5A5D9A45F1B8B",
+	adminSign1, err := u.BlockChainApi.GmPaymentSignMessage(
+		contractAddr,
+		adminAddr,
 		decryptedPrk,
-		userAddress,
-		"0x74B033e56434845E02c9bc4F0caC75438033b00D",
+		user1Addr,
+		tokenAddr,
 		chainId,
-		helpers.EtherToWei(mgAmount),
+		helpers.EtherToWei(mgAmount1),
 	)
 	if err != nil {
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
 	}
-	if !strings.HasPrefix(adminSign, "0x") {
-		adminSign = "0x" + adminSign
+	if !strings.HasPrefix(adminSign1, "0x") {
+		adminSign1 = "0x" + adminSign1
 	}
 
-	resp = entity.SwapUserGmClaimSignature{
-		Signature: adminSign,
-		Amount:    helpers.EtherToWei(mgAmount).String(),
+	fmt.Println(adminSign1)
+	fmt.Println(helpers.EtherToWei(mgAmount1).String())
+	resp1 := entity.SwapUserGmClaimSignature{
+		Signature: adminSign1,
+		Amount:    helpers.EtherToWei(mgAmount1).String(),
 	}
 
-	return resp, nil
+	///////////////////////////////////////////
+	adminSign2, err := u.BlockChainApi.GmPaymentSignMessage(
+		contractAddr,
+		adminAddr,
+		decryptedPrk,
+		user2Addr,
+		tokenAddr,
+		chainId,
+		helpers.EtherToWei(mgAmount2),
+	)
+	if err != nil {
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+	if !strings.HasPrefix(adminSign2, "0x") {
+		adminSign2 = "0x" + adminSign2
+	}
+
+	fmt.Println(adminSign2)
+	fmt.Println(helpers.EtherToWei(mgAmount2).String())
+	resp2 := entity.SwapUserGmClaimSignature{
+		Signature: adminSign2,
+		Amount:    helpers.EtherToWei(mgAmount2).String(),
+	}
+
+	listResp := []entity.SwapUserGmClaimSignature{}
+	listResp = append(listResp, resp1)
+	listResp = append(listResp, resp2)
+
+	return listResp, nil
 }
 
 func (u *Usecase) GmPaymentClaimTestMainnet(ctx context.Context, userAddress string) (interface{}, error) {
