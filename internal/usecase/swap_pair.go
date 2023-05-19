@@ -632,7 +632,7 @@ func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
 		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
 		if token != nil && token.BaseTokenSymbol == "" {
 			token.BaseTokenSymbol = baseToken.Symbol
-			err = u.Repo.UpdateToken(ctx, token)
+			err = u.Repo.UpdateBaseSymbolToken(ctx, token)
 			if err != nil {
 				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
 				return err
@@ -657,7 +657,7 @@ func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
 		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
 		if token != nil && token.BaseTokenSymbol == "" {
 			token.BaseTokenSymbol = baseToken.Symbol
-			err = u.Repo.UpdateToken(ctx, token)
+			err = u.Repo.UpdateBaseSymbolToken(ctx, token)
 			if err != nil {
 				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
 				return err
