@@ -112,7 +112,6 @@ func (h *httpDelivery) RegisterV1Routes() {
 	swapRoutes.HandleFunc("/update-sync", h.jobUpdateDataSwapSync).Methods("GET")
 	swapRoutes.HandleFunc("/update-history", h.jobUpdateDataSwapHistory).Methods("GET")
 	swapRoutes.HandleFunc("/update-pair", h.jobUpdateDataSwapPair).Methods("GET")
-	swapRoutes.HandleFunc("/update-token", h.jobUpdateDataToken).Methods("GET")
 	swapRoutes.HandleFunc("/fe-log", h.addFrontEndLog).Methods("POST")
 	swapRoutes.HandleFunc("/bot-config", h.addSwapBotConfig).Methods("POST")
 	swapRoutes.HandleFunc("/report/slack", h.getSlackReport).Methods("GET")
@@ -123,10 +122,12 @@ func (h *httpDelivery) RegisterV1Routes() {
 	jobRoutes := swapRoutes.PathPrefix("/job").Subrouter()
 	jobRoutes.Use(h.MiddleWare.SwapAuthorizationJobFunc)
 	jobRoutes.HandleFunc("/update-ido", h.swapJobUpdateIdoStatus).Methods("GET")
-	jobRoutes.HandleFunc("/claim-test", h.gmPaymentClaimTestnet).Methods("GET")
-	jobRoutes.HandleFunc("/claim-test-mainnet", h.gmPaymentClaimTestnet).Methods("GET")
-	jobRoutes.HandleFunc("/test-api", h.testAPI).Methods("GET")
-	// jobRoutes.HandleFunc("/add-gm-balance", h.addGmPaymentBalance).Methods("GET")
+	// jobRoutes.HandleFunc("/claim-test", h.gmPaymentClaimTestnet).Methods("GET")
+	// jobRoutes.HandleFunc("/claim-test-mainnet", h.gmPaymentClaimTestMainnet).Methods("GET")
+	// jobRoutes.HandleFunc("/generate-sign", h.generateAdminSign).Methods("GET")
+	// jobRoutes.HandleFunc("/test-api", h.testAPI).Methods("GET")
+	jobRoutes.HandleFunc("/add-gm-balance", h.addGmPaymentBalance).Methods("GET")
+	jobRoutes.HandleFunc("/update-token", h.jobUpdateDataToken).Methods("GET")
 
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
@@ -162,7 +163,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	// walletRoutes.HandleFunc("/detail", h.getSwapWallet).Methods("GET")
 
 	gmRoutes := swapRoutes.PathPrefix("/gm").Subrouter()
-	gmRoutes.Use(h.MiddleWare.SwapRecaptchaV2Middleware)
+	// gmRoutes.Use(h.MiddleWare.SwapRecaptchaV2Middleware)
 	gmRoutes.HandleFunc("/claim", h.gmPaymentClaim).Methods("GET")
 }
 
