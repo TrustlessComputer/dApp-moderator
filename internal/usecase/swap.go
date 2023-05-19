@@ -528,8 +528,8 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 		slackString += fmt.Sprintf("*Total BTC In Pool:* %.2f BTC\n", poolBTCLiquidity)
 		slackString += fmt.Sprintf("*Total Pair:* %d\n", respLiq.PairTotal)
 		slackString += fmt.Sprintf("*Total Txs:* %d\n", respLiq.TxTotal)
-		slackString += fmt.Sprintf("*Last 24h Pair:* %d\n", respLiq.Pair24h)
-		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", respLiq.Tx24h)
+		// slackString += fmt.Sprintf("*Last 24h Pair:* %d\n", respLiq.Pair24h)
+		// slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", respLiq.Tx24h)
 
 		listName := []string{
 			"wbtc_contract_address",
