@@ -598,6 +598,7 @@ func (u *Usecase) UpdateDataSwapPair(ctx context.Context) error {
 		}
 		pair.Reserve0, _ = primitive.ParseDecimal128(tmpReserve0.String())
 		pair.Reserve1, _ = primitive.ParseDecimal128(tmpReserve1.String())
+		pair.SetUpdatedAt()
 
 		err = u.Repo.UpdateSwapPair(ctx, pair)
 		if err != nil {
@@ -657,6 +658,7 @@ func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
 		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
 		if token != nil && token.BaseTokenSymbol == "" {
 			token.BaseTokenSymbol = baseToken.Symbol
+			token.SetUpdatedAt()
 			err = u.Repo.UpdateBaseSymbolToken(ctx, token)
 			if err != nil {
 				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
