@@ -43,11 +43,30 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	query.Address = strings.ToLower(userAddress)
 
 	startTime := u.Repo.ParseConfigByTime(ctx, "gm_payment_start_time")
-	// if time.Now().Before(*startTime) {
-	// 	err = errors.New("invalid start time")
-	// 	logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-	// 	return nil, err
-	// }
+	sleepMinute, _ := u.Repo.ParseConfigByInt(ctx, "gm_payment_sleep_time_minute")
+	if time.Now().Before(*startTime) {
+		err = errors.New("invalid start time")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	userBalance, _ := u.Repo.FindUserGmBalance(ctx, query)
+	if userBalance == nil {
+		err = errors.New("GM Balance not found")
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
+	}
+
+	userGmBalance, _ := big.NewFloat(0).SetString(userBalance.Balance.String())
+	if userGmBalance.Cmp(big.NewFloat(10)) >= 0 {
+		timeIn := startTime.Add(time.Minute * time.Duration(sleepMinute))
+		if time.Now().Before(timeIn) {
+			time.Sleep(time.Minute * time.Duration(3))
+			err = errors.New("Bad request")
+			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+			return nil, err
+		}
+	}
 
 	dbPaidGm, _ := u.Repo.FindUserGmPaid(ctx, entity.SwapUserGmPaidFilter{
 		Address: strings.ToLower(userAddress),
@@ -60,11 +79,9 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 	}
 
 	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	// encryptedText, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
-	// walletCipherKey, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
+	encryptedText, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_WALLET_PRIVATE_KEY_ENCRYPTED"))
+	walletCipherKey, _ := u.GetGoogleSecretKey(os.Getenv("GSM_KEY_NAME__DAPP_TOKEN_ENCRYPTED_SAT"))
 
-	encryptedText := "AAAAAAAAAADBKOfbj4B7wdqlEc/JYV/nBrm4kcpE23mEU3vG/8ir3aVCYL+ttlCtA6hzWpwgr/ZFTdNPaMPA7+daCmTliWbD"
-	walletCipherKey := "au3Cao8NSguLZAgIpZkquvrVyjutEzct"
 	if encryptedText == "" || walletCipherKey == "" {
 		err = errors.New("Cannot get encrypted key")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
@@ -76,23 +93,6 @@ func (u *Usecase) GmPaymentClaim(ctx context.Context, userAddress string) (inter
 		err = errors.New("Cannot decrypted prk")
 		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 		return nil, err
-	}
-
-	userBalance, _ := u.Repo.FindUserGmBalance(ctx, query)
-	if userBalance == nil {
-		err = errors.New("GM Balance not found")
-		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-		return nil, err
-	}
-
-	if userBalance.IsContract {
-		timeIn := startTime.Add(time.Minute * time.Duration(15))
-		if time.Now().Before(timeIn) {
-			time.Sleep(time.Minute * time.Duration(5))
-			err = errors.New("Bad request")
-			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-			return nil, err
-		}
 	}
 
 	resp := entity.SwapUserGmClaimSignature{}
@@ -340,7 +340,7 @@ func (u *Usecase) GmPaymentGenerateSignature(ctx context.Context) (interface{}, 
 }
 
 func (u *Usecase) AddGmbalanceFromFile(ctx context.Context) error {
-	f, err := os.Open("/Users/autonomous/Desktop/gm_results_38_first.csv")
+	f, err := os.Open("/Users/autonomous/Desktop/gm_results_batch_2.csv")
 	if err != nil {
 		log.Fatal(err)
 	}

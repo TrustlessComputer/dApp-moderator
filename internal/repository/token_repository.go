@@ -157,3 +157,15 @@ func (r *Repository) FindBlackListTokens(ctx context.Context, filter entity.Swap
 	}
 	return tokens, nil
 }
+
+func (r *Repository) UpdateBaseSymbolToken(ctx context.Context, token *entity.Token) error {
+	collectionName := token.CollectionName()
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"address": token.Address}, bson.M{"$set": bson.M{"base_token_symbol": token.BaseTokenSymbol}})
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
