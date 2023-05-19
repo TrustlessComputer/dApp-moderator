@@ -164,43 +164,43 @@ func (u *Usecase) GmPaymentClaimTestnet(ctx context.Context, userAddress string)
 	query := entity.SwapUserGmBalanceFilter{}
 	query.Address = strings.ToLower(userAddress)
 
-	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	userBalance, _ := u.Repo.FindUserGmBalance(ctx, query)
-	if userBalance == nil {
-		err = errors.New("GM Balance not found")
-		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-		return nil, err
-	}
+	// config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
+	// userBalance, _ := u.Repo.FindUserGmBalance(ctx, query)
+	// if userBalance == nil {
+	// 	err = errors.New("GM Balance not found")
+	// 	logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+	// 	return nil, err
+	// }
 
 	decryptedPrk := "1c373998059152166f8d4c7fcfb42c5403360668d45b6acc922ef4c2c1a67f7d"
 	resp := entity.SwapUserGmClaimSignature{}
-	if userBalance != nil {
-		mgAmount, _ := big.NewFloat(0).SetString(userBalance.Balance.String())
-		chainId, _ := new(big.Int).SetString(config.GmPaymentChainId, 10)
-		adminSign, err := u.BlockChainApi.GmPaymentSignMessage(
-			config.GmPaymentContractAddr,
-			config.GmPaymentAdminAddr,
-			decryptedPrk,
-			userAddress,
-			config.GmTokenContractAddr,
-			chainId,
-			helpers.EtherToWei(mgAmount),
-		)
-		if err != nil {
-			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
-			return nil, err
-		}
-		if !strings.HasPrefix(adminSign, "0x") {
-			adminSign = "0x" + adminSign
-		}
-
-		resp = entity.SwapUserGmClaimSignature{
-			Signature: adminSign,
-			Amount:    helpers.EtherToWei(mgAmount).String(),
-		}
-
-		return resp, nil
+	// if userBalance != nil {
+	mgAmount, _ := big.NewFloat(0).SetString("0.01")
+	chainId, _ := new(big.Int).SetString("22213", 10)
+	adminSign, err := u.BlockChainApi.GmPaymentSignMessage(
+		"",
+		"0xBD91528e1B91AdbddF9f049e4CF5A5D9A45F1B8B",
+		decryptedPrk,
+		userAddress,
+		"0x74B033e56434845E02c9bc4F0caC75438033b00D",
+		chainId,
+		helpers.EtherToWei(mgAmount),
+	)
+	if err != nil {
+		logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
+		return nil, err
 	}
+	if !strings.HasPrefix(adminSign, "0x") {
+		adminSign = "0x" + adminSign
+	}
+
+	resp = entity.SwapUserGmClaimSignature{
+		Signature: adminSign,
+		Amount:    helpers.EtherToWei(mgAmount).String(),
+	}
+
+	return resp, nil
+	// }
 
 	logger.AtLog.Logger.Info("GmPaymentClaim", zap.Any("data", resp))
 	return resp, nil
