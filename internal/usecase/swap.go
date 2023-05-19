@@ -481,55 +481,74 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 		return err
 	}
 
-	pairReserves, err := u.Repo.FindSwapPairCurrentReserveList(ctx, entity.SwapPairFilter{})
+	pairQuery := entity.SwapPairFilter{}
+	pairQuery.Limit = 10000
+	pairQuery.Page = 1
+	pairReserves, err := u.Repo.FindSwapPairs(ctx, pairQuery)
 	if err != nil {
 		logger.AtLog.Logger.Error("FindSwapPairs", zap.Error(err))
 		return err
 	}
-	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
+	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
 
 	poolBTCLiquidity := big.NewFloat(0)
+	poolETHLiquidity := big.NewFloat(0)
 	for _, item := range pairReserves {
-		tmpPoolBTCLiquidity := big.NewFloat(0)
-		if strings.EqualFold(item.Token0, wbtcContractAddr) {
-			tmpPoolBTCLiquidity, _ = new(big.Float).SetString(item.Reserve0.String())
-		} else if strings.EqualFold(item.Token1, wbtcContractAddr) {
-			tmpPoolBTCLiquidity, _ = new(big.Float).SetString(item.Reserve1.String())
+		if strings.EqualFold(item.Token0, config.WbtcContractAddr) {
+			tmpPoolBTCLiquidity, _ := new(big.Float).SetString(item.Reserve0.String())
+			poolBTCLiquidity = big.NewFloat(0).Add(poolBTCLiquidity, tmpPoolBTCLiquidity)
 		}
-		poolBTCLiquidity = big.NewFloat(0).Add(poolBTCLiquidity, tmpPoolBTCLiquidity)
+		if strings.EqualFold(item.Token1, config.WbtcContractAddr) {
+			tmpPoolBTCLiquidity, _ := new(big.Float).SetString(item.Reserve1.String())
+			poolBTCLiquidity = big.NewFloat(0).Add(poolBTCLiquidity, tmpPoolBTCLiquidity)
+		}
+
+		if strings.EqualFold(item.Token0, config.WethContractAddr) {
+			tmpPoolBTCLiquidity, _ := new(big.Float).SetString(item.Reserve0.String())
+			poolETHLiquidity = big.NewFloat(0).Add(poolETHLiquidity, tmpPoolBTCLiquidity)
+		}
+		if strings.EqualFold(item.Token1, config.WethContractAddr) {
+			tmpPoolBTCLiquidity, _ := new(big.Float).SetString(item.Reserve1.String())
+			poolETHLiquidity = big.NewFloat(0).Add(poolETHLiquidity, tmpPoolBTCLiquidity)
+		}
 	}
 
 	if resp != nil && respLiq != nil {
-		btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
-
 		totalVolumeBtc := float64(0)
 		volume24hBtc := float64(0)
-		totalVolumeUsd := float64(0)
-		volume24hUsd := float64(0)
+		totalVolumeEth := float64(0)
+		volume24hEth := float64(0)
 		if s, err := strconv.ParseFloat(resp.VolumeTotal.String(), 64); err == nil {
-			totalVolumeUsd = s * btcPrice
 			totalVolumeBtc = s
 		}
 
 		if s, err := strconv.ParseFloat(resp.Volume24h.String(), 64); err == nil {
-			volume24hUsd = s * btcPrice
 			volume24hBtc = s
 		}
 
+		if s, err := strconv.ParseFloat(resp.VolumeEthTotal.String(), 64); err == nil {
+			totalVolumeEth = s
+		}
+
+		if s, err := strconv.ParseFloat(resp.VolumeEth24h.String(), 64); err == nil {
+			volume24hEth = s
+		}
+
 		slackString := "*TC SWAP Report*\n"
-		slackString += fmt.Sprintf("*Total Volume:* %.2f BTC | $%.2f\n", totalVolumeBtc, totalVolumeUsd)
+		slackString += fmt.Sprintf("*Total Volume:* %.2f BTC | %.2f ETH\n", totalVolumeBtc, totalVolumeEth)
 		slackString += fmt.Sprintf("*Total Txs:* %d\n", resp.TxTotal)
 		slackString += fmt.Sprintf("*Total Users:* %d\n", resp.UsersTotal)
-		slackString += fmt.Sprintf("*Last 24h Volume:* %.2f BTC | $%.2f\n", volume24hBtc, volume24hUsd)
+		slackString += fmt.Sprintf("*Last 24h Volume:* %.2f BTC | %.2f ETH\n", volume24hBtc, volume24hEth)
 		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", resp.Tx24h)
 		slackString += fmt.Sprintf("*Last 24h Users:* %d\n", resp.Users24h)
 
 		slackString += "\n*TC Liquidity Report*\n"
 		slackString += fmt.Sprintf("*Total BTC In Pool:* %.2f BTC\n", poolBTCLiquidity)
+		slackString += fmt.Sprintf("*Total ETH In Pool:* %.2f ETH\n", poolETHLiquidity)
 		slackString += fmt.Sprintf("*Total Pair:* %d\n", respLiq.PairTotal)
 		slackString += fmt.Sprintf("*Total Txs:* %d\n", respLiq.TxTotal)
-		slackString += fmt.Sprintf("*Last 24h Pair:* %d\n", respLiq.Pair24h)
-		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", respLiq.Tx24h)
+		// slackString += fmt.Sprintf("*Last 24h Pair:* %d\n", respLiq.Pair24h)
+		// slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", respLiq.Tx24h)
 
 		listName := []string{
 			"wbtc_contract_address",
