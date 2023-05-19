@@ -500,27 +500,31 @@ func (u *Usecase) TcSwapSlackReport(ctx context.Context, channel string) error {
 	}
 
 	if resp != nil && respLiq != nil {
-		btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
-
 		totalVolumeBtc := float64(0)
 		volume24hBtc := float64(0)
-		totalVolumeUsd := float64(0)
-		volume24hUsd := float64(0)
+		totalVolumeEth := float64(0)
+		volume24hEth := float64(0)
 		if s, err := strconv.ParseFloat(resp.VolumeTotal.String(), 64); err == nil {
-			totalVolumeUsd = s * btcPrice
 			totalVolumeBtc = s
 		}
 
 		if s, err := strconv.ParseFloat(resp.Volume24h.String(), 64); err == nil {
-			volume24hUsd = s * btcPrice
 			volume24hBtc = s
 		}
 
+		if s, err := strconv.ParseFloat(resp.VolumeEthTotal.String(), 64); err == nil {
+			totalVolumeEth = s
+		}
+
+		if s, err := strconv.ParseFloat(resp.VolumeEth24h.String(), 64); err == nil {
+			volume24hEth = s
+		}
+
 		slackString := "*TC SWAP Report*\n"
-		slackString += fmt.Sprintf("*Total Volume:* %.2f BTC | $%.2f\n", totalVolumeBtc, totalVolumeUsd)
+		slackString += fmt.Sprintf("*Total Volume:* %.2f BTC | %.2f ETH\n", totalVolumeBtc, totalVolumeEth)
 		slackString += fmt.Sprintf("*Total Txs:* %d\n", resp.TxTotal)
 		slackString += fmt.Sprintf("*Total Users:* %d\n", resp.UsersTotal)
-		slackString += fmt.Sprintf("*Last 24h Volume:* %.2f BTC | $%.2f\n", volume24hBtc, volume24hUsd)
+		slackString += fmt.Sprintf("*Last 24h Volume:* %.2f BTC | %.2f ETH\n", volume24hBtc, volume24hEth)
 		slackString += fmt.Sprintf("*Last 24h Txs:* %d\n", resp.Tx24h)
 		slackString += fmt.Sprintf("*Last 24h Users:* %d\n", resp.Users24h)
 

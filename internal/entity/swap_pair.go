@@ -62,12 +62,14 @@ type SwapPairReport struct {
 }
 
 type SwapPairSlackReport struct {
-	Volume24h   primitive.Decimal128 `json:"volume_24h" bson:"volume_24h"`
-	VolumeTotal primitive.Decimal128 `json:"volume_total" bson:"volume_total"`
-	Tx24h       int32                `json:"tx_24h" bson:"tx_24h"`
-	TxTotal     int32                `json:"tx_total" bson:"tx_total"`
-	Users24h    int32                `json:"users_24h" bson:"users_24h"`
-	UsersTotal  int32                `json:"users_total" bson:"users_total"`
+	Volume24h      primitive.Decimal128 `json:"volume_24h" bson:"volume_24h"`
+	VolumeTotal    primitive.Decimal128 `json:"volume_total" bson:"volume_total"`
+	VolumeEth24h   primitive.Decimal128 `json:"volume_eth_24h" bson:"volume_eth_24h"`
+	VolumeEthTotal primitive.Decimal128 `json:"volume_eth_total" bson:"volume_eth_total"`
+	Tx24h          int32                `json:"tx_24h" bson:"tx_24h"`
+	TxTotal        int32                `json:"tx_total" bson:"tx_total"`
+	Users24h       int32                `json:"users_24h" bson:"users_24h"`
+	UsersTotal     int32                `json:"users_total" bson:"users_total"`
 }
 
 type SwapPairSlackLiquidityReport struct {
