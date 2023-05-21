@@ -620,26 +620,42 @@ func (u *Usecase) SwapGetPairAprListReport(ctx context.Context, filter request.P
 }
 
 func (u *Usecase) GetRoutePair(ctx context.Context, fromToken, toToken string) (interface{}, error) {
-	var err error
+	// var err error
 	listPairs := []*entity.SwapPair{}
-	pair, err := u.Repo.FindSwapPairByTokens(ctx, fromToken, toToken)
-	if err != nil && err != mongo.ErrNoDocuments {
-		logger.AtLog.Logger.Error("GetRoutePair", zap.Error(err))
-		return nil, err
-	}
 	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
 	ethContractAddr := u.Repo.ParseConfigByString(ctx, "weth_contract_address")
-	if pair != nil {
-		listPairs = append(listPairs, pair)
-	} else {
-		pair1, _ := u.Repo.FindSwapPairByTokens(ctx, fromToken, wbtcContractAddr)
+
+	if (fromToken == wbtcContractAddr && toToken == "0x2fe8d5A64afFc1d703aECa8a566f5e9FaeE0C003") ||
+		(toToken == wbtcContractAddr && fromToken == "0x2fe8d5A64afFc1d703aECa8a566f5e9FaeE0C003") {
+		pair1, _ := u.Repo.FindSwapPairByTokens(ctx, fromToken, ethContractAddr)
 		if pair1 != nil {
 			listPairs = append(listPairs, pair1)
 		}
 
-		pair2, _ := u.Repo.FindSwapPairByTokens(ctx, wbtcContractAddr, toToken)
+		pair2, _ := u.Repo.FindSwapPairByTokens(ctx, ethContractAddr, toToken)
 		if pair2 != nil {
 			listPairs = append(listPairs, pair2)
+		}
+	}
+
+	if len(listPairs) == 0 {
+		pair, err := u.Repo.FindSwapPairByTokens(ctx, fromToken, toToken)
+		if err != nil && err != mongo.ErrNoDocuments {
+			logger.AtLog.Logger.Error("GetRoutePair", zap.Error(err))
+			return nil, err
+		}
+		if pair != nil {
+			listPairs = append(listPairs, pair)
+		} else {
+			pair1, _ := u.Repo.FindSwapPairByTokens(ctx, fromToken, wbtcContractAddr)
+			if pair1 != nil {
+				listPairs = append(listPairs, pair1)
+			}
+
+			pair2, _ := u.Repo.FindSwapPairByTokens(ctx, wbtcContractAddr, toToken)
+			if pair2 != nil {
+				listPairs = append(listPairs, pair2)
+			}
 		}
 	}
 
