@@ -300,7 +300,8 @@ func (u *Usecase) TcSwapPairCreateSyncEvent(ctx context.Context, eventResp *bloc
 		swapPairSync.Reserve0, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18).String())
 		swapPairSync.Reserve1, _ = primitive.ParseDecimal128(helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18).String())
 		swapPairSync.Timestamp = time.Unix(int64(eventResp.Timestamp), 0)
-		if token != nil && pair != nil && baseToken != nil {
+		if token != nil && pair != nil && baseToken != nil &&
+			!strings.EqualFold(pair.Pair, "0xa59fa191cb90f08472ec70d9eed0ca0f373e2f16") {
 			swapPairSync.Token = token.Address
 			tmpPrice := big.NewFloat(0).Quo(helpers.ConvertWeiToBigFloat(eventResp.Reserve0, 18), helpers.ConvertWeiToBigFloat(eventResp.Reserve1, 18))
 			if baseIndex == 1 {
@@ -387,7 +388,8 @@ func (u *Usecase) TcSwapPairCreateSwapEvent(ctx context.Context, eventResp *bloc
 		swapPair.Sender = eventResp.Sender
 		swapPair.To = eventResp.To
 		swapPair.Index = eventResp.Index
-		if token != nil && pair != nil && baseToken != nil {
+		if token != nil && pair != nil && baseToken != nil &&
+			!strings.EqualFold(pair.Pair, "0xa59fa191cb90f08472ec70d9eed0ca0f373e2f16") {
 			swapPair.Token = token.Address
 			tmpAmount0 := big.NewFloat(0).Add(helpers.ConvertWeiToBigFloat(eventResp.Amount0In, 18), helpers.ConvertWeiToBigFloat(eventResp.Amount0Out, 18))
 			tmpAmount1 := big.NewFloat(0).Add(helpers.ConvertWeiToBigFloat(eventResp.Amount1In, 18), helpers.ConvertWeiToBigFloat(eventResp.Amount1Out, 18))
