@@ -235,6 +235,7 @@ func (u *Usecase) FindTokensInPoolV1(ctx context.Context, filter request.Paginat
 func (u *Usecase) ClearCache() error {
 	redisKey := "tc-swap:wrap-token-config"
 	u.Cache.Delete(redisKey)
+	u.Cache.DeleteAllKeys("tc-swap*")
 	return nil
 
 }
@@ -320,9 +321,9 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 		btcPrice, ethPrice := u.GetWrapTokenPriceBySymbol(ctx)
 
 		for _, item := range reports {
-			if item.BaseTokenSymbol == "" {
-				item.BaseTokenSymbol = string(entity.SwapBaseTokenSymbolWBTC)
-			}
+			// if item.BaseTokenSymbol == "" {
+			// 	item.BaseTokenSymbol = string(entity.SwapBaseTokenSymbolWBTC)
+			// }
 
 			tmUsdPrice := float64(0)
 			if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
