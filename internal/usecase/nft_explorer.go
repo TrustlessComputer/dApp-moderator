@@ -597,3 +597,24 @@ func (u *Usecase) UpdateCollectionThumbnails(ctx context.Context) error {
 
 	return nil
 }
+
+func (u *Usecase) UpdateNftOwner(ctx context.Context, contractAddress string, tokenID string, newOwner string) (*entity.Nfts, error) {
+	contractAddress = strings.ToLower(contractAddress)
+	tokenID = strings.ToLower(tokenID)
+	newOwner = strings.ToLower(newOwner)
+	nft, err := u.Repo.GetNft(contractAddress, tokenID)
+	if err != nil {
+		return nil, err
+	}
+
+	if strings.ToLower(nft.Owner) == strings.ToLower(newOwner) {
+		return nil, errors.New(fmt.Sprintf("Token is belong to %s", newOwner))
+	}
+
+	_, err = u.Repo.UpdateNftOwner(contractAddress, tokenID, newOwner)
+	if err != nil {
+		return nil, err
+	}
+	nft.Owner = newOwner
+	return nft, nil
+}
