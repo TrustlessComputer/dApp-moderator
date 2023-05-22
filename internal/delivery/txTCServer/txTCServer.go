@@ -3,10 +3,15 @@ package txTCServer
 import (
 	"context"
 	"dapp-moderator/internal/usecase"
+	"dapp-moderator/utils/generative_nft_contract"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"math"
+	"math/big"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -29,6 +34,12 @@ type txTCServer struct {
 	DefaultLastProcessedBlock int64
 	CronJobPeriod             int32
 	BatchLogSize              int32
+}
+
+type eventLog struct {
+	Log   types.Log
+	Data  []common.Hash
+	Event string
 }
 
 func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, error) {
@@ -137,6 +148,58 @@ func (c *txTCServer) StartServer() {
 	}
 }
 
+func (c *txTCServer) ParseLog(log types.Log, dataChan chan *eventLog) {
+
+	topics := log.Topics
+	event := topics[0]
+
+	dataChan <- &eventLog{
+		Log:   log,
+		Data:  topics,
+		Event: event.String(),
+	}
+
+}
+
+func (c *txTCServer) ProcessLog(dataChan chan *eventLog) {
+	dataFromChan := <-dataChan
+	switch dataFromChan.Event {
+
+	//Transfer event
+	case strings.ToLower("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"):
+		if len(dataFromChan.Data) == 4 {
+			client := c.Blockchain
+
+			contract := dataFromChan.Log.Address.Hex()
+
+			erc21, err := generative_nft_contract.NewGenerativeNftContract(dataFromChan.Log.Address, client.GetClient())
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s  ", contract), zap.Error(err))
+				return
+			}
+
+			erc21Transfer, err := erc21.ParseTransfer(dataFromChan.Log)
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s  ParseTransfer", contract), zap.Error(err))
+				return
+			}
+
+			from := erc21Transfer.From.Hex()
+			to := erc21Transfer.To.Hex()
+			tokenIDStr := dataFromChan.Data[3].Big().String()
+
+			updated, err := c.Usecase.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", dataFromChan.Log.BlockNumber), zap.Error(err))
+				return
+			}
+
+			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Any("updated", updated), zap.Uint64("blockNumber", dataFromChan.Log.BlockNumber))
+		}
+		break
+	}
+}
+
 func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	lastProcessedBlock, err := c.getLastProcessedBlock(ctx)
 	if err != nil {
@@ -156,14 +219,14 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 		fromBlock = toBlock
 	}
 
-	// logs, err := c.Blockchain.GetEventLogs(*big.NewInt(fromBlock), *big.NewInt(toBlock), c.Addresses)
-	// if err != nil {
-	// 	logger.AtLog.Logger.Error("err.GetEventLogs", zap.String("err", err.Error()))
-	// 	return err
-	// }
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	c.processTxTransaction(ctx, int32(fromBlock), int32(toBlock))
+	go c.TransferTokenEvents(&wg, ctx, int64(fromBlock), int64(toBlock))
 
+	go c.processTxTransaction(&wg, ctx, int32(fromBlock), int32(toBlock))
+
+	wg.Wait()
 	err = c.Cache.SetStringData(c.getRedisKey(nil), strconv.FormatInt(toBlock, 10))
 	if err != nil {
 		logger.AtLog.Logger.Error("resolveTransaction", zap.Error(err))
@@ -173,7 +236,9 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	return nil
 }
 
-func (c *txTCServer) processTxTransaction(ctx context.Context, fromBlock int32, toBlock int32) {
+func (c *txTCServer) processTxTransaction(wg *sync.WaitGroup, ctx context.Context, fromBlock int32, toBlock int32) {
+	defer wg.Done()
+
 	c.Usecase.GetCollectionFromBlock(ctx, fromBlock, toBlock)
 }
 
@@ -204,5 +269,28 @@ func (c *txTCServer) fetchToken(ctx context.Context) {
 	if err != nil {
 		logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 		return
+	}
+}
+
+func (c *txTCServer) TransferTokenEvents(wg *sync.WaitGroup, ctx context.Context, fromBlock int64, toBlock int64) {
+	defer wg.Done()
+
+	logs, err := c.Blockchain.GetEventLogs(*big.NewInt(fromBlock), *big.NewInt(toBlock), []common.Address{})
+	if err != nil {
+		logger.AtLog.Logger.Error("err.GetEventLogs", zap.String("err", err.Error()))
+		return
+	}
+
+	dataChan := make(chan *eventLog)
+	for i, log := range logs {
+		go c.ParseLog(log, dataChan)
+
+		if i > 0 && i%100 == 0 {
+			time.Sleep(time.Millisecond * 500)
+		}
+	}
+
+	for _, _ = range logs {
+		c.ProcessLog(dataChan)
 	}
 }
