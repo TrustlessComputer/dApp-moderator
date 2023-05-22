@@ -70,3 +70,20 @@ func (h *httpDelivery) getRoutePair(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
+
+func (h *httpDelivery) getRoutePairV1(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			fromToken := req.Query(r, "from_token", "")
+			toToken := req.Query(r, "to_token", "")
+			data, err := h.Usecase.GetRoutePairV1(ctx, fromToken, toToken)
+			if err != nil {
+				logger.AtLog.Logger.Error("getRoutePair", zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("getRoutePair", zap.Any("data", data))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
