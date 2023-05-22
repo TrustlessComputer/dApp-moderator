@@ -24,7 +24,7 @@ type Token struct {
 	Slug            string `json:"slug" bson:"slug"`
 
 	// edit able
-	Status          string `json:"symbol" bson:"symbol"`
+	Status          string `json:"status" bson:"status"`
 	Symbol          string `json:"symbol" bson:"symbol"`
 	Name            string `json:"name" bson:"name"`
 	Thumbnail       string `json:"thumbnail" bson:"thumbnail"`
