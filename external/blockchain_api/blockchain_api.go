@@ -726,7 +726,7 @@ func (c *BlockChainApi) TcSwapGetReserves(pairAddress string) (*big.Int, *big.In
 	return reserve.Reserve0, reserve.Reserve1, nil
 }
 
-func (c *BlockChainApi) TcSwapGetAmountOut(routerAddress string, amountIn, reserveIn, reserveOut *big.Int) (*big.Int, error) {
+func (c *BlockChainApi) TcSwapGetAmountsOut(routerAddress string, amountIn *big.Int, pathStr []string) ([]*big.Int, error) {
 	client, err := c.getClient()
 	if err != nil {
 		return nil, err
@@ -736,14 +736,18 @@ func (c *BlockChainApi) TcSwapGetAmountOut(routerAddress string, amountIn, reser
 		return nil, err
 	}
 	c.Interrupt()
-	amountOut, err := instance.GetAmountOut(&bind.CallOpts{}, amountIn, reserveIn, reserveOut)
+	pathAddr := []common.Address{}
+	for _, item := range pathStr {
+		pathAddr = append(pathAddr, common.HexToAddress(item))
+	}
+	amountOut, err := instance.GetAmountsOut(&bind.CallOpts{}, amountIn, pathAddr)
 	if err != nil {
 		return nil, err
 	}
 	return amountOut, nil
 }
 
-func (c *BlockChainApi) TcSwapGetAmountIn(routerAddress string, amountOut, reserveIn, reserveOut *big.Int) (*big.Int, error) {
+func (c *BlockChainApi) TcSwapGetAmountsIn(routerAddress string, amountOut *big.Int, pathStr []string) ([]*big.Int, error) {
 	client, err := c.getClient()
 	if err != nil {
 		return nil, err
@@ -753,7 +757,11 @@ func (c *BlockChainApi) TcSwapGetAmountIn(routerAddress string, amountOut, reser
 		return nil, err
 	}
 	c.Interrupt()
-	amountIn, err := instance.GetAmountIn(&bind.CallOpts{}, amountOut, reserveIn, reserveOut)
+	pathAddr := []common.Address{}
+	for _, item := range pathStr {
+		pathAddr = append(pathAddr, common.HexToAddress(item))
+	}
+	amountIn, err := instance.GetAmountsIn(&bind.CallOpts{}, amountOut, pathAddr)
 	if err != nil {
 		return nil, err
 	}

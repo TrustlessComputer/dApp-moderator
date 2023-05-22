@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"dapp-moderator/internal/delivery/http/request"
+	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
@@ -685,50 +686,202 @@ func (u *Usecase) GetRoutePair(ctx context.Context, fromToken, toToken string) (
 }
 
 func (u *Usecase) GetRoutePairV1(ctx context.Context, fromToken, toToken string) (interface{}, error) {
-	var err error
-
-	listPairs := []*entity.SwapPair{}
-	pair, err := u.Repo.FindSwapPairByTokens(ctx, fromToken, toToken)
-	if err != nil && err != mongo.ErrNoDocuments {
-		logger.AtLog.Logger.Error("GetRoutePair", zap.Error(err))
-		return nil, err
+	redisKey := fmt.Sprintf("tc-swap:pair-route-%s-%s", fromToken, toToken)
+	exists, err := u.Cache.Exists(redisKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+		return 0, err
 	}
 
-	config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
-	if pair != nil {
-		listPairs = append(listPairs, pair)
+	if *exists {
+		dataInCache, err := u.Cache.GetData(redisKey)
+		if err != nil {
+			logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+			return nil, err
+		}
+
+		b := []byte(*dataInCache)
+		reports := response.SwapRouteResponse{}
+		err = json.Unmarshal(b, &reports)
+		if err != nil {
+			return nil, err
+		}
+		return &reports, nil
 	} else {
-		pair1, _ := u.Repo.FindSwapPairByTokens(ctx, fromToken, config.WbtcContractAddr)
-		if pair1 != nil {
-			listPairs = append(listPairs, pair1)
+		resp := &response.SwapRouteResponse{}
+		resp.PathPairs = []*entity.SwapPair{}
+		resp.PathTokens = []*entity.Token{}
+
+		config, _ := u.TcSwapGetWrapTokenContractAddr(ctx)
+
+		defaultAmountIn := helpers.EtherToWei(big.NewFloat(1))
+		amountOut := big.NewInt(0)
+
+		tokenA, _ := u.FindTokenByAddress(ctx, fromToken)
+		tokenB, _ := u.FindTokenByAddress(ctx, toToken)
+		tokenBTC, _ := u.FindTokenByAddress(ctx, config.WbtcContractAddr)
+		tokenETH, _ := u.FindTokenByAddress(ctx, config.WethContractAddr)
+
+		//route A->B
+		{
+			pair, _ := u.FindSwapPairByTokens(ctx, fromToken, toToken)
+			if pair != nil {
+				amountOuts, _ := u.BlockChainApi.TcSwapGetAmountsOut(config.RouterContractAddr,
+					defaultAmountIn, []string{fromToken, toToken},
+				)
+				if len(amountOuts) > 0 {
+					fmt.Println(amountOuts[0].String())
+					fmt.Println(amountOuts[1].String())
+					amountOut = amountOuts[1]
+					resp.PathPairs = []*entity.SwapPair{pair}
+					resp.PathTokens = []*entity.Token{tokenA, tokenB}
+				}
+			}
 		}
 
-		pair2, _ := u.Repo.FindSwapPairByTokens(ctx, config.WbtcContractAddr, toToken)
-		if pair2 != nil {
-			listPairs = append(listPairs, pair2)
+		//route from A->BTC->B
+		{
+			pair1, _ := u.FindSwapPairByTokens(ctx, fromToken, config.WbtcContractAddr)
+			pair2, _ := u.FindSwapPairByTokens(ctx, config.WbtcContractAddr, toToken)
+			if pair1 != nil && pair2 != nil {
+				amountOuts, _ := u.BlockChainApi.TcSwapGetAmountsOut(config.RouterContractAddr,
+					defaultAmountIn, []string{fromToken, config.WbtcContractAddr, toToken},
+				)
+				if len(amountOuts) > 0 {
+					fmt.Println(amountOuts[0].String())
+					fmt.Println(amountOuts[2].String())
+
+					amountOut1 := amountOuts[2]
+					if amountOut1.Cmp(amountOut) > 0 {
+						resp.PathPairs = []*entity.SwapPair{pair1, pair2}
+						resp.PathTokens = []*entity.Token{tokenA, tokenBTC, tokenB}
+						amountOut = amountOuts[1]
+					}
+				}
+			}
 		}
+
+		//route from A->ETH->B
+		{
+			pair3, _ := u.FindSwapPairByTokens(ctx, fromToken, config.WethContractAddr)
+			pair4, _ := u.FindSwapPairByTokens(ctx, config.WethContractAddr, toToken)
+			if pair3 != nil && pair4 != nil {
+				amountOuts, _ := u.BlockChainApi.TcSwapGetAmountsOut(config.RouterContractAddr,
+					defaultAmountIn, []string{fromToken, config.WethContractAddr, toToken},
+				)
+				if len(amountOuts) > 0 {
+					fmt.Println(amountOuts[0].String())
+					fmt.Println(amountOuts[2].String())
+
+					amountOut2 := amountOuts[2]
+					if amountOut2.Cmp(amountOut) > 0 {
+						resp.PathPairs = []*entity.SwapPair{pair3, pair4}
+						resp.PathTokens = []*entity.Token{tokenA, tokenETH, tokenB}
+					}
+				}
+			}
+		}
+
+		if len(resp.PathPairs) == 0 {
+			err := errors.New("Pair is not exist")
+			logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+			return nil, err
+		}
+
+		reportsStr, err := json.Marshal(&resp)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return resp, nil
+		}
+		err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 5*60)
+		if err != nil {
+			logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+			return resp, nil
+		}
+
+		logger.AtLog.Logger.Info("GetRoutePair", zap.Any("data", resp))
+		return resp, nil
 	}
+}
 
-	if len(listPairs) == 0 {
-		pair1, _ := u.Repo.FindSwapPairByTokens(ctx, fromToken, config.WethContractAddr)
-		if pair1 != nil {
-			listPairs = append(listPairs, pair1)
-		}
-
-		pair2, _ := u.Repo.FindSwapPairByTokens(ctx, config.WethContractAddr, toToken)
-		if pair2 != nil {
-			listPairs = append(listPairs, pair2)
-		}
-	}
-
-	if len(listPairs) == 0 {
-		err := errors.New("Pair is not exist")
-		logger.AtLog.Logger.Error("SwapAddOrUpdateIdo", zap.Error(err))
+func (u *Usecase) FindSwapPairByTokens(ctx context.Context, fromToken, toToken string) (*entity.SwapPair, error) {
+	redisKey := fmt.Sprintf("tc-swap:pair-by-tokens-%s-%s", fromToken, toToken)
+	exists, err := u.Cache.Exists(redisKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("GetRoutePair", zap.Any("data", listPairs))
-	return listPairs, nil
+	if *exists {
+		dataInCache, err := u.Cache.GetData(redisKey)
+		if err != nil {
+			logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+			return nil, err
+		}
+
+		b := []byte(*dataInCache)
+		reports := entity.SwapPair{}
+		err = json.Unmarshal(b, &reports)
+		if err != nil {
+			return nil, err
+		}
+		return &reports, nil
+	} else {
+		pair1, err := u.Repo.FindSwapPairByTokens(ctx, fromToken, toToken)
+		if pair1 != nil {
+			reportsStr, _ := json.Marshal(&pair1)
+			if err != nil {
+				logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+				return pair1, err
+			}
+			err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 30*60)
+			if err != nil {
+				logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+				return pair1, err
+			}
+		}
+		return pair1, err
+	}
+}
+
+func (u *Usecase) FindTokenByAddress(ctx context.Context, tokenAddress string) (*entity.Token, error) {
+	redisKey := fmt.Sprintf("tc-swap:token-%s", tokenAddress)
+	exists, err := u.Cache.Exists(redisKey)
+	if err != nil {
+		logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+		return nil, err
+	}
+
+	if *exists {
+		dataInCache, err := u.Cache.GetData(redisKey)
+		if err != nil {
+			logger.AtLog.Logger.Error("c.Cache.Exists", zap.String("redisKey", redisKey), zap.Error(err))
+			return nil, err
+		}
+
+		b := []byte(*dataInCache)
+		reports := entity.Token{}
+		err = json.Unmarshal(b, &reports)
+		if err != nil {
+			return nil, err
+		}
+		return &reports, nil
+	} else {
+		token, err := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tokenAddress})
+		if token != nil {
+			reportsStr, _ := json.Marshal(&token)
+			if err != nil {
+				logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+				return token, err
+			}
+			err = u.Cache.SetStringDataWithExpTime(redisKey, string(reportsStr), 30*60)
+			if err != nil {
+				logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
+				return token, err
+			}
+		}
+		return token, err
+	}
 }
 
 func (u *Usecase) UpdateDataSwapPair(ctx context.Context) error {
@@ -837,28 +990,3 @@ func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
 	}
 	return nil
 }
-
-// func (u *Usecase) UpdateDataSwapToken(ctx context.Context) error {
-// 	pairQuery := entity.TokenFilter{}
-// 	pairQuery.Limit = 10000
-// 	pairQuery.Page = 1
-
-// 	tokens, err := u.Repo.FindListTokens(ctx, pairQuery)
-// 	if err != nil {
-// 		logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
-// 		return err
-// 	}
-
-// 	for _, token := range tokens {
-// 		if token.Network == "" {
-// 			token.Network = "Bitcoin - TC"
-// 			token.Priority = 0
-// 			err := u.Repo.UpdateToken(ctx, token)
-// 			if err != nil {
-// 				logger.AtLog.Logger.Error("UpdateDataSwapToken", zap.Error(err))
-// 				return err
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }
