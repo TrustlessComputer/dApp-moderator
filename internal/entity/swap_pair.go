@@ -59,6 +59,7 @@ type SwapPairReport struct {
 	Network           string               `json:"network" bson:"network"`
 	Priority          int                  `json:"priority" bson:"priority"`
 	BaseTokenSymbol   string               `json:"base_token_symbol"  bson:"base_token_symbol,omitempty"`
+	Status            string               `json:"status" bson:"status"`
 }
 
 type SwapPairSlackReport struct {
