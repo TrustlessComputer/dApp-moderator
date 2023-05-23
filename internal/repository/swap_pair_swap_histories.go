@@ -101,6 +101,64 @@ func (r *Repository) parseTokenReportFilter(filter entity.TokenReportFilter) bso
 	}
 	return bson.M{"$and": andCond}
 }
+func (r *Repository) FindTokenSumary(ctx context.Context, contract string) (*entity.TokenSummary, error) {
+	var token *entity.TokenSummary
+	token = new(entity.TokenSummary)
+
+	// pagination
+	// Set the options for the query
+
+	options := options.FindOne()
+	options.SetSort(bson.D{{"created_at", -1}})
+	var swapPair entity.SwapPair
+	token1 := "0xfB83c18569fB43f1ABCbae09Baf7090bFFc8CBBD"
+	if contract == "0x2fe8d5A64afFc1d703aECa8a566f5e9FaeE0C003" {
+		token1 = "0x74B033e56434845E02c9bc4F0caC75438033b00D"
+	}
+	err := r.DB.Collection(utils.COLLECTION_SWAP_PAIR).FindOne(ctx, bson.D{
+		{"token0", contract},
+		{"token1", token1},
+	}).Decode(&swapPair)
+	if err != nil {
+		return token, err
+	}
+	var swapPairH *entity.SwapPairSwapHistories
+	err = r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).FindOne(ctx, bson.D{
+		{"contract_address", swapPair.Pair},
+	}, options).Decode(&swapPairH)
+	if err != nil {
+		return token, err
+	}
+
+	if swapPairH != nil {
+		token.Price = swapPairH.Price
+	}
+
+	options.SetSort(bson.D{{"price", -1}})
+	err = r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).FindOne(ctx, bson.D{
+		{"contract_address", swapPair.Pair},
+	}, options).Decode(&swapPairH)
+	if err != nil {
+		return token, err
+	}
+	if swapPairH != nil {
+		token.MaxPrice = swapPairH.Price
+	}
+
+	options.SetSort(bson.D{{"price", 1}})
+	err = r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).FindOne(ctx, bson.D{
+		{"contract_address", swapPair.Pair},
+	}, options).Decode(&swapPairH)
+	if err != nil {
+		return token, err
+	}
+	if swapPairH != nil {
+		token.MinPrice = swapPairH.Price
+	}
+
+	return token, nil
+
+}
 
 func (r *Repository) FindTokePrice(ctx context.Context, contract string, chartType string) ([]*entity.ChartDataResp, error) {
 	var tokens []*entity.ChartDataResp
