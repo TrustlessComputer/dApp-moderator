@@ -13,6 +13,12 @@ type GroupedCollectionID struct {
 	CollectionAddress string `bson:"collection_address"`
 }
 
+type FilteredCollections struct {
+	Contract        string `json:"contract" bson:"contract"`
+	ContractType    string `json:"contract_type" bson:"contract_type"`
+	DeployedAtBlock int64  `bson:"deployed_at_block" json:"deployed_at_block"`
+}
+
 type Collections struct {
 	BaseEntity `bson:",inline"`
 
