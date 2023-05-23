@@ -152,3 +152,29 @@ func (r *Repository) UpdateCollectionThumbnail(ctx context.Context, contract str
 
 	return nil
 }
+
+func (r *Repository) AllCollections() ([]entity.FilteredCollections, error) {
+	result := []entity.FilteredCollections{}
+
+	f := bson.A{
+		bson.D{
+			{"$project",
+				bson.D{
+					{"contract", 1},
+					{"deployed_at_block", 1},
+					{"contract_type", 1},
+				},
+			},
+		},
+	}
+
+	cursor, err := r.DB.Collection(entity.Collections{}.CollectionName()).Aggregate(context.TODO(), f)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All((context.TODO()), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

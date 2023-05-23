@@ -124,6 +124,7 @@ func (c *txTCServer) StartServer() {
 			defer wg.Done()
 			c.resolveTxTransaction(ctx)
 		}()
+
 		go func() {
 			defer wg.Done()
 			c.fetchToken(ctx)
@@ -148,12 +149,13 @@ func (c *txTCServer) StartServer() {
 	}
 }
 
-func (c *txTCServer) ParseLog(log types.Log, dataChan chan *eventLog) {
+func (c *txTCServer) Worker(inputDataChan chan types.Log, result chan *eventLog) {
+	log := <-inputDataChan
 
 	topics := log.Topics
 	event := topics[0]
 
-	dataChan <- &eventLog{
+	result <- &eventLog{
 		Log:   log,
 		Data:  topics,
 		Event: event.String(),
@@ -161,8 +163,8 @@ func (c *txTCServer) ParseLog(log types.Log, dataChan chan *eventLog) {
 
 }
 
-func (c *txTCServer) ProcessLog(dataChan chan *eventLog) {
-	dataFromChan := <-dataChan
+func (c *txTCServer) ProcessLog(resultChan chan *eventLog) {
+	dataFromChan := <-resultChan
 	switch dataFromChan.Event {
 
 	//Transfer event
@@ -188,13 +190,18 @@ func (c *txTCServer) ProcessLog(dataChan chan *eventLog) {
 			to := erc21Transfer.To.Hex()
 			tokenIDStr := dataFromChan.Data[3].Big().String()
 
-			updated, err := c.Usecase.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
-			if err != nil {
-				logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", dataFromChan.Log.BlockNumber), zap.Error(err))
-				return
+			if strings.ToLower(os.Getenv("ENV")) == strings.ToLower("production") {
+				updated, err := c.Usecase.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
+				if err != nil {
+					logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", dataFromChan.Log.BlockNumber), zap.Error(err))
+					return
+				}
+
+				logger.AtLog.Logger.Info(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Any("updated", updated), zap.Uint64("blockNumber", dataFromChan.Log.BlockNumber))
+			} else {
+				logger.AtLog.Logger.Info(fmt.Sprintf("[Testing] UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", dataFromChan.Log.BlockNumber))
 			}
 
-			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Any("updated", updated), zap.Uint64("blockNumber", dataFromChan.Log.BlockNumber))
 		}
 		break
 	}
@@ -275,22 +282,44 @@ func (c *txTCServer) fetchToken(ctx context.Context) {
 func (c *txTCServer) TransferTokenEvents(wg *sync.WaitGroup, ctx context.Context, fromBlock int64, toBlock int64) {
 	defer wg.Done()
 
-	logs, err := c.Blockchain.GetEventLogs(*big.NewInt(fromBlock), *big.NewInt(toBlock), []common.Address{})
+	allCollections, err := c.Usecase.Repo.AllCollections()
 	if err != nil {
 		logger.AtLog.Logger.Error("err.GetEventLogs", zap.String("err", err.Error()))
 		return
 	}
 
-	dataChan := make(chan *eventLog)
-	for i, log := range logs {
-		go c.ParseLog(log, dataChan)
+	addresses := []common.Address{}
+	for _, collection := range allCollections {
+		hexAddress := common.HexToAddress(collection.Contract)
+		addresses = append(addresses, hexAddress)
+	}
 
+	//logs are only heard by our collection addresses
+	logs, err := c.Blockchain.GetEventLogs(*big.NewInt(fromBlock), *big.NewInt(toBlock), addresses)
+	if err != nil {
+		logger.AtLog.Logger.Error("err.GetEventLogs", zap.String("err", err.Error()))
+		return
+	}
+
+	//start channel
+	inputDataChan := make(chan types.Log, len(logs))
+	resultChan := make(chan *eventLog, len(logs))
+
+	//init workers
+	for _, _ = range logs {
+		go c.Worker(inputDataChan, resultChan)
+	}
+
+	// push data to worker
+	for i, log := range logs {
+		inputDataChan <- log
 		if i > 0 && i%100 == 0 {
 			time.Sleep(time.Millisecond * 500)
 		}
 	}
 
+	//processing
 	for _, _ = range logs {
-		c.ProcessLog(dataChan)
+		c.ProcessLog(resultChan)
 	}
 }
