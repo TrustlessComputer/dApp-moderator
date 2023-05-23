@@ -138,6 +138,11 @@ type ChartDataResp struct {
 	ConversionType   string `json:"conversion_type"`
 	ConversionSymbol string `json:"conversion_symbol"`
 }
+type TokenSummary struct {
+	Price    primitive.Decimal128 `json:"price"`
+	MinPrice primitive.Decimal128 `json:"min_price"`
+	MaxPrice primitive.Decimal128 `json:"max_price"`
+}
 
 func (t *SwapPair) CollectionName() string {
 	return utils.COLLECTION_SWAP_PAIR
