@@ -103,6 +103,7 @@ func (r *Repository) parseTokenReportFilter(filter entity.TokenReportFilter) bso
 }
 func (r *Repository) FindTokenSumary(ctx context.Context, contract string) (*entity.TokenSummary, error) {
 	var token *entity.TokenSummary
+	token = new(entity.TokenSummary)
 
 	// pagination
 	// Set the options for the query
@@ -128,7 +129,7 @@ func (r *Repository) FindTokenSumary(ctx context.Context, contract string) (*ent
 	if err != nil {
 		return token, err
 	}
-	token = new(entity.TokenSummary)
+	
 	if swapPairH != nil {
 		token.Price = swapPairH.Price
 	}
