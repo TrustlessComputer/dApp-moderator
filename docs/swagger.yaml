@@ -749,6 +749,32 @@ paths:
       summary: Get tokens of a wallet address
       tags:
       - nft-explorer
+  /nft-explorer/refresh-nft/contracts/{contractAddress}/token/{tokenID}:
+    get:
+      consumes:
+      - application/json
+      description: refresh-nft
+      parameters:
+      - description: contractAddress
+        in: path
+        name: contractAddress
+        required: true
+        type: string
+      - description: tokenID
+        in: path
+        name: tokenID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: refresh-nft
+      tags:
+      - nft-explorer
   /profile/histories:
     post:
       consumes:

@@ -182,3 +182,18 @@ func (q *NftExplorer) FillDataMultiple(nfts []*NftsResp) {
 		q.FillData(nft)
 	}
 }
+
+func (q NftExplorer) RefreshNft(contractAddress string, tokenID string) (*ServiceResp, error) {
+	headers := make(map[string]string)
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s/%s/%s", q.serverURL, "refresh-nft", contractAddress, tokenID), "GET", headers, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := q.ParseData(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}

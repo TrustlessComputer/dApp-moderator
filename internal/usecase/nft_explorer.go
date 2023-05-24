@@ -618,3 +618,12 @@ func (u *Usecase) UpdateNftOwner(ctx context.Context, contractAddress string, to
 	nft.Owner = newOwner
 	return nft, nil
 }
+
+func (u *Usecase) RefreshNft(ctx context.Context, contractAddress string, tokenID string) (interface{}, error) {
+	data, err := u.NftExplorer.RefreshNft(contractAddress, tokenID)
+	if err != nil {
+		logger.AtLog.Logger.Error("RefreshNft", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+		return nil, err
+	}
+	return data, nil
+}
