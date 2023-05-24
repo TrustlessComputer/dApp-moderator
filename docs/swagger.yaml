@@ -510,6 +510,226 @@ paths:
       summary: post dapp info
       tags:
       - dapp-service
+  /marketplace/contract/{contract_address}/token/{token_id}/activities:
+    get:
+      consumes:
+      - application/json
+      description: Get token's activities
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get token's activities
+      tags:
+      - MarketPlace
+  /marketplace/listing/{contract_address}/token/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get market place listing
+      parameters:
+      - description: contract address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get market place listing
+      tags:
+      - MarketPlace
+  /marketplace/offers/{contract_address}/token/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get market place offers
+      parameters:
+      - description: contract address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get market place offers
+      tags:
+      - MarketPlace
+  /marketplace/wallet/{wallet_address}/listing:
+    get:
+      consumes:
+      - application/json
+      description: listing of a profile
+      parameters:
+      - description: wallet_address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get listing of a profile
+      tags:
+      - MarketPlace
+  /marketplace/wallet/{wallet_address}/offer:
+    get:
+      consumes:
+      - application/json
+      description: Offers of a profile
+      parameters:
+      - description: wallet_address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get offers of a profile
+      tags:
+      - MarketPlace
   /nft-explorer/collections:
     get:
       consumes:
