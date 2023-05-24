@@ -957,6 +957,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/nft-explorer/refresh-nft/contracts/{contractAddress}/token/{tokenID}": {
+            "get": {
+                "description": "refresh-nft",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "refresh-nft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contractAddress",
+                        "name": "contractAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tokenID",
+                        "name": "tokenID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/histories": {
             "put": {
                 "security": [

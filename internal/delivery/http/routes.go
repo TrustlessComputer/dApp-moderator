@@ -37,6 +37,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	nftExplorer.HandleFunc("/collections/{contractAddress}/nfts/{tokenID}/content", h.collectionNftContent).Methods("GET")
 	nftExplorer.HandleFunc("/nfts", h.nfts).Methods("GET")
 	nftExplorer.HandleFunc("/owner-address/{ownerAddress}/nfts", h.nftByWalletAddress).Methods("GET")
+	nftExplorer.HandleFunc("/refresh-nft/contracts/{contractAddress}/token/{tokenID}", h.refreshNft).Methods("GET")
 
 	nftExplorerAuth := api.PathPrefix("/nft-explorer").Subrouter()
 	nftExplorerAuth.Use(h.MiddleWare.ValidateAccessToken)
