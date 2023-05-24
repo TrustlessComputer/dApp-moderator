@@ -169,6 +169,14 @@ func (h *httpDelivery) RegisterV1Routes() {
 	// evm bytescode check
 	evmRoutes := api.PathPrefix("/evm").Subrouter()
 	evmRoutes.HandleFunc("/bytescode", h.checkEvmBytescode).Methods("POST")
+
+	//marketplace
+	marketplace := api.PathPrefix("/marketplace").Subrouter()
+	marketplace.HandleFunc("/listing/{contract_address}/token/{token_id}", h.getListingViaGenAddressTokenID).Methods("GET")
+	marketplace.HandleFunc("/offers/{contract_address}/token/{token_id}", h.getOfferViaGenAddressTokenID).Methods("GET")
+	marketplace.HandleFunc("/wallet/{wallet_address}/listing", h.getListingOfAProfile).Methods("GET")
+	marketplace.HandleFunc("/wallet/{wallet_address}/offer", h.getOffersOfAProfile).Methods("GET")
+	marketplace.HandleFunc("/contract/{contract_address}/token/{token_id}/activities", h.getTokenActivities).Methods("GET")
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

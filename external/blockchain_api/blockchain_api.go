@@ -5,7 +5,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"dapp-moderator/utils/config"
-	"dapp-moderator/utils/erc20"
+	"dapp-moderator/utils/contracts/erc20"
 	"dapp-moderator/utils/gmpayment"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
@@ -853,7 +853,7 @@ func (c *BlockChainApi) TcSwapExactTokensForTokens(routerAddress string, amountI
 	return tnx.Hash().Hex(), nil
 }
 
-/////////////GM PAYMENT
+// ///////////GM PAYMENT
 func (c *BlockChainApi) SignWithEthereum(privateKey string, dataBytes []byte) (string, error) {
 	signBytes := append([]byte("\x19Ethereum Signed Message:\n32"), dataBytes...)
 	hash := crypto.Keccak256Hash(signBytes)

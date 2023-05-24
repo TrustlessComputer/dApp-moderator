@@ -11,10 +11,9 @@ type IEntity interface {
 	SetCreatedAt()
 	SetUpdatedAt()
 	SetDeletedAt()
-	SetID() 
+	SetID()
 	Decode(from *primitive.D) error
 }
-
 
 type SortType int
 
@@ -25,6 +24,7 @@ const (
 
 type BaseFilters struct {
 	Page   int64
+	Offset int64
 	Limit  int64
 	SortBy string
 	Sort   SortType
