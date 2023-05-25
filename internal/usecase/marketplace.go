@@ -34,6 +34,11 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 
 	bn := big.NewInt(int64(chainLog.BlockNumber))
 	blockInfo, err := u.TCPublicNode.GetBlockByNumber(*bn)
+	if err != nil {
+		logger.AtLog.Logger.Error("parseMkplaceData - init marketplace", zap.Uint64("chainLog", chainLog.BlockNumber), zap.Error(err))
+		return nil, nil, err
+	}
+
 	blockTime := blockInfo.Header().Time
 	tm := time.Unix(int64(blockTime), 0).UTC()
 
