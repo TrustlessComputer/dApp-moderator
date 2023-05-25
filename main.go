@@ -158,7 +158,7 @@ func startServer() {
 		logger.AtLog().Error("LoadUsecases - Cannot init usecase", zap.Error(err))
 		return
 	}
-	uc.TestSendNotify()
+	//uc.TestSendNotify()
 
 	servers := make(map[string]delivery.AddedServer)
 	// api fixed run:

@@ -36,20 +36,18 @@ func (a *TcNetwork) GetBlockNumber() (*big.Int, error) {
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("GetBlockNumber", zap.Any("blockNumber", header.Number))
 	return header.Number, nil
 }
 
-
-func (a *TcNetwork) GetBlock () (*types.Header, error) {
+func (a *TcNetwork) GetBlock() (*types.Header, error) {
 	return a.client.HeaderByNumber(context.Background(), nil)
 }
 
 func (a *TcNetwork) GetEventLogs(fromBlock big.Int, toBlock big.Int, addresses []common.Address) ([]types.Log, error) {
 	query := ethereum.FilterQuery{
 		FromBlock: &fromBlock,
-		ToBlock: &toBlock, 
-		//Addresses: addresses,
+		ToBlock:   &toBlock,
+		Addresses: addresses,
 	}
 	logs, err := a.client.FilterLogs(context.Background(), query)
 	if err != nil {

@@ -593,6 +593,337 @@ const docTemplate = `{
                 }
             }
         },
+        "/marketplace/contract/{contract_address}/token/{token_id}/activities": {
+            "get": {
+                "description": "Get token's activities",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get token's activities",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/listing/{contract_address}/token/{token_id}": {
+            "get": {
+                "description": "Get market place listing",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get market place listing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/offers/{contract_address}/token/{token_id}": {
+            "get": {
+                "description": "Get market place offers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get market place offers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/wallet/{wallet_address}/listing": {
+            "get": {
+                "description": "listing of a profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get listing of a profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "wallet_address",
+                        "name": "wallet_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/wallet/{wallet_address}/offer": {
+            "get": {
+                "description": "Offers of a profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get offers of a profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "wallet_address",
+                        "name": "wallet_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/nft-explorer/collections": {
             "get": {
                 "description": "Get Collections",
