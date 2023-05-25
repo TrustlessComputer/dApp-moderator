@@ -287,7 +287,8 @@ func FindTime(t time.Time, chartType string) time.Time {
 	year, month, day := t.Date()
 	hr, min, _ := t.Clock()
 	if chartType == "minute" {
-		return time.Date(year, month, day, hr, min, 0, 0, t.Location())
+		perFiveteen := min/15*15
+		return time.Date(year, month, day, hr, perFiveteen, 0, 0, t.Location())
 	}
 	if chartType == "hour" {
 		return time.Date(year, month, day, hr, 0, 0, 0, t.Location())
