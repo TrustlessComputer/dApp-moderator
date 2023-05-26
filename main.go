@@ -101,7 +101,7 @@ func main() {
 
 func startServer() {
 	logger.AtLog().Logger.Info("starting server ...")
-	cache, _ := redis.NewRedisCache(conf.Redis)
+	cache, redisClient := redis.NewRedisCache(conf.Redis)
 	r := mux.NewRouter()
 	gcs, err := googlecloud.NewDataGCStorage(*conf)
 
@@ -116,6 +116,15 @@ func startServer() {
 	moralis := moralis2.NewMoralisService(cache)
 
 	auth2Service := oauth2service.NewAuth2()
+
+	s3Adapter := googlecloud.NewS3Adapter(googlecloud.S3AdapterConfig{
+		BucketName: conf.Gcs.Bucket,
+		Endpoint:   conf.Gcs.Endpoint,
+		Region:     conf.Gcs.Region,
+		AccessKey:  conf.Gcs.AccessKey,
+		SecretKey:  conf.Gcs.SecretKey,
+	}, redisClient)
+
 	g := global.Global{
 		MuxRouter:              r,
 		Conf:                   conf,
@@ -133,6 +142,7 @@ func startServer() {
 		DiscordClient:          dcl,
 		BlockChainApi:          bca,
 		Moralis:                moralis,
+		S3Adapter:              &s3Adapter,
 	}
 
 	repo, err := repository.NewRepository(&g)
@@ -174,6 +184,12 @@ func startServer() {
 		txConsumerStatrBool = true //alway start this server, if config is missing
 	}
 
+	jobSendDiscordStart := os.Getenv("JOB_SEND_DISCORD_START")
+	jobSendDiscordStartBool, err := strconv.ParseBool(jobSendDiscordStart)
+	if err != nil {
+		jobSendDiscordStartBool = true //alway start this server, if config is missing
+	}
+
 	tx, _ := txTCServer.NewTxTCServer(&g, *uc)
 	servers["tx-consumer"] = delivery.AddedServer{
 		Server:  tx,
@@ -182,7 +198,7 @@ func startServer() {
 
 	servers["job-discord"] = delivery.AddedServer{
 		Server:  txTCServer.NewJobDisCord(&g, *uc),
-		Enabled: true,
+		Enabled: jobSendDiscordStartBool,
 	}
 
 	//var wait time.Duration
