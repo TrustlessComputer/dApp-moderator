@@ -13,7 +13,7 @@ type UpdateCollection struct {
 	Thumbnail   *string `json:"thumbnail"`
 	Name        *string `json:"name"`
 	Description *string `json:"description"`
-	Social      Social `json:"social"`
+	Social      Social  `json:"social"`
 }
 
 type Social struct {
@@ -23,4 +23,10 @@ type Social struct {
 	Telegram  *string `json:"telegram"`
 	Medium    *string `json:"medium"`
 	Instagram *string `json:"instagram"`
+}
+
+type UpdateUploadedFileTxHash struct {
+	TxHash        string `json:"-"`
+	FileID        string `json:"-"`
+	WalletAddress string `json:"wallet_address"`
 }

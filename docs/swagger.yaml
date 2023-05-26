@@ -16,6 +16,13 @@ definitions:
           type: object
         type: array
     type: object
+  request.CreateMultipartUploadRequest:
+    properties:
+      fileName:
+        type: string
+      group:
+        type: string
+    type: object
   request.UpdateTokenReq:
     properties:
       description:
@@ -132,6 +139,11 @@ definitions:
       social:
         $ref: '#/definitions/structure.Social'
       thumbnail:
+        type: string
+    type: object
+  structure.UpdateUploadedFileTxHash:
+    properties:
+      wallet_address:
         type: string
     type: object
   structure.VerifyMessage:
@@ -1353,6 +1365,37 @@ paths:
       tags:
       - BNS-service
   /upload/file:
+    get:
+      consumes:
+      - application/json
+      description: Get uploaded Files
+      parameters:
+      - description: contract_address
+        in: query
+        name: contract_address
+        type: string
+      - description: token_id
+        in: query
+        name: token_id
+        type: string
+      - description: wallet_address
+        in: query
+        name: wallet_address
+        type: string
+      - description: tx_hash
+        in: query
+        name: tx_hash
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      summary: Get uploaded Files
+      tags:
+      - Uploader
     post:
       consumes:
       - application/json
@@ -1373,6 +1416,217 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Upload File
+      tags:
+      - Uploader
+  /upload/file/{file_id}/chunks:
+    get:
+      consumes:
+      - application/json
+      description: Get chunks of the uploaded file
+      parameters:
+      - description: fileID
+        in: path
+        name: file_id
+        required: true
+        type: string
+      - description: chunk_id
+        in: path
+        name: chunk_id
+        required: true
+        type: string
+      - description: tx_hash
+        in: path
+        name: tx_hash
+        required: true
+        type: string
+      - description: '0: new, 1: processing, 2: done - default: all'
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get chunks of the uploaded file
+      tags:
+      - Uploader
+  /upload/file/{file_id}/chunks/{chunk_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get chunk by ID
+      parameters:
+      - description: fileID
+        in: path
+        name: file_id
+        required: true
+        type: string
+      - description: chunk_id
+        in: path
+        name: chunk_id
+        required: true
+        type: string
+      - description: '0: new, 1: processing, 2: done - default: all'
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get chunk by ID
+      tags:
+      - Uploader
+  /upload/file/{file_id}/chunks/{chunk_id}/tx_hash/{tx_hash}:
+    put:
+      consumes:
+      - application/json
+      description: update tx_hash for a chunk
+      parameters:
+      - description: file_id
+        in: path
+        name: file_id
+        required: true
+        type: string
+      - description: chunk_id
+        in: path
+        name: chunk_id
+        required: true
+        type: string
+      - description: tx_hash
+        in: path
+        name: tx_hash
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: update tx_hash for a chunk
+      tags:
+      - Uploader
+  /upload/file/{file_id}/tx_hash/{tx_hash}:
+    put:
+      consumes:
+      - application/json
+      description: update tx_hash for the uploaded file
+      parameters:
+      - description: file_id
+        in: path
+        name: file_id
+        required: true
+        type: string
+      - description: tx_hash
+        in: path
+        name: tx_hash
+        required: true
+        type: string
+      - description: request body
+        in: body
+        name: request_body
+        required: true
+        schema:
+          $ref: '#/definitions/structure.UpdateUploadedFileTxHash'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: update tx_hash for the uploaded file
+      tags:
+      - Uploader
+  /upload/file/multipart:
+    post:
+      consumes:
+      - application/json
+      description: Create multipart upload.
+      parameters:
+      - description: Create multipart upload request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateMultipartUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - Authorization: []
+      summary: Create multipart upload
+      tags:
+      - Uploader
+  /upload/file/multipart/{uploadID}:
+    post:
+      consumes:
+      - application/json
+      description: Finish multipart upload
+      parameters:
+      - description: upload ID
+        in: path
+        name: uploadID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - Authorization: []
+      summary: Finish multipart upload
+      tags:
+      - Uploader
+    put:
+      description: Upload multipart file
+      parameters:
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: upload ID
+        in: path
+        name: uploadID
+        required: true
+        type: string
+      - description: part number
+        in: query
+        name: partNumber
+        type: string
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - Authorization: []
+      summary: Upload multipart file
       tags:
       - Uploader
   /wallets/{walletAddress}:
