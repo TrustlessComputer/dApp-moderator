@@ -961,12 +961,22 @@ func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
 			baseToken = pair.Token0Obj
 		}
 		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
-		if token != nil && token.BaseTokenSymbol == "" {
-			token.BaseTokenSymbol = baseToken.Symbol
-			err = u.Repo.UpdateBaseSymbolToken(ctx, token)
-			if err != nil {
-				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
-				return err
+		if token != nil {
+			if token.BaseTokenSymbol == "" {
+				token.BaseTokenSymbol = baseToken.Symbol
+				token.SetUpdatedAt()
+				err = u.Repo.UpdateBaseSymbolToken(ctx, token)
+				if err != nil {
+					logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+					return err
+				}
+			} else if token.BaseTokenSymbolObj == nil {
+				token.SetUpdatedAt()
+				err = u.Repo.UpdateBaseSymbolToken(ctx, token)
+				if err != nil {
+					logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+					return err
+				}
 			}
 		}
 	}
@@ -986,13 +996,22 @@ func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
 			baseToken = pair.Token0Obj
 		}
 		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
-		if token != nil && token.BaseTokenSymbol == "" {
-			token.BaseTokenSymbol = baseToken.Symbol
-			token.SetUpdatedAt()
-			err = u.Repo.UpdateBaseSymbolToken(ctx, token)
-			if err != nil {
-				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
-				return err
+		if token != nil {
+			if token.BaseTokenSymbol == "" {
+				token.BaseTokenSymbol = baseToken.Symbol
+				token.SetUpdatedAt()
+				err = u.Repo.UpdateBaseSymbolToken(ctx, token)
+				if err != nil {
+					logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+					return err
+				}
+			} else if token.BaseTokenSymbolObj == nil {
+				token.SetUpdatedAt()
+				err = u.Repo.UpdateBaseSymbolToken(ctx, token)
+				if err != nil {
+					logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+					return err
+				}
 			}
 		}
 	}
