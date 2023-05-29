@@ -123,7 +123,7 @@ func (a S3Adapter) CreateMultiplePartsUpload(ctx context.Context, group string, 
 
 }
 
-func (a S3Adapter) CompleteMultipartUpload(ctx context.Context, uploadID string) (*string, error) {
+func (a S3Adapter) CompleteMultipartUpload(ctx context.Context, uploadID string) (*s3.CompleteMultipartUploadOutput, error) {
 	completedParts, err := a.GetS3CompletedPart(uploadID)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -157,7 +157,7 @@ func (a S3Adapter) CompleteMultipartUpload(ctx context.Context, uploadID string)
 	}
 
 	fmt.Printf("Successfully uploaded file: %s\n", resp.String())
-	return resp.Location, nil
+	return resp, nil
 }
 
 func (a S3Adapter) UploadPart(uploadID string, file File, fileSize int64, partNumber int) error {

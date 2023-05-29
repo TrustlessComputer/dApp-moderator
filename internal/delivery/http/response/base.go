@@ -23,3 +23,11 @@ type BaseEntity struct {
 	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
 }
+
+type FileResponse struct {
+	UploadID string `json:"upload_id"`
+}
+
+type MultipartUploadResponse struct {
+	FileURL string `json:"file_url"`
+}

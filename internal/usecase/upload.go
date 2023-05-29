@@ -339,24 +339,36 @@ func (u *Usecase) UploadPart(ctx context.Context, uploadID string, file File, fi
 }
 
 func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string) (*string, error) {
-	data, err := u.S3Adapter.CompleteMultipartUpload(ctx, uploadID)
+	uploaded, err := u.S3Adapter.CompleteMultipartUpload(ctx, uploadID)
 	if err != nil {
 		return nil, err
 	}
 
-	//TODO - insert uploaded file here
-	//uploadedFIle := &entity.UploadedFile{
-	//	Name:     uploaded.Name,
-	//	Size:     int(uploaded.Size),
-	//	Path:     uploaded.Path,
-	//	FileType: uploaded.Minetype,
-	//	FullPath: fmt.Sprintf("%s/%s", os.Getenv("GCS_DOMAIN"), uploaded.Name),
-	//}
-	//
-	//err = u.Repo.InsertUploadedFile(uploadedFIle)
+	name := *uploaded.Key
+	//bytes, err := u.Storage.ReadFile(*uploaded.Key)
 	//if err != nil {
 	//	return nil, err
 	//}
 
-	return data, nil
+	nameArray := strings.Split(name, ".")
+	fType := ""
+	if len(nameArray) > 1 {
+		fType = nameArray[len(nameArray)-1]
+	}
+
+	//TODO - insert uploaded file here
+	uploadedFIle := &entity.UploadedFile{
+		Name: name,
+		//Size:     len(bytes),
+		Path:     name,
+		FileType: fType,
+		FullPath: fmt.Sprintf("%s/%s", os.Getenv("GCS_DOMAIN"), name),
+	}
+
+	err = u.Repo.InsertUploadedFile(uploadedFIle)
+	if err != nil {
+		return nil, err
+	}
+
+	return &uploadedFIle.FullPath, nil
 }

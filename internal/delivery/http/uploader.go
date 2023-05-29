@@ -267,7 +267,7 @@ func (h *httpDelivery) CreateMultipartUpload(w http.ResponseWriter, r *http.Requ
 				return nil, err
 			}
 
-			return resp, nil
+			return response.FileResponse{UploadID: *resp}, nil
 		},
 	).ServeHTTP(w, r)
 }
@@ -341,7 +341,7 @@ func (h *httpDelivery) CompleteMultipartUpload(w http.ResponseWriter, r *http.Re
 				return nil, err
 			}
 
-			return fileURL, nil
+			return response.MultipartUploadResponse{FileURL: *fileURL}, nil
 		},
 	).ServeHTTP(w, r)
 }
