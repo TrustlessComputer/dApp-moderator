@@ -30,4 +30,5 @@ type FileResponse struct {
 
 type MultipartUploadResponse struct {
 	FileURL string `json:"file_url"`
+	FileID  string `json:"file_id"`
 }
