@@ -68,7 +68,7 @@ func (r *Repository) UpdateChunksForUploadedFile(fileID string, chunks int, chun
 	return nil
 }
 
-func (r *Repository) UpdateChunksTxHashForUploadedFile(fileID string, txHash string, walletAddress string, chunks int, chunkSize int) error {
+func (r *Repository) UpdateChunksTxHashForUploadedFile(fileID string, size int, txHash string, walletAddress string, chunks int, chunkSize int) error {
 	pID, err := primitive.ObjectIDFromHex(fileID)
 	if err != nil {
 		return err
@@ -78,6 +78,7 @@ func (r *Repository) UpdateChunksTxHashForUploadedFile(fileID string, txHash str
 	}
 
 	update := bson.M{
+		"size":           size,
 		"tx_hash":        txHash,
 		"chunks":         chunks,
 		"chunk_size":     chunkSize,
