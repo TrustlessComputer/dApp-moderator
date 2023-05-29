@@ -2002,6 +2002,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/upload/file/multipart-fake": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload File multipart fake",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Upload File multipart fake",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/upload/file/multipart/{uploadID}": {
             "put": {
                 "security": [
