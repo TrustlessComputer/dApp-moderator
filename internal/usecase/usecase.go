@@ -37,6 +37,7 @@ type Usecase struct {
 	BlockChainApi  *blockchain_api.BlockChainApi
 	Moralis        *moralis.MoralisService
 	TCPublicNode   *blockchain.TcNetwork
+	S3Adapter      *googlecloud.S3Adapter
 }
 
 func NewUsecase(global *global.Global, r *repository.Repository, generativeRepository *generative_respository.GenerativeRepository) (*Usecase, error) {
@@ -56,6 +57,7 @@ func NewUsecase(global *global.Global, r *repository.Repository, generativeRepos
 	u.BlockChainApi = global.BlockChainApi
 	u.Moralis = global.Moralis
 	u.GenerativeRepo = generativeRepository
+	u.S3Adapter = global.S3Adapter
 
 	tcPublicNode, err := blockchain.NewTcNetwork()
 	if err != nil {
