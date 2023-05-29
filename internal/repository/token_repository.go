@@ -160,7 +160,16 @@ func (r *Repository) FindBlackListTokens(ctx context.Context, filter entity.Swap
 
 func (r *Repository) UpdateBaseSymbolToken(ctx context.Context, token *entity.Token) error {
 	collectionName := token.CollectionName()
-	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"address": token.Address}, bson.M{"$set": bson.M{"base_token_symbol": token.BaseTokenSymbol}})
+	mapBaseTk := map[string]string{
+		"token":             token.Address,
+		"base_token_symbol": token.BaseTokenSymbol,
+	}
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"address": token.Address},
+		bson.M{"$set": bson.M{
+			"base_token_symbol":     token.BaseTokenSymbol,
+			"base_token_symbol_obj": mapBaseTk,
+		}},
+	)
 	if err != nil {
 		return err
 	}
