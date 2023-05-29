@@ -1577,6 +1577,29 @@ paths:
       summary: Create multipart upload
       tags:
       - Uploader
+  /upload/file/multipart-fake:
+    post:
+      consumes:
+      - application/json
+      description: Upload File multipart fake
+      parameters:
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload File multipart fake
+      tags:
+      - Uploader
   /upload/file/multipart/{uploadID}:
     post:
       consumes:
