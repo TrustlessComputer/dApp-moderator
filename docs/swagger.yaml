@@ -1378,6 +1378,10 @@ paths:
         in: query
         name: token_id
         type: string
+      - description: 'status 0,1,2 separated by comma , '
+        in: query
+        name: status
+        type: string
       - description: wallet_address
         in: query
         name: wallet_address

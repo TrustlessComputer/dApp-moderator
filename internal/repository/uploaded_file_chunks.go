@@ -7,6 +7,7 @@ import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strconv"
 )
 
 func (r *Repository) InsertUploadedFileChunk(obj *entity.UploadedFileChunk) error {
@@ -62,6 +63,19 @@ func (r *Repository) ListChunks(filter *entity.FilterChunks) ([]entity.UploadedF
 func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]entity.QueriedUploadedFile, error) {
 	match := bson.D{}
 	files := []entity.QueriedUploadedFile{}
+	if len(filter.Status) > 0 {
+		statusINTs := []int{}
+		for _, statusStr := range filter.Status {
+			statusINT, err := strconv.Atoi(statusStr)
+			if err != nil {
+				return nil, err
+			}
+
+			statusINTs = append(statusINTs, statusINT)
+		}
+
+		match = append(match, bson.E{"status", bson.M{"$in": statusINTs}})
+	}
 	if filter.ContractAddress != nil && *filter.ContractAddress != "" {
 		match = append(match, bson.E{"contract_address", *filter.ContractAddress})
 	}
@@ -80,9 +94,6 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 
 	f := bson.A{
 		bson.D{
-			{"$match", match},
-		},
-		bson.D{
 			{"$lookup",
 				bson.D{
 					{"from", "uploaded_file_chunks"},
@@ -91,7 +102,7 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 					{"let", bson.D{{"status", "$status"}}},
 					{"pipeline",
 						bson.A{
-							bson.D{{"$match", bson.D{{"status", 0}}}},
+							bson.D{{"$match", bson.D{{"status", 2}}}},
 							bson.D{{"$project", bson.D{{"_id", 1}}}},
 						},
 					},
@@ -99,7 +110,55 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 				},
 			},
 		},
-		bson.D{{"$addFields", bson.D{{"processed_chunk", bson.D{{"$size", "$uploaded_file_chunks"}}}}}},
+		bson.D{
+			{"$addFields",
+				bson.D{
+					{"processed_chunk", bson.D{{"$size", "$uploaded_file_chunks"}}},
+					{"status",
+						bson.D{
+							{"$cond",
+								bson.D{
+									{"if",
+										bson.D{
+											{"$ne",
+												bson.A{
+													"$tx_hash",
+													"",
+												},
+											},
+										},
+									},
+									{"then",
+										bson.D{
+											{"$cond",
+												bson.D{
+													{"if",
+														bson.D{
+															{"$eq",
+																bson.A{
+																	"$chunks",
+																	bson.D{{"$size", "$uploaded_file_chunks"}},
+																},
+															},
+														},
+													},
+													{"then", 2},
+													{"else", 1},
+												},
+											},
+										},
+									},
+									{"else", 0},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		bson.D{
+			{"$match", match},
+		},
 		bson.D{{"$sort", bson.D{{"chunk_index", 1}}}},
 	}
 

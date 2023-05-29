@@ -9,11 +9,13 @@ type FilterUploadedFile struct {
 	WalletAddress   *string
 	Name            *string
 	TxHash          *string
+	Status          []string
 }
 
 type QueriedUploadedFile struct {
 	UploadedFile   `bson:",inline"`
 	ProcessedChunk int `bson:"processed_chunk" json:"processed_chunks"`
+	Status         int `bson:"status" json:"status"`
 }
 
 type UploadedFile struct {

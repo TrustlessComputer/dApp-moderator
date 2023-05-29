@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -167,6 +168,7 @@ func (h *httpDelivery) getChunkByID(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Param contract_address query string false "contract_address"
 // @Param token_id query string false "token_id"
+// @Param status query string false "status 0,1,2 separated by comma , "
 // @Param wallet_address query string false "wallet_address"
 // @Param tx_hash query string false "tx_hash"
 // @Success 200 {object} response.UploadResponse{}
@@ -181,6 +183,12 @@ func (h *httpDelivery) filterUploadedFile(w http.ResponseWriter, r *http.Request
 			walletAddress := r.URL.Query().Get("wallet_address")
 			txHash := r.URL.Query().Get("tx_hash")
 
+			status := r.URL.Query().Get("status")
+			statuses := []string{}
+			if status != "" {
+				statuses = strings.Split(status, ",")
+			}
+
 			f := &entity.FilterUploadedFile{
 				BaseFilters: entity.BaseFilters{
 					Limit:  int64(*p.Limit),
@@ -192,6 +200,7 @@ func (h *httpDelivery) filterUploadedFile(w http.ResponseWriter, r *http.Request
 				TokenID:         &tokenID,
 				WalletAddress:   &walletAddress,
 				TxHash:          &txHash,
+				Status:          statuses,
 			}
 
 			files, err := h.Usecase.GetUploadedFiles(f)

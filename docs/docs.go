@@ -1907,6 +1907,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "status 0,1,2 separated by comma , ",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "wallet_address",
                         "name": "wallet_address",
                         "in": "query"
