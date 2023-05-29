@@ -339,7 +339,7 @@ func (u *Usecase) UploadPart(ctx context.Context, uploadID string, file File, fi
 	return nil
 }
 
-func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string) (*string, error) {
+func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string) (*entity.UploadedFile, error) {
 	uploaded, err := u.S3Adapter.CompleteMultipartUpload(ctx, uploadID)
 	if err != nil {
 		return nil, err
@@ -371,5 +371,5 @@ func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string) 
 		return nil, err
 	}
 
-	return &uploadedFIle.FullPath, nil
+	return uploadedFIle, nil
 }

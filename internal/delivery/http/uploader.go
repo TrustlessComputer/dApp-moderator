@@ -335,13 +335,16 @@ func (h *httpDelivery) CompleteMultipartUpload(w http.ResponseWriter, r *http.Re
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			uploadID := vars["uploadID"]
-			fileURL, err := h.Usecase.CompleteMultipartUpload(ctx, uploadID)
+			uploaded, err := h.Usecase.CompleteMultipartUpload(ctx, uploadID)
 
 			if err != nil {
 				return nil, err
 			}
 
-			return response.MultipartUploadResponse{FileURL: *fileURL}, nil
+			return response.MultipartUploadResponse{
+				FileURL: uploaded.FullPath,
+				FileID:  uploaded.ID.Hex(),
+			}, nil
 		},
 	).ServeHTTP(w, r)
 }
