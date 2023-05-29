@@ -238,7 +238,7 @@ func (u *Usecase) FilterChunks(filter *entity.FilterChunks) ([]entity.UploadedFi
 	return u.Repo.ListChunks(filter)
 }
 
-func (u *Usecase) GetUploadedFiles(f *entity.FilterUploadedFile) ([]entity.UploadedFile, error) {
+func (u *Usecase) GetUploadedFiles(f *entity.FilterUploadedFile) ([]entity.QueriedUploadedFile, error) {
 	return u.Repo.ListUploadedFiles(f)
 }
 
@@ -325,11 +325,9 @@ func (u *Usecase) CreateMultipartUpload(ctx context.Context, group string, fileN
 	group = fmt.Sprintf("%s-%d", group, time.Now().UTC().Nanosecond())
 
 	fileName = helpers.GenerateSlug(fileName)
-	uploadID, err := u.S3Adapter.CreateMultiplePartsUpload(ctx, "artifact/"+group, fileName)
+	uploaded, err := u.S3Adapter.CreateMultiplePartsUpload(ctx, "artifact/"+group, fileName)
 
-	//TODO - insert uploaded file here
-
-	return uploadID, err
+	return uploaded.UploadId, err
 }
 
 func (u *Usecase) UploadPart(ctx context.Context, uploadID string, file File, fileSize int64, partNumber int) error {
@@ -345,5 +343,20 @@ func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string) 
 	if err != nil {
 		return nil, err
 	}
+
+	//TODO - insert uploaded file here
+	//uploadedFIle := &entity.UploadedFile{
+	//	Name:     uploaded.Name,
+	//	Size:     int(uploaded.Size),
+	//	Path:     uploaded.Path,
+	//	FileType: uploaded.Minetype,
+	//	FullPath: fmt.Sprintf("%s/%s", os.Getenv("GCS_DOMAIN"), uploaded.Name),
+	//}
+	//
+	//err = u.Repo.InsertUploadedFile(uploadedFIle)
+	//if err != nil {
+	//	return nil, err
+	//}
+
 	return data, nil
 }

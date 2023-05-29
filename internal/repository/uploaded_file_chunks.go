@@ -59,9 +59,9 @@ func (r *Repository) ListChunks(filter *entity.FilterChunks) ([]entity.UploadedF
 	return chunks, nil
 }
 
-func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]entity.UploadedFile, error) {
+func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]entity.QueriedUploadedFile, error) {
 	match := bson.D{}
-	files := []entity.UploadedFile{}
+	files := []entity.QueriedUploadedFile{}
 	if filter.ContractAddress != nil && *filter.ContractAddress != "" {
 		match = append(match, bson.E{"contract_address", *filter.ContractAddress})
 	}
@@ -82,6 +82,24 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 		bson.D{
 			{"$match", match},
 		},
+		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "uploaded_file_chunks"},
+					{"localField", "_id"},
+					{"foreignField", "file_id"},
+					{"let", bson.D{{"status", "$status"}}},
+					{"pipeline",
+						bson.A{
+							bson.D{{"$match", bson.D{{"status", 0}}}},
+							bson.D{{"$project", bson.D{{"_id", 1}}}},
+						},
+					},
+					{"as", "uploaded_file_chunks"},
+				},
+			},
+		},
+		bson.D{{"$addFields", bson.D{{"processed_chunk", bson.D{{"$size", "$uploaded_file_chunks"}}}}}},
 		bson.D{{"$sort", bson.D{{"chunk_index", 1}}}},
 	}
 

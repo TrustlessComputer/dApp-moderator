@@ -11,6 +11,11 @@ type FilterUploadedFile struct {
 	TxHash          *string
 }
 
+type QueriedUploadedFile struct {
+	UploadedFile   `bson:",inline"`
+	ProcessedChunk int `bson:"processed_chunk" json:"processed_chunks"`
+}
+
 type UploadedFile struct {
 	BaseEntity      `bson:",inline"`
 	Name            string `bson:"name" json:"name"`
@@ -18,7 +23,7 @@ type UploadedFile struct {
 	FullPath        string `bson:"full_path" json:"full_path"`
 	FileType        string `bson:"file_type" json:"file_type"`
 	Size            int    `bson:"size" json:"size"` //kb
-	Chunks          int    `bson:"chunks" json:"chunks"`
+	Chunks          int    `bson:"chunks" json:"total_chunks"`
 	ChunkSize       int    `bson:"chunk_size" json:"chunk_size"` //kb
 	TxHash          string `bson:"tx_hash" json:"tx_hash"`
 	TokenID         string `bson:"token_id" json:"token_id"`

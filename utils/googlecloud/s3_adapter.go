@@ -106,7 +106,7 @@ func (a S3Adapter) GetS3CompletedPart(uploadID string) (parts []*CompletedPart, 
 	return
 }
 
-func (a S3Adapter) CreateMultiplePartsUpload(ctx context.Context, group string, fileName string) (*string, error) {
+func (a S3Adapter) CreateMultiplePartsUpload(ctx context.Context, group string, fileName string) (*s3.CreateMultipartUploadOutput, error) {
 	fn := NormalizeFileName(fileName)
 	uploadPath := fmt.Sprintf("%s/%s", group, fn)
 	var resp, err = a.s3Client.CreateMultipartUploadWithContext(ctx, &s3.CreateMultipartUploadInput{
@@ -119,7 +119,7 @@ func (a S3Adapter) CreateMultiplePartsUpload(ctx context.Context, group string, 
 	if err = a.SetUploadIDToKey(*resp.UploadId, *resp.Key); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return resp.UploadId, nil
+	return resp, nil
 
 }
 
