@@ -144,10 +144,12 @@ const (
 	COLLECTION_MARKETPLACE_OFFER          string = "marketplace_offers"
 	COLLECTION_MARKETPLACE_TOKEN_ACTIVITY string = "marketplace_token_activities"
 
-	COLLECTION_TOKEN_URI      string = "token_uris"
-	COLLECTION_TOKENS         string = "tokens"
-	COLLECTION_USERS          string = "users"
-	COLLECTION_USER_HISTORIES string = "user_histories"
+	COLLECTION_TOKEN_URI            string = "token_uris"
+	COLLECTION_TOKENS               string = "tokens"
+	COLLECTION_USERS                string = "users"
+	COLLECTION_USER_HISTORIES       string = "user_histories"
+	COLLECTION_UPLOADED_FILES       string = "uploaded_files"
+	COLLECTION_UPLOADED_FILE_CHUNKS string = "uploaded_file_chunks"
 
 	COLLECTION_SWAP_CONFIGS                string = "swap_configs"
 	COLLECTION_SWAP_FE_LOGS                string = "swap_fe_logs"
