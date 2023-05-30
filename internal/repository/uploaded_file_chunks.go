@@ -7,6 +7,7 @@ import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strings"
 )
 
 func (r *Repository) InsertUploadedFileChunk(obj *entity.UploadedFileChunk) error {
@@ -194,7 +195,8 @@ func (r *Repository) UpdateChunkTxHash(fileID string, chunkID string, txHash str
 	}
 
 	update := bson.M{
-		"tx_hash": txHash,
+		"tx_hash": strings.ToLower(txHash),
+		"status":  entity.ChunkUploading, //uploading to blockchain
 	}
 
 	result, err := r.DB.Collection(utils.COLLECTION_UPLOADED_FILE_CHUNKS).UpdateOne(context.TODO(), filter, bson.M{"$set": update})

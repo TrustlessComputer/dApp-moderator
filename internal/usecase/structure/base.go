@@ -30,3 +30,26 @@ type UpdateUploadedFileTxHash struct {
 	FileID        string `json:"-"`
 	WalletAddress string `json:"wallet_address"`
 }
+
+type TxHashInfo struct {
+	Jsonrpc string      `json:"jsonrpc"`
+	Id      interface{} `json:"id"`
+	Result  Result      `json:"result"`
+}
+
+type Result struct {
+	Nonce            string `json:"nonce"`
+	GasPrice         string `json:"gasPrice"`
+	Gas              string `json:"gas"`
+	To               string `json:"to"`
+	Value            string `json:"value"`
+	Input            string `json:"input"`
+	V                string `json:"v"`
+	R                string `json:"r"`
+	S                string `json:"s"`
+	Hash             string `json:"hash"`
+	From             string `json:"from"`
+	BlockHash        string `json:"blockHash"`
+	BlockNumber      string `json:"blockNumber"`
+	TransactionIndex string `json:"transactionIndex"`
+}
