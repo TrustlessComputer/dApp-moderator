@@ -38,7 +38,7 @@ type CollectionsResp struct {
 }
 
 type NftsResp struct {
-	Collection      string                            `json:"collection"`
+	//Collection      string                            `json:"collection"`
 	ContractAddress string                            `json:"collection_address"`
 	TokenID         string                            `json:"token_id"`
 	ContentType     string                            `json:"content_type"`
@@ -54,6 +54,7 @@ type NftsResp struct {
 	BlockNumber     string                            `json:"block_number"`
 	ListingForSales []entity.MarketplaceListings      `json:"listing_for_sales"`
 	MakeOffers      []entity.MarketplaceOffers        `json:"make_offers"`
+	Collection      entity.Collections                `json:"collection"`
 }
 
 type NftAttr struct {
