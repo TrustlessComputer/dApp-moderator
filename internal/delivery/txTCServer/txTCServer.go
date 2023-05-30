@@ -3,7 +3,6 @@ package txTCServer
 import (
 	"context"
 	"dapp-moderator/internal/usecase"
-	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"math"
@@ -136,9 +135,11 @@ func (c *txTCServer) Task(wg *sync.WaitGroup, taskName string, processFunc func(
 func (c *txTCServer) StartServer() {
 
 	tasks := make(map[string]func(ctx context.Context) error)
-	tasks["resolveTxTransaction"] = c.resolveTxTransaction
+	//market-place
+	tasks["checkTxHashChunks"] = c.checkTxHashChunks
 
 	if os.Getenv("ENV") == "production" {
+		tasks["resolveTxTransaction"] = c.resolveTxTransaction
 		tasks["fetchToken"] = c.fetchToken
 		tasks["UpdateCollectionItems"] = c.Usecase.UpdateCollectionItems
 		tasks["UpdateCollectionThumbnails"] = c.Usecase.UpdateCollectionThumbnails
@@ -160,21 +161,19 @@ func (c *txTCServer) StartServer() {
 func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	lastProcessedBlock, err := c.getLastProcessedBlock(ctx)
 	if err != nil {
-		logger.AtLog.Logger.Error("resolveTransaction", zap.Any("err", err))
+		logger.AtLog.Logger.Error("resolveTransaction", zap.Error(err))
 		return err
 	}
 
 	// get new block from db
 	chainBlock, err := c.Blockchain.GetBlockNumber()
 	if err != nil {
-		logger.AtLog.Logger.Error("resolveTransaction", zap.Any("err", err))
+		logger.AtLog.Logger.Error("resolveTransaction", zap.Error(err))
 		return err
 	}
 
 	fromBlock := lastProcessedBlock + 1
-	if fromBlock+int64(c.BatchLogSize) > chainBlock.Int64() {
-		err = errors.New("latest block is greater than the current block")
-		logger.AtLog.Logger.Error("resolveTransaction", zap.Any("err", err), zap.Int64("lastProcessedBlock", lastProcessedBlock), zap.Int64("chainBlock", chainBlock.Int64()))
+	if fromBlock > chainBlock.Int64() {
 		return err
 	}
 
@@ -182,6 +181,8 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	if toBlock < fromBlock {
 		fromBlock = toBlock
 	}
+
+	logger.AtLog.Logger.Info("resolveTransaction", zap.Int64("fromBlock", fromBlock), zap.Int64("toBlock", toBlock), zap.Int64("chainBlock", chainBlock.Int64()))
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -191,6 +192,7 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	go c.processTxTransaction(&wg, ctx, int32(fromBlock), int32(toBlock))
 
 	wg.Wait()
+
 	err = c.Cache.SetStringData(c.getRedisKey(nil), strconv.FormatInt(toBlock, 10))
 	if err != nil {
 		logger.AtLog.Logger.Error("resolveTransaction", zap.Error(err))
@@ -237,6 +239,10 @@ func (c *txTCServer) fetchToken(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (c *txTCServer) checkTxHashChunks(ctx context.Context) error {
+	return c.Usecase.ListenedChunks()
 }
 
 // the contracts, that will be listened (collection address erc721) + marketplace contract
