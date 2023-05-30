@@ -172,8 +172,16 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 				Name:          &name,
 				PaginationReq: p,
 			}
-
+			coll, err := h.Usecase.CollectionDetail(ctx, contractAddress)
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination", iPagination), zap.String("contractAddress", contractAddress), zap.Error(err))
+			}
 			data, err := h.Usecase.CollectionNfts(ctx, contractAddress, filter)
+			for _, i := range data {
+				if i.Name == "" {
+					i.Name = coll.Name
+				}
+			}
 			if err != nil {
 				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination", iPagination), zap.String("contractAddress", contractAddress), zap.Error(err))
 				return nil, err

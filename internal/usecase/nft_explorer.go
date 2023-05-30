@@ -186,7 +186,7 @@ func (u *Usecase) UpdateCollection(ctx context.Context, contractAddress string, 
 	return obj, nil
 }
 
-func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.CollectionsFilter) ([]entity.Nfts, error) {
+func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, filter request.CollectionsFilter) ([]*entity.Nfts, error) {
 	// data, err := u.NftExplorer.CollectionNfts(contractAddress, filter.ToNFTServiceUrlQuery())
 	// if err != nil {
 	// 	logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Error(err))
@@ -196,7 +196,7 @@ func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 	// logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.Any("filter", filter), zap.Any("data", len(data)))
 	// return data, nil
 
-	res := []entity.Nfts{}
+	res := []*entity.Nfts{}
 	f := bson.D{}
 
 	if filter.Address != nil && *filter.Address != "" {
