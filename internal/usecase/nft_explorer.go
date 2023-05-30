@@ -608,7 +608,7 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 		if errors.Is(err, mongo.ErrNoDocuments) {
 
 			_, err = u.Repo.CreateNftHistories(&entity.NftHistories{
-				Collection:        strings.ToLower(tmp.Collection),
+				//Collection:        strings.ToLower(tmp.Collection),
 				ContractAddress:   strings.ToLower(tmp.ContractAddress),
 				TokenID:           tmp.TokenID,
 				TokenIDInt:        tmp.TokenIDInt,
@@ -647,7 +647,7 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 		//the current owner != owner from chain
 		if strings.ToLower(nft.Owner) != strings.ToLower(tmp.Owner) {
 			_, err := u.Repo.CreateNftHistories(&entity.NftHistories{
-				Collection:        strings.ToLower(tmp.Collection),
+				//Collection:        strings.ToLower(tmp.Collection),
 				ContractAddress:   strings.ToLower(tmp.ContractAddress),
 				TokenID:           tmp.TokenID,
 				TokenIDInt:        tmp.TokenIDInt,

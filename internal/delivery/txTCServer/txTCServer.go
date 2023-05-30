@@ -3,6 +3,7 @@ package txTCServer
 import (
 	"context"
 	"dapp-moderator/internal/usecase"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"math"
@@ -163,14 +164,21 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 		return err
 	}
 
-	fromBlock := lastProcessedBlock + 1
-	blockNumber, err := c.Blockchain.GetBlockNumber()
+	// get new block from db
+	chainBlock, err := c.Blockchain.GetBlockNumber()
 	if err != nil {
 		logger.AtLog.Logger.Error("resolveTransaction", zap.Any("err", err))
 		return err
 	}
 
-	toBlock := int64(math.Min(float64(blockNumber.Int64()), float64(fromBlock+int64(c.BatchLogSize))))
+	fromBlock := lastProcessedBlock + 1
+	if fromBlock+int64(c.BatchLogSize) > chainBlock.Int64() {
+		err = errors.New("latest block is greater than the current block")
+		logger.AtLog.Logger.Error("resolveTransaction", zap.Any("err", err), zap.Int64("lastProcessedBlock", lastProcessedBlock), zap.Int64("chainBlock", chainBlock.Int64()))
+		return err
+	}
+
+	toBlock := int64(math.Min(float64(chainBlock.Int64()), float64(fromBlock+int64(c.BatchLogSize))))
 	if toBlock < fromBlock {
 		fromBlock = toBlock
 	}

@@ -21,7 +21,7 @@ func (r *Repository) AcceptOffer(ctx context.Context, offeringID string) error {
 	}
 
 	update := bson.M{
-		"status": entity.MarketPlaceCancel,
+		"status": entity.MarketPlaceDone,
 	}
 
 	result, err := r.DB.Collection(entity.MarketplaceOffers{}.CollectionName()).UpdateOne(ctx, filter, bson.M{"$set": update})
@@ -42,7 +42,7 @@ func (r *Repository) CancelOffer(ctx context.Context, offeringID string) error {
 	}
 
 	update := bson.M{
-		"status": entity.MarketPlaceDone,
+		"status": entity.MarketPlaceCancel,
 	}
 
 	result, err := r.DB.Collection(entity.MarketplaceOffers{}.CollectionName()).UpdateOne(ctx, filter, bson.M{"$set": update})
