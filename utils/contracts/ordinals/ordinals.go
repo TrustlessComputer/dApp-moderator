@@ -3,7 +3,7 @@
 
 package ordinals
 
-import (
+/*import (
 	"errors"
 	"math/big"
 	"strings"
@@ -767,4 +767,4 @@ func (_Ordinals *OrdinalsFilterer) ParseOwnershipTransferred(log types.Log) (*Or
 	}
 	event.Raw = log
 	return event, nil
-}
+}*/

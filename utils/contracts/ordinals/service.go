@@ -1,6 +1,6 @@
 package ordinals
 
-import (
+/*import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
@@ -90,4 +90,4 @@ func (s *Service) AddContractToOrdinalsContract(ctx context.Context, tokenAddr, 
 		status = receipt.Status
 	}
 	return tx.Hash().Hex(), status, nil
-}
+}*/
