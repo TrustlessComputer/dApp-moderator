@@ -182,12 +182,13 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 			for _, i := range data {
 				if i.Name == "" {
-					i.Name = coll.Name
 					if bnsAddress == contractAddress {
 						bnsName, _ := h.Usecase.BnsService.NameByToken(i.TokenID)
 						if bnsName != nil {
-							i.Metadata = bnsName.Name
+							i.Name = bnsName.Name
 						}
+					} else {
+						i.Name = coll.Name
 					}
 				}
 			}
