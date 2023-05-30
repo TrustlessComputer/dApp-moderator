@@ -37,6 +37,7 @@ type Collections struct {
 	Name        string `bson:"name" json:"name"`
 	Description string `bson:"description" json:"description"`
 	Social      Social `json:"social" bson:"social"`
+	Status      int    `json:"status" bson:"status"` // -1: disable, 0: enable
 }
 
 type CollectionNftThumbnail struct {
