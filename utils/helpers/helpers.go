@@ -7,6 +7,7 @@ import (
 	"crypto/cipher"
 	"crypto/md5"
 	"encoding/base64"
+	b64 "encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -325,4 +326,12 @@ func GetGoogleSecretKey(name string) (string, error) {
 	}
 
 	return string(result.Payload.Data), nil
+}
+
+func Base64Decode(base64Str string) ([]byte, error) {
+	sDec, err := b64.StdEncoding.DecodeString(base64Str)
+	if err != nil {
+		return nil, err
+	}
+	return sDec, nil
 }

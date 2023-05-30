@@ -84,3 +84,30 @@ func (r *Repository) UpdateNftOwner(contract string, tokenID string, owner strin
 	return updated, nil
 
 }
+
+func (r *Repository) GetNfts(collectionAddress string, skip int, limit int) ([]entity.Nfts, error) {
+	f2 := bson.A{
+		bson.D{
+			{"$match",
+				bson.D{
+					{"collection_address", strings.ToLower(collectionAddress)},
+					{"image", bson.D{{"$ne", ""}}},
+				},
+			},
+		},
+		bson.D{{"$project", bson.D{{"image", 1}}}},
+		bson.D{{"$skip", skip}},
+		bson.D{{"$limit", limit}},
+	}
+
+	groupedNfts := []entity.Nfts{}
+	cursor, err := r.DB.Collection(entity.Nfts{}.CollectionName()).Aggregate(context.TODO(), f2)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if err = cursor.All((context.TODO()), &groupedNfts); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return groupedNfts, nil
+}

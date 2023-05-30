@@ -83,7 +83,17 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	uploadRoute := api.PathPrefix("/upload").Subrouter()
 	// uploadRoute.Use(h.MiddleWare.AuthorizationFunc) // temp pause
+	uploadRoute.HandleFunc("/file", h.filterUploadedFile).Methods("GET")
 	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
+	//uploadRoute.HandleFunc("/file/multipart-fake", h.uploadFileMultiPartFake).Methods("POST")
+	uploadRoute.HandleFunc("/file/{file_id}/tx_hash/{tx_hash}", h.updateTxHashUploadedFile).Methods("PUT")
+	uploadRoute.HandleFunc("/file/{file_id}/chunks", h.fileChunks).Methods("GET")
+	uploadRoute.HandleFunc("/file/{file_id}/chunks/{chunk_id}", h.getChunkByID).Methods("GET")
+	uploadRoute.HandleFunc("/file/{file_id}/chunks/{chunk_id}/tx_hash/{tx_hash}", h.updateTxHashForAChunk).Methods("PUT")
+
+	uploadRoute.HandleFunc("/multipart", h.CreateMultipartUpload).Methods("POST")
+	uploadRoute.HandleFunc("/multipart/{uploadID}", h.UploadPart).Methods("PUT")
+	uploadRoute.HandleFunc("/multipart/{uploadID}", h.CompleteMultipartUpload).Methods("POST")
 
 	tools := api.PathPrefix("/tools").Subrouter()
 	tools.HandleFunc("/compile-contract", h.compileContract).Methods("POST")

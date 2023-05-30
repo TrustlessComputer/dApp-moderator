@@ -64,6 +64,22 @@ func (a *TcNetwork) GetBlockByNumber(blockNumber big.Int) (*types.Block, error) 
 	return block, nil
 }
 
+func (a *TcNetwork) TransactionByHash(hash common.Hash) (*types.Transaction, bool, error) {
+	block, isPending, err := a.client.TransactionByHash(context.Background(), hash)
+	if err != nil {
+		return nil, false, err
+	}
+	return block, isPending, nil
+}
+
+func (a *TcNetwork) HeaderByHash(hash common.Hash) (*types.Header, error) {
+	block, err := a.client.HeaderByHash(context.Background(), hash)
+	if err != nil {
+		return nil, err
+	}
+	return block, nil
+}
+
 func (a *TcNetwork) GetClient() *ethclient.Client {
 	return a.client
 }
