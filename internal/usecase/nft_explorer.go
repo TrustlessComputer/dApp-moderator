@@ -232,6 +232,25 @@ func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.NftsResp, error) {
 	data, err := u.NftExplorer.CollectionNftDetail(contractAddress, tokenID)
 
+	bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
+	if contractAddress == bnsAddress {
+		key := helpers.BnsTokenNameKey(data.TokenID)
+		existed, _ := u.Cache.Exists(key)
+		if existed != nil && *existed == true {
+			cached, _ := u.Cache.GetData(key)
+			if cached != nil {
+				data.Name = *cached
+			}
+		} else {
+			bnsName, _ := u.BnsService.NameByToken(data.TokenID)
+			if bnsName != nil {
+				data.Name = bnsName.Name
+				u.Cache.SetStringData(key, data.Name)
+			}
+
+		}
+	}
+
 	// get activity
 	activities, err := u.Repo.FilterTokenActivites(entity.FilterTokenActivities{
 		TokenID:         &tokenID,
