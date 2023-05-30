@@ -1386,6 +1386,11 @@ paths:
         in: query
         name: tx_hash
         type: string
+      - description: '0: new, 1: has tx_hash and not fully uploaded to blockchain,
+          2: done. Statuses are separated by comma'
+        in: query
+        name: status
+        type: string
       produces:
       - application/json
       responses:

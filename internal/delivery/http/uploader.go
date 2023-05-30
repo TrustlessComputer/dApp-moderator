@@ -170,6 +170,7 @@ func (h *httpDelivery) getChunkByID(w http.ResponseWriter, r *http.Request) {
 // @Param token_id query string false "token_id"
 // @Param wallet_address query string false "wallet_address"
 // @Param tx_hash query string false "tx_hash"
+// @Param status query string false "0: new, 1: has tx_hash and not fully uploaded to blockchain, 2: done. Statuses are separated by comma"
 // @Success 200 {object} response.UploadResponse{}
 // @Router /upload/file [GET]
 func (h *httpDelivery) filterUploadedFile(w http.ResponseWriter, r *http.Request) {
@@ -182,6 +183,19 @@ func (h *httpDelivery) filterUploadedFile(w http.ResponseWriter, r *http.Request
 			walletAddress := strings.ToLower(r.URL.Query().Get("wallet_address"))
 			txHash := strings.ToLower(r.URL.Query().Get("tx_hash"))
 
+			status := []int{}
+			statsStr := strings.ToLower(r.URL.Query().Get("status"))
+			if statsStr != "" {
+				statsStrs := strings.Split(statsStr, ",")
+				for _, i := range statsStrs {
+					iInt, err := strconv.Atoi(i)
+					if err != nil {
+						continue
+					}
+					status = append(status, iInt)
+				}
+			}
+
 			f := &entity.FilterUploadedFile{
 				BaseFilters: entity.BaseFilters{
 					Limit:  int64(*p.Limit),
@@ -193,6 +207,7 @@ func (h *httpDelivery) filterUploadedFile(w http.ResponseWriter, r *http.Request
 				TokenID:         &tokenID,
 				WalletAddress:   &walletAddress,
 				TxHash:          &txHash,
+				Status:          status,
 			}
 
 			files, err := h.Usecase.GetUploadedFiles(f)

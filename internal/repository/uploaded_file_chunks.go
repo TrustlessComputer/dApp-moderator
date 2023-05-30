@@ -78,10 +78,11 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 		match = append(match, bson.E{"tx_hash", *filter.TxHash})
 	}
 
+	if len(filter.Status) > 0 {
+		match = append(match, bson.E{"status", bson.M{"$in": filter.Status}})
+	}
+
 	f := bson.A{
-		bson.D{
-			{"$match", match},
-		},
 		bson.D{
 			{"$lookup",
 				bson.D{
@@ -91,7 +92,7 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 					{"let", bson.D{{"status", "$status"}}},
 					{"pipeline",
 						bson.A{
-							bson.D{{"$match", bson.D{{"status", 0}}}},
+							bson.D{{"$match", bson.D{{"status", entity.ChunkUploaded}}}},
 							bson.D{{"$project", bson.D{{"_id", 1}}}},
 						},
 					},
@@ -99,8 +100,57 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 				},
 			},
 		},
-		bson.D{{"$addFields", bson.D{{"processed_chunk", bson.D{{"$size", "$uploaded_file_chunks"}}}}}},
-		bson.D{{"$sort", bson.D{{"chunk_index", 1}}}},
+		bson.D{
+			{"$addFields",
+				bson.D{
+					{"processed_chunk", bson.D{{"$size", "$uploaded_file_chunks"}}},
+					{"status",
+						bson.D{
+							{"$cond",
+								bson.D{
+									{"if",
+										bson.D{
+											{"$ne",
+												bson.A{
+													"$tx_hash",
+													"",
+												},
+											},
+										},
+									},
+									{"then",
+										bson.D{
+											{"$cond",
+												bson.D{
+													{"if",
+														bson.D{
+															{"$eq",
+																bson.A{
+																	"$chunks",
+																	bson.D{{"$size", "$uploaded_file_chunks"}},
+																},
+															},
+														},
+													},
+													{"then", 2},
+													{"else", 1},
+												},
+											},
+										},
+									},
+									{"else", 0},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		bson.D{
+			{"$match", match},
+		},
+		bson.D{{"$sort", bson.D{{"status", 1}}}},
+		bson.D{{"$project", bson.D{{"uploaded_file_chunks", 0}}}},
 	}
 
 	if filter.Limit == 0 {

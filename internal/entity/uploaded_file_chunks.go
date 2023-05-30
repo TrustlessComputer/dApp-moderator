@@ -8,9 +8,9 @@ import (
 type ChunkStatus int
 
 const (
-	ChunkNew       ChunkStatus = 0
-	ChunkUploading ChunkStatus = 1
-	ChunkUploaded  ChunkStatus = 2
+	ChunkNew       ChunkStatus = 0 // chunk is created
+	ChunkUploading ChunkStatus = 1 //uploading to blockchain
+	ChunkUploaded  ChunkStatus = 2 //uploaded to blockchain
 )
 
 type FilterChunks struct {
