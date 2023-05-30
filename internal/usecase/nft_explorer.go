@@ -231,6 +231,49 @@ func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 
 func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.NftsResp, error) {
 	data, err := u.NftExplorer.CollectionNftDetail(contractAddress, tokenID)
+
+	// get activity
+	activities, err := u.Repo.FilterTokenActivites(entity.FilterTokenActivities{
+		TokenID:         &tokenID,
+		ContractAddress: &contractAddress,
+		BaseFilters:     entity.BaseFilters{Limit: 100, Offset: 0},
+	})
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+	}
+	if activities != nil && len(activities) != 0 {
+		data.Activities = activities
+	}
+
+	// get list for sale
+	statusListing := int(entity.MarketPlaceOpen)
+	listForSales, err := u.Repo.FilterMarketplaceListings(entity.FilterMarketplaceListings{
+		TokenId:            &tokenID,
+		CollectionContract: &contractAddress,
+		Status:             &statusListing,
+		BaseFilters:        entity.BaseFilters{Limit: 100, Offset: 0},
+	})
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+	}
+	if listForSales != nil && len(listForSales) > 0 {
+		data.ListingForSales = listForSales
+	}
+
+	// get make offers
+	makeOffers, err := u.Repo.FilterMarketplaceOffer(entity.FilterMarketplaceOffer{
+		TokenId:            &tokenID,
+		CollectionContract: &contractAddress,
+		Status:             &statusListing,
+		BaseFilters:        entity.BaseFilters{Limit: 100, Offset: 0},
+	})
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+	}
+	if makeOffers != nil && len(makeOffers) > 0 {
+		data.MakeOffers = makeOffers
+	}
+
 	if err != nil {
 		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
 		return nil, err
