@@ -65,7 +65,7 @@ func (u *Usecase) Collections(ctx context.Context, filter request.CollectionsFil
 		sort = *filter.Sort
 	}
 
-	s := bson.D{{sortBy, sort}, {"index", 1}}
+	s := bson.D{{sortBy, sort}, {"index", -1}}
 	err := u.Repo.Find(utils.COLLECTION_COLLECTIONS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
