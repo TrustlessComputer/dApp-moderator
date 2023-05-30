@@ -141,6 +141,30 @@ func (r *Repository) FindUploadedFileByTxHash(txHash string) (*entity.UploadedFi
 	return resp, nil
 }
 
+func (r *Repository) FindUploadedFileByID(id string) (*entity.UploadedFile, error) {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.D{
+		{"_id", objID},
+	}
+
+	result, err := r.FindOne(utils.COLLECTION_UPLOADED_FILES, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &entity.UploadedFile{}
+	err = result.Decode(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 // filter by txHash, updated tokenID, walletAddress
 func (r *Repository) UpdateUploadedFileTokenID(txHash string, tokenID string, walletAddress string, contractAddress string) error {
 
