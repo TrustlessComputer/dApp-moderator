@@ -260,7 +260,10 @@ func (u *Usecase) TransferToken(eventData interface{}, chainLog types.Log) error
 	to := event.To.Hex()
 	from := event.From.Hex()
 
+	go u.UpdateUploadedFile(eventData, chainLog)
+
 	if strings.ToLower(os.Getenv("ENV")) == strings.ToLower("production") {
+
 		updated, err := u.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
 		if err != nil {
 			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber), zap.Error(err))
@@ -280,6 +283,35 @@ func (u *Usecase) InsertActivity(activity *entity.MarketplaceTokenActivity) erro
 	if err != nil {
 		logger.AtLog.Logger.Error("TransferToken - InsertActivity", zap.Error(err), zap.String("tokenId", activity.InscriptionID), zap.String("txHash", activity.TxHash))
 		return err
+	}
+
+	return nil
+}
+
+func (u *Usecase) UpdateUploadedFile(eventData interface{}, chainLog types.Log) error {
+	event := eventData.(*generative_nft_contract.GenerativeNftContractTransfer)
+	contract := chainLog.Address.Hex()
+	tokenIDStr := event.TokenId.String()
+	to := event.To.Hex()
+	from := event.From.Hex()
+	txHash := chainLog.TxHash.Hex()
+
+	if true {
+		updated, err := u.Repo.FindUploadedFileByTxHash(txHash)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber), zap.Error(err))
+			return err
+		}
+
+		err = u.Repo.UpdateUploadedFileTokenID(txHash, tokenIDStr, to, contract)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner - UpdateUploadedFileTokenID %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber), zap.Error(err))
+			return err
+		}
+
+		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Any("updated", updated), zap.Uint64("blockNumber", chainLog.BlockNumber))
+	} else {
+		logger.AtLog.Logger.Info(fmt.Sprintf("[Testing] UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber))
 	}
 
 	return nil

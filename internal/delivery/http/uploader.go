@@ -176,10 +176,10 @@ func (h *httpDelivery) filterUploadedFile(w http.ResponseWriter, r *http.Request
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			iPagination := ctx.Value(utils.PAGINATION)
 			p := iPagination.(request.PaginationReq)
-			contractAddress := r.URL.Query().Get("contract_address")
+			contractAddress := strings.ToLower(r.URL.Query().Get("contract_address"))
 			tokenID := r.URL.Query().Get("token_id")
-			walletAddress := r.URL.Query().Get("wallet_address")
-			txHash := r.URL.Query().Get("tx_hash")
+			walletAddress := strings.ToLower(r.URL.Query().Get("wallet_address"))
+			txHash := strings.ToLower(r.URL.Query().Get("tx_hash"))
 
 			f := &entity.FilterUploadedFile{
 				BaseFilters: entity.BaseFilters{
