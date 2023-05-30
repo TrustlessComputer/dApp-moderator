@@ -1916,6 +1916,12 @@ const docTemplate = `{
                         "description": "tx_hash",
                         "name": "tx_hash",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "0: new, 1: has tx_hash and not fully uploaded to blockchain, 2: done. Statuses are separated by comma",
+                        "name": "status",
+                        "in": "query"
                     }
                 ],
                 "responses": {
