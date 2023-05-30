@@ -190,7 +190,8 @@ func ConvertWeiToBigFloatNegative(amt *big.Int, decimals uint) *big.Float {
 }
 
 func SlackHook(channel, content string) error {
-	slackURL := "https://hooks.slack.com/services/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"
+	slackURL := "https://hooks.slack.com/services/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"
+	// slackURL := "https://hooks.slack.com/services/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"
 	go func() error {
 		bodyRequest, err := json.Marshal(map[string]interface{}{
 			"channel":  channel,
