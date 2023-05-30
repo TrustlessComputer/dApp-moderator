@@ -153,6 +153,27 @@ func (r *Repository) UpdateCollectionThumbnail(ctx context.Context, contract str
 	return nil
 }
 
+func (r *Repository) UpdateCollectionIndex(ctx context.Context, contract string, index int) error {
+	filter := bson.M{
+		"contract": contract,
+	}
+
+	update := bson.M{
+		"index": index,
+	}
+
+	result, err := r.DB.Collection(entity.Collections{}.CollectionName()).UpdateOne(ctx, filter, bson.M{"$set": update})
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return errors.New("no document")
+	}
+
+	return nil
+}
+
 func (r *Repository) AllCollections() ([]entity.FilteredCollections, error) {
 	result := []entity.FilteredCollections{}
 

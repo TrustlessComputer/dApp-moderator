@@ -169,6 +169,7 @@ func startServer() {
 		return
 	}
 	//uc.TestSendNotify()
+	//uc.UpdateAllCollectionIndex(context.Background())
 
 	servers := make(map[string]delivery.AddedServer)
 	// api fixed run:

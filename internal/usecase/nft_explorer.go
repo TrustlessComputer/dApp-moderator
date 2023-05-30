@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -630,4 +631,29 @@ func (u *Usecase) RefreshNft(ctx context.Context, contractAddress string, tokenI
 		return nil, err
 	}
 	return data, nil
+}
+
+func (u *Usecase) UpdateCollectionIndex(ctx context.Context, contractAddress string, index int) error {
+	err := u.Repo.UpdateCollectionIndex(ctx, contractAddress, index)
+	if err != nil {
+		logger.AtLog.Logger.Error("UpdateCollectionIndex", zap.String("contractAddress", contractAddress), zap.Int("index", index), zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (u *Usecase) UpdateAllCollectionIndex(ctx context.Context) error {
+	collections, err := u.Repo.AllCollections()
+	if err != nil {
+		logger.AtLog.Logger.Error("UpdateAllCollectionIndex", zap.Error(err))
+		return err
+	}
+	sort.Slice(collections, func(i, j int) bool {
+		return collections[i].DeployedAtBlock <= collections[j].DeployedAtBlock
+	})
+
+	for i, coll := range collections {
+		u.UpdateCollectionIndex(ctx, coll.Contract, i+1)
+	}
+	return nil
 }
