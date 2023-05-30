@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 
@@ -334,4 +335,14 @@ func Base64Decode(base64Str string) ([]byte, error) {
 		return nil, err
 	}
 	return sDec, nil
+}
+
+func TxHashInfo(txhash string) ([]byte, *http.Header, int, error) {
+	txhash = strings.ToLower(txhash)
+	url := os.Getenv("TC_ENDPOINT")
+	requestBody := make(map[string]interface{})
+	requestBody["version"] = "2.0"
+	requestBody["method"] = "eth_getTransactionByHash"
+	requestBody["params"] = []string{txhash}
+	return HttpRequest(url, "POST", make(map[string]string), requestBody)
 }
