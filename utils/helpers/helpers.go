@@ -346,3 +346,7 @@ func TxHashInfo(txhash string) ([]byte, *http.Header, int, error) {
 	requestBody["params"] = []string{txhash}
 	return HttpRequest(url, "POST", make(map[string]string), requestBody)
 }
+
+func BnsTokenNameKey(token string) string {
+	return fmt.Sprintf("bns.token.%s", token)
+}
