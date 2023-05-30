@@ -10,7 +10,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -177,9 +179,16 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination", iPagination), zap.String("contractAddress", contractAddress), zap.Error(err))
 			}
 			data, err := h.Usecase.CollectionNfts(ctx, contractAddress, filter)
+			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 			for _, i := range data {
 				if i.Name == "" {
 					i.Name = coll.Name
+					if bnsAddress == contractAddress {
+						bnsName, _ := h.Usecase.BnsService.NameByToken(i.TokenID)
+						if bnsName != nil {
+							i.Metadata = bnsName.Name
+						}
+					}
 				}
 			}
 			if err != nil {
