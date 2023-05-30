@@ -1872,6 +1872,53 @@
             }
         },
         "/upload/file": {
+            "get": {
+                "description": "Get uploaded Files",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Get uploaded Files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "wallet_address",
+                        "name": "wallet_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -1896,6 +1943,374 @@
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/multipart": {
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Create multipart upload.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Create multipart upload",
+                "parameters": [
+                    {
+                        "description": "Create multipart upload request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateMultipartUploadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/multipart-fake": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload File multipart fake",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Upload File multipart fake",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/multipart/{uploadID}": {
+            "put": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Upload multipart file",
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Upload multipart file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "upload ID",
+                        "name": "uploadID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "part number",
+                        "name": "partNumber",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Finish multipart upload",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Finish multipart upload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "upload ID",
+                        "name": "uploadID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/{file_id}/chunks": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get chunks of the uploaded file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Get chunks of the uploaded file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "fileID",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "chunk_id",
+                        "name": "chunk_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0: new, 1: processing, 2: done - default: all",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/{file_id}/chunks/{chunk_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get chunk by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Get chunk by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "fileID",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "chunk_id",
+                        "name": "chunk_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0: new, 1: processing, 2: done - default: all",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/{file_id}/chunks/{chunk_id}/tx_hash/{tx_hash}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "update tx_hash for a chunk",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "update tx_hash for a chunk",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file_id",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "chunk_id",
+                        "name": "chunk_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/{file_id}/tx_hash/{tx_hash}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "update tx_hash for the uploaded file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "update tx_hash for the uploaded file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file_id",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "request body",
+                        "name": "request_body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structure.UpdateUploadedFileTxHash"
+                        }
                     }
                 ],
                 "responses": {
@@ -1996,6 +2411,17 @@
                             }
                         }
                     }
+                }
+            }
+        },
+        "request.CreateMultipartUploadRequest": {
+            "type": "object",
+            "properties": {
+                "fileName": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
                 }
             }
         },
@@ -2177,6 +2603,14 @@
                     "$ref": "#/definitions/structure.Social"
                 },
                 "thumbnail": {
+                    "type": "string"
+                }
+            }
+        },
+        "structure.UpdateUploadedFileTxHash": {
+            "type": "object",
+            "properties": {
+                "wallet_address": {
                     "type": "string"
                 }
             }

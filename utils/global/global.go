@@ -25,7 +25,7 @@ type Global struct {
 	DBConnection           _pConnection.IConnection
 	GenerativeDBConnection _pConnection.IConnection
 	GCS                    googlecloud.IGcstorage
-	S3Adapter              googlecloud.S3Adapter
+	S3Adapter              *googlecloud.S3Adapter
 	Cache                  redis.IRedisCache
 	CacheAuthService       redis.IRedisCache
 	QuickNode              *quicknode.QuickNode
