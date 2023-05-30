@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
 	"errors"
@@ -183,9 +184,20 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 			for _, i := range data {
 				if i.Name == "" {
 					if bnsAddress == contractAddress {
-						bnsName, _ := h.Usecase.BnsService.NameByToken(i.TokenID)
-						if bnsName != nil {
-							i.Name = bnsName.Name
+						key := helpers.BnsTokenNameKey(i.TokenID)
+						existed, _ := h.Usecase.Cache.Exists(key)
+						if existed != nil && *existed == true {
+							cached, _ := h.Usecase.Cache.GetData(key)
+							if cached != nil {
+								i.Name = *cached
+							}
+						} else {
+							bnsName, _ := h.Usecase.BnsService.NameByToken(i.TokenID)
+							if bnsName != nil {
+								i.Name = bnsName.Name
+								h.Usecase.Cache.SetStringData(key, i.Name)
+							}
+
 						}
 					} else {
 						i.Name = coll.Name
