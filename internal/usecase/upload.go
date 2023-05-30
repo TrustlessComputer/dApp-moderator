@@ -7,6 +7,7 @@ import (
 	"dapp-moderator/utils/googlecloud"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"go.uber.org/zap"
@@ -294,17 +295,46 @@ func (u *Usecase) UpdateTxHashForUploadedFile(data *structure.UpdateUploadedFile
 }
 
 func (u *Usecase) UpdateTxHashForAChunk(fileID string, chunkID string, txHash string) (*entity.UploadedFileChunk, error) {
-
-	err := u.Repo.UpdateChunkTxHash(fileID, chunkID, txHash)
-	if err != nil {
-		return nil, err
+	//verify chunk
+	verifiedDataFromChain := &structure.TxHashInfo{}
+	verifiedData, _, statusCode, err := helpers.TxHashInfo(txHash)
+	if err == nil && statusCode == 200 {
+		err = json.Unmarshal(verifiedData, verifiedDataFromChain)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateTxHashForAChunk - verify hash - %s", fileID), zap.String("fileID", fileID), zap.String("chunkID", chunkID), zap.String("txHash", txHash), zap.Error(err))
+			return nil, err
+		}
 	}
 
 	c, err := u.Repo.FindChunk(fileID, chunkID)
 	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateTxHashForAChunk - FindChunk - %s", fileID), zap.String("fileID", fileID), zap.String("chunkID", chunkID), zap.String("txHash", txHash), zap.Error(err))
 		return nil, err
 	}
 
+	uploadedFile, err := u.Repo.FindUploadedFileByID(c.FileID.Hex())
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateTxHashForAChunk - FindUploadedFileByID - %s", fileID), zap.String("fileID", fileID), zap.String("chunkID", chunkID), zap.String("txHash", txHash), zap.Error(err))
+		return nil, err
+	}
+
+	if strings.ToLower(uploadedFile.WalletAddress) != strings.ToLower(verifiedDataFromChain.Result.From) {
+		err := errors.New(fmt.Sprintf("Chunk is not valid"))
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateTxHashForAChunk - FindUploadedFileByID - %s", fileID), zap.String("fileID", fileID), zap.String("chunkID", chunkID), zap.String("txHash", txHash), zap.Error(err))
+		return nil, err
+	}
+
+	if strings.ToLower(uploadedFile.TxHash) == strings.ToLower(txHash) {
+		err := errors.New(fmt.Sprintf("Cannot use txHash of uploaded file for a chunk"))
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateTxHashForAChunk - FindUploadedFileByID - %s", fileID), zap.String("fileID", fileID), zap.String("chunkID", chunkID), zap.String("txHash", txHash), zap.Error(err))
+		return nil, err
+	}
+
+	err = u.Repo.UpdateChunkTxHash(fileID, chunkID, txHash)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateTxHashForAChunk - verify hash - %s", fileID), zap.String("fileID", fileID), zap.String("chunkID", chunkID), zap.String("txHash", txHash), zap.Error(err))
+		return nil, err
+	}
 	return c, nil
 }
 
