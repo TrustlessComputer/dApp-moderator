@@ -211,6 +211,33 @@ func (r *Repository) UpdateChunkTxHash(fileID string, chunkID string, txHash str
 	return nil
 }
 
+func (r *Repository) UpdateChunkTxHashStatus(chunkID string, txHash string, status entity.ChunkStatus) error {
+	cID, err := primitive.ObjectIDFromHex(chunkID)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{
+		"_id":     cID,
+		"tx_hash": txHash,
+	}
+
+	update := bson.M{
+		"status": status, //Chunk status
+	}
+
+	result, err := r.DB.Collection(utils.COLLECTION_UPLOADED_FILE_CHUNKS).UpdateOne(context.TODO(), filter, bson.M{"$set": update})
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return errors.New("No document")
+	}
+
+	return nil
+}
+
 func (r *Repository) FindChunk(fileID string, chunkID string) (*entity.UploadedFileChunk, error) {
 	cID, err := primitive.ObjectIDFromHex(chunkID)
 	if err != nil {
@@ -239,4 +266,34 @@ func (r *Repository) FindChunk(fileID string, chunkID string) (*entity.UploadedF
 	}
 
 	return resp, nil
+}
+
+func (r *Repository) GetUploadingChunks() ([]entity.UploadedFileChunk, error) {
+	resp := []entity.UploadedFileChunk{}
+
+	f := bson.A{
+		bson.D{
+			{"$match",
+				bson.D{
+					{"status", entity.ChunkUploading},
+					{"txhash", bson.D{{"$ne", ""}}},
+				},
+			},
+		},
+		bson.D{{"$project", bson.D{{"chunk_data", 0}}}},
+		bson.D{{"$sort", bson.D{{"chunk_index", 1}}}},
+	}
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_UPLOADED_FILE_CHUNKS).Aggregate(context.TODO(), f, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor.All((context.TODO()), &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+
 }

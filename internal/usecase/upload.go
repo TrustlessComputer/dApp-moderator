@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"go.uber.org/zap"
 	"io"
 	"mime/multipart"
@@ -402,4 +404,68 @@ func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string) 
 	}
 
 	return uploadedFIle, nil
+}
+
+type chunkDataChan struct {
+	Data      entity.UploadedFileChunk
+	Err       error
+	IsPending bool
+	Hash      *types.Transaction
+}
+
+func (u *Usecase) ListenedChunks() error {
+	chunks, err := u.Repo.GetUploadingChunks()
+	if err != nil {
+		logger.AtLog.Logger.Error("ListenedChunks", zap.Error(err))
+		return err
+	}
+
+	inputChan := make(chan entity.UploadedFileChunk, len(chunks))
+	resultChan := make(chan chunkDataChan, len(chunks))
+
+	for i := 0; i < len(chunks); i++ {
+		go u.ListenedChunkWorker(inputChan, resultChan)
+	}
+
+	for i, chunk := range chunks {
+		inputChan <- chunk
+		if i > 0 && i%100 == 0 {
+			time.Sleep(time.Millisecond * 500)
+		}
+	}
+
+	for i := 0; i < len(chunks); i++ {
+		dataFromChan := <-resultChan
+		if dataFromChan.Err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("ListenedChunks"), zap.Error(dataFromChan.Err))
+
+			return dataFromChan.Err
+		}
+
+		chunk := dataFromChan.Data
+		isPending := dataFromChan.IsPending
+
+		if !isPending {
+			err := u.Repo.UpdateChunkTxHashStatus(chunk.ID.Hex(), chunk.TxHash, entity.ChunkUploaded) // uploaded to blockchain
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("ListenedChunks - %s", chunk.ID.Hex()), zap.Error(err), zap.String("txHash", chunk.TxHash))
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (u *Usecase) ListenedChunkWorker(input chan entity.UploadedFileChunk, output chan chunkDataChan) {
+	inData := <-input
+
+	hash, isPending, err := u.TCPublicNode.TransactionByHash(common.HexToHash(inData.TxHash))
+	output <- chunkDataChan{
+		Data:      inData,
+		Err:       err,
+		IsPending: isPending,
+		Hash:      hash,
+	}
 }
