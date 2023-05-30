@@ -304,6 +304,10 @@ func (u *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 				logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
 				continue
 			}
+			if strings.Contains(strings.ToLower(item.Name), strings.ToLower("LP Token")) {
+				logger.AtLog.Logger.Error("GetCollectionFromBlock LP Token", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock))
+				continue
+			}
 
 			_, err = u.CollectionDetail(ctx, item.Contract)
 			if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
