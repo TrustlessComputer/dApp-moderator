@@ -46,6 +46,15 @@ func (u *Usecase) Collections(ctx context.Context, filter request.CollectionsFil
 		f = append(f, bson.E{"creator", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
 	}
 
+	f = append(f,
+		bson.E{
+			"$or",
+			bson.A{
+				bson.D{{"status", 0}},
+				bson.D{{"status", primitive.Null{}}},
+			},
+		})
+
 	sortBy := "deployed_at_block"
 	if filter.SortBy != nil && *filter.SortBy != "" {
 		sortBy = *filter.SortBy
