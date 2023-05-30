@@ -281,7 +281,7 @@ func (u *Usecase) TransferToken(eventData interface{}, chainLog types.Log) error
 func (u *Usecase) InsertActivity(activity *entity.MarketplaceTokenActivity) error {
 	err := u.Repo.InsertActivity(activity)
 	if err != nil {
-		logger.AtLog.Logger.Error("TransferToken - InsertActivity", zap.Error(err), zap.String("tokenId", activity.InscriptionID), zap.String("txHash", activity.TxHash))
+		logger.AtLog.Logger.Error("TransferToken - InsertActivity", zap.Error(err), zap.String("tokenId", activity.InscriptionID), zap.String("txHash", activity.TxHash), zap.Uint("log_index", activity.LogIndex), zap.Uint64("block_number", activity.BlockNumber))
 		return err
 	}
 
