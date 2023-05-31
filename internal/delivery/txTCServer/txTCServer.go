@@ -128,8 +128,11 @@ func (c *txTCServer) getRedisKey(postfix *string) string {
 
 func (c *txTCServer) Task(wg *sync.WaitGroup, taskName string, processFunc func(ctx context.Context) error) {
 	defer wg.Done()
-	fmt.Printf("Task: %s is running \n", taskName)
-	processFunc(context.Background())
+	logger.AtLog.Logger.Info(fmt.Sprintf("Task: %s is running \n", taskName), zap.String("taskName", taskName))
+	err := processFunc(context.Background())
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("Task: %s is running \n", taskName), zap.String("taskName", taskName), zap.Error(err))
+	}
 }
 
 func (c *txTCServer) StartServer() {
