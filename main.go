@@ -69,7 +69,7 @@ func init() {
 	gccnn, err := connections.NewMongo(generativeMongoCnn)
 	if err != nil {
 		logger.AtLog().Logger.Error("Cannot connect mongoDB ", zap.Error(err))
-		panic(err)
+		//panic(err)
 	}
 
 	conf = c
@@ -104,7 +104,6 @@ func startServer() {
 	cache, redisClient := redis.NewRedisCache(conf.Redis)
 	r := mux.NewRouter()
 	gcs, err := googlecloud.NewDataGCStorage(*conf)
-
 	qn := quicknode.NewQuickNode(conf, cache)
 	bst := block_stream.NewBlockStream(conf, cache)
 	nex := nft_explorer.NewNftExplorer(conf, cache)
@@ -185,6 +184,12 @@ func startServer() {
 		txConsumerStatrBool = true //alway start this server, if config is missing
 	}
 
+	trendingStart := os.Getenv("TRENDING_SERVER_START")
+	trendingStartBool, err := strconv.ParseBool(trendingStart)
+	if err != nil {
+		trendingStartBool = true //alway start this server, if config is missing
+	}
+
 	jobSendDiscordStart := os.Getenv("JOB_SEND_DISCORD_START")
 	jobSendDiscordStartBool, err := strconv.ParseBool(jobSendDiscordStart)
 	if err != nil {
@@ -200,6 +205,12 @@ func startServer() {
 	servers["job-discord"] = delivery.AddedServer{
 		Server:  txTCServer.NewJobDisCord(&g, *uc),
 		Enabled: jobSendDiscordStartBool,
+	}
+
+	trendingServer, _ := txTCServer.NewTrendingServer(&g, *uc)
+	servers["job-trending"] = delivery.AddedServer{
+		Server:  trendingServer,
+		Enabled: trendingStartBool,
 	}
 
 	//var wait time.Duration

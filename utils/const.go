@@ -167,13 +167,15 @@ const (
 	COLLECTION_SWAP_USER_GM_PAID           string = "swap_user_gm_paid"
 	COLLECTION_SWAP_BLACKLIST_TOKENS       string = "swap_blacklist_tokens"
 
-	VIEW_SWAP_LIQUIDITY_REPORT_SLACK string = "swap_liquidity_report_view"
-	VIEW_SWAP_REPORT_SLACK           string = "swap_token_report_slack_view"
-	VIEW_SWAP_REPORT_FINAL           string = "swap_token_report_final_view"
-	VIEW_SWAP_IDO_TOKEN              string = "swap_ido_tokens_view"
-	VIEW_SWAP_PAIR_VOLUME            string = "swap_pair_volume_view"
-	VIEW_SWAP_PAIR_CURRENT_RESERVE   string = "swap_pair_current_reserve_view"
-	VIEW_SWAP_PAIR_APR               string = "swap_pair_apr_view"
+	VIEW_SWAP_LIQUIDITY_REPORT_SLACK              string = "swap_liquidity_report_view"
+	VIEW_SWAP_REPORT_SLACK                        string = "swap_token_report_slack_view"
+	VIEW_SWAP_REPORT_FINAL                        string = "swap_token_report_final_view"
+	VIEW_SWAP_IDO_TOKEN                           string = "swap_ido_tokens_view"
+	VIEW_SWAP_PAIR_VOLUME                         string = "swap_pair_volume_view"
+	VIEW_SWAP_PAIR_CURRENT_RESERVE                string = "swap_pair_current_reserve_view"
+	VIEW_SWAP_PAIR_APR                            string = "swap_pair_apr_view"
+	VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS       string = "marketplace_aggregated_collections_view"
+	COLLECTION_MARKETPLACE_AGGREGATED_COLLECTIONS string = "marketplace_aggregated_collections"
 
 	TRANSACTIONS string = "transactions"
 

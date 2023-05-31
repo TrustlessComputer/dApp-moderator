@@ -178,3 +178,30 @@ func (r *Repository) UpdateBaseSymbolToken(ctx context.Context, token *entity.To
 	}
 	return nil
 }
+
+func (r *Repository) AggregateAllTokens(ctx context.Context, filter entity.TokenFilter) ([]entity.Token, error) {
+	var tokens []entity.Token
+	f := bson.A{
+		bson.D{
+			{"$project",
+				bson.D{
+					{"address", 1},
+					{"symbol", 1},
+					{"decimal", 1},
+				},
+			},
+		},
+	}
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_TOKENS).Aggregate(context.TODO(), f, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor.All((context.TODO()), &tokens)
+	if err != nil {
+		return nil, err
+	}
+
+	return tokens, nil
+}

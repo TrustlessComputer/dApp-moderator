@@ -2,13 +2,17 @@ package usecase
 
 import (
 	"context"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/generative_marketplace_lib"
 	"dapp-moderator/utils/generative_nft_contract"
 	"dapp-moderator/utils/logger"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/core/types"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 	"math/big"
 	"os"
@@ -315,4 +319,74 @@ func (u *Usecase) UpdateUploadedFile(eventData interface{}, chainLog types.Log) 
 	}
 
 	return nil
+}
+
+func (u *Usecase) MarketplaceCollections(ctx context.Context, filter request.CollectionsFilter) ([]entity.MarketplaceCollections, error) {
+	res := []entity.MarketplaceCollections{}
+	f := bson.D{
+		// {"total_items", bson.M{"$gt": 0}},
+	}
+
+	if filter.AllowEmpty != nil && *filter.AllowEmpty == false {
+		f = append(f, bson.E{"total_items", bson.M{"$gt": 0}})
+	}
+
+	if filter.Address != nil && *filter.Address != "" {
+		f = append(f, bson.E{"contract", primitive.Regex{Pattern: *filter.Address, Options: "i"}})
+	}
+
+	if filter.Name != nil && *filter.Name != "" {
+		f = append(f, bson.E{"name", primitive.Regex{Pattern: *filter.Name, Options: "i"}})
+	}
+
+	if filter.Owner != nil && *filter.Owner != "" {
+		f = append(f, bson.E{"creator", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
+	}
+
+	f = append(f,
+		bson.E{
+			"$or",
+			bson.A{
+				bson.D{{"status", 0}},
+				bson.D{{"status", primitive.Null{}}},
+			},
+		})
+
+	sortBy := "deployed_at_block"
+	if filter.SortBy != nil && *filter.SortBy != "" {
+		sortBy = *filter.SortBy
+	}
+
+	sort := -1
+	if filter.Sort != nil {
+		sort = *filter.Sort
+	}
+
+	s := bson.D{{sortBy, sort}, {"index", -1}}
+	err := u.Repo.Find(utils.VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (u *Usecase) MarketplaceCollectionDetail(ctx context.Context, contractAddress string) (*entity.MarketplaceCollections, error) {
+	obj := &entity.MarketplaceCollections{}
+	sr, err := u.Repo.FindOne(utils.VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS, bson.D{
+		{"contract", primitive.Regex{Pattern: contractAddress, Options: "i"}},
+	})
+
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+		return nil, err
+	}
+
+	err = sr.Decode(obj)
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Any("obj", obj))
+	return obj, nil
 }
