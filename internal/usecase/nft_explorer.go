@@ -367,9 +367,11 @@ func (u *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 
 		data, err := u.NftExplorer.Collections(params)
 		if err != nil {
-			logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("params", params), zap.Error(err))
+			logger.AtLog.Logger.Error(fmt.Sprintf("GetCollectionFromBlock - from: %d, to: %d ", fromBlock, toBlock), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Int("limit", limit), zap.Int("limit", offset), zap.Any("params", params), zap.Error(err))
 			break
 		}
+
+		logger.AtLog.Logger.Info(fmt.Sprintf("GetCollectionFromBlock - from: %d, to: %d ", fromBlock, toBlock), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Int("limit", limit), zap.Int("limit", offset), zap.Int("collections", len(data)))
 
 		if len(data) == 0 {
 			break
@@ -391,11 +393,13 @@ func (u *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 			tmp := &entity.Collections{}
 			err := helpers.JsonTransform(item, tmp)
 			if err != nil {
-				logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
+				logger.AtLog.Logger.Error(fmt.Sprintf("GetCollectionFromBlock - from: %d, to: %d ", fromBlock, toBlock), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Int("limit", limit), zap.Int("limit", offset), zap.Any("params", params), zap.Error(err))
 				continue
 			}
 			if strings.Contains(strings.ToLower(item.Name), strings.ToLower("LP Token")) {
-				logger.AtLog.Logger.Error("GetCollectionFromBlock LP Token", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock))
+				err := errors.New("LP Token")
+				logger.AtLog.Logger.Error(fmt.Sprintf("GetCollectionFromBlock - from: %d, to: %d ", fromBlock, toBlock), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Int("limit", limit), zap.Int("limit", offset), zap.Any("params", params), zap.Error(err))
+
 				continue
 			}
 
@@ -408,7 +412,8 @@ func (u *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 
 				_, err := u.Repo.InsertOne(tmp)
 				if err != nil {
-					logger.AtLog.Logger.Error("GetCollectionFromBlock", zap.Any("contract", item.Contract), zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Error(err))
+					logger.AtLog.Logger.Error(fmt.Sprintf("GetCollectionFromBlock - from: %d, to: %d ", fromBlock, toBlock), zap.Int32("fromBlock", fromBlock), zap.String("contract", item.Contract), zap.Int32("toBlock", toBlock), zap.Int("limit", limit), zap.Int("limit", offset), zap.Any("params", params), zap.Error(err))
+
 					continue
 				}
 				u.NewCollectionNotify(tmp)
@@ -427,8 +432,6 @@ func (u *Usecase) GetCollectionFromBlock(ctx context.Context, fromBlock int32, t
 
 			countInt++
 		}
-
-		logger.AtLog.Logger.Info("GetCollectionFromBlock", zap.Int32("fromBlock", fromBlock), zap.Int32("toBlock", toBlock), zap.Any("data", len(data)))
 
 		page++
 	}
