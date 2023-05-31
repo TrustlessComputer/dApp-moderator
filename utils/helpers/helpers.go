@@ -12,10 +12,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"math"
 	"math/big"
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
@@ -349,4 +353,67 @@ func TxHashInfo(txhash string) ([]byte, *http.Header, int, error) {
 
 func BnsTokenNameKey(token string) string {
 	return fmt.Sprintf("bns.token.%s", token)
+}
+
+func TokenRateKey(address string) string {
+	return fmt.Sprintf("token.rate.%s", strings.ToLower(address))
+}
+
+func GetExternalPrice(tokenSymbol string) (float64, error) {
+	binanceAPI := os.Getenv("BINANCE_API")
+	if binanceAPI == "" {
+		binanceAPI = "https://api.binance.com"
+	}
+	binancePriceURL := fmt.Sprintf("%v/api/v3/ticker/price?symbol=", binanceAPI)
+	var price struct {
+		Symbol string `json:"symbol"`
+		Price  string `json:"price"`
+	}
+	var jsonErr struct {
+		Code int    `json:"code"`
+		Msg  string `json:"msg"`
+	}
+	retryTimes := 0
+retry:
+	retryTimes++
+	if retryTimes > 2 {
+		return 0, nil
+	}
+	tk := strings.ToUpper(tokenSymbol)
+	resp, err := http.Get(binancePriceURL + tk + "USDT")
+	if err != nil {
+		log.Println(err)
+		goto retry
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = json.Unmarshal(body, &price)
+	if err != nil {
+		err = json.Unmarshal(body, &jsonErr)
+		if err != nil {
+			log.Println(err)
+			goto retry
+		}
+	}
+	resp.Body.Close()
+	value, err := strconv.ParseFloat(price.Price, 32)
+	if err != nil {
+		log.Println("getExternalPrice", tokenSymbol, err)
+		return 0, nil
+	}
+	return value, nil
+}
+
+func GetValue(amount string, decimal float64) float64 {
+	amountBig := new(big.Float)
+	amountBig.SetString(amount)
+
+	pow10 := math.Pow10(int(decimal))
+	pow10Big := big.NewFloat(pow10)
+
+	result := amountBig.Quo(amountBig, pow10Big) //divide
+	amountInt, _ := result.Float64()
+	return amountInt
 }

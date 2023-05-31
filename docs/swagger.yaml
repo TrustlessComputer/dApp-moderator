@@ -522,6 +522,75 @@ paths:
       summary: post dapp info
       tags:
       - dapp-service
+  /marketplace/collections:
+    get:
+      consumes:
+      - application/json
+      description: Get Collections
+      parameters:
+      - description: owner
+        in: query
+        name: owner
+        type: string
+      - description: contract
+        in: query
+        name: contract
+        type: string
+      - description: 'allow_empty, default: false'
+        in: query
+        name: allow_empty
+        type: boolean
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: default deployed_at_block
+        in: query
+        name: sort_by
+        type: string
+      - description: default -1
+        in: query
+        name: sort
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collections
+      tags:
+      - MarketPlace
+  /marketplace/collections/{contract_address}:
+    get:
+      consumes:
+      - application/json
+      description: Get Collections
+      parameters:
+      - description: contract address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collections
+      tags:
+      - MarketPlace
   /marketplace/contract/{contract_address}/token/{token_id}/activities:
     get:
       consumes:
