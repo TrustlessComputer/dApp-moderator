@@ -6,7 +6,10 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/logger"
+	"go.uber.org/zap"
 	"net/http"
+	"strconv"
 )
 
 // UserCredits godoc
@@ -208,6 +211,88 @@ func (h *httpDelivery) getTokenActivities(w http.ResponseWriter, r *http.Request
 				return nil, err
 			}
 			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
+// @Summary Get Collections
+// @Description Get Collections
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param owner query string false "owner"
+// @Param contract query string false "contract"
+// @Param allow_empty query bool false "allow_empty, default: false"
+// @Param name query string false "name"
+// @Param limit query int false "limit"
+// @Param page query int false "page"
+// @Param sort_by query string false "default deployed_at_block"
+// @Param sort query int false "default -1"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/collections [GET]
+func (h *httpDelivery) mkpCollections(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+			isAllowEmptyBool := false
+			var err error
+
+			owner := r.URL.Query().Get("owner")
+			collectionAddress := r.URL.Query().Get("contract")
+			name := r.URL.Query().Get("name")
+
+			filter := request.CollectionsFilter{
+				Owner:         &owner,
+				Address:       &collectionAddress,
+				Name:          &name,
+				PaginationReq: p,
+			}
+
+			isAllowEmpty := r.URL.Query().Get("allow_empty")
+			if isAllowEmpty != "" {
+				isAllowEmptyBool, err = strconv.ParseBool(isAllowEmpty)
+				if err != nil {
+					isAllowEmptyBool = false
+				}
+
+			}
+
+			filter.AllowEmpty = &isAllowEmptyBool
+			data, err := h.Usecase.MarketplaceCollections(ctx, filter)
+			if err != nil {
+				logger.AtLog.Logger.Error("collections", zap.Any("filter", filter), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("collections", zap.Any("filter", filter), zap.Int("data", len(data)))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
+// @Summary Get Collections
+// @Description Get Collections
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address path string true "contract address"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/collections/{contract_address} [GET]
+func (h *httpDelivery) mkpCollectionDetail(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			contractAddress := vars["contract_address"]
+			data, err := h.Usecase.MarketplaceCollectionDetail(ctx, contractAddress)
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("data", data))
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
