@@ -15,7 +15,7 @@ type AllowedCode struct {
 }
 
 type RelyErrorMessage struct {
-	Code    string         `json:"code"`
+	Code    string      `json:"code"`
 	Message *string     `json:"message"`
 	Error   interface{} `json:"error"`
 }
@@ -35,16 +35,16 @@ func NewAllowedCode() AllowedCode {
 	return *ac
 }
 
-func HttpRequest(fullUrl string, method string, headers map[string]string, reqBody interface{}) ([]byte, *http.Header , int, error) {
+func HttpRequest(fullUrl string, method string, headers map[string]string, reqBody interface{}) ([]byte, *http.Header, int, error) {
 
 	byteData, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil,nil,  0, err
+		return nil, nil, 0, err
 	}
-	
+
 	req, err := http.NewRequest(method, fullUrl, bytes.NewBuffer(byteData))
 	if err != nil {
-		return nil,nil, 0, err
+		return nil, nil, 0, err
 	}
 
 	if len(headers) > 0 {
@@ -55,7 +55,7 @@ func HttpRequest(fullUrl string, method string, headers map[string]string, reqBo
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil,nil, 0, err
+		return nil, nil, 0, err
 	}
 	defer res.Body.Close()
 
@@ -65,7 +65,7 @@ func HttpRequest(fullUrl string, method string, headers map[string]string, reqBo
 		data := &RelyErrorMessage{}
 		err = json.Unmarshal(body, data)
 		if err != nil {
-			return nil,nil, res.StatusCode, err
+			return nil, nil, res.StatusCode, err
 		}
 
 		dataErrorString, ok := data.Error.(string)
@@ -76,35 +76,35 @@ func HttpRequest(fullUrl string, method string, headers map[string]string, reqBo
 		dataError := &RelyError{}
 		byteArray, err := json.Marshal(data.Error)
 		if err != nil {
-			return nil,nil, res.StatusCode, err
+			return nil, nil, res.StatusCode, err
 		}
 
 		err = json.Unmarshal(byteArray, dataError)
 		if err != nil {
 			if data.Message != nil {
-				return nil,&res.Header,  res.StatusCode, errors.New(*data.Message)
+				return nil, &res.Header, res.StatusCode, errors.New(*data.Message)
 			}
 		}
-		return nil,&res.Header, res.StatusCode, errors.New(dataError.Message)
+		return nil, &res.Header, res.StatusCode, errors.New(dataError.Message)
 
 	}
 
 	if err != nil {
-		return nil, nil,  res.StatusCode, err
+		return nil, nil, res.StatusCode, err
 	}
 
-	return body,&res.Header, res.StatusCode, nil
+	return body, &res.Header, res.StatusCode, nil
 }
 
 func JsonRequest(fullUrl string, method string, headers map[string]string, reqBody io.Reader) ([]byte, *http.Header, int, error) {
-	// headers["accept"] = "application/json"
-	// headers["content-type"] = "application/json"
+	//headers["accept"] = "application/json"
+	//headers["content-type"] = "application/json"
 
 	return HttpRequest(fullUrl, method, headers, reqBody)
 }
 
 func isAllowed(code string) bool {
-	ac :=NewAllowedCode()
+	ac := NewAllowedCode()
 	code = strings.ReplaceAll(code, " ", "_")
 	code = strings.ToLower(code)
 	getCode, ok := ac.Code[code]
