@@ -69,7 +69,8 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 			return nil, nil, err
 		}
 
-		activity.UserAAddress = strings.ToLower(event.Data.Seller.Hex())
+		activity.UserAAddress = strings.ToLower(event.Buyer.Hex())
+		activity.UserBAddress = strings.ToLower(event.Data.Seller.Hex())
 		activity.Amount = event.Data.Price.Int64()
 		activity.Erc20Address = strings.ToLower(event.Data.Erc20Token.Hex())
 		activity.Time = &tm
