@@ -183,6 +183,8 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	//marketplace
 	marketplace := api.PathPrefix("/marketplace").Subrouter()
+	marketplace.HandleFunc("/collections", h.mkpCollections).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}", h.mkpCollectionDetail).Methods("GET")
 	marketplace.HandleFunc("/listing/{contract_address}/token/{token_id}", h.getListingViaGenAddressTokenID).Methods("GET")
 	marketplace.HandleFunc("/offers/{contract_address}/token/{token_id}", h.getOfferViaGenAddressTokenID).Methods("GET")
 	marketplace.HandleFunc("/wallet/{wallet_address}/listing", h.getListingOfAProfile).Methods("GET")
