@@ -591,6 +591,35 @@ paths:
       summary: Get Collections
       tags:
       - MarketPlace
+  /marketplace/collections/{contract_address}/nfts:
+    get:
+      consumes:
+      - application/json
+      description: Get marketplace Nfts of a collection
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get marketplace Nfts of a collection
+      tags:
+      - MarketPlace
   /marketplace/collections/{contract_address}/nfts/{token_id}:
     get:
       consumes:

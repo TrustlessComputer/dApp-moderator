@@ -347,6 +347,49 @@ func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
 }
 
 // UserCredits godoc
+// @Summary Get marketplace Nfts of a collection
+// @Description Get marketplace Nfts of a collection
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address path string true "contract_address"
+// @Param limit query int false "limit"
+// @Param page query int false "page"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/collections/{contract_address}/nfts [GET]
+func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+
+			f := entity.FilterNfts{
+				BaseFilters: entity.BaseFilters{
+					Limit:  int64(*p.Limit),
+					Offset: int64(*p.Offset),
+					//SortBy: *p.SortBy,
+					//Sort:   entity.SortType(*p.Sort),
+				},
+			}
+			ca := vars["contract_address"]
+
+			if ca != "" {
+				f.ContractAddress = &ca
+			}
+
+			data, err := h.Usecase.FilterMkplaceNfts(ctx, f)
+			if err != nil {
+				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination", iPagination), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data)))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
 // @Summary Get marketplace Nft's detail
 // @Description Get marketplace Nft's detail
 // @Tags MarketPlace
