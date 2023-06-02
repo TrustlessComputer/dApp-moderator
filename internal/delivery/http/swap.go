@@ -201,7 +201,9 @@ func (h *httpDelivery) getTokensPrice(w http.ResponseWriter, r *http.Request) {
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			contractAddress := req.Query(r, "contract_address", "")
 			chartType := req.Query(r, "chart_type", "")
-			data, err := h.Usecase.FindTokensPrice(ctx, contractAddress, chartType)
+			limitPrams := req.Query(r, "limit", "0")
+			limit, _ := strconv.Atoi(limitPrams)
+			data, err := h.Usecase.FindTokensPrice(ctx, contractAddress,chartType, limit)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensPrice", zap.Error(err))
 				return nil, err

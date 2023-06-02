@@ -249,8 +249,8 @@ func (u *Usecase) FindTokenSumary(ctx context.Context, contractAddress string) (
 	return reports, nil
 }
 
-func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, chartType string) (interface{}, error) {
-	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType)
+func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, chartType string, limit int) (interface{}, error) {
+	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType, limit)
 	if err != nil {
 		//logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 		return reports, nil
