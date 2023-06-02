@@ -296,3 +296,80 @@ func (h *httpDelivery) mkpCollectionDetail(w http.ResponseWriter, r *http.Reques
 		},
 	).ServeHTTP(w, r)
 }
+
+// UserCredits godoc
+// @Summary Get marketplace Nfts
+// @Description Get marketplace Nfts
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address query string false "contract_address"
+// @Param token_id query string false "token_id"
+// @Param limit query int false "limit"
+// @Param page query int false "page"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/nfts [GET]
+func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+
+			f := entity.FilterNfts{
+				BaseFilters: entity.BaseFilters{
+					Limit:  int64(*p.Limit),
+					Offset: int64(*p.Offset),
+					//SortBy: *p.SortBy,
+					//Sort:   entity.SortType(*p.Sort),
+				},
+			}
+			ca := r.URL.Query().Get("contract_address")
+			tokID := r.URL.Query().Get("token_id")
+
+			if ca != "" {
+				f.ContractAddress = &ca
+			}
+
+			if tokID != "" {
+				f.TokenID = &tokID
+			}
+
+			data, err := h.Usecase.FilterMkplaceNfts(ctx, f)
+			if err != nil {
+				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination", iPagination), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data)))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
+// @Summary Get marketplace Nft's detail
+// @Description Get marketplace Nft's detail
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address path string true "contract_address"
+// @Param token_id path string true "token_id"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/collections/{contract_address}/nfts/{token_id} [GET]
+func (h *httpDelivery) mkplaceNftDetail(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+
+			ca := vars["contract_address"]
+			tokID := vars["token_id"]
+
+			data, err := h.Usecase.GetMkplaceNft(ctx, ca, tokID)
+			if err != nil {
+				logger.AtLog.Logger.Error("Nfts", zap.Error(err))
+				return nil, err
+			}
+
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}

@@ -591,6 +591,32 @@ paths:
       summary: Get Collections
       tags:
       - MarketPlace
+  /marketplace/collections/{contract_address}/nfts/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get marketplace Nft's detail
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get marketplace Nft's detail
+      tags:
+      - MarketPlace
   /marketplace/contract/{contract_address}/token/{token_id}/activities:
     get:
       consumes:
@@ -681,6 +707,38 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Get market place listing
+      tags:
+      - MarketPlace
+  /marketplace/nfts:
+    get:
+      consumes:
+      - application/json
+      description: Get marketplace Nfts
+      parameters:
+      - description: contract_address
+        in: query
+        name: contract_address
+        type: string
+      - description: token_id
+        in: query
+        name: token_id
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get marketplace Nfts
       tags:
       - MarketPlace
   /marketplace/offers/{contract_address}/token/{token_id}:

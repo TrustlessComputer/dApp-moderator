@@ -37,6 +37,34 @@ type CollectionsResp struct {
 	DeployedAtBlock int64  `json:"deployed_at_block" json:"deployed_at_block"`
 }
 
+type MkpNftsResp struct {
+	ContractAddress string                            `bson:"collection_address" json:"collection_address"`
+	TokenID         string                            `bson:"token_id" json:"token_id"`
+	ContentType     string                            `bson:"content_type" json:"content_type"`
+	Name            string                            `bson:"name" json:"name"`
+	Owner           string                            `bson:"owner" json:"owner"`
+	TokenURI        string                            `bson:"token_uri" json:"token_uri"`
+	Image           string                            `bson:"image" json:"image"`
+	MintedAt        float64                           `bson:"minted_at" json:"minted_at"`
+	Attributes      []NftAttr                         `json:"attributes" bson:"attributes"`
+	Metadata        interface{}                       `json:"metadata" bson:"metadata"`
+	MetadataType    string                            `json:"metadata_type" bson:"metadata_type"`
+	Activities      []entity.MarketplaceTokenActivity `json:"activities" bson:"activities"`
+	BlockNumber     string                            `json:"block_number" bson:"block_number"`
+	ListingForSales []entity.MarketplaceListings      `json:"listing_for_sales" bson:"listing_for_sales"`
+	MakeOffers      []entity.MarketplaceOffers        `json:"make_offers" bson:"make_offers"`
+	Buyable         bool                              `bson:"buyable" json:"buyable"`
+	PriceERC20      MkpPriceERC20                     `bson:"price_erc20" json:"price_erc20"`
+	Collection      entity.Collections                `json:"collection" bson:"collection"`
+}
+
+type MkpPriceERC20 struct {
+	OfferingID string `bson:"offering_id" json:"offering_id"`
+	TokenID    string `bson:"token_id" json:"token_id"`
+	Erc20Token string `bson:"erc_20_token" json:"erc_20_token"`
+	Price      string `bson:"price" json:"price"`
+}
+
 type NftsResp struct {
 	//Collection      string                            `json:"collection"`
 	ContractAddress string                            `json:"collection_address"`

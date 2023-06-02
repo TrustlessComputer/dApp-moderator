@@ -52,6 +52,12 @@ type FilterTokenActivities struct {
 	TokenID         *string
 }
 
+type FilterNfts struct {
+	BaseFilters
+	ContractAddress *string
+	TokenID         *string
+}
+
 type FilterMarketplaceAggregationData struct {
 	BaseFilters
 	CollectionContract *string
