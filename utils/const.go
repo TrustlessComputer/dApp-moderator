@@ -175,6 +175,7 @@ const (
 	VIEW_SWAP_PAIR_CURRENT_RESERVE                string = "swap_pair_current_reserve_view"
 	VIEW_SWAP_PAIR_APR                            string = "swap_pair_apr_view"
 	VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS       string = "marketplace_aggregated_collections_view"
+	VIEW_MARKETPLACE_NFTS                         string = "marketplace_nfts_view"
 	COLLECTION_MARKETPLACE_AGGREGATED_COLLECTIONS string = "marketplace_aggregated_collections"
 
 	TRANSACTIONS string = "transactions"

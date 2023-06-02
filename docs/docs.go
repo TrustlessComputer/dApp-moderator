@@ -698,6 +698,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/marketplace/collections/{contract_address}/nfts/{token_id}": {
+            "get": {
+                "description": "Get marketplace Nft's detail",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get marketplace Nft's detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/marketplace/contract/{contract_address}/token/{token_id}/activities": {
             "get": {
                 "description": "Get token's activities",
@@ -822,6 +861,55 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/nfts": {
+            "get": {
+                "description": "Get marketplace Nfts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get marketplace Nfts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
                         "name": "page",
                         "in": "query"
                     }
