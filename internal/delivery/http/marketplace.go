@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // UserCredits godoc
@@ -284,7 +285,7 @@ func (h *httpDelivery) mkpCollections(w http.ResponseWriter, r *http.Request) {
 func (h *httpDelivery) mkpCollectionDetail(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			contractAddress := vars["contract_address"]
+			contractAddress := strings.ToLower(vars["contract_address"])
 			data, err := h.Usecase.MarketplaceCollectionDetail(ctx, contractAddress)
 			if err != nil {
 				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Error(err))
@@ -315,14 +316,25 @@ func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
 			iPagination := ctx.Value(utils.PAGINATION)
 			p := iPagination.(request.PaginationReq)
 
+			if p.SortBy == nil {
+				sortBy := "token_id_int"
+				p.SortBy = &sortBy
+			}
+
+			if p.Sort == nil {
+				sort := int(entity.SORT_DESC)
+				p.Sort = &sort
+			}
+
 			f := entity.FilterNfts{
 				BaseFilters: entity.BaseFilters{
 					Limit:  int64(*p.Limit),
 					Offset: int64(*p.Offset),
-					//SortBy: *p.SortBy,
-					//Sort:   entity.SortType(*p.Sort),
+					SortBy: *p.SortBy,
+					Sort:   entity.SortType(*p.Sort),
 				},
 			}
+
 			ca := r.URL.Query().Get("contract_address")
 			tokID := r.URL.Query().Get("token_id")
 
@@ -352,8 +364,12 @@ func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
 // @Tags MarketPlace
 // @Accept  json
 // @Produce  json
+// @Param rarity query string false "min,max - separated by comma"
+// @Param attributes query string false "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange"
 // @Param contract_address path string true "contract_address"
 // @Param limit query int false "limit"
+// @Param SortBy query string false "sort by field: default volume"
+// @Param sort query int false "sort default: -1 desc"
 // @Param page query int false "page"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /marketplace/collections/{contract_address}/nfts [GET]
@@ -363,15 +379,25 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			iPagination := ctx.Value(utils.PAGINATION)
 			p := iPagination.(request.PaginationReq)
 
+			if p.SortBy == nil {
+				sortBy := "token_id_int"
+				p.SortBy = &sortBy
+			}
+
+			if p.Sort == nil {
+				sort := int(entity.SORT_DESC)
+				p.Sort = &sort
+			}
+
 			f := entity.FilterNfts{
 				BaseFilters: entity.BaseFilters{
 					Limit:  int64(*p.Limit),
 					Offset: int64(*p.Offset),
-					//SortBy: *p.SortBy,
-					//Sort:   entity.SortType(*p.Sort),
+					SortBy: *p.SortBy,
+					Sort:   entity.SortType(*p.Sort),
 				},
 			}
-			ca := vars["contract_address"]
+			ca := strings.ToLower(vars["contract_address"])
 
 			if ca != "" {
 				f.ContractAddress = &ca

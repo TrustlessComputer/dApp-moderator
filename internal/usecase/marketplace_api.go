@@ -47,7 +47,7 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	}
 
 	s := bson.D{{sortBy, sort}}
-	err := u.Repo.Find(utils.VIEW_MARKETPLACE_NFTS, f, int64(filter.Limit), int64(filter.Offset), &resp, s)
+	err := u.Repo.Find(utils.VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES, f, int64(filter.Limit), int64(filter.Offset), &resp, s)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 		bson.E{"token_id", tokenID},
 	}
 
-	cursor, err := u.Repo.FindOne(utils.VIEW_MARKETPLACE_NFTS, f)
+	cursor, err := u.Repo.FindOne(utils.VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES, f)
 	if err != nil {
 		return nil, err
 	}
