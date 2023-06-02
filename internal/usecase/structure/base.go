@@ -1,5 +1,7 @@
 package structure
 
+import "dapp-moderator/external/nft_explorer"
+
 type BaseFilters struct {
 	Limit  *string
 	Page   *string
@@ -52,4 +54,9 @@ type Result struct {
 	BlockHash        string `json:"blockHash"`
 	BlockNumber      string `json:"blockNumber"`
 	TransactionIndex string `json:"transactionIndex"`
+}
+
+type NftsResp struct {
+	nft_explorer.NftsResp
+	FileSize int `json:"file_size"` //bytes
 }

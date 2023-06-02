@@ -229,9 +229,19 @@ func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 	return res, nil
 }
 
-func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.NftsResp, error) {
-	data, err := u.NftExplorer.CollectionNftDetail(contractAddress, tokenID)
+func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress string, tokenID string) (*structure.NftsResp, error) {
 
+	data, err := u.NftExplorer.CollectionNftDetail(contractAddress, tokenID)
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionNftDetail", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+	}
+
+	bytes, _, err := u.NftExplorer.CollectionNftContent(contractAddress, tokenID)
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionNftDetail", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+	}
+
+	//data.Size = len(bytes)
 	limit := 1
 	offset := 0
 	owner := ""
@@ -317,7 +327,16 @@ func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress strin
 	}
 
 	logger.AtLog.Logger.Info("CollectionNfts", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", data))
-	return data, nil
+
+	resp := &structure.NftsResp{}
+	err = helpers.JsonTransform(data, resp)
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionNfts", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+		return nil, err
+	}
+
+	resp.FileSize = len(bytes)
+	return resp, nil
 }
 
 func (u *Usecase) CollectionNftContent(ctx context.Context, contractAddress string, tokenID string) ([]byte, string, error) {
