@@ -416,3 +416,57 @@ func (h *httpDelivery) mkplaceNftDetail(w http.ResponseWriter, r *http.Request) 
 		},
 	).ServeHTTP(w, r)
 }
+
+// UserCredits godoc
+// @Summary Get Collection's attributes
+// @Description  Get Collection's attributes
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param trait_type query string false "trait_type"
+// @Param value query string false "value"
+// @Param contract_address path string true "contract address"
+// @Param page query int false "page"
+// @Param limit query int false "limit"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/collections/{contract_address}/attributes [GET]
+func (h *httpDelivery) mkpCollectionAttributes(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			contractAddress := vars["contract_address"]
+
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+			_ = p
+
+			f := entity.FilterMarketplaceCollectionAttribute{
+				BaseFilters: entity.BaseFilters{
+					Limit:  int64(*p.Limit),
+					Offset: int64(*p.Offset),
+					//SortBy: *p.SortBy,
+					//Sort:   entity.SortType(*p.Sort),
+				},
+				ContractAddress: &contractAddress,
+			}
+
+			traitType := r.URL.Query().Get("trait_type")
+			if traitType != "" {
+				f.TraitType = &traitType
+			}
+
+			value := r.URL.Query().Get("value")
+			if value != "" {
+				f.Value = &value
+			}
+
+			data, err := h.Usecase.MarketplaceCollectionAttributes(ctx, f)
+			if err != nil {
+				logger.AtLog.Logger.Error("mkpCollectionAttributes", zap.String("contractAddress", contractAddress), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("mkpCollectionAttributes", zap.String("contractAddress", contractAddress), zap.Any("data", data))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}

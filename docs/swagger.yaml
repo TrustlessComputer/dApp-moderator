@@ -591,6 +591,43 @@ paths:
       summary: Get Collections
       tags:
       - MarketPlace
+  /marketplace/collections/{contract_address}/attributes:
+    get:
+      consumes:
+      - application/json
+      description: Get Collection's attributes
+      parameters:
+      - description: trait_type
+        in: query
+        name: trait_type
+        type: string
+      - description: value
+        in: query
+        name: value
+        type: string
+      - description: contract address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collection's attributes
+      tags:
+      - MarketPlace
   /marketplace/collections/{contract_address}/nfts:
     get:
       consumes:
