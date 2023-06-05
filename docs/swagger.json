@@ -690,6 +690,62 @@
                 }
             }
         },
+        "/marketplace/collections/{contract_address}/attributes": {
+            "get": {
+                "description": "Get Collection's attributes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get Collection's attributes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "trait_type",
+                        "name": "trait_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "value",
+                        "name": "value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "contract address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/marketplace/collections/{contract_address}/nfts": {
             "get": {
                 "description": "Get marketplace Nfts of a collection",

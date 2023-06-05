@@ -391,3 +391,38 @@ func (u *Usecase) MarketplaceCollectionDetail(ctx context.Context, contractAddre
 	logger.AtLog.Logger.Info("CollectionDetail", zap.String("contractAddress", contractAddress), zap.Any("obj", obj))
 	return obj, nil
 }
+
+func (u *Usecase) MarketplaceCollectionAttributes(ctx context.Context, f entity.FilterMarketplaceCollectionAttribute) ([]entity.MarketplaceCollectionAttribute, error) {
+	obj := []entity.MarketplaceCollectionAttribute{}
+
+	offset := f.Offset
+	limit := f.Limit
+
+	filter := bson.D{}
+	if f.ContractAddress != nil && *f.ContractAddress != "" {
+		filter = append(filter, bson.E{"contract", *f.ContractAddress})
+	}
+
+	if f.TraitType != nil && *f.TraitType != "" {
+		filter = append(filter, bson.E{"trait_type", *f.TraitType})
+	}
+
+	if f.Value != nil && *f.Value != "" {
+		filter = append(filter, bson.E{"value", *f.Value})
+	}
+
+	if f.Percent != nil && *f.Percent != 0 {
+		filter = append(filter, bson.E{"percent", *f.Percent})
+	}
+
+	sort := bson.D{}
+
+	err := u.Repo.Find(utils.VIEW_MARKETPLACE_COLLECTION_ATTRIBUTES_PERCENT, filter, limit, offset, &obj, sort)
+	if err != nil {
+		logger.AtLog.Logger.Error("MarketplaceCollectionAttributes", zap.Error(err), zap.Any("filter", f))
+		return nil, err
+	}
+
+	logger.AtLog.Logger.Info("MarketplaceCollectionAttributes", zap.Any("obj", obj), zap.Any("filter", f))
+	return obj, nil
+}
