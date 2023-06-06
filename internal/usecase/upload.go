@@ -448,6 +448,8 @@ func (u *Usecase) ListenedChunks() error {
 		chunk := dataFromChan.Data
 		isPending := dataFromChan.IsPending
 
+		logger.AtLog.Logger.Info(fmt.Sprintf("ListenedChunks - %s", chunk.TxHash), zap.String("txHash", chunk.TxHash), zap.Bool("isPending", isPending))
+
 		if !isPending {
 			err := u.Repo.UpdateChunkTxHashStatus(chunk.ID.Hex(), chunk.TxHash, entity.ChunkUploaded) // uploaded to blockchain
 			if err != nil {

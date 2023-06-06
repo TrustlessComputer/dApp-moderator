@@ -25,7 +25,7 @@ type UploadedFileChunk struct {
 	ChunkIndex int                `json:"chunk_index" bson:"chunk_index"`
 	ChunkData  []byte             `json:"chunk_data" bson:"chunk_data"`
 	Status     ChunkStatus        `json:"status" bson:"status"`
-	TxHash     string             `json:"tx_hash"`
+	TxHash     string             `json:"tx_hash" bson:"tx_hash"`
 }
 
 func (t *UploadedFileChunk) CollectionName() string {
