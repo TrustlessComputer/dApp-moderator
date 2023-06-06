@@ -10,6 +10,7 @@ import (
 	"dapp-moderator/utils/logger"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"net/http"
 	"os"
 	"strconv"
@@ -209,7 +210,14 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 
 						}
 					} else {
-						i.Name = coll.Name + " #" + i.TokenID
+						tokenIdBigInt, _ := new(big.Int).SetString(i.TokenID, 10)
+						g, _ := new(big.Int).SetString("1000000", 10)
+						if tokenIdBigInt.Cmp(g) > 0 {
+							// TODO maybe from generative
+							i.Name = coll.Name + " #" + tokenIdBigInt.Mod(tokenIdBigInt, g).String()
+						} else {
+							i.Name = coll.Name + " #" + i.TokenID
+						}
 					}
 				}
 			}
