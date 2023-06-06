@@ -102,9 +102,27 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 			},
 		},
 		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "uploaded_file_chunks"},
+					{"localField", "_id"},
+					{"foreignField", "file_id"},
+					{"let", bson.D{{"status", "$status"}}},
+					{"pipeline",
+						bson.A{
+							bson.D{{"$match", bson.D{{"status", entity.ChunkUploading}}}},
+							bson.D{{"$project", bson.D{{"_id", 1}}}},
+						},
+					},
+					{"as", "uploading_file_chunks"},
+				},
+			},
+		},
+		bson.D{
 			{"$addFields",
 				bson.D{
 					{"processed_chunk", bson.D{{"$size", "$uploaded_file_chunks"}}},
+					{"processing_chunk", bson.D{{"$size", "$uploading_file_chunks"}}},
 					{"status",
 						bson.D{
 							{"$cond",
