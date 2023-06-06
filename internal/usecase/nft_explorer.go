@@ -211,6 +211,10 @@ func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 		f = append(f, bson.E{"owner", primitive.Regex{Pattern: *filter.Owner, Options: "i"}})
 	}
 
+	if *filter.ContentTypeNotEmpty {
+		f = append(f, bson.E{"content_type", bson.E{"$ne", ""}})
+	}
+
 	sortBy := "token_id_int"
 	if filter.SortBy != nil && *filter.SortBy != "" {
 		sortBy = *filter.SortBy

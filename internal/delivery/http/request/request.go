@@ -15,10 +15,11 @@ type PaginationReq struct {
 
 type CollectionsFilter struct {
 	PaginationReq
-	Owner      *string
-	Name       *string
-	Address    *string
-	AllowEmpty *bool
+	Owner               *string
+	Name                *string
+	Address             *string
+	AllowEmpty          *bool
+	ContentTypeNotEmpty *bool
 }
 
 type HistoriesFilter struct {
