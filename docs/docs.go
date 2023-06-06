@@ -770,6 +770,24 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "min,max - separated by comma",
+                        "name": "rarity",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange",
+                        "name": "attributes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "contract_address",
                         "name": "contract_address",
                         "in": "path",
@@ -779,6 +797,18 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "limit",
                         "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field: default volume",
+                        "name": "SortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort default: -1 desc",
+                        "name": "sort",
                         "in": "query"
                     },
                     {

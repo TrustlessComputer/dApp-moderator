@@ -192,45 +192,6 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 				},
 			},
 		},
-		bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "marketplace_offers"},
-					{"localField", "contract"},
-					{"foreignField", "collection_contract"},
-					{"pipeline",
-						bson.A{
-							bson.D{{"$match", bson.D{{"status", entity.MarketPlaceOpen}}}},
-							bson.D{
-								{"$group",
-									bson.D{
-										{"_id",
-											bson.D{
-												{"contract", "$collection_contract"},
-												{"erc_20_token", "$erc_20_token"},
-											},
-										},
-										{"total_volume", bson.D{{"$sum", bson.D{{"$toDouble", "$price"}}}}},
-										{"total_sales", bson.D{{"$sum", 1}}},
-									},
-								},
-							},
-							bson.D{
-								{"$addFields",
-									bson.D{
-										{"erc_20_token", "$_id.erc_20_token"},
-										{"contract", "$_id.contract"},
-										{"marketplace_type", "marketplace_offers"},
-									},
-								},
-							},
-							bson.D{{"$project", bson.D{{"_id", 0}}}},
-						},
-					},
-					{"as", "floor_price_marketplace_offers"},
-				},
-			},
-		},
 		//end floor-price
 		bson.D{
 			{"$addFields",
@@ -249,9 +210,7 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 						bson.D{
 							{"$concatArrays",
 								bson.A{
-									"$floor_price_marketplace_listings",
-									"$floor_price_marketplace_offers",
-								},
+									"$floor_price_marketplace_listings"},
 							},
 						},
 					},
@@ -279,9 +238,7 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 					{"nft_owners", 0},
 					{"marketplace_listings", 0},
 					{"marketplace_offers", 0},
-					{"floor_price_marketplace_listings", 0},
-					{"floor_price_marketplace_offers", 0},
-				},
+					{"floor_price_marketplace_listings", 0}},
 			},
 		},
 	}

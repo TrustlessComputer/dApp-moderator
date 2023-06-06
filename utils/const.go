@@ -167,6 +167,7 @@ const (
 	COLLECTION_SWAP_USER_GM_PAID           string = "swap_user_gm_paid"
 	COLLECTION_SWAP_BLACKLIST_TOKENS       string = "swap_blacklist_tokens"
 
+	VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES           string = "marketplace_nft_with_attributes_view"
 	VIEW_SWAP_LIQUIDITY_REPORT_SLACK               string = "swap_liquidity_report_view"
 	VIEW_SWAP_REPORT_SLACK                         string = "swap_token_report_slack_view"
 	VIEW_SWAP_REPORT_FINAL                         string = "swap_token_report_final_view"
