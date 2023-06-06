@@ -2408,6 +2408,15 @@ const docTemplate = `{
                         "name": "uploadID",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Request data",
+                        "name": "requestData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CompleteMultipartUploadRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -2448,17 +2457,9 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "chunk_id",
-                        "name": "chunk_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "tx_hash",
                         "name": "tx_hash",
-                        "in": "path",
-                        "required": true
+                        "in": "path"
                     },
                     {
                         "type": "integer",
@@ -2696,6 +2697,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "request.CompleteMultipartUploadRequest": {
+            "type": "object",
+            "properties": {
+                "walletAddress": {
+                    "type": "string"
+                }
+            }
+        },
         "request.ConfirmHistoriesReq": {
             "type": "object",
             "properties": {

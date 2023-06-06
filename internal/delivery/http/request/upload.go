@@ -7,6 +7,10 @@ type CreateMultipartUploadRequest struct {
 	Group    string `json:"group"`
 }
 
+type CompleteMultipartUploadRequest struct {
+	WalletAddress string `json:"walletAddress"`
+}
+
 func (g CreateMultipartUploadRequest) SelfValidate() error {
 	if g.FileName == "" {
 		return errors.New("fileName is required")

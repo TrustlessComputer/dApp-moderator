@@ -1,5 +1,10 @@
 basePath: /dapp-moderator/v1
 definitions:
+  request.CompleteMultipartUploadRequest:
+    properties:
+      walletAddress:
+        type: string
+    type: object
   request.ConfirmHistoriesReq:
     properties:
       data:
@@ -1627,15 +1632,9 @@ paths:
         name: file_id
         required: true
         type: string
-      - description: chunk_id
-        in: path
-        name: chunk_id
-        required: true
-        type: string
       - description: tx_hash
         in: path
         name: tx_hash
-        required: true
         type: string
       - description: '0: new, 1: processing, 2: done - default: all'
         in: query
@@ -1809,6 +1808,12 @@ paths:
         name: uploadID
         required: true
         type: string
+      - description: Request data
+        in: body
+        name: requestData
+        required: true
+        schema:
+          $ref: '#/definitions/request.CompleteMultipartUploadRequest'
       produces:
       - application/json
       responses:
