@@ -15,7 +15,7 @@ type FilterUploadedFile struct {
 type QueriedUploadedFile struct {
 	UploadedFile    `bson:",inline"`
 	ProcessedChunk  int `bson:"processed_chunk" json:"processed_chunks"`
-	ProcessingChunk int `bson:"processing_chunk" json:"processing_chunk"`
+	ProcessingChunk int `bson:"processing_chunk" json:"processing_chunks"`
 	Status          int `bson:"status" json:"status"`
 }
 
