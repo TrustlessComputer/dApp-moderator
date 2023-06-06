@@ -5,12 +5,13 @@ import (
 )
 
 type MarketplaceCollectionAggregation struct {
-	BaseEntity         `bson:",inline" json:"base_entity"`
-	Contract           string               `bson:"contract" json:"contract"`
-	MarketPlaceVolumes []*MarketPlaceVolume `bson:"market_place_volumes" json:"market_place_volumes"`
-	UniqueOwners       int64                `json:"unique_owners" bson:"unique_owners"`
-	TotalNfts          int64                `json:"total_nfts" bson:"total_nfts"`
-	TotalSales         int64                `json:"total_sales" bson:"total_sales"`
+	BaseEntity                   `bson:",inline" json:"base_entity"`
+	Contract                     string               `bson:"contract" json:"contract"`
+	MarketPlaceVolumes           []*MarketPlaceVolume `bson:"market_place_volumes" json:"market_place_volumes"`
+	FloorPriceMarketPlaceVolumes []*MarketPlaceVolume `bson:"floor_price_market_place_volumes" json:"floor_price_market_place_volumes"`
+	UniqueOwners                 int64                `json:"unique_owners" bson:"unique_owners"`
+	TotalNfts                    int64                `json:"total_nfts" bson:"total_nfts"`
+	TotalSales                   int64                `json:"total_sales" bson:"total_sales"`
 
 	//USDT
 	FloorPrice float64 `json:"floor_price" bson:"floor_price"` //USDT

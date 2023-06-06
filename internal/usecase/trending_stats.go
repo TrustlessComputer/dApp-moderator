@@ -73,75 +73,84 @@ func (u *Usecase) ProccessLoadingCollections(limit int64, page int64, dataChan c
 	}
 }
 
+func (u *Usecase) calculateRate(volume *entity.MarketPlaceVolume) error {
+	rate := float64(0)
+	tokenAddress := strings.ToLower(volume.Erc20Token)
+	var err error
+	symbol := ""
+	decimal := 0
+	if tokenAddress == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
+		symbol = "eth"
+		decimal = 18
+	}
+
+	if tokenAddress == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
+		symbol = "eth"
+		decimal = 8
+	}
+
+	if symbol == "" {
+		err = errors.New("Cannot detect erc20 token")
+		logger.AtLog.Logger.Error("StartWorker - GetExternalPrice", zap.Error(err), zap.String("tokenAddress", tokenAddress))
+
+	} else {
+
+		key := helpers.TokenRateKey(tokenAddress)
+		existed, _ := u.Cache.Exists(key)
+
+		if existed != nil && *existed == false {
+			rate, err = helpers.GetExternalPrice(symbol)
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("StartWorker - GetExternalPrice -  %s", tokenAddress), zap.Error(err))
+			}
+
+			u.Cache.SetDataWithExpireTime(key, rate, 1200) // 20 min
+		} else {
+			cached, _ := u.Cache.GetData(key)
+			if cached != nil {
+				rate, err = strconv.ParseFloat(*cached, 10)
+				if err != nil {
+					logger.AtLog.Logger.Error(fmt.Sprintf("StartWorker - ParseFloat -  %s", tokenAddress), zap.Error(err))
+					rate = 0
+				}
+			}
+		}
+
+		volume.Erc20Rate = rate
+		volume.Erc20Decimal = decimal
+		if decimal != 0 {
+			erc20Val := helpers.GetValue(fmt.Sprintf("%d", volume.TotalVolume), float64(volume.Erc20Decimal))
+			volume.USDTValue = erc20Val * rate
+		} else {
+			volume.USDTValue = 0
+		}
+
+	}
+
+	return err
+}
+
 func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAggregation, outputChan chan outputMkpCollectionChan) {
 	inputItem := <-inputItemChan
-	var err error
 	minNumber := float64(99999999)
+	var err error
 
 	//calculate usdt by erc20 token
 	total := float64(0)
 	min := minNumber
 	volumes := inputItem.MarketPlaceVolumes
+	floorPriceVolumes := inputItem.FloorPriceMarketPlaceVolumes
+
+	for _, volume := range floorPriceVolumes {
+		err = u.calculateRate(volume)
+		if min > volume.USDTValue {
+			min = volume.USDTValue
+		}
+	}
 
 	for _, volume := range volumes {
-		rate := float64(0)
-		tokenAddress := strings.ToLower(volume.Erc20Token)
-
-		symbol := ""
-		decimal := 0
-		if tokenAddress == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
-			symbol = "eth"
-			decimal = 18
-		}
-
-		if tokenAddress == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
-			symbol = "eth"
-			decimal = 8
-		}
-
-		if symbol == "" {
-			err = errors.New("Cannot detect erc20 token")
-			logger.AtLog.Logger.Error("StartWorker - GetExternalPrice", zap.Error(err), zap.String("tokenAddress", tokenAddress))
-
-		} else {
-
-			key := helpers.TokenRateKey(tokenAddress)
-			existed, _ := u.Cache.Exists(key)
-
-			if existed != nil && *existed == false {
-				rate, err = helpers.GetExternalPrice(symbol)
-				if err != nil {
-					logger.AtLog.Logger.Error(fmt.Sprintf("StartWorker - GetExternalPrice -  %s", tokenAddress), zap.Error(err))
-				}
-
-				u.Cache.SetDataWithExpireTime(key, rate, 1200) // 20 min
-			} else {
-				cached, _ := u.Cache.GetData(key)
-				if cached != nil {
-					rate, err = strconv.ParseFloat(*cached, 10)
-					if err != nil {
-						logger.AtLog.Logger.Error(fmt.Sprintf("StartWorker - ParseFloat -  %s", tokenAddress), zap.Error(err))
-						rate = 0
-					}
-				}
-			}
-
-			volume.Erc20Rate = rate
-			volume.Erc20Decimal = decimal
-			if decimal != 0 {
-				erc20Val := helpers.GetValue(fmt.Sprintf("%d", volume.TotalVolume), float64(volume.Erc20Decimal))
-				volume.USDTValue = erc20Val * rate
-			} else {
-				volume.USDTValue = 0
-			}
-
-			if min > volume.USDTValue {
-				min = volume.USDTValue
-			}
-
-			total += volume.USDTValue
-		}
-
+		err = u.calculateRate(volume)
+		total += volume.USDTValue
 	}
 
 	inputItem.Volume = total
