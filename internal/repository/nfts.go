@@ -91,11 +91,12 @@ func (r *Repository) GetNfts(collectionAddress string, skip int, limit int) ([]e
 			{"$match",
 				bson.D{
 					{"collection_address", strings.ToLower(collectionAddress)},
-					{"image", bson.D{{"$ne", ""}}},
+					//{"image", bson.D{{"$ne", ""}}},
+					{"content_type", bson.D{{"$ne", ""}}},
 				},
 			},
 		},
-		bson.D{{"$project", bson.D{{"image", 1}}}},
+		bson.D{{"$sort", bson.D{{"created_at", 1}}}},
 		bson.D{{"$skip", skip}},
 		bson.D{{"$limit", limit}},
 	}
@@ -110,4 +111,22 @@ func (r *Repository) GetNfts(collectionAddress string, skip int, limit int) ([]e
 	}
 
 	return groupedNfts, nil
+}
+
+func (r *Repository) UpdateNftSize(contract string, tokenID string, size int64) (*mongo.UpdateResult, error) {
+	f := bson.D{
+		{"collection_address", contract},
+		{"token_id", tokenID},
+	}
+
+	update := bson.M{"$set": bson.M{"size": size}}
+
+	updated, err := r.UpdateOne(entity.Nfts{}.CollectionName(), f, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+
 }

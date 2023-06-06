@@ -417,3 +417,23 @@ func GetValue(amount string, decimal float64) float64 {
 	amountInt, _ := result.Float64()
 	return amountInt
 }
+
+func CreateFile(fileName string, data interface{}) error {
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(bytes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

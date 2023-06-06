@@ -20,6 +20,7 @@ type Nfts struct {
 	Attributes      []NftAttr   `json:"attributes" bson:"attributes"`
 	Metadata        interface{} `json:"metadata" bson:"metadata"`
 	MetadataType    string      `json:"metadata_type"  bson:"metadata_type"`
+	Size            int64       `json:"size" bson:"size"` //bytes
 }
 
 type NftAttr struct {
