@@ -209,7 +209,7 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 
 						}
 					} else {
-						i.Name = coll.Name
+						i.Name = coll.Name + " #" + i.TokenID
 					}
 				}
 			}
