@@ -212,7 +212,7 @@ func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 	}
 
 	if filter.ContentTypeNotEmpty != nil && *filter.ContentTypeNotEmpty {
-		f = append(f, bson.E{"content_type", bson.E{"$ne", ""}})
+		f = append(f, bson.E{"content_type", bson.D{{"$ne", ""}}})
 	}
 
 	sortBy := "token_id_int"
