@@ -294,7 +294,7 @@ func (r *Repository) GetUploadingChunks() ([]entity.UploadedFileChunk, error) {
 			{"$match",
 				bson.D{
 					{"status", entity.ChunkUploading},
-					{"txhash", bson.D{{"$ne", ""}}},
+					{"tx_hash", bson.D{{"$ne", ""}}},
 				},
 			},
 		},
