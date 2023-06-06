@@ -175,6 +175,15 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 				Name:          &name,
 				PaginationReq: p,
 			}
+
+			if strings.ToLower(contractAddress) == strings.ToLower("0x16EfDc6D3F977E39DAc0Eb0E123FefFeD4320Bc0") {
+				if r.URL.Query().Get("allow_empty") == "false" {
+					// artifact
+					tmp := true
+					filter.ContentTypeNotEmpty = &tmp
+				}
+			}
+
 			coll, err := h.Usecase.CollectionDetail(ctx, contractAddress)
 			if err != nil {
 				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination", iPagination), zap.String("contractAddress", contractAddress), zap.Error(err))
