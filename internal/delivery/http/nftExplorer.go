@@ -160,7 +160,7 @@ func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Req
 func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			contractAddress := vars["contractAddress"]
+			contractAddress := strings.ToLower(vars["contractAddress"])
 			iPagination := ctx.Value(utils.PAGINATION)
 
 			p := iPagination.(request.PaginationReq)
@@ -238,7 +238,7 @@ func (h *httpDelivery) collectionNftDetail(w http.ResponseWriter, r *http.Reques
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 
-			contractAddress := vars["contractAddress"]
+			contractAddress := strings.ToLower(vars["contractAddress"])
 			tokenID := vars["tokenID"]
 			data, err := h.Usecase.CollectionNftDetail(ctx, contractAddress, tokenID)
 			if err != nil {
