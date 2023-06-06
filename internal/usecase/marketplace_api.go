@@ -31,6 +31,20 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	if filter.TokenID != nil && *filter.TokenID != "" {
 		f = append(f, bson.E{"token_id", *filter.TokenID})
 	}
+	if len(filter.AttrKey) > 0 {
+		f = append(f, bson.E{"attributes.trait_type", bson.M{"$in": filter.AttrKey}})
+	}
+
+	if len(filter.AttrValue) > 0 {
+		f = append(f, bson.E{"attributes.value", bson.M{"$in": filter.AttrValue}})
+	}
+
+	if filter.Rarity != nil {
+		f = append(f, bson.E{"$and", bson.A{
+			bson.E{"attributes.percent", bson.M{"$lte": filter.Rarity.Max / 100}},
+			bson.E{"attributes.percent", bson.M{"$gte": filter.Rarity.Min / 100}},
+		}})
+	}
 
 	if filter.Limit == 0 {
 		filter.Limit = 100
@@ -62,7 +76,7 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 		bson.E{"token_id", tokenID},
 	}
 
-	cursor, err := u.Repo.FindOne(utils.VIEW_MARKETPLACE_NFTS, f)
+	cursor, err := u.Repo.FindOne(utils.VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES, f)
 	if err != nil {
 		return nil, err
 	}

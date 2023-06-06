@@ -56,6 +56,15 @@ type FilterNfts struct {
 	BaseFilters
 	ContractAddress *string
 	TokenID         *string
+	//Rarity          *string
+	AttrKey   []string
+	AttrValue []string
+	Rarity    *Rarity
+}
+
+type Rarity struct {
+	Min float64
+	Max float64
 }
 
 type FilterMarketplaceAggregationData struct {
