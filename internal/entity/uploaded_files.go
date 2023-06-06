@@ -13,9 +13,10 @@ type FilterUploadedFile struct {
 }
 
 type QueriedUploadedFile struct {
-	UploadedFile   `bson:",inline"`
-	ProcessedChunk int `bson:"processed_chunk" json:"processed_chunks"`
-	Status         int `bson:"status" json:"status"`
+	UploadedFile    `bson:",inline"`
+	ProcessedChunk  int `bson:"processed_chunk" json:"processed_chunks"`
+	ProcessingChunk int `bson:"processing_chunk" json:"processing_chunk"`
+	Status          int `bson:"status" json:"status"`
 }
 
 type UploadedFile struct {
