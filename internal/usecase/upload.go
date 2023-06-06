@@ -182,13 +182,17 @@ func (u *Usecase) MakeChunks(fileName string, uploadedIndex string) ([]Chunk, *C
 	chunksizes := make([]Chunk, concurrency)
 
 	// calculate each chunk size
+	remaining := filesize
 	for i := 0; i < concurrency; i++ {
 		chunksizes[i].Offset = int64(i * bufferSize)
 		chunksizes[i].Bufsize = bufferSize
 		chunksizes[i].Index = i
+
 		if i == concurrency-1 {
-			chunksizes[i].Bufsize = filesize % bufferSize
+			chunksizes[i].Bufsize = remaining
 		}
+
+		remaining = remaining - bufferSize
 	}
 
 	dataChan := make(chan Chunk)
