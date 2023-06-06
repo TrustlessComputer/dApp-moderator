@@ -46,7 +46,7 @@ type MkpNftsResp struct {
 	TokenURI        string                            `bson:"token_uri" json:"token_uri"`
 	Image           string                            `bson:"image" json:"image"`
 	MintedAt        float64                           `bson:"minted_at" json:"minted_at"`
-	Attributes      []NftAttr                         `json:"attributes" bson:"attributes"`
+	Attributes      []MkpNftAttr                      `json:"attributes" bson:"attributes"`
 	Metadata        interface{}                       `json:"metadata" bson:"metadata"`
 	MetadataType    string                            `json:"metadata_type" bson:"metadata_type"`
 	Activities      []entity.MarketplaceTokenActivity `json:"activities" bson:"activities"`
@@ -56,6 +56,14 @@ type MkpNftsResp struct {
 	Buyable         bool                              `bson:"buyable" json:"buyable"`
 	PriceERC20      MkpPriceERC20                     `bson:"price_erc20" json:"price_erc20"`
 	Collection      entity.Collections                `json:"collection" bson:"collection"`
+}
+
+type MkpNftAttr struct {
+	TraitType string  `json:"trait_type" bson:"trait_type"`
+	Value     string  `json:"value" bson:"value"`
+	Count     int64   `json:"count" bson:"count"`
+	Total     int64   `json:"total" bson:"total"`
+	Percent   float64 `json:"percent" bson:"percent"`
 }
 
 type MkpPriceERC20 struct {
