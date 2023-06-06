@@ -109,7 +109,9 @@ func (u *Usecase) CalculateChunks(fileName string) (*CalculatedChunk, error) {
 		logger.AtLog.Logger.Error(fmt.Sprintf("MakeChunks  strconv.Atoi - %s", fileName), zap.Int("bufferSize", bufferSize), zap.String("fileName", fileName), zap.Error(err))
 		return nil, err
 	}
-	bufferSize = 1000 * bufferSize
+
+	//TODO - temporary remove for testing
+	//bufferSize = 1000 * bufferSize
 	f, err := u.Storage.ReadFile(fileName)
 	if err != nil {
 		return nil, err
@@ -371,7 +373,7 @@ func (u *Usecase) UploadPart(ctx context.Context, uploadID string, file File, fi
 	return nil
 }
 
-func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string) (*entity.UploadedFile, error) {
+func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string, walletAddress string) (*entity.UploadedFile, error) {
 	uploaded, err := u.S3Adapter.CompleteMultipartUpload(ctx, uploadID)
 	if err != nil {
 		return nil, err
@@ -393,9 +395,10 @@ func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string) 
 	uploadedFIle := &entity.UploadedFile{
 		Name: name,
 		//Size:     len(bytes),
-		Path:     name,
-		FileType: fType,
-		FullPath: fmt.Sprintf("%s/%s", os.Getenv("GCS_DOMAIN"), name),
+		Path:          name,
+		FileType:      fType,
+		WalletAddress: walletAddress,
+		FullPath:      fmt.Sprintf("%s/%s", os.Getenv("GCS_DOMAIN"), name),
 	}
 
 	err = u.Repo.InsertUploadedFile(uploadedFIle)

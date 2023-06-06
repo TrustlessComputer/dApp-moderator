@@ -86,8 +86,7 @@ func (h *httpDelivery) uploadFileMultiPartFake(w http.ResponseWriter, r *http.Re
 // @Accept  json
 // @Produce  json
 // @Param file_id path string  true "fileID"
-// @Param chunk_id path string  true "chunk_id"
-// @Param tx_hash path string  true "tx_hash"
+// @Param tx_hash path string  false "tx_hash"
 // @Param status query int false "0: new, 1: processing, 2: done - default: all"
 // @Success 200 {object} response.UploadResponse{}
 // @Security ApiKeyAuth
@@ -345,14 +344,22 @@ func (h *httpDelivery) UploadPart(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Security Authorization
 // @Param uploadID path string true "upload ID"
+// @Param requestData body request.CompleteMultipartUploadRequest true "Request data"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /upload/file/multipart/{uploadID} [POST]
 func (h *httpDelivery) CompleteMultipartUpload(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			uploadID := vars["uploadID"]
-			uploaded, err := h.Usecase.CompleteMultipartUpload(ctx, uploadID)
 
+			var reqBody request.CompleteMultipartUploadRequest
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			uploaded, err := h.Usecase.CompleteMultipartUpload(ctx, uploadID, reqBody.WalletAddress)
 			if err != nil {
 				return nil, err
 			}
