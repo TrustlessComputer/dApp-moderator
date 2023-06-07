@@ -86,7 +86,7 @@ func (u *Usecase) calculateRate(volume *entity.MarketPlaceVolume) error {
 	}
 
 	if tokenAddress == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
-		symbol = "eth"
+		symbol = "btc"
 		decimal = 8
 	}
 
