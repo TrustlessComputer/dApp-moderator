@@ -131,7 +131,7 @@ func (r *Repository) ListUploadedFiles(filter *entity.FilterUploadedFile) ([]ent
 										bson.D{
 											{"$ne",
 												bson.A{
-													"$tx_hash",
+													"$token_id",
 													"",
 												},
 											},

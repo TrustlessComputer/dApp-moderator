@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"strings"
 
@@ -110,4 +111,28 @@ func (r *Repository) GetNfts(collectionAddress string, skip int, limit int) ([]e
 	}
 
 	return groupedNfts, nil
+}
+
+func (r *Repository) RefreshNft(contract string, tokenID string, metadataType string, contentType string, attributes []nft_explorer.NftAttr, mintedAt float64, metadata interface{}) (*mongo.UpdateResult, error) {
+	f := bson.D{
+		{"collection_address", contract},
+		{"token_id", tokenID},
+	}
+
+	update := bson.M{"$set": bson.M{
+		"content_type":  strings.ToLower(contentType),
+		"metadata_type": strings.ToLower(metadataType),
+		"minted_at":     mintedAt,
+		"attributes":    attributes,
+		"metadata":      metadata,
+	}}
+
+	updated, err := r.UpdateOne(entity.Nfts{}.CollectionName(), f, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+
 }
