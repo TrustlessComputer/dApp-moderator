@@ -63,5 +63,5 @@ type NftsResp struct {
 
 type CompressedFile struct {
 	OriginalSize   int `json:"original_size"`
-	CompressedSize int `json:"compressed_szie"`
+	CompressedSize int `json:"compressed_size"`
 }
