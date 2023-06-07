@@ -60,3 +60,8 @@ type NftsResp struct {
 	nft_explorer.NftsResp
 	FileSize int `json:"file_size"` //bytes
 }
+
+type CompressedFile struct {
+	OriginalSize   int `json:"original_size"`
+	CompressedSize int `json:"compressed_szie"`
+}

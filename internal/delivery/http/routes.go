@@ -85,6 +85,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	// uploadRoute.Use(h.MiddleWare.AuthorizationFunc) // temp pause
 	uploadRoute.HandleFunc("/file", h.filterUploadedFile).Methods("GET")
 	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
+	uploadRoute.HandleFunc("/file-size", h.calculateUploadedFile).Methods("POST")
 	//uploadRoute.HandleFunc("/file/multipart-fake", h.uploadFileMultiPartFake).Methods("POST")
 	uploadRoute.HandleFunc("/file/{file_id}/tx_hash/{tx_hash}", h.updateTxHashUploadedFile).Methods("PUT")
 	uploadRoute.HandleFunc("/file/{file_id}/chunks", h.fileChunks).Methods("GET")

@@ -1700,6 +1700,29 @@ paths:
       summary: Upload File
       tags:
       - Uploader
+  /upload/file-size:
+    post:
+      consumes:
+      - application/json
+      description: Upload and compress file
+      parameters:
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload and compress file
+      tags:
+      - Uploader
   /upload/file/{file_id}/chunks:
     get:
       consumes:
