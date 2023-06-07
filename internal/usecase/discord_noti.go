@@ -118,7 +118,7 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Owner: [%s](https://smartinscription.xyz/token?contract=%s&id=%s)**", utils.ShortenBlockAddress(nfts.Owner), strings.ToLower(nfts.ContractAddress), nfts.TokenID),
+						Value:  fmt.Sprintf("**Owner: [%s](https://smartinscription.xyz/%s)**", utils.ShortenBlockAddress(nfts.Owner), nfts.TokenID),
 						Inline: false,
 					},
 					{
