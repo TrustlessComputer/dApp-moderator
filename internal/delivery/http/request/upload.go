@@ -22,3 +22,7 @@ func (g CreateMultipartUploadRequest) SelfValidate() error {
 
 	return nil
 }
+
+type CompressFileSize struct {
+	FileContent string `json:"file_content"`
+}

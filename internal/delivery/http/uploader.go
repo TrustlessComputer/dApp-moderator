@@ -400,3 +400,33 @@ func (h *httpDelivery) updateTxHashForAChunk(w http.ResponseWriter, r *http.Requ
 		},
 	).ServeHTTP(w, r)
 }
+
+// uploadFile godoc
+// @Summary Upload and compress file
+// @Description Upload and compress file
+// @Tags Uploader
+// @Accept  json
+// @Produce  json
+// @Param requestBody body request.CompressFileSize true "requestBody"
+// @Success 200 {object} response.UploadResponse{}
+// @Security ApiKeyAuth
+// @Router /upload/file-size [POST]
+func (h *httpDelivery) calculateUploadedFile(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			reqBody := &request.CompressFileSize{}
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			compressedSize, err := h.Usecase.UploadAndCompressFile(reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			return compressedSize, nil
+		},
+	).ServeHTTP(w, r)
+}
