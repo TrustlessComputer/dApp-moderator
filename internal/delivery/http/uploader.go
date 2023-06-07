@@ -407,20 +407,21 @@ func (h *httpDelivery) updateTxHashForAChunk(w http.ResponseWriter, r *http.Requ
 // @Tags Uploader
 // @Accept  json
 // @Produce  json
-// @Param file formData file true "file"
+// @Param requestBody body request.CompressFileSize true "requestBody"
 // @Success 200 {object} response.UploadResponse{}
 // @Security ApiKeyAuth
 // @Router /upload/file-size [POST]
 func (h *httpDelivery) calculateUploadedFile(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-
-			_, fileHeader, err := r.FormFile("file")
-			if err != nil || fileHeader == nil {
-				return nil, fmt.Errorf("invalid file data")
+			reqBody := &request.CompressFileSize{}
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
 			}
 
-			compressedSize, err := h.Usecase.UploadAndCompressFile(fileHeader)
+			compressedSize, err := h.Usecase.UploadAndCompressFile(reqBody)
 			if err != nil {
 				return nil, err
 			}

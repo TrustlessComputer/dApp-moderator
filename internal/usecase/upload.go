@@ -3,6 +3,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils/googlecloud"
@@ -495,30 +496,19 @@ func (u *Usecase) CompressDataBrotli(data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (u *Usecase) UploadAndCompressFile(fileHeader *multipart.FileHeader) (*structure.CompressedFile, error) {
-
-	f, err := fileHeader.Open()
+func (u *Usecase) UploadAndCompressFile(data *request.CompressFileSize) (*structure.CompressedFile, error) {
+	bytesData, err := helpers.Base64Decode(data.FileContent)
 	if err != nil {
 		return nil, err
 	}
 
-	defer f.Close()
-
-	buf := bytes.NewBuffer(nil)
-	if _, err := io.Copy(buf, f); err != nil {
+	compressedByte, err := u.CompressDataBrotli(bytesData)
+	if err != nil {
 		return nil, err
 	}
 
-	bytes := buf.Bytes()
-	resp := &structure.CompressedFile{
-		OriginalSize:   len(bytes),
-		CompressedSize: 0,
-	}
-
-	compressedByte, err := u.CompressDataBrotli(bytes)
-	if _, err := io.Copy(buf, f); err != nil {
-		return resp, err
-	}
+	resp := &structure.CompressedFile{}
+	resp.OriginalSize = len(bytesData)
 	resp.CompressedSize = len(compressedByte)
 	return resp, nil
 }
