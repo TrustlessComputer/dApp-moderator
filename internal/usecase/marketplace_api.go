@@ -60,7 +60,7 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		sort = int(filter.Sort)
 	}
 
-	s := bson.D{{sortBy, sort}}
+	s := bson.D{{"buyable", -1}, {sortBy, sort}}
 	err := u.Repo.Find(utils.VIEW_MARKETPLACE_NFTS, f, int64(filter.Limit), int64(filter.Offset), &resp, s)
 	if err != nil {
 		return nil, err

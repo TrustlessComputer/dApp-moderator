@@ -54,7 +54,7 @@ type MkpNftsResp struct {
 	ListingForSales []entity.MarketplaceListings      `json:"listing_for_sales" bson:"listing_for_sales"`
 	MakeOffers      []entity.MarketplaceOffers        `json:"make_offers" bson:"make_offers"`
 	Buyable         bool                              `bson:"buyable" json:"buyable"`
-	PriceERC20      MkpPriceERC20                     `bson:"price_erc20" json:"price_erc20"`
+	PriceERC20      *MkpPriceERC20                    `bson:"price_erc20" json:"price_erc20"`
 	Collection      entity.Collections                `json:"collection" bson:"collection"`
 }
 
