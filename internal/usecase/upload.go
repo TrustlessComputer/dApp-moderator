@@ -426,6 +426,7 @@ func (u *Usecase) ListenedChunks() error {
 		logger.AtLog.Logger.Error("ListenedChunks", zap.Error(err))
 		return err
 	}
+	logger.AtLog.Logger.Info("ListenedChunks -  start", zap.Int("chunks", len(chunks)), zap.Any("chunks", chunks))
 
 	inputChan := make(chan entity.UploadedFileChunk, len(chunks))
 	resultChan := make(chan chunkDataChan, len(chunks))

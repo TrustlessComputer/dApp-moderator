@@ -195,6 +195,8 @@ func (u *Usecase) AggregateCollectionStats() error {
 		stop <- false
 	}
 
+	logger.AtLog.Logger.Info("AggregateCollectionStats", zap.Int("collections", len(data)))
+
 	//update USDT price - start worker
 	inputItemChan := make(chan entity.MarketplaceCollectionAggregation, len(data))
 	outputChan := make(chan outputMkpCollectionChan, len(data))
@@ -215,14 +217,16 @@ func (u *Usecase) AggregateCollectionStats() error {
 	for i := 0; i < len(data); i++ {
 		dataFromChan := <-outputChan
 		if dataFromChan.Err != nil {
-			logger.AtLog.Logger.Error(fmt.Sprintf("AggregateCollectionStats %s ", dataFromChan.Item.ID.Hex()), zap.Error(dataFromChan.Err))
+			logger.AtLog.Logger.Error(fmt.Sprintf("AggregateCollectionStats %s ", dataFromChan.Item.Contract), zap.Error(dataFromChan.Err))
 			return dataFromChan.Err
 		}
+
+		logger.AtLog.Logger.Info(fmt.Sprintf("AggregateCollectionStats %s ", dataFromChan.Item.Contract), zap.Any("aggregated", dataFromChan.Item))
 
 		//save to view
 		err := u.Repo.InsertMarketPlaceAggregation(dataFromChan.Item)
 		if err != nil {
-			logger.AtLog.Logger.Error(fmt.Sprintf("AggregateCollectionStats %s ", dataFromChan.Item.ID.Hex()), zap.Error(err))
+			logger.AtLog.Logger.Error(fmt.Sprintf("AggregateCollectionStats %s ", dataFromChan.Item.Contract), zap.Error(err))
 			return err
 		}
 	}

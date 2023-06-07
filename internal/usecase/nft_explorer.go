@@ -745,6 +745,20 @@ func (u *Usecase) RefreshNft(ctx context.Context, contractAddress string, tokenI
 		logger.AtLog.Logger.Error("RefreshNft", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
 		return nil, err
 	}
+
+	detail, err := u.NftExplorer.CollectionNftDetail(contractAddress, tokenID)
+	if err != nil {
+		logger.AtLog.Logger.Error("RefreshNft", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+		return nil, err
+	}
+
+	updated, err := u.Repo.RefreshNft(contractAddress, tokenID, detail.MetadataType, detail.ContentType, detail.Attributes, detail.MintedAt, detail.Metadata)
+	if err != nil {
+		logger.AtLog.Logger.Error("RefreshNft", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+		return nil, err
+	}
+	logger.AtLog.Logger.Info("RefreshNft", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("updated", updated))
+
 	return data, nil
 }
 
