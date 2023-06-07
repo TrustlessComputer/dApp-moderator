@@ -86,7 +86,7 @@ func (r *Repository) UpdateChunksTxHashForUploadedFile(fileID string, size int, 
 	}
 	if walletAddress != "" {
 		//"wallet_address": walletAddress,
-		update["wallet_address"] = walletAddress
+		update["wallet_address"] = strings.ToLower(walletAddress)
 	}
 
 	result, err := r.DB.Collection(utils.COLLECTION_UPLOADED_FILES).UpdateOne(context.TODO(), filter, bson.M{"$set": update})
