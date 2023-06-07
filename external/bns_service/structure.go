@@ -33,9 +33,11 @@ type BrowsedFileResp struct {
 }
 
 type NameResp struct {
-	Owner string `json:"owner"`
-	ID     string `json:"id"`
+	Owner    string `json:"owner"`
+	ID       string `json:"id"`
 	Name     string `json:"name"`
+	Resolver string `json:"resolver"`
+	Pfp      string `json:"pfp"`
 }
 
 func (sr ServiceResp) ToNames() []*NameResp {
