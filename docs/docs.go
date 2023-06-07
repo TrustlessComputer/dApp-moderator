@@ -2400,11 +2400,13 @@ const docTemplate = `{
                 "summary": "Upload and compress file",
                 "parameters": [
                     {
-                        "type": "file",
-                        "description": "file",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
+                        "description": "requestBody",
+                        "name": "requestBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CompressFileSize"
+                        }
                     }
                 ],
                 "responses": {
@@ -2856,6 +2858,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "walletAddress": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CompressFileSize": {
+            "type": "object",
+            "properties": {
+                "file_content": {
                     "type": "string"
                 }
             }

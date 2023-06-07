@@ -5,6 +5,11 @@ definitions:
       walletAddress:
         type: string
     type: object
+  request.CompressFileSize:
+    properties:
+      file_content:
+        type: string
+    type: object
   request.ConfirmHistoriesReq:
     properties:
       data:
@@ -1706,11 +1711,12 @@ paths:
       - application/json
       description: Upload and compress file
       parameters:
-      - description: file
-        in: formData
-        name: file
+      - description: requestBody
+        in: body
+        name: requestBody
         required: true
-        type: file
+        schema:
+          $ref: '#/definitions/request.CompressFileSize'
       produces:
       - application/json
       responses:
