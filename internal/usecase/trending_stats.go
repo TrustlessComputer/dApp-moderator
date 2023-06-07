@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -132,7 +133,7 @@ func (u *Usecase) calculateRate(volume *entity.MarketPlaceVolume) error {
 
 func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAggregation, outputChan chan outputMkpCollectionChan) {
 	inputItem := <-inputItemChan
-	minNumber := float64(99999999)
+	minNumber := float64(0)
 	var err error
 
 	//calculate usdt by erc20 token
@@ -143,10 +144,13 @@ func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAgg
 
 	for _, volume := range floorPriceVolumes {
 		err = u.calculateRate(volume)
-		if min > volume.USDTValue {
-			min = volume.USDTValue
-		}
 	}
+
+	sort.SliceStable(floorPriceVolumes, func(i, j int) bool {
+		return floorPriceVolumes[i].USDTValue < floorPriceVolumes[j].USDTValue
+	})
+
+	min = floorPriceVolumes[0].USDTValue
 
 	for _, volume := range volumes {
 		err = u.calculateRate(volume)
@@ -154,10 +158,6 @@ func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAgg
 	}
 
 	inputItem.Volume = total
-	if min == minNumber {
-		min = 0
-	}
-
 	inputItem.FloorPrice = min
 	outputChan <- outputMkpCollectionChan{
 		Item: &inputItem,

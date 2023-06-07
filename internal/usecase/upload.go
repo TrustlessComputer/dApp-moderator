@@ -401,7 +401,7 @@ func (u *Usecase) CompleteMultipartUpload(ctx context.Context, uploadID string, 
 		//Size:     len(bytes),
 		Path:          name,
 		FileType:      fType,
-		WalletAddress: walletAddress,
+		WalletAddress: strings.ToLower(walletAddress),
 		FullPath:      fmt.Sprintf("%s/%s", os.Getenv("GCS_DOMAIN"), name),
 	}
 

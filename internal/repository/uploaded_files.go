@@ -79,11 +79,14 @@ func (r *Repository) UpdateChunksTxHashForUploadedFile(fileID string, size int, 
 	}
 
 	update := bson.M{
-		"size":           size,
-		"tx_hash":        txHash,
-		"chunks":         chunks,
-		"chunk_size":     chunkSize,
-		"wallet_address": walletAddress,
+		"size":       size,
+		"tx_hash":    txHash,
+		"chunks":     chunks,
+		"chunk_size": chunkSize,
+	}
+	if walletAddress != "" {
+		//"wallet_address": walletAddress,
+		update["wallet_address"] = walletAddress
 	}
 
 	result, err := r.DB.Collection(utils.COLLECTION_UPLOADED_FILES).UpdateOne(context.TODO(), filter, bson.M{"$set": update})
