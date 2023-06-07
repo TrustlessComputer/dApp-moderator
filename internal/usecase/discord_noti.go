@@ -111,14 +111,14 @@ func (u *Usecase) NewNameNotify(bns *bns_service.NameResp) error {
 
 func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	message := discordclient.Message{
-		Content:   fmt.Sprintf("**NEW ARTIFACT #%s**", nfts.TokenID),
+		Content:   fmt.Sprintf("**NEW SMART INSCRIPTION #%s**", nfts.TokenID),
 		Username:  "Satoshi 27",
 		AvatarUrl: "",
 		Embeds: []discordclient.Embed{
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Owner: [%s](https://explorer.trustless.computer/address/%s/token-transfers)**", utils.ShortenBlockAddress(nfts.Owner), nfts.Owner),
+						Value:  fmt.Sprintf("**Owner: [%s](https://smartinscription.xyz/token?contract=%s&id=%s)**", utils.ShortenBlockAddress(nfts.Owner), nfts.Owner, nfts.TokenID),
 						Inline: false,
 					},
 					{
