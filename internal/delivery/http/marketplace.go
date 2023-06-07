@@ -538,3 +538,42 @@ func (h *httpDelivery) mkpCollectionAttributes(w http.ResponseWriter, r *http.Re
 		},
 	).ServeHTTP(w, r)
 }
+
+// UserCredits godoc
+// @Summary Get collection's activities
+// @Description Get collection's activities
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address path string true "contract_address"
+// @Param status query bool false "0: open, 1: cancel, 2: done, default all"
+// @Param limit query int false "limit default 10"
+// @Param page query int false "page start with 1"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/collections/{contract_address}/activities [GET]
+func (h *httpDelivery) getCollectionActivities(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+
+			contractAddresss := vars["contract_address"]
+
+			f := entity.FilterTokenActivities{
+				BaseFilters: entity.BaseFilters{
+					Limit:  int64(*p.Limit),
+					Offset: int64(*p.Offset),
+					//SortBy: *p.SortBy,
+					//Sort:   entity.SortType(*p.Sort),
+				},
+				ContractAddress: &contractAddresss,
+			}
+
+			resp, err := h.Usecase.FilterTokenActivities(ctx, f)
+			if err != nil {
+				return nil, err
+			}
+			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
