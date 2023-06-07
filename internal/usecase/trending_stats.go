@@ -150,7 +150,9 @@ func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAgg
 		return floorPriceVolumes[i].USDTValue < floorPriceVolumes[j].USDTValue
 	})
 
-	min = floorPriceVolumes[0].USDTValue
+	if len(floorPriceVolumes) >= 1 {
+		min = floorPriceVolumes[0].USDTValue
+	}
 
 	for _, volume := range volumes {
 		err = u.calculateRate(volume)
