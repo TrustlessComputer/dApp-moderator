@@ -179,6 +179,7 @@ const (
 	VIEW_MARKETPLACE_COLLECTION_ATTRIBUTES_PERCENT string = "marketplace_collection_attribute_percent_view"
 	VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS        string = "marketplace_aggregated_collections_view"
 	VIEW_MARKETPLACE_NFTS                          string = "marketplace_nfts_view"
+	VIEW_MARKETPLACE_COLLECTION_CHART              string = "marketplace_collection_chart"
 	COLLECTION_MARKETPLACE_AGGREGATED_COLLECTIONS  string = "marketplace_aggregated_collections"
 
 	TRANSACTIONS string = "transactions"

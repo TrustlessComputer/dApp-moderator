@@ -796,6 +796,44 @@
                 }
             }
         },
+        "/marketplace/collections/{contract_address}/chart": {
+            "get": {
+                "description": "Get collection's chart",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get collection's chart",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "date range: 7D, month - default 7D",
+                        "name": "date_range",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/marketplace/collections/{contract_address}/nfts": {
             "get": {
                 "description": "Get marketplace Nfts of a collection",

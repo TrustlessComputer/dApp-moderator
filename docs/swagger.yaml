@@ -666,6 +666,31 @@ paths:
       summary: Get Collection's attributes
       tags:
       - MarketPlace
+  /marketplace/collections/{contract_address}/chart:
+    get:
+      consumes:
+      - application/json
+      description: Get collection's chart
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: 'date range: 7D, month - default 7D'
+        in: query
+        name: date_range
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get collection's chart
+      tags:
+      - MarketPlace
   /marketplace/collections/{contract_address}/nfts:
     get:
       consumes:

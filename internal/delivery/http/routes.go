@@ -187,6 +187,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	marketplace.HandleFunc("/collections/{contract_address}", h.mkpCollectionDetail).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/activities", h.getCollectionActivities).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/attributes", h.mkpCollectionAttributes).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}/chart", h.getCollectionChart).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/nfts", h.mkplaceNftsOfACollection).Methods("GET")
 	marketplace.HandleFunc("/nfts", h.mkplaceNfts).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/nfts/{token_id}", h.mkplaceNftDetail).Methods("GET")
