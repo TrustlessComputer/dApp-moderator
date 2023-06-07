@@ -2380,6 +2380,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/upload/file-size": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload and compress file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Upload and compress file",
+                "parameters": [
+                    {
+                        "description": "requestBody",
+                        "name": "requestBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CompressFileSize"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/upload/file/multipart": {
             "post": {
                 "security": [
@@ -2819,6 +2858,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "walletAddress": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CompressFileSize": {
+            "type": "object",
+            "properties": {
+                "file_content": {
                     "type": "string"
                 }
             }
