@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // UserCredits godoc
@@ -570,6 +571,46 @@ func (h *httpDelivery) getCollectionActivities(w http.ResponseWriter, r *http.Re
 			}
 
 			resp, err := h.Usecase.FilterTokenActivities(ctx, f)
+			if err != nil {
+				return nil, err
+			}
+			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
+// @Summary Get collection's chart
+// @Description Get collection's chart
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address path string true "contract_address"
+// @Param date_range query string false "date range: 7D, month - default 7D"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/collections/{contract_address}/chart [GET]
+func (h *httpDelivery) getCollectionChart(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			contractAddresss := vars["contract_address"]
+			dateRange := r.URL.Query().Get("date_range")
+
+			to := time.Now().UTC()
+
+			day := 7 * 24
+			if dateRange == strings.ToLower("month") {
+				day = 30 * 24
+			}
+
+			from := to.Add(time.Duration(day*-1) * time.Hour)
+
+			f := entity.FilterCollectionChart{
+				ContractAddress: &contractAddresss,
+				FromDate:        &from,
+				ToDate:          &to,
+			}
+
+			resp, err := h.Usecase.FilterCollectionChart(ctx, f)
 			if err != nil {
 				return nil, err
 			}

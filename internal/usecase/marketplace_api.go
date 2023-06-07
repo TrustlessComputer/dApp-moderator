@@ -5,7 +5,9 @@ import (
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"github.com/davecgh/go-spew/spew"
 	"go.mongodb.org/mongo-driver/bson"
+	"math/big"
 )
 
 func (u *Usecase) FilterMKListing(ctx context.Context, filter entity.FilterMarketplaceListings) ([]entity.MarketplaceListings, error) {
@@ -84,6 +86,51 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 	err = cursor.Decode(resp)
 	if err != nil {
 		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (u *Usecase) FilterCollectionChart(ctx context.Context, filter entity.FilterCollectionChart) ([]*entity.CollectionChart, error) {
+	nfts, err := u.Repo.GetCollectionChart(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	//calculate rate
+	for _, nft := range nfts {
+		bigI, _ := new(big.Int).SetString(nft.Price, 10)
+
+		e := &entity.MarketPlaceVolume{
+			TotalVolume: bigI.Int64(),
+			Erc20Token:  nft.Erc20Token,
+		}
+		u.calculateRate(e)
+
+		nft.USDT = e.USDTValue
+		nft.USDTRate = e.Erc20Rate
+
+		spew.Dump(nft)
+	}
+
+	//group and calculate usdt of a day
+	groupdata := make(map[string]entity.CollectionChart)
+	for _, nft := range nfts {
+		value, ok := groupdata[nft.VolumeCreatedAtDate]
+		if !ok {
+			groupdata[nft.VolumeCreatedAtDate] = *nft
+		} else {
+			nft.USDT = value.USDT + nft.USDT
+			nft.USDTRate = value.USDTRate + nft.USDTRate
+			groupdata[nft.VolumeCreatedAtDate] = *nft
+		}
+
+	}
+
+	//response data
+	resp := []*entity.CollectionChart{}
+	for _, item := range groupdata {
+		resp = append(resp, &item)
 	}
 
 	return resp, nil
