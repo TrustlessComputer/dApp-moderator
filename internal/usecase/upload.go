@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
@@ -10,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/andybalholm/brotli"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"go.uber.org/zap"
@@ -478,4 +480,45 @@ func (u *Usecase) ListenedChunkWorker(input chan entity.UploadedFileChunk, outpu
 		IsPending: isPending,
 		Hash:      hash,
 	}
+}
+
+func (u *Usecase) CompressDataBrotli(data []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	writer := brotli.NewWriterLevel(&buf, brotli.BestCompression)
+	_, err := writer.Write(data)
+	if err != nil {
+		writer.Close()
+		return nil, err
+	}
+
+	writer.Close()
+	return buf.Bytes(), nil
+}
+
+func (u *Usecase) UploadAndCompressFile(fileHeader *multipart.FileHeader) (*structure.CompressedFile, error) {
+
+	f, err := fileHeader.Open()
+	if err != nil {
+		return nil, err
+	}
+
+	defer f.Close()
+
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, f); err != nil {
+		return nil, err
+	}
+
+	bytes := buf.Bytes()
+	resp := &structure.CompressedFile{
+		OriginalSize:   len(bytes),
+		CompressedSize: 0,
+	}
+
+	compressedByte, err := u.CompressDataBrotli(bytes)
+	if _, err := io.Copy(buf, f); err != nil {
+		return resp, err
+	}
+	resp.CompressedSize = len(compressedByte)
+	return resp, nil
 }
