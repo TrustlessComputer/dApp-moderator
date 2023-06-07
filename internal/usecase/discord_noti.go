@@ -131,9 +131,9 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	}
 	if nfts.Image != "" {
 		if strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
-			message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+			message.Embeds[0].Thumbnail.Url = "https://dapp.trustless.computer" + nfts.Image
 		} else {
-			message.Embeds[0].Image.Url = nfts.Image
+			message.Embeds[0].Thumbnail.Url = nfts.Image
 		}
 
 	}
@@ -144,7 +144,9 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	}
 
 	if nfts.Image != "" && strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
-		notify.Message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+		notify.Message.Embeds[0].Thumbnail.Url = "https://dapp.trustless.computer" + nfts.Image
+	} else {
+		notify.Message.Embeds[0].Thumbnail.Url = nfts.Image
 	}
 
 	return u.CreateDiscordNotify(notify)
