@@ -126,7 +126,7 @@ func (c *txTCServer) Worker(inputDataChan chan types.Log, result chan *eventLog)
 		pFunction = c.Usecase.MarketplaceBNSResolverUpdated
 		eventType = entity.BNSResolverUpdated
 		break
-	case c.MarketPlace.Events["MARKETPLACE_BNS_RESOLVER_CREATED"]:
+	case c.MarketPlace.Events["MARKETPLACE_BNS_REGISTERED"]:
 		pFunction = c.Usecase.MarketplaceBNSCreated
 		eventType = entity.BNSResolverCreated
 		break
