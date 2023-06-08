@@ -17,6 +17,9 @@ const (
 	TokenCancelOffer   TokenActivityType = 6
 	TokenAcceptOffer   TokenActivityType = 7
 	TokenPurchase      TokenActivityType = 8
+	BNSResolverUpdated TokenActivityType = 9
+	BNSResolverCreated TokenActivityType = 10
+	BNSPfpUpdated      TokenActivityType = 11
 )
 
 var TokenActivityName = map[TokenActivityType]string{
@@ -29,6 +32,9 @@ var TokenActivityName = map[TokenActivityType]string{
 	TokenCancelOffer:   "cancel offer",
 	TokenAcceptOffer:   "accept offer",
 	TokenPurchase:      "purchase",
+	BNSResolverUpdated: "BNS Resolver updated",
+	BNSResolverCreated: "BNS registered",
+	BNSPfpUpdated:      "BNS pfp updated",
 }
 
 type MarketplaceTokenActivity struct {

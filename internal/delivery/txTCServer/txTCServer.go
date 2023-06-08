@@ -70,6 +70,9 @@ func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, erro
 	mkpEvents["MARKETPLACE_ACCEPT_MAKE_OFFER"] = strings.ToLower(os.Getenv("MARKETPLACE_ACCEPT_MAKE_OFFER"))
 	mkpEvents["MARKETPLACE_CANCEL_MAKE_OFFER"] = strings.ToLower(os.Getenv("MARKETPLACE_CANCEL_MAKE_OFFER"))
 	mkpEvents["MARKETPLACE_CANCEL_LISTING"] = strings.ToLower(os.Getenv("MARKETPLACE_CANCEL_LISTING"))
+	mkpEvents["MARKETPLACE_BNS_RESOLVER_UPDATED"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_RESOLVER_UPDATED"))
+	mkpEvents["MARKETPLACE_BNS_RESOLVER_CREATED"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_RESOLVER_CREATED"))
+	mkpEvents["MARKETPLACE_BNS_SET_FPF"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_SET_FPF"))
 
 	m := &MarketPlace{
 		Contract: os.Getenv("MARKETPLACE_CONTRACT"),
