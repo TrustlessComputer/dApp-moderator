@@ -37,7 +37,8 @@ type MarketplaceTokenActivity struct {
 	Title              string            `bson:"title" json:"title"`
 	UserAAddress       string            `bson:"user_a_address" json:"user_a_address"`
 	UserBAddress       string            `bson:"user_b_address" json:"user_b_address"`
-	Amount             int64             `bson:"amount" json:"amount"`
+	Amount             int64             `bson:"amount" json:"-"`
+	AmountStr          string            `bson:"-" json:"amount"`
 	Erc20Address       string            `bson:"erc_20_address" json:"erc_20_address"`
 	Time               *time.Time        `bson:"time" json:"time"`
 	InscriptionID      string            `bson:"inscription_id" json:"inscription_id"`
