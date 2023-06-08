@@ -56,6 +56,7 @@ type MkpNftsResp struct {
 	Buyable         bool                              `bson:"buyable" json:"buyable"`
 	PriceERC20      *MkpPriceERC20                    `bson:"price_erc20" json:"price_erc20"`
 	Collection      entity.Collections                `json:"collection" bson:"collection"`
+	Size            int64                             `json:"size" bson:"size"`
 }
 
 type MkpNftAttr struct {
