@@ -20,6 +20,7 @@ type CollectionsFilter struct {
 	Address             *string
 	AllowEmpty          *bool
 	ContentTypeNotEmpty *bool
+	IsBigFile           *bool
 }
 
 type HistoriesFilter struct {

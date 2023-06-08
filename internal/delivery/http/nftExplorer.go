@@ -151,6 +151,7 @@ func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Req
 // @Tags nft-explorer
 // @Accept  json
 // @Produce  json
+// @Param is_big_file query bool false "is_big_file"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
 // @Param name query string false "name"
@@ -175,6 +176,14 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 				Address:       &contractAddress,
 				Name:          &name,
 				PaginationReq: p,
+			}
+
+			isBigFile := r.URL.Query().Get("is_big_file")
+			if isBigFile != "" {
+				isBigFileBool, err := strconv.ParseBool(isBigFile)
+				if err == nil {
+					filter.IsBigFile = &isBigFileBool
+				}
 			}
 
 			if strings.ToLower(contractAddress) == strings.ToLower("0x16EfDc6D3F977E39DAc0Eb0E123FefFeD4320Bc0") {
