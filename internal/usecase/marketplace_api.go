@@ -20,7 +20,7 @@ func (u *Usecase) FilterMKOffers(ctx context.Context, filter entity.FilterMarket
 	return u.Repo.FilterMarketplaceOffer(filter)
 }
 
-func (u *Usecase) FilterTokenActivities(ctx context.Context, filter entity.FilterTokenActivities) ([]entity.MarketplaceTokenActivity, error) {
+func (u *Usecase) FilterTokenActivities(ctx context.Context, filter entity.FilterTokenActivities) ([]*entity.MarketplaceTokenActivity, error) {
 	return u.Repo.FilterTokenActivites(filter)
 }
 

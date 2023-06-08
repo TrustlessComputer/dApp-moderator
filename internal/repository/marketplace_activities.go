@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"dapp-moderator/internal/entity"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -14,7 +15,7 @@ func (r *Repository) InsertActivity(obj *entity.MarketplaceTokenActivity) error 
 	return nil
 }
 
-func (r Repository) FilterTokenActivites(filter entity.FilterTokenActivities) ([]entity.MarketplaceTokenActivity, error) {
+func (r Repository) FilterTokenActivites(filter entity.FilterTokenActivities) ([]*entity.MarketplaceTokenActivity, error) {
 	match := bson.D{}
 
 	if filter.ContractAddress != nil && *filter.ContractAddress != "" {
@@ -24,8 +25,11 @@ func (r Repository) FilterTokenActivites(filter entity.FilterTokenActivities) ([
 		match = append(match, bson.E{"inscription_id", *filter.TokenID})
 	}
 
-	mkpListing := []entity.MarketplaceTokenActivity{}
+	mkpListing := []*entity.MarketplaceTokenActivity{}
 	f := bson.A{
+		bson.D{
+			{"$match", match},
+		},
 		bson.D{
 			{"$match", match},
 		},
@@ -42,6 +46,10 @@ func (r Repository) FilterTokenActivites(filter entity.FilterTokenActivities) ([
 	err = cursor.All((context.TODO()), &mkpListing)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, ac := range mkpListing {
+		ac.AmountStr = fmt.Sprintf("%d", ac.Amount)
 	}
 
 	return mkpListing, nil

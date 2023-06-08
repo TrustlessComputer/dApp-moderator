@@ -76,22 +76,22 @@ type MkpPriceERC20 struct {
 
 type NftsResp struct {
 	//Collection      string                            `json:"collection"`
-	ContractAddress string                            `json:"collection_address"`
-	TokenID         string                            `json:"token_id"`
-	ContentType     string                            `json:"content_type"`
-	Name            string                            `json:"name"`
-	Owner           string                            `json:"owner"`
-	TokenURI        string                            `json:"token_uri"`
-	Image           string                            `json:"image"`
-	MintedAt        float64                           `json:"minted_at"`
-	Attributes      []NftAttr                         `json:"attributes"`
-	Metadata        interface{}                       `json:"metadata"`
-	MetadataType    string                            `json:"metadata_type"`
-	Activities      []entity.MarketplaceTokenActivity `json:"activities"`
-	BlockNumber     string                            `json:"block_number"`
-	ListingForSales []entity.MarketplaceListings      `json:"listing_for_sales"`
-	MakeOffers      []entity.MarketplaceOffers        `json:"make_offers"`
-	Collection      entity.Collections                `json:"collection"`
+	ContractAddress string                             `json:"collection_address"`
+	TokenID         string                             `json:"token_id"`
+	ContentType     string                             `json:"content_type"`
+	Name            string                             `json:"name"`
+	Owner           string                             `json:"owner"`
+	TokenURI        string                             `json:"token_uri"`
+	Image           string                             `json:"image"`
+	MintedAt        float64                            `json:"minted_at"`
+	Attributes      []NftAttr                          `json:"attributes"`
+	Metadata        interface{}                        `json:"metadata"`
+	MetadataType    string                             `json:"metadata_type"`
+	Activities      []*entity.MarketplaceTokenActivity `json:"activities"`
+	BlockNumber     string                             `json:"block_number"`
+	ListingForSales []entity.MarketplaceListings       `json:"listing_for_sales"`
+	MakeOffers      []entity.MarketplaceOffers         `json:"make_offers"`
+	Collection      entity.Collections                 `json:"collection"`
 }
 
 type NftAttr struct {
