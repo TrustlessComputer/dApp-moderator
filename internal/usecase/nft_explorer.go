@@ -199,6 +199,16 @@ func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 	res := []*entity.Nfts{}
 	f := bson.D{}
 
+	maxFileSize := os.Getenv("FILE_CHUNK_SIZE")
+	if filter.IsBigFile != nil {
+		maxFileSizeInt, _ := strconv.Atoi(maxFileSize)
+		if *filter.IsBigFile == true {
+			f = append(f, bson.E{"size", bson.M{"$gte": maxFileSizeInt}})
+		} else {
+			f = append(f, bson.E{"size", bson.M{"$lt": maxFileSizeInt}})
+		}
+	}
+
 	if filter.Address != nil && *filter.Address != "" {
 		f = append(f, bson.E{"collection_address", primitive.Regex{Pattern: *filter.Address, Options: "i"}})
 	}
