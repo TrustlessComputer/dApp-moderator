@@ -63,7 +63,7 @@ func (u *Usecase) NewCollectionNotify(collection *entity.Collections) error {
 					Url: fmt.Sprintf("https://explorer.trustless.computer/token/%s/token-transfers", collection.Contract),
 					Fields: []discordclient.Field{
 						{
-							Value:  fmt.Sprintf("**Collection Name: [%s](https://trustlessnfts.com/collection?contract=%s)**", utils.NameOrAddress(collection.Name, collection.Contract), collection.Contract),
+							Value:  fmt.Sprintf("**Collection Name: [%s](https://trustlessnfts.com/collection/%s)**", utils.NameOrAddress(collection.Name, collection.Contract), collection.Contract),
 							Inline: false,
 						},
 						{
