@@ -720,13 +720,17 @@ paths:
         name: contract_address
         required: true
         type: string
+      - description: is big file
+        in: query
+        name: is_big_file
+        type: boolean
       - description: limit
         in: query
         name: limit
         type: integer
       - description: 'sort by field: default volume'
         in: query
-        name: SortBy
+        name: sort_by
         type: string
       - description: 'sort default: -1 desc'
         in: query

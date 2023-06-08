@@ -882,6 +882,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "boolean",
+                        "description": "is big file",
+                        "name": "is_big_file",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "limit",
                         "name": "limit",
@@ -890,7 +896,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "sort by field: default volume",
-                        "name": "SortBy",
+                        "name": "sort_by",
                         "in": "query"
                     },
                     {
