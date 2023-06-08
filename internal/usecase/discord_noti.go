@@ -111,19 +111,19 @@ func (u *Usecase) NewNameNotify(bns *bns_service.NameResp) error {
 
 func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	message := discordclient.Message{
-		Content:   fmt.Sprintf("**NEW SMART INSCRIPTION #%s**", nfts.TokenID),
+		Content:   fmt.Sprintf("**NEW SMART INSCRIPTION**"),
 		Username:  "Satoshi 27",
 		AvatarUrl: "",
 		Embeds: []discordclient.Embed{
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Owner: [%s](https://smartinscription.xyz/%s)**", utils.ShortenBlockAddress(nfts.Owner), nfts.TokenID),
-						Inline: false,
+						Value:  fmt.Sprintf("**Owner:** \n%s", utils.ShortenBlockAddress(nfts.Owner)),
+						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**Type: %s**", nfts.ContentType),
-						Inline: false,
+						Value:  fmt.Sprintf("**Type:** \n%s", nfts.ContentType),
+						Inline: true,
 					},
 				},
 			},
@@ -131,9 +131,9 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	}
 	if nfts.Image != "" {
 		if strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
-			message.Embeds[0].Thumbnail.Url = "https://dapp.trustless.computer" + nfts.Image
+			message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
 		} else {
-			message.Embeds[0].Thumbnail.Url = nfts.Image
+			message.Embeds[0].Image.Url = nfts.Image
 		}
 
 	}
@@ -144,10 +144,12 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	}
 
 	if nfts.Image != "" && strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
-		notify.Message.Embeds[0].Thumbnail.Url = "https://dapp.trustless.computer" + nfts.Image
+		notify.Message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
 	} else {
-		notify.Message.Embeds[0].Thumbnail.Url = nfts.Image
+		notify.Message.Embeds[0].Image.Url = nfts.Image
 	}
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Smart Inscription #%s", nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("https://smartinscription.xyz/%s", nfts.TokenID)
 
 	return u.CreateDiscordNotify(notify)
 }
@@ -226,7 +228,7 @@ func (u *Usecase) CreateDiscordNotify(notify *entity.DiscordNotification) error 
 
 func (u *Usecase) TestSendNotify() {
 	env := os.Getenv("ENVIRONMENT")
-	if env == "local" {
+	if env == "production" {
 		nft := &entity.Nfts{
 			TokenID:     "1",
 			Owner:       "0xb764d696aa52f6a7e6ec6647c7d7a7736f3aff59",
