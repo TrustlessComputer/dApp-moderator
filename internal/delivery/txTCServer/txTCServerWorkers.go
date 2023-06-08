@@ -122,6 +122,18 @@ func (c *txTCServer) Worker(inputDataChan chan types.Log, result chan *eventLog)
 		pFunction = c.Usecase.MarketplaceCancelOffer
 		eventType = entity.TokenCancelOffer
 		break
+	case c.MarketPlace.Events["MARKETPLACE_BNS_RESOLVER_UPDATED"]:
+		pFunction = c.Usecase.MarketplaceBNSResolverUpdated
+		eventType = entity.BNSResolverUpdated
+		break
+	case c.MarketPlace.Events["MARKETPLACE_BNS_RESOLVER_CREATED"]:
+		pFunction = c.Usecase.MarketplaceBNSCreated
+		eventType = entity.BNSResolverCreated
+		break
+	case c.MarketPlace.Events["MARKETPLACE_BNS_SET_FPF"]:
+		pFunction = c.Usecase.MarketplaceFPFUpdated
+		eventType = entity.BNSPfpUpdated
+		break
 	}
 
 	activity, eventData, err = c.Usecase.ParseMkplaceData(log, eventType)
