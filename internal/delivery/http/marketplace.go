@@ -370,8 +370,9 @@ func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
 // @Param attributes query string false "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange"
 // @Param token_id query string false "token id"
 // @Param contract_address path string true "contract_address"
+// @Param is_big_file query bool false "true|false, default: all"
 // @Param limit query int false "limit"
-// @Param SortBy query string false "sort by field: default volume"
+// @Param sort_by query string false "sort by field: default volume"
 // @Param sort query int false "sort default: -1 desc"
 // @Param page query int false "page"
 // @Success 200 {object} response.JsonResponse{}
@@ -444,6 +445,14 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				}
 				f.AttrKey = key
 				f.AttrValue = val
+			}
+
+			isBigFile := r.URL.Query().Get("is_big_file")
+			if isBigFile != "" {
+				isBigFileBool, err := strconv.ParseBool(isBigFile)
+				if err == nil {
+					f.IsBigFile = &isBigFileBool
+				}
 			}
 
 			data, err := h.Usecase.FilterMkplaceNfts(ctx, f)
