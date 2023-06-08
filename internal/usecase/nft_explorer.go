@@ -672,6 +672,8 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 	} else {
 		//the current owner != owner from chain
 		if strings.ToLower(nft.Owner) != strings.ToLower(tmp.Owner) {
+
+			//using for logging
 			_, err := u.Repo.CreateNftHistories(&entity.NftHistories{
 				//Collection:        strings.ToLower(tmp.Collection),
 				ContractAddress:   strings.ToLower(tmp.ContractAddress),
@@ -686,10 +688,11 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 			}
 
-			_, err = u.Repo.UpdateNftOwner(tmp.ContractAddress, tmp.TokenID, tmp.Owner)
-			if err != nil {
-				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
-			}
+			///we don't need it, marketplace crontab is handling this
+			//_, err = u.Repo.UpdateNftOwner(tmp.ContractAddress, tmp.TokenID, tmp.Owner)
+			//if err != nil {
+			//	logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+			//}
 
 		}
 	}

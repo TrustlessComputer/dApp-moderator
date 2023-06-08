@@ -75,7 +75,8 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	}
 
 	s := bson.D{{"buyable", -1}, {sortBy, sort}}
-	err := u.Repo.Find(utils.VIEW_MARKETPLACE_NFTS, f, int64(filter.Limit), int64(filter.Offset), &resp, s)
+	//old: VIEW_MARKETPLACE_NFTS, VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES has attributes + percent
+	err := u.Repo.Find(utils.VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES, f, int64(filter.Limit), int64(filter.Offset), &resp, s)
 	if err != nil {
 		return nil, err
 	}
