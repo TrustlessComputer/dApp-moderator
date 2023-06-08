@@ -6,9 +6,12 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"go.uber.org/zap"
+	"math/big"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -447,6 +450,37 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			}
 
 			data, err := h.Usecase.FilterMkplaceNfts(ctx, f)
+			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
+			for _, i := range data {
+				if i.Name == "" {
+					if bnsAddress == ca {
+						key := helpers.BnsTokenNameKey(i.TokenID)
+						existed, _ := h.Usecase.Cache.Exists(key)
+						if existed != nil && *existed == true {
+							cached, _ := h.Usecase.Cache.GetData(key)
+							if cached != nil {
+								i.Name = *cached
+							}
+						} else {
+							bnsName, _ := h.Usecase.BnsService.NameByToken(i.TokenID)
+							if bnsName != nil {
+								i.Name = bnsName.Name
+								h.Usecase.Cache.SetStringData(key, i.Name)
+							}
+
+						}
+					} else {
+						tokenIdBigInt, _ := new(big.Int).SetString(i.TokenID, 10)
+						g, _ := new(big.Int).SetString("1000000", 10)
+						if tokenIdBigInt.Cmp(g) > 0 {
+							// TODO maybe from generative
+							i.Name = i.Collection.Name + " #" + tokenIdBigInt.Mod(tokenIdBigInt, g).String()
+						} else {
+							i.Name = i.Collection.Name + " #" + i.TokenID
+						}
+					}
+				}
+			}
 			if err != nil {
 				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination", iPagination), zap.Error(err))
 				return nil, err
