@@ -60,6 +60,7 @@ type FilterNfts struct {
 	AttrKey   []string
 	AttrValue []string
 	Rarity    *Rarity
+	IsBigFile *bool
 }
 
 type Rarity struct {

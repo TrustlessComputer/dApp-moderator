@@ -8,6 +8,8 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
+	"os"
+	"strconv"
 )
 
 func (u *Usecase) FilterMKListing(ctx context.Context, filter entity.FilterMarketplaceListings) ([]entity.MarketplaceListings, error) {
@@ -25,6 +27,16 @@ func (u *Usecase) FilterTokenActivities(ctx context.Context, filter entity.Filte
 func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNfts) ([]*nft_explorer.MkpNftsResp, error) {
 	resp := []*nft_explorer.MkpNftsResp{}
 	f := bson.D{}
+
+	maxFileSize := os.Getenv("FILE_CHUNK_SIZE")
+	if filter.IsBigFile != nil {
+		maxFileSizeInt, _ := strconv.Atoi(maxFileSize)
+		if *filter.IsBigFile == true {
+			f = append(f, bson.E{"size", bson.M{"$gte": maxFileSizeInt}})
+		} else {
+			f = append(f, bson.E{"size", bson.M{"$lt": maxFileSizeInt}})
+		}
+	}
 
 	if filter.ContractAddress != nil && *filter.ContractAddress != "" {
 		f = append(f, bson.E{"collection_address", *filter.ContractAddress})
