@@ -175,3 +175,22 @@ func (r *Repository) Find(collectionName string, filter bson.D, limit int64, off
 	}
 	return nil
 }
+
+func (r *Repository) FindWithProjections(collectionName string, filter bson.D, limit int64, offset int64, result interface{}, sort bson.D, project bson.D) error {
+	opts := &options.FindOptions{}
+	opts.Limit = &limit
+	opts.Skip = &offset
+	opts.Sort = sort
+	opts.Projection = project
+
+	cursor, err := r.DB.Collection(collectionName).Find(context.TODO(), filter, opts)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	if err := cursor.All(ctx, result); err != nil {
+		return err
+	}
+	return nil
+}
