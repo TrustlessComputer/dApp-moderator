@@ -230,8 +230,7 @@ func (u *Usecase) MarketplaceCreateListing(eventData interface{}, chainLog types
 	_, err = u.NewListForSaleNotify(listing)
 	if err != nil {
 		logger.AtLog.Logger.Error("MarketplaceCreateListing - ListForSaleNotify", zap.Error(err), zap.String("offeringId", listing.OfferingId), zap.String("tokenId", listing.TokenId))
-
-		return err
+		//return err
 	}
 
 	return nil
@@ -251,8 +250,7 @@ func (u *Usecase) MarketplacePurchaseListing(eventData interface{}, chainLog typ
 	_, err = u.NewPurchaseTokenNotify(offeringID)
 	if err != nil {
 		logger.AtLog.Logger.Error("MarketplaceCreateListing - NewPurchaseTokenNotify", zap.Error(err), zap.String("offeringId", offeringID))
-
-		return err
+		//return err
 	}
 
 	return nil
