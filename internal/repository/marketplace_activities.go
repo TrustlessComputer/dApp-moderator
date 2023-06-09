@@ -50,6 +50,8 @@ func (r Repository) FilterTokenActivites(filter entity.FilterTokenActivities) ([
 
 	for _, ac := range mkpListing {
 		ac.AmountStr = fmt.Sprintf("%d", ac.Amount)
+		ac.TokenID = ac.InscriptionID
+		ac.Thumbnail = fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", ac.CollectionContract, ac.InscriptionID)
 	}
 
 	return mkpListing, nil
