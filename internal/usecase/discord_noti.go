@@ -5,6 +5,8 @@ import (
 	"dapp-moderator/external/bns_service"
 	"dapp-moderator/utils"
 	discordclient "dapp-moderator/utils/discord"
+	"dapp-moderator/utils/helpers"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -154,6 +156,7 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	return u.CreateDiscordNotify(notify)
 }
 
+// it's disabled by order
 func (u *Usecase) NewMintTokenNotify(nfts *entity.Nfts) error {
 	message := discordclient.Message{
 		Content:   fmt.Sprintf("**MINT**"),
@@ -269,6 +272,162 @@ func (u *Usecase) CreateDiscordNotify(notify *entity.DiscordNotification) error 
 	}
 
 	return nil
+}
+
+func (u *Usecase) NewListForSaleNotify(listing *entity.MarketplaceListings) (*entity.DiscordNotification, error) {
+	logger.AtLog.Logger.Info(fmt.Sprintf("NewListForSaleNotify %s %s", listing.CollectionContract, listing.TokenId), zap.String("offering id", listing.OfferingId))
+
+	nfts, err := u.Repo.GetNft(listing.CollectionContract, listing.TokenId)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", listing.CollectionContract, listing.TokenId), zap.Error(err), zap.String("offering id", listing.OfferingId))
+		return nil, err
+	}
+
+	collection, err := u.Repo.GetCollection(nfts.ContractAddress)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", listing.CollectionContract, listing.TokenId), zap.Error(err), zap.String("offering id", listing.OfferingId))
+		return nil, err
+	}
+
+	p := helpers.GetValue(listing.Price, 18)
+	r := listing.Erc20Token
+	token := ""
+	if strings.ToLower(r) == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
+		token = "WETH"
+	} else if strings.ToLower(r) == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
+		token = "WBTC"
+	} else {
+		return nil, errors.New("Cannot detect ERC20")
+	}
+
+	owner := listing.Seller
+	price := fmt.Sprintf("%f %s", p, token)
+
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**NEW LISTING**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**List Price:** \n%s", price),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Seller:** \n%s", utils.ShortenBlockAddress(owner)),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventListForSale,
+	}
+
+	notify.Message.Embeds[0].Image.Url = fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", nfts.ContractAddress, nfts.TokenID)
+
+	notify.Message.Embeds[0].Title = fmt.Sprintf("%s #%s", collection.Name, nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("https://trustlessnfts.com/collection/%s/token/%s", nfts.ContractAddress, nfts.TokenID)
+
+	if os.Getenv("ENV") == "production" {
+		err = u.CreateDiscordNotify(notify)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("ListForSaleNotify %s %s", listing.CollectionContract, listing.TokenId), zap.Error(err), zap.String("offering id", listing.OfferingId))
+			return nil, err
+		}
+	}
+
+	return notify, nil
+}
+
+func (u *Usecase) NewPurchaseTokenNotify(offeringID string) (*entity.DiscordNotification, error) {
+	logger.AtLog.Logger.Info(fmt.Sprintf("NewPurchaseTokenNotify %s", offeringID), zap.String("offeringID", offeringID))
+
+	ml, err := u.Repo.GetMarketplaceListing(offeringID)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId))
+		return nil, err
+	}
+
+	nfts, err := u.Repo.GetNft(ml.CollectionContract, ml.TokenId)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId), zap.Any("nfts", nfts))
+		return nil, err
+	}
+
+	collection, err := u.Repo.GetCollection(nfts.ContractAddress)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId), zap.Any("nfts", nfts))
+		return nil, err
+	}
+
+	mkpActivities, err := u.Repo.PurchaseMKPActivity(offeringID)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId), zap.Any("nfts", nfts))
+		return nil, err
+	}
+
+	p := helpers.GetValue(ml.Price, 18)
+	r := ml.Erc20Token
+	token := ""
+	if strings.ToLower(r) == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
+		token = "WETH"
+	} else if strings.ToLower(r) == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
+		token = "WBTC"
+	} else {
+		return nil, errors.New("Cannot detect ERC20")
+	}
+
+	price := fmt.Sprintf("%f %s", p, token)
+
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**NEW SALE**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Sale Price:** \n%s", price),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Buyer:** \n%s", utils.ShortenBlockAddress(mkpActivities.UserBAddress)),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Seller:** \n%s", utils.ShortenBlockAddress(mkpActivities.UserAAddress)),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventPurchaseListing,
+	}
+
+	notify.Message.Embeds[0].Image.Url = fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", nfts.ContractAddress, nfts.TokenID)
+	notify.Message.Embeds[0].Title = fmt.Sprintf("%s #%s", collection.Name, nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("https://trustlessnfts.com/collection/%s/token/%s", nfts.ContractAddress, nfts.TokenID)
+
+	if os.Getenv("ENV") == "production" {
+		err = u.CreateDiscordNotify(notify)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("ListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId))
+			return nil, err
+		}
+	}
+
+	return notify, nil
 }
 
 func (u *Usecase) TestSendNotify() {
