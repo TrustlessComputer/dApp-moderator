@@ -57,3 +57,20 @@ func (r Repository) FilterTokenActivites(filter entity.FilterTokenActivities) ([
 
 	return mkpListing, nil
 }
+
+func (r Repository) PurchaseMKPActivity(offeringID string) (*entity.MarketplaceTokenActivity, error) {
+	match := bson.D{}
+	match = append(match, bson.E{"offering_id", strings.ToLower(offeringID)})
+	match = append(match, bson.E{"type", entity.TokenPurchase})
+
+	mkpListing := &entity.MarketplaceTokenActivity{}
+
+	cursor := r.DB.Collection(entity.MarketplaceTokenActivity{}.CollectionName()).FindOne(context.TODO(), match, nil)
+
+	err := cursor.Decode(&mkpListing)
+	if err != nil {
+		return nil, err
+	}
+
+	return mkpListing, nil
+}
