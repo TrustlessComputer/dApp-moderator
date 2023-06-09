@@ -138,11 +138,6 @@ func (h *httpDelivery) createFilterBns(ctx context.Context, r *http.Request, var
 		PaginationReq: iPagination.(request.PaginationReq),
 	}
 
-	limit := 100
-	if *filter.Limit < limit {
-		filter.Limit = &limit
-	}
-
 	name := r.URL.Query().Get("name")
 	if name != "" {
 		filter.Name = &name
