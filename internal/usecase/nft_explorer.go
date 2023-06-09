@@ -663,6 +663,10 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 			}
 			if tmp.ContractAddress == artfactAddress {
 				u.NewArtifactNotify(tmp)
+			} else {
+				if tmp.ContractAddress != bnsAddress {
+					u.NewMintTokenNotify(tmp)
+				}
 			}
 			if tmp.ContractAddress == bnsAddress {
 				go func() {

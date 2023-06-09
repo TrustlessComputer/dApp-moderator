@@ -154,6 +154,51 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	return u.CreateDiscordNotify(notify)
 }
 
+func (u *Usecase) NewMintTokenNotify(nfts *entity.Nfts) error {
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**MINT**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Owner:** \n%s", utils.ShortenBlockAddress(nfts.Owner)),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Type:** \n%s", nfts.ContentType),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+	if nfts.Image != "" {
+		if strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
+			message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+		} else {
+			message.Embeds[0].Image.Url = nfts.Image
+		}
+
+	}
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventNewArtifact,
+	}
+
+	if nfts.Image != "" && strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
+		notify.Message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+	} else {
+		notify.Message.Embeds[0].Image.Url = nfts.Image
+	}
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Smart Inscription #%s", nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("https://smartinscription.xyz/%s", nfts.TokenID)
+
+	return u.CreateDiscordNotify(notify)
+}
+
 func (u *Usecase) JobSendDiscord() error {
 	logger.AtLog.Logger.Info("JobSendDiscord Starting ...")
 	for page := int64(1); ; page++ {
