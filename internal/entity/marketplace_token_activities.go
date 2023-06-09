@@ -48,6 +48,8 @@ type MarketplaceTokenActivity struct {
 	Erc20Address       string            `bson:"erc_20_address" json:"erc_20_address"`
 	Time               *time.Time        `bson:"time" json:"time"`
 	InscriptionID      string            `bson:"inscription_id" json:"inscription_id"`
+	TokenID            string            `bson:"-" json:"token_id"`
+	Thumbnail          string            `bson:"-" json:"thumbnail"`
 	CollectionContract string            `bson:"collection_contract" json:"collection_contract"`
 	OfferingID         string            `bson:"offering_id" json:"offering_id"`
 	BlockNumber        uint64            `bson:"block_number" json:"block_number"`
