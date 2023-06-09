@@ -431,6 +431,26 @@ paths:
       - application/json
       description: Get bns names
       parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: token id
+        in: query
+        name: token_id
+        type: string
+      - description: resolver
+        in: query
+        name: resolver
+        type: string
+      - description: owner
+        in: query
+        name: owner
+        type: string
+      - description: pfp
+        in: query
+        name: pfp
+        type: string
       - description: limit
         in: query
         name: limit
@@ -720,7 +740,7 @@ paths:
         name: contract_address
         required: true
         type: string
-      - description: is big file
+      - description: 'true|false, default: all'
         in: query
         name: is_big_file
         type: boolean
@@ -1131,6 +1151,10 @@ paths:
       - application/json
       description: Get nfts of a Collectionc
       parameters:
+      - description: is_big_file
+        in: query
+        name: is_big_file
+        type: boolean
       - description: limit
         in: query
         name: limit

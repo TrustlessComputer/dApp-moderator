@@ -49,6 +49,11 @@ type FilterBNSNames struct {
 	PaginationReq
 	FromBlock *int
 	ToBlock   *int
+	PFP       *string
+	Resolver  *string
+	Owner     *string
+	Name      *string
+	TokenID   *string
 }
 
 func (pq PaginationReq) ToNFTServiceUrlQuery() url.Values {
