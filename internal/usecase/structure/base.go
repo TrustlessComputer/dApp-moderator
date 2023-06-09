@@ -1,6 +1,9 @@
 package structure
 
-import "dapp-moderator/external/nft_explorer"
+import (
+	"dapp-moderator/external/nft_explorer"
+	"dapp-moderator/internal/entity"
+)
 
 type BaseFilters struct {
 	Limit  *string
@@ -64,4 +67,10 @@ type NftsResp struct {
 type CompressedFile struct {
 	OriginalSize   int `json:"original_size"`
 	CompressedSize int `json:"compressed_size"`
+}
+
+type BnsRespChan struct {
+	Bns *entity.Bns
+	Nft entity.Nfts
+	Err error
 }

@@ -96,7 +96,7 @@ func (r *Repository) GetNfts(collectionAddress string, skip int, limit int) ([]e
 				},
 			},
 		},
-		bson.D{{"$project", bson.D{{"image", 1}}}},
+
 		bson.D{{"$skip", skip}},
 		bson.D{{"$limit", limit}},
 	}
