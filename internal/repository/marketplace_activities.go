@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"strings"
 )
 
 func (r *Repository) InsertActivity(obj *entity.MarketplaceTokenActivity) error {
@@ -19,10 +20,10 @@ func (r Repository) FilterTokenActivites(filter entity.FilterTokenActivities) ([
 	match := bson.D{}
 
 	if filter.ContractAddress != nil && *filter.ContractAddress != "" {
-		match = append(match, bson.E{"collection_contract", *filter.ContractAddress})
+		match = append(match, bson.E{"collection_contract", strings.ToLower(*filter.ContractAddress)})
 	}
 	if filter.TokenID != nil && *filter.TokenID != "" {
-		match = append(match, bson.E{"inscription_id", *filter.TokenID})
+		match = append(match, bson.E{"inscription_id", strings.ToLower(*filter.TokenID)})
 	}
 
 	mkpListing := []*entity.MarketplaceTokenActivity{}
