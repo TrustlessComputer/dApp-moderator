@@ -148,7 +148,7 @@ func (h *httpDelivery) createFilterBns(ctx context.Context, r *http.Request, var
 		filter.Owner = &owner
 	}
 
-	ownerVar := vars["owner"]
+	ownerVar := vars["wallet_address"]
 	if ownerVar != "" {
 		filter.Owner = &ownerVar
 	}
