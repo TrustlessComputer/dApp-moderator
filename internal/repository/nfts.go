@@ -156,3 +156,25 @@ func (r *Repository) GetMarketplaceListing(offeringID string) (*entity.Marketpla
 	return ml, nil
 
 }
+
+func (r *Repository) SoulNfts(contract string) ([]entity.Nfts, error) {
+	result := []entity.Nfts{}
+
+	f := bson.A{
+		bson.D{
+			{"$match", bson.D{
+				{"collection_address", strings.ToLower(contract)},
+			}},
+		},
+	}
+
+	cursor, err := r.DB.Collection(entity.Nfts{}.CollectionName()).Aggregate(context.TODO(), f)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All((context.TODO()), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
