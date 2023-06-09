@@ -4,12 +4,15 @@ import (
 	"context"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/contracts/bns"
 	"dapp-moderator/utils/contracts/generative_marketplace_lib"
 	"dapp-moderator/utils/generative_nft_contract"
 	"dapp-moderator/utils/logger"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -153,6 +156,47 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		activity.Time = &tm
 		activity.InscriptionID = event.TokenId.String()
 		activity.CollectionContract = strings.ToLower(event.Raw.Address.Hex())
+		//activity.OfferingID = strings.ToLower(fmt.Sprintf("%x", event.OfferingId))
+		return activity, event, nil
+	case entity.BNSResolverUpdated:
+		bnsContract, err := bns.NewBns(chainLog.Address, u.TCPublicNode.GetClient())
+		event, err := bnsContract.ParseResolverUpdated(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("marketplaceContract.ParseResolverUpdated", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.UserBAddress = strings.ToLower(event.Addr.Hex())
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.Id.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		//activity.OfferingID = strings.ToLower(fmt.Sprintf("%x", event.OfferingId))
+		return activity, event, nil
+	case entity.BNSResolverCreated:
+		bnsContract, err := bns.NewBns(chainLog.Address, u.TCPublicNode.GetClient())
+		event, err := bnsContract.ParseNameRegistered(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("marketplaceContract.ParseResolverUpdated", zap.Error(err))
+			return nil, nil, err
+		}
+
+		//activity.UserBAddress = strings.ToLower(event.)
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.Id.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		//activity.OfferingID = strings.ToLower(fmt.Sprintf("%x", event.OfferingId))
+		return activity, event, nil
+	case entity.BNSPfpUpdated:
+		bnsContract, err := bns.NewBns(chainLog.Address, u.TCPublicNode.GetClient())
+		event, err := bnsContract.ParsePfpUpdated(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("marketplaceContract.ParseResolverUpdated", zap.Error(err))
+			return nil, nil, err
+		}
+		//activity.UserBAddress = strings.ToLower(event.Filename)
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.Id.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
 		//activity.OfferingID = strings.ToLower(fmt.Sprintf("%x", event.OfferingId))
 		return activity, event, nil
 	}
@@ -425,4 +469,76 @@ func (u *Usecase) MarketplaceCollectionAttributes(ctx context.Context, f entity.
 
 	logger.AtLog.Logger.Info("MarketplaceCollectionAttributes", zap.Any("obj", obj), zap.Any("filter", f))
 	return obj, nil
+}
+
+func (u *Usecase) MarketplaceBNSResolverUpdated(eventData interface{}, chainLog types.Log) error {
+	event := eventData.(*bns.BnsResolverUpdated)
+	tokenID := event.Id.String()
+	resolver := event.Addr.Hex()
+
+	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSResolverUpdated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("resolver", resolver))
+
+	updated, err := u.Repo.UpdateBnsResolver(tokenID, resolver)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSResolverUpdated -  %s", tokenID), zap.String("resolver", resolver), zap.Error(err))
+		return err
+	}
+
+	logger.AtLog.Logger.Info(fmt.Sprintf("MarketplaceBNSResolverUpdated -  %s", tokenID), zap.String("resolver", resolver), zap.Any("updated", updated))
+	return nil
+}
+
+func (u *Usecase) MarketplaceBNSCreated(eventData interface{}, chainLog types.Log) error {
+	event := eventData.(*bns.BnsNameRegistered)
+	tokenID := event.Id.String()
+	contractAddress := chainLog.Address.Hex()
+	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSCreated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("contract_address", contractAddress))
+
+	inputChan := make(chan entity.Nfts, 1)
+	outputChan := make(chan structure.BnsRespChan, 1)
+
+	bnsS, err := bns.NewBns(common.HexToAddress(chainLog.Address.Hex()), u.TCPublicNode.GetClient())
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSCreated - bns: %s", tokenID), zap.Error(err))
+		return err
+	}
+
+	go u.BnsItemWorker(context.Background(), bnsS, inputChan, outputChan)
+
+	inputChan <- entity.Nfts{
+		TokenID:         tokenID,
+		ContractAddress: contractAddress,
+	}
+
+	dataFChan := <-outputChan
+	if dataFChan.Err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSCreated - bns: %s", tokenID), zap.Error(dataFChan.Err))
+		return dataFChan.Err
+	}
+
+	bnsFChan := dataFChan.Bns
+	_, err = u.Repo.InsertOne(bnsFChan)
+	if dataFChan.Err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSCreated - InsertOne bns: %s", tokenID), zap.Error(dataFChan.Err), zap.Any("bnsFChan", bnsFChan))
+		return dataFChan.Err
+	}
+
+	return nil
+}
+
+func (u *Usecase) MarketplaceFPFUpdated(eventData interface{}, chainLog types.Log) error {
+	event := eventData.(*bns.BnsPfpUpdated)
+	tokenID := event.Id.String()
+	pfp := event.Filename
+
+	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceFPFUpdated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("pfp", pfp))
+
+	updated, err := u.Repo.UpdateBnsPfp(tokenID, pfp)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceFPFUpdated -  %s", tokenID), zap.String("pfp", pfp), zap.Error(err))
+		return err
+	}
+
+	logger.AtLog.Logger.Info(fmt.Sprintf("MarketplaceFPFUpdated -  %s", tokenID), zap.String("pfp", pfp), zap.Any("updated", updated))
+	return nil
 }
