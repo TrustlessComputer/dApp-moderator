@@ -7,7 +7,6 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"errors"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -198,4 +197,24 @@ func (r *Repository) AllCollections() ([]entity.FilteredCollections, error) {
 	}
 
 	return result, nil
+}
+
+func (r *Repository) GetCollection(contractAddress string) (*entity.Collections, error) {
+	res := &entity.Collections{}
+	f := bson.D{{
+		"contract", contractAddress,
+	}}
+
+	s, err := r.FindOne(utils.COLLECTION_COLLECTIONS, f)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.Decode(res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+
 }

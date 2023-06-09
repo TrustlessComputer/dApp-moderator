@@ -136,3 +136,23 @@ func (r *Repository) RefreshNft(contract string, tokenID string, metadataType st
 	return updated, nil
 
 }
+
+func (r *Repository) GetMarketplaceListing(offeringID string) (*entity.MarketplaceListings, error) {
+	nftResp, err := r.FindOne(entity.MarketplaceListings{}.CollectionName(), bson.D{
+		{"offering_id", strings.ToLower(offeringID)},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	ml := &entity.MarketplaceListings{}
+	err = nftResp.Decode(ml)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ml, nil
+
+}
