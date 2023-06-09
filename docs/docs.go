@@ -443,6 +443,36 @@ const docTemplate = `{
                 "summary": "Get bns names",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "resolver",
+                        "name": "resolver",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "owner",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "pfp",
+                        "name": "pfp",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "limit",
                         "name": "limit",
@@ -883,7 +913,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "boolean",
-                        "description": "is big file",
+                        "description": "true|false, default: all",
                         "name": "is_big_file",
                         "in": "query"
                     },
@@ -1504,6 +1534,12 @@ const docTemplate = `{
                 ],
                 "summary": "Get nfts of a Collectionc",
                 "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "is_big_file",
+                        "name": "is_big_file",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "limit",

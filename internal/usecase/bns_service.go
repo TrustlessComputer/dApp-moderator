@@ -7,6 +7,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils/contracts/bns"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -16,17 +17,14 @@ import (
 	"time"
 )
 
-func (u *Usecase) BnsNames(ctx context.Context, filter request.FilterBNSNames) ([]*bns_service.NameResp, error) {
-	params := url.Values{}
-	if filter.Limit != nil {
-		params.Set("limit", fmt.Sprintf("%d", *filter.Limit))
+func (u *Usecase) BnsNames(ctx context.Context, filter request.FilterBNSNames) ([]*entity.FilteredBNS, error) {
+	f := entity.FilterBns{}
+	err := helpers.JsonTransform(filter, &f)
+	if err != nil {
+		return nil, err
 	}
 
-	if filter.Offset != nil {
-		params.Set("offset", fmt.Sprintf("%d", *filter.Offset))
-	}
-
-	resp, err := u.BnsService.Names(params)
+	resp, err := u.Repo.FilterBNS(f)
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +32,8 @@ func (u *Usecase) BnsNames(ctx context.Context, filter request.FilterBNSNames) (
 	return resp, nil
 }
 
-func (u *Usecase) BnsName(ctx context.Context, name string) (*bns_service.NameResp, error) {
-	resp, err := u.BnsService.Name(name)
+func (u *Usecase) BnsName(ctx context.Context, tokenID string) (*entity.FilteredBNS, error) {
+	resp, err := u.Repo.FindBNS(tokenID)
 	if err != nil {
 		return nil, err
 	}
