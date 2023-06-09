@@ -68,6 +68,7 @@ func (r *Repository) FilterBNS(filter entity.FilterBns) ([]*entity.FilteredBNS, 
 		f = append(f, bson.D{{"$match", match}})
 	}
 
+	f = append(f, bson.D{{"$addFields", bson.D{{"id", "$token_id"}}}})
 	f = append(f, bson.D{{"$sort", bson.D{{"token_id_int", entity.SORT_DESC}}}})
 	f = append(f, bson.D{{"$skip", filter.Offset}})
 	f = append(f, bson.D{{"$limit", filter.Limit}})

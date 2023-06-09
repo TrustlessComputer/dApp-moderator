@@ -13,7 +13,8 @@ type Bns struct {
 }
 
 type FilteredBNS struct {
-	BaseEntity        `bson:",inline"`
+	//BaseEntity        `bson:",inline"`
+	ID                string `json:"id" bson:"id"`
 	TokenID           string `json:"token_id" bson:"token_id"`
 	TokenIDInt        int64  `json:"token_id_int" bson:"token_id_int"` //use it for sort
 	Name              string `json:"name" bson:"name"`
