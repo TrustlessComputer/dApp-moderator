@@ -476,6 +476,8 @@ func (u *Usecase) MarketplaceBNSResolverUpdated(eventData interface{}, chainLog 
 	tokenID := event.Id.String()
 	resolver := event.Addr.Hex()
 
+	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSResolverUpdated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("resolver", resolver))
+
 	updated, err := u.Repo.UpdateBnsResolver(tokenID, resolver)
 	if err != nil {
 		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSResolverUpdated -  %s", tokenID), zap.String("resolver", resolver), zap.Error(err))
@@ -490,6 +492,7 @@ func (u *Usecase) MarketplaceBNSCreated(eventData interface{}, chainLog types.Lo
 	event := eventData.(*bns.BnsNameRegistered)
 	tokenID := event.Id.String()
 	contractAddress := chainLog.Address.Hex()
+	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSCreated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("contract_address", contractAddress))
 
 	inputChan := make(chan entity.Nfts, 1)
 	outputChan := make(chan structure.BnsRespChan, 1)
@@ -527,6 +530,8 @@ func (u *Usecase) MarketplaceFPFUpdated(eventData interface{}, chainLog types.Lo
 	event := eventData.(*bns.BnsPfpUpdated)
 	tokenID := event.Id.String()
 	pfp := event.Filename
+
+	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceFPFUpdated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("pfp", pfp))
 
 	updated, err := u.Repo.UpdateBnsPfp(tokenID, pfp)
 	if err != nil {
