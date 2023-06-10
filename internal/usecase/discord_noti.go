@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils"
 	discordclient "dapp-moderator/utils/discord"
 	"dapp-moderator/utils/helpers"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -329,7 +330,8 @@ func (u *Usecase) NewListForSaleNotify(listing *entity.MarketplaceListings) (*en
 		Event:   entity.EventListForSale,
 	}
 
-	notify.Message.Embeds[0].Image.Url = fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", nfts.ContractAddress, nfts.TokenID)
+	image := fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", nfts.ContractAddress, nfts.TokenID)
+	notify.Message.Embeds[0].Image.Url = u.ParseSvgImage(image)
 
 	notify.Message.Embeds[0].Title = fmt.Sprintf("%s #%s", collection.Name, nfts.TokenID)
 	notify.Message.Embeds[0].Url = fmt.Sprintf("https://trustlessnfts.com/collection/%s/token/%s", nfts.ContractAddress, nfts.TokenID)
@@ -415,7 +417,9 @@ func (u *Usecase) NewPurchaseTokenNotify(offeringID string) (*entity.DiscordNoti
 		Event:   entity.EventPurchaseListing,
 	}
 
-	notify.Message.Embeds[0].Image.Url = fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", nfts.ContractAddress, nfts.TokenID)
+	image := fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", nfts.ContractAddress, nfts.TokenID)
+	notify.Message.Embeds[0].Image.Url = u.ParseSvgImage(image)
+
 	notify.Message.Embeds[0].Title = fmt.Sprintf("%s #%s", collection.Name, nfts.TokenID)
 	notify.Message.Embeds[0].Url = fmt.Sprintf("https://trustlessnfts.com/collection/%s/token/%s", nfts.ContractAddress, nfts.TokenID)
 
@@ -428,6 +432,42 @@ func (u *Usecase) NewPurchaseTokenNotify(offeringID string) (*entity.DiscordNoti
 	}
 
 	return notify, nil
+}
+
+func (u *Usecase) ParseSvgImage(imageURL string) string {
+	parseImageUrl := "https://devnet.generative.xyz/generative/api/photo/pare-svg"
+
+	postData := make(map[string]interface{})
+	postData["display_url"] = imageURL
+	postData["delay_time"] = 1
+	postData["app_id"] = "dapp"
+
+	resp, _, _, err := helpers.HttpRequest(parseImageUrl, "POST", make(map[string]string), postData)
+	if err != nil {
+		return imageURL
+	}
+
+	type respdata struct {
+		Err    error  `json:"error"`
+		Status bool   `json:"status"`
+		Data   string `json:"data"`
+	}
+
+	response := &respdata{}
+	err = json.Unmarshal(resp, response)
+	if err != nil {
+		return imageURL
+	}
+
+	if !response.Status {
+		return imageURL
+	}
+
+	if response.Err != nil {
+		return imageURL
+	}
+
+	return strings.ReplaceAll(response.Data, "https", "http")
 }
 
 func (u *Usecase) TestSendNotify() {
