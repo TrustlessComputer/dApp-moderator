@@ -42,6 +42,7 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 	}
 
 	f := bson.A{
+		//bson.D{{"$match", bson.D{{"contract", "0xb957f1a4a019decd4b75b2bfce01d4b7df358145"}}}},
 		bson.D{
 			{"$lookup",
 				bson.D{

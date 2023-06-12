@@ -16,10 +16,15 @@ type MarketplaceCollectionAggregation struct {
 	//USDT
 	FloorPrice float64 `json:"floor_price" bson:"floor_price"` //USDT
 	Volume     float64 `json:"volume" bson:"volume"`           //USDT
+
+	BtcFloorPrice float64 `json:"btc_floor_price" bson:"btc_floor_price"` //USDT
+	EthFloorPrice float64 `json:"eth_floor_price" bson:"eth_floor_price"` //USDT
+	BtcVolume     float64 `json:"btc_volume" bson:"btc_volume"`           //USDT
+	EthVolume     float64 `json:"eth_volume" bson:"eth_volume"`           //USDT
 }
 
 type MarketPlaceVolume struct {
-	TotalVolume     int64   `bson:"total_volume" json:"total_volume"`
+	TotalVolume     float64 `bson:"total_volume" json:"total_volume"`
 	TotalSales      int64   `bson:"total_sales" json:"total_sales"`
 	Erc20Token      string  `bson:"erc_20_token" json:"erc_20_token"`
 	Contract        string  `bson:"contract" json:"contract"`
@@ -27,6 +32,10 @@ type MarketPlaceVolume struct {
 	Erc20Rate       float64 `bson:"erc_20_rate" json:"erc_20_rate"`
 	Erc20Decimal    int     `bson:"erc_20_decimal" json:"erc_20_decimal"`
 	USDTValue       float64 `bson:"usdt_value" json:"usdt_value"`
+	WBTCRate        float64 `bson:"wbtc_rate" json:"wbtc_rate"`
+	WEthRate        float64 `bson:"weth_rate" json:"weth_rate"`
+	BTCValue        float64 `bson:"btc_value" json:"btc_value"`
+	EthValue        float64 `bson:"eth_value" json:"eth_value"`
 }
 
 type MarketplaceCollections struct {
