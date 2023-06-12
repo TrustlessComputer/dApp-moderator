@@ -197,6 +197,10 @@ func (h *httpDelivery) RegisterV1Routes() {
 	marketplace.HandleFunc("/wallet/{wallet_address}/listing", h.getListingOfAProfile).Methods("GET")
 	marketplace.HandleFunc("/wallet/{wallet_address}/offer", h.getOffersOfAProfile).Methods("GET")
 	marketplace.HandleFunc("/contract/{contract_address}/token/{token_id}/activities", h.getTokenActivities).Methods("GET")
+
+	soul := api.PathPrefix("/soul").Subrouter()
+	soul.HandleFunc("/nfts", h.soulNfts).Methods("GET")
+
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

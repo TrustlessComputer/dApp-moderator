@@ -2194,6 +2194,91 @@ const docTemplate = `{
                 }
             }
         },
+        "/soul/nfts": {
+            "get": {
+                "description": "Soul's Nfts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Soul"
+                ],
+                "summary": "Get Soul's Nfts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "min,max - separated by comma",
+                        "name": "rarity",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "min,max - separated by comma",
+                        "name": "price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange",
+                        "name": "attributes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "true|false, default: all",
+                        "name": "is_big_file",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "true|false, default: all",
+                        "name": "buyable",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field: default volume",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort default: -1 desc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/token-explorer/token/{address}": {
             "get": {
                 "description": "Update token",
