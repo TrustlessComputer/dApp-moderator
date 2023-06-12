@@ -50,6 +50,7 @@ type FilterTokenActivities struct {
 	BaseFilters
 	ContractAddress *string
 	TokenID         *string
+	Types           []int
 }
 
 type FilterNfts struct {
