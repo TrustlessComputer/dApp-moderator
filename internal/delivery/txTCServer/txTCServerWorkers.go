@@ -5,12 +5,13 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/logger"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core/types"
-	"go.uber.org/zap"
 	"math/big"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core/types"
+	"go.uber.org/zap"
 )
 
 type eventLog struct {
@@ -131,7 +132,7 @@ func (c *txTCServer) Worker(inputDataChan chan types.Log, result chan *eventLog)
 		eventType = entity.BNSResolverCreated
 		break
 	case c.MarketPlace.Events["MARKETPLACE_BNS_SET_FPF"]:
-		pFunction = c.Usecase.MarketplaceFPFUpdated
+		pFunction = c.Usecase.MarketplacePFPUpdated
 		eventType = entity.BNSPfpUpdated
 		break
 	}

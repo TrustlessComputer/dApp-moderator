@@ -4,10 +4,11 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"strings"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"strings"
 )
 
 func (r *Repository) UpdateBnsResolver(tokenID string, resolver string) (*mongo.UpdateResult, error) {
@@ -31,6 +32,21 @@ func (r *Repository) UpdateBnsPfp(tokenID string, pfp string) (*mongo.UpdateResu
 	}
 
 	update := bson.M{"$set": bson.M{"pfp": strings.ToLower(pfp)}}
+	updated, err := r.UpdateOne(utils.COLLECTION_BNS, f, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+}
+
+func (r *Repository) UpdateBnsPfpData(tokenID string, pfp *entity.BnsPfpData) (*mongo.UpdateResult, error) {
+	f := bson.D{
+		{"token_id", tokenID},
+	}
+
+	update := bson.M{"$set": bson.M{"pfp_data": pfp}}
 	updated, err := r.UpdateOne(utils.COLLECTION_BNS, f, update)
 
 	if err != nil {

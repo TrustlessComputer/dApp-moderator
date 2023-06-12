@@ -42,3 +42,4 @@ artifacts
 package-lock.json
 yarn.lock
 test
+dump

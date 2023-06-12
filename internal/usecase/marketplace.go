@@ -10,17 +10,21 @@ import (
 	"dapp-moderator/utils/contracts/generative_marketplace_lib"
 	"dapp-moderator/utils/generative_nft_contract"
 	"dapp-moderator/utils/logger"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"math/big"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
-	"math/big"
-	"os"
-	"strings"
-	"time"
 )
 
 func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenActivityType) (*entity.MarketplaceTokenActivity, interface{}, error) {
@@ -541,19 +545,79 @@ func (u *Usecase) MarketplaceBNSCreated(eventData interface{}, chainLog types.Lo
 	return nil
 }
 
-func (u *Usecase) MarketplaceFPFUpdated(eventData interface{}, chainLog types.Log) error {
+func (u *Usecase) MarketplacePFPUpdated(eventData interface{}, chainLog types.Log) error {
 	event := eventData.(*bns.BnsPfpUpdated)
 	tokenID := event.Id.String()
 	pfp := event.Filename
 
-	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceFPFUpdated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("pfp", pfp))
+	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplacePFPUpdated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("pfp", pfp))
 
 	updated, err := u.Repo.UpdateBnsPfp(tokenID, pfp)
 	if err != nil {
-		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceFPFUpdated -  %s", tokenID), zap.String("pfp", pfp), zap.Error(err))
+		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplacePFPUpdated -  %s", tokenID), zap.String("pfp", pfp), zap.Error(err))
 		return err
 	}
 
-	logger.AtLog.Logger.Info(fmt.Sprintf("MarketplaceFPFUpdated -  %s", tokenID), zap.String("pfp", pfp), zap.Any("updated", updated))
+	if err := u.UploadBnsPFPToGCS(chainLog.Address.Hex(), tokenID); err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplacePFPUpdated - UploadBnsPFPToGCS -  %s", tokenID), zap.String("pfp", pfp), zap.Error(err))
+	}
+
+	logger.AtLog.Logger.Info(fmt.Sprintf("MarketplacePFPUpdated -  %s", tokenID), zap.String("pfp", pfp), zap.Any("updated", updated))
+	return nil
+}
+
+func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) error {
+	bnsRow, err := u.Repo.FindOne(utils.COLLECTION_BNS, bson.D{{"token_id", tokenID}})
+	if err != nil {
+		logger.AtLog.Logger.Error("UploadBnsPFPToGCS.FindOne got error", zap.String("tokenID", tokenID), zap.Error(err))
+		return err
+	}
+	var bnsEntity = &entity.Bns{}
+	if err := bnsRow.Decode(bnsEntity); err != nil {
+		return err
+	}
+
+	if bnsEntity.Pfp == "" {
+		return errors.New("pfp is empty")
+	}
+
+	bnsS, err := bns.NewBns(common.HexToAddress(contractAddress), u.TCPublicNode.GetClient())
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UploadBnsPFPToGCS - bns: %s", tokenID), zap.Error(err))
+		return err
+	}
+
+	tokenIdInt, err := strconv.Atoi(bnsEntity.TokenID)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UploadBnsPFPToGCS - bns: %s", tokenID), zap.Error(err))
+		return err
+	}
+	tokenId := big.NewInt(int64(tokenIdInt))
+	bytes, err := bnsS.GetPfp(&bind.CallOpts{Context: context.Background()}, tokenId)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UploadBnsPFPToGCS - getPfp from contract with token_id: %s", tokenID), zap.Error(err))
+		return err
+	}
+
+	arr := strings.Split(bnsEntity.Pfp, "/")
+	fileName := fmt.Sprintf("%s_%s", tokenID, arr[len(arr)-1])
+	base64Str := base64.StdEncoding.EncodeToString(bytes)
+
+	object, err := u.Storage.UploadBaseToBucket(base64Str, fileName)
+	if err != nil {
+		logger.AtLog.Logger.Error("UploadBnsPFPToGCS - UploadBaseToBucket", zap.String("tokenID", tokenID), zap.Any("bns", bnsEntity), zap.Error(err))
+		return err
+	}
+
+	logger.AtLog.Logger.Info("upload pfp to gcs success", zap.Any("response", object))
+	_, err = u.Repo.UpdateBnsPfpData(tokenID, &entity.BnsPfpData{
+		GCSUrl:   fmt.Sprintf("%v/%v/%v", u.Config.Gcs.Endpoint, u.Config.Gcs.Bucket, fileName),
+		Filename: fileName,
+	})
+	if err != nil {
+		logger.AtLog.Logger.Error("UploadBnsPFPToGCSRepo - UpdateBnsPfpData", zap.String("tokenID", tokenID), zap.Any("bns", bnsEntity), zap.Error(err))
+		return err
+	}
+
 	return nil
 }
