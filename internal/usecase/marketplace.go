@@ -451,11 +451,11 @@ func (u *Usecase) MarketplaceCollectionDetail(ctx context.Context, contractAddre
 	return obj, nil
 }
 
-func (u *Usecase) MarketplaceCollectionAttributes(ctx context.Context, f entity.FilterMarketplaceCollectionAttribute) ([]entity.MarketplaceCollectionAttribute, error) {
+func (u *Usecase) MarketplaceCollectionAttributes(ctx context.Context, f entity.FilterMarketplaceCollectionAttribute) ([]structure.MarketplaceCollectionAttributeResp, error) {
 	obj := []entity.MarketplaceCollectionAttribute{}
 
 	offset := f.Offset
-	limit := f.Limit
+	limit := int64(10000)
 
 	filter := bson.D{}
 	if f.ContractAddress != nil && *f.ContractAddress != "" {
@@ -474,7 +474,9 @@ func (u *Usecase) MarketplaceCollectionAttributes(ctx context.Context, f entity.
 		filter = append(filter, bson.E{"percent", *f.Percent})
 	}
 
-	sort := bson.D{}
+	sort := bson.D{
+		{"trait_type", entity.SORT_ASC},
+	}
 
 	err := u.Repo.Find(utils.VIEW_MARKETPLACE_COLLECTION_ATTRIBUTES_PERCENT, filter, limit, offset, &obj, sort)
 	if err != nil {
@@ -482,8 +484,41 @@ func (u *Usecase) MarketplaceCollectionAttributes(ctx context.Context, f entity.
 		return nil, err
 	}
 
+	resp := []structure.MarketplaceCollectionAttributeResp{}
+	group := make(map[string][]entity.MarketplaceCollectionAttribute)
+
+	for _, item := range obj {
+		gd, ok := group[item.TraitType]
+		if ok {
+			group[item.TraitType] = append(gd, item)
+		} else {
+			gd = []entity.MarketplaceCollectionAttribute{}
+			group[item.TraitType] = append(gd, item)
+		}
+
+	}
+
+	for key, item := range group {
+		respItem := structure.MarketplaceCollectionAttributeResp{}
+		respItem.TraitName = key
+
+		itemValues := []structure.MarketplaceCollectionAttributeValue{}
+		for _, iv := range item {
+			itemValue := structure.MarketplaceCollectionAttributeValue{
+				Value:  iv.Value,
+				Rarity: iv.Percent * 100,
+			}
+
+			itemValues = append(itemValues, itemValue)
+		}
+
+		respItem.TraitValuesStat = itemValues
+
+		resp = append(resp, respItem)
+	}
+
 	logger.AtLog.Logger.Info("MarketplaceCollectionAttributes", zap.Any("obj", obj), zap.Any("filter", f))
-	return obj, nil
+	return resp, nil
 }
 
 func (u *Usecase) MarketplaceBNSResolverUpdated(eventData interface{}, chainLog types.Log) error {

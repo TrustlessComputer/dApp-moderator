@@ -75,3 +75,13 @@ type BnsRespChan struct {
 	Nft entity.Nfts
 	Err error
 }
+
+type MarketplaceCollectionAttributeResp struct {
+	TraitName       string                                `json:"trait_name"`
+	TraitValuesStat []MarketplaceCollectionAttributeValue `json:"trait_values_stat"`
+}
+
+type MarketplaceCollectionAttributeValue struct {
+	Value  string  `json:"value"`
+	Rarity float64 `json:"rarity"`
+}
