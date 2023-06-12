@@ -38,6 +38,10 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		}
 	}
 
+	if filter.IsBuyable != nil {
+		f = append(f, bson.E{"buyable", *filter.IsBuyable})
+	}
+
 	if filter.ContractAddress != nil && *filter.ContractAddress != "" {
 		f = append(f, bson.E{"collection_address", *filter.ContractAddress})
 	}

@@ -374,6 +374,7 @@ func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
 // @Param token_id query string false "token id"
 // @Param contract_address path string true "contract_address"
 // @Param is_big_file query bool false "true|false, default: all"
+// @Param buyable query bool false "true|false, default: all"
 // @Param limit query int false "limit"
 // @Param sort_by query string false "sort by field: default volume"
 // @Param sort query int false "sort default: -1 desc"
@@ -455,6 +456,14 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				isBigFileBool, err := strconv.ParseBool(isBigFile)
 				if err == nil {
 					f.IsBigFile = &isBigFileBool
+				}
+			}
+
+			isBuyable := r.URL.Query().Get("buyable")
+			if isBuyable != "" {
+				isBuyableBool, err := strconv.ParseBool(isBuyable)
+				if err == nil {
+					f.IsBuyable = &isBuyableBool
 				}
 			}
 
