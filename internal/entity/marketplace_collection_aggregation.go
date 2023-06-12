@@ -24,7 +24,7 @@ type MarketplaceCollectionAggregation struct {
 }
 
 type MarketPlaceVolume struct {
-	TotalVolume     int64   `bson:"total_volume" json:"total_volume"`
+	TotalVolume     float64 `bson:"total_volume" json:"total_volume"`
 	TotalSales      int64   `bson:"total_sales" json:"total_sales"`
 	Erc20Token      string  `bson:"erc_20_token" json:"erc_20_token"`
 	Contract        string  `bson:"contract" json:"contract"`

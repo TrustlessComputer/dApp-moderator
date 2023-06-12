@@ -5,7 +5,6 @@ import (
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
-	"github.com/davecgh/go-spew/spew"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 	"os"
@@ -188,15 +187,14 @@ func (u *Usecase) FilterCollectionChart(ctx context.Context, filter entity.Filte
 		bigI, _ := new(big.Int).SetString(nft.Price, 10)
 
 		e := &entity.MarketPlaceVolume{
-			TotalVolume: bigI.Int64(),
+			TotalVolume: float64(bigI.Int64()),
 			Erc20Token:  nft.Erc20Token,
 		}
-		u.calculateRate(e)
 
+		u.calculateRate(e)
 		nft.USDT = e.USDTValue
 		nft.USDTRate = e.Erc20Rate
 
-		spew.Dump(nft)
 	}
 
 	//group and calculate usdt of a day
