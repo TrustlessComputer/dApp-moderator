@@ -4,13 +4,14 @@ import (
 	"context"
 	"dapp-moderator/internal/usecase"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"math"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	redis2 "github.com/go-redis/redis"
 
