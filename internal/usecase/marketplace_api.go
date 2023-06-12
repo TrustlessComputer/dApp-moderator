@@ -45,19 +45,42 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	if filter.TokenID != nil && *filter.TokenID != "" {
 		f = append(f, bson.E{"token_id", *filter.TokenID})
 	}
+
+	if filter.Rarity != nil {
+		filter.Rarity.Min = filter.Rarity.Min / 100
+		filter.Rarity.Max = filter.Rarity.Max / 100
+		//f = append(f, bson.E{"$and", bson.A{
+		//	bson.E{"attributes.percent", bson.M{"$lte": filter.Rarity.Max / 100}},
+		//	bson.E{"attributes.percent", bson.M{"$gte": filter.Rarity.Min / 100}},
+		//}})
+
+		attrs, err := u.Repo.FilterCollectionAttributeByPercent(entity.FilterMarketplaceCollectionAttribute{
+			ContractAddress: filter.ContractAddress,
+			MaxPercent:      &filter.Rarity.Max,
+			MinPercent:      &filter.Rarity.Min,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		key := []string{}
+		value := []string{}
+		for _, attr := range attrs {
+			key = append(key, attr.TraitType)
+			value = append(value, attr.Value)
+		}
+
+		filter.AttrKey = key
+		filter.AttrValue = value
+	}
+
 	if len(filter.AttrKey) > 0 {
 		f = append(f, bson.E{"attributes.trait_type", bson.M{"$in": filter.AttrKey}})
 	}
 
 	if len(filter.AttrValue) > 0 {
 		f = append(f, bson.E{"attributes.value", bson.M{"$in": filter.AttrValue}})
-	}
-
-	if filter.Rarity != nil {
-		f = append(f, bson.E{"$and", bson.A{
-			bson.E{"attributes.percent", bson.M{"$lte": filter.Rarity.Max / 100}},
-			bson.E{"attributes.percent", bson.M{"$gte": filter.Rarity.Min / 100}},
-		}})
 	}
 
 	if filter.Limit == 0 {
@@ -74,7 +97,11 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		sort = int(filter.Sort)
 	}
 
-	s := bson.D{{"buyable", -1}, {sortBy, sort}}
+	s := bson.D{
+		{"buyable", -1},
+		{"price_erc20.price", 1},
+		{sortBy, sort},
+	}
 	//old: VIEW_MARKETPLACE_NFTS, VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES has attributes + percent
 
 	projections := bson.D{

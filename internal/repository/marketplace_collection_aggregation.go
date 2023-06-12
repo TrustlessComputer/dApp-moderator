@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -287,6 +288,48 @@ func (r *Repository) FilterMarketPlaceCollectionAggregation(filter entity.Filter
 	resp := []entity.MarketplaceCollectionAggregation{}
 
 	cursor, err := r.DB.Collection(entity.Collections{}.CollectionName()).Aggregate(context.TODO(), f, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor.All((context.TODO()), &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (r *Repository) FilterCollectionAttributeByPercent(filter entity.FilterMarketplaceCollectionAttribute) ([]entity.MarketplaceCollectionAttribute, error) {
+	resp := []entity.MarketplaceCollectionAttribute{}
+	min := float64(0)
+	max := float64(1) //100%
+
+	if filter.MinPercent != nil {
+		min = *filter.MinPercent
+	}
+
+	if filter.MaxPercent != nil {
+		max = *filter.MaxPercent
+	}
+
+	f := bson.A{
+		bson.D{
+			{"$match",
+				bson.D{
+					{"contract", strings.ToLower(*filter.ContractAddress)},
+					{"$and",
+						bson.A{
+							bson.D{{"percent", bson.D{{"$gte", min}}}},
+							bson.D{{"percent", bson.D{{"$lte", max}}}},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	cursor, err := r.DB.Collection(utils.VIEW_MARKETPLACE_COLLECTION_ATTRIBUTES_PERCENT).Aggregate(context.TODO(), f, nil)
 	if err != nil {
 		return nil, err
 	}
