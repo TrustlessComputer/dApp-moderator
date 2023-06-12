@@ -59,6 +59,11 @@ type MkpNftsResp struct {
 	Size            int64                             `json:"size" bson:"size"`
 }
 
+type SoulNft struct {
+	MkpNftsResp `bson:",inline"`
+	IsAuction   bool `json:"is_auction" bson:"is_auction"`
+}
+
 type MkpNftAttr struct {
 	TraitType string  `json:"trait_type" bson:"trait_type"`
 	Value     string  `json:"value" bson:"value"`
