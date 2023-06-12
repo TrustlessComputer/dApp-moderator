@@ -283,7 +283,7 @@ func (u *Usecase) UpdateTxHashForUploadedFile(data *structure.UpdateUploadedFile
 		fileChunks = append(fileChunks, fileChunk)
 	}
 
-	err = u.Repo.UpdateChunksTxHashForUploadedFile(data.FileID, calculated.FileSize, data.TxHash, data.WalletAddress, calculated.Chunks, calculated.BufferSize)
+	err = u.Repo.UpdateChunksTxHashForUploadedFile(data.FileID, calculated.FileSize, data.TxHash, data.WalletAddress, data.TokenID, calculated.Chunks, calculated.BufferSize)
 	if err != nil {
 		logger.AtLog.Logger.Error("UpdateTxHashForUploadedFile update info", zap.String("fileID", data.FileID), zap.String("txHash", data.TxHash), zap.Error(err))
 
