@@ -469,26 +469,6 @@ paths:
       summary: Get bns names
       tags:
       - BNS-service
-  /bns-service/names/{name}:
-    get:
-      consumes:
-      - application/json
-      description: detail of bns name
-      parameters:
-      - description: name
-        in: path
-        name: name
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.JsonResponse'
-      summary: Get detail of bns name
-      tags:
-      - BNS-service
   /bns-service/names/{name}/available:
     get:
       consumes:
@@ -507,6 +487,27 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Check bns name available for register
+      tags:
+      - BNS-service
+  /bns-service/names/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: detail of bns name
+      parameters:
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get detail of bns name
       tags:
       - BNS-service
   /bns-service/names/owned/{wallet_address}:
@@ -632,10 +633,11 @@ paths:
         name: contract_address
         required: true
         type: string
-      - description: '0: open, 1: cancel, 2: done, default all'
+      - description: '0: mint, 1: listing, 2: cancel listing, 3: token matched, default
+          all'
         in: query
-        name: status
-        type: boolean
+        name: types
+        type: string
       - description: limit default 10
         in: query
         name: limit
@@ -743,6 +745,10 @@ paths:
       - description: 'true|false, default: all'
         in: query
         name: is_big_file
+        type: boolean
+      - description: 'true|false, default: all'
+        in: query
+        name: buyable
         type: boolean
       - description: limit
         in: query

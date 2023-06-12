@@ -538,37 +538,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/bns-service/names/{name}": {
-            "get": {
-                "description": "detail of bns name",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "BNS-service"
-                ],
-                "summary": "Get detail of bns name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "path"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.JsonResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/bns-service/names/{name}/available": {
             "get": {
                 "description": "Check bns name available for register",
@@ -588,6 +557,38 @@ const docTemplate = `{
                         "description": "name",
                         "name": "name",
                         "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bns-service/names/{token_id}": {
+            "get": {
+                "description": "detail of bns name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-service"
+                ],
+                "summary": "Get detail of bns name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -750,9 +751,9 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "boolean",
-                        "description": "0: open, 1: cancel, 2: done, default all",
-                        "name": "status",
+                        "type": "string",
+                        "description": "0: mint, 1: listing, 2: cancel listing, 3: token matched, default all",
+                        "name": "types",
                         "in": "query"
                     },
                     {
@@ -915,6 +916,12 @@ const docTemplate = `{
                         "type": "boolean",
                         "description": "true|false, default: all",
                         "name": "is_big_file",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "true|false, default: all",
+                        "name": "buyable",
                         "in": "query"
                     },
                     {
