@@ -4,7 +4,6 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
-	"errors"
 	"fmt"
 	"go.uber.org/zap"
 	"os"
@@ -78,54 +77,34 @@ func (u *Usecase) calculateRate(volume *entity.MarketPlaceVolume) error {
 	rate := float64(0)
 	tokenAddress := strings.ToLower(volume.Erc20Token)
 	var err error
-	symbol := ""
-	decimal := 0
-	if tokenAddress == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
-		symbol = "eth"
-		decimal = 18
-	}
+	decimal := 18
 
-	if tokenAddress == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
-		symbol = "btc"
-		decimal = 18
-	}
+	btcRate := u.GetExternalRate(os.Getenv("WBTC_ADDRESS"))
+	ethRate := u.GetExternalRate(os.Getenv("WETH_ADDRESS"))
 
-	if symbol == "" {
-		err = errors.New("Cannot detect erc20 token")
-		logger.AtLog.Logger.Error("StartWorker - GetExternalPrice", zap.Error(err), zap.String("tokenAddress", tokenAddress))
+	volume.Erc20Rate = rate
+	volume.Erc20Decimal = decimal
+	volume.WBTCRate = btcRate
+	volume.WEthRate = ethRate
 
+	if volume.WBTCRate != 0 && volume.WEthRate != 0 {
+		erc20Val := helpers.GetValue(fmt.Sprintf("%d", volume.TotalVolume), float64(volume.Erc20Decimal))
+
+		if strings.ToLower(tokenAddress) == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
+			rate = volume.WBTCRate
+		}
+
+		if strings.ToLower(tokenAddress) == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
+			rate = volume.WEthRate
+		}
+
+		volume.USDTValue = erc20Val * rate
+		volume.BTCValue = volume.USDTValue / volume.WBTCRate
+		volume.EthValue = volume.USDTValue / volume.WEthRate
 	} else {
-
-		key := helpers.TokenRateKey(tokenAddress)
-		existed, _ := u.Cache.Exists(key)
-
-		if existed != nil && *existed == false {
-			rate, err = helpers.GetExternalPrice(symbol)
-			if err != nil {
-				logger.AtLog.Logger.Error(fmt.Sprintf("StartWorker - GetExternalPrice -  %s", tokenAddress), zap.Error(err))
-			}
-
-			u.Cache.SetDataWithExpireTime(key, rate, 1200) // 20 min
-		} else {
-			cached, _ := u.Cache.GetData(key)
-			if cached != nil {
-				rate, err = strconv.ParseFloat(*cached, 10)
-				if err != nil {
-					logger.AtLog.Logger.Error(fmt.Sprintf("StartWorker - ParseFloat -  %s", tokenAddress), zap.Error(err))
-					rate = 0
-				}
-			}
-		}
-
-		volume.Erc20Rate = rate
-		volume.Erc20Decimal = decimal
-		if decimal != 0 {
-			erc20Val := helpers.GetValue(fmt.Sprintf("%d", volume.TotalVolume), float64(volume.Erc20Decimal))
-			volume.USDTValue = erc20Val * rate
-		} else {
-			volume.USDTValue = 0
-		}
-
+		volume.USDTValue = 0
+		volume.BTCValue = 0
+		volume.EthValue = 0
 	}
 
 	return err
@@ -170,7 +149,12 @@ func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAgg
 
 	//calculate usdt by erc20 token
 	total := float64(0)
+	totalBTC := float64(0)
+	totalEth := float64(0)
+
 	min := minNumber
+	minBTC := minNumber
+	minEth := minNumber
 	volumes := inputItem.MarketPlaceVolumes
 	floorPriceVolumes := inputItem.FloorPriceMarketPlaceVolumes
 
@@ -182,17 +166,41 @@ func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAgg
 		return floorPriceVolumes[i].USDTValue < floorPriceVolumes[j].USDTValue
 	})
 
+	sort.SliceStable(floorPriceVolumes, func(i, j int) bool {
+		return floorPriceVolumes[i].BTCValue < floorPriceVolumes[j].BTCValue
+	})
+
+	sort.SliceStable(floorPriceVolumes, func(i, j int) bool {
+		return floorPriceVolumes[i].EthValue < floorPriceVolumes[j].EthValue
+	})
+
 	if len(floorPriceVolumes) >= 1 {
 		min = floorPriceVolumes[0].USDTValue
+	}
+
+	if len(floorPriceVolumes) >= 1 {
+		minBTC = floorPriceVolumes[0].BTCValue
+	}
+
+	if len(floorPriceVolumes) >= 1 {
+		minEth = floorPriceVolumes[0].EthValue
 	}
 
 	for _, volume := range volumes {
 		err = u.calculateRate(volume)
 		total += volume.USDTValue
+		totalBTC += volume.BTCValue
+		totalEth += volume.EthValue
 	}
 
 	inputItem.Volume = total
+	inputItem.BtcVolume = totalBTC
+	inputItem.EthVolume = totalEth
+
 	inputItem.FloorPrice = min
+	inputItem.BtcFloorPrice = minBTC
+	inputItem.EthFloorPrice = minEth
+
 	outputChan <- outputMkpCollectionChan{
 		Item: &inputItem,
 		Err:  err,
