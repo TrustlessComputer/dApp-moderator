@@ -34,6 +34,7 @@ type UpdateUploadedFileTxHash struct {
 	TxHash        string `json:"-"`
 	FileID        string `json:"-"`
 	WalletAddress string `json:"wallet_address"`
+	TokenID       string `json:"token_id"`
 }
 
 type TxHashInfo struct {

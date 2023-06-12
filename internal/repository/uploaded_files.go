@@ -69,7 +69,7 @@ func (r *Repository) UpdateChunksForUploadedFile(fileID string, chunks int, chun
 	return nil
 }
 
-func (r *Repository) UpdateChunksTxHashForUploadedFile(fileID string, size int, txHash string, walletAddress string, chunks int, chunkSize int) error {
+func (r *Repository) UpdateChunksTxHashForUploadedFile(fileID string, size int, txHash string, walletAddress string, tokenID string, chunks int, chunkSize int) error {
 	pID, err := primitive.ObjectIDFromHex(fileID)
 	if err != nil {
 		return err
@@ -87,6 +87,11 @@ func (r *Repository) UpdateChunksTxHashForUploadedFile(fileID string, size int, 
 	if walletAddress != "" {
 		//"wallet_address": walletAddress,
 		update["wallet_address"] = strings.ToLower(walletAddress)
+	}
+
+	if tokenID != "" {
+		//"wallet_address": walletAddress,
+		update["token_id"] = strings.ToLower(tokenID)
 	}
 
 	result, err := r.DB.Collection(utils.COLLECTION_UPLOADED_FILES).UpdateOne(context.TODO(), filter, bson.M{"$set": update})

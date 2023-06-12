@@ -7,6 +7,9 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"errors"
+	"os"
+	"strings"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -217,4 +220,20 @@ func (r *Repository) GetCollection(contractAddress string) (*entity.Collections,
 
 	return res, nil
 
+}
+
+func (r *Repository) GetSoulCollection() (*entity.Collections, error) {
+	result := &entity.Collections{}
+
+	f := bson.D{
+		{"contract", strings.ToLower(os.Getenv("SOUL_CONTRACT"))},
+	}
+
+	cursor := r.DB.Collection(entity.Collections{}.CollectionName()).FindOne(context.TODO(), f)
+
+	if err := cursor.Decode(result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
