@@ -222,12 +222,13 @@ func (u *Usecase) JobSendDiscord() error {
 
 		for _, notify := range notifications {
 			if err = u.DiscordClient.SendMessage(context.TODO(), notify.Webhook, notify.Message); err != nil {
-				logger.AtLog.Logger.Info("Send discord message failed", zap.Error(err))
+
 				err = u.Repo.UpdateDiscord(context.TODO(), notify.Id(), map[string]interface{}{
 					"num_retried": notify.NumRetried + 1,
 				})
+
 				if err != nil {
-					logger.AtLog.Logger.Info("Update discord status failed", zap.Error(err))
+					logger.AtLog.Logger.Error(fmt.Sprintf("Send discord message failed - %s", notify.Message.Content), zap.Error(err))
 				}
 
 				if notify.NumRetried+1 == entity.MaxSendDiscordRetryTimes {
@@ -236,7 +237,7 @@ func (u *Usecase) JobSendDiscord() error {
 						"note":   fmt.Sprintf("failed after %d times", entity.MaxSendDiscordRetryTimes),
 					})
 					if err != nil {
-						logger.AtLog.Logger.Info("Update discord status failed", zap.Error(err))
+						logger.AtLog.Logger.Error(fmt.Sprintf("Send discord message failed - %s", notify.Message.Content), zap.Error(err))
 					}
 				}
 			} else {
@@ -245,7 +246,7 @@ func (u *Usecase) JobSendDiscord() error {
 					"note":   "messaged is sent at " + time.Now().Format(time.RFC3339),
 				})
 				if err != nil {
-					logger.AtLog.Logger.Info("Update discord status failed", zap.Error(err))
+					logger.AtLog.Logger.Error(fmt.Sprintf("Send discord message failed - %s", notify.Message.Content), zap.Error(err))
 				}
 			}
 		}
