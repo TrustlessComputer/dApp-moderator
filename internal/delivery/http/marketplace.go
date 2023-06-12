@@ -590,7 +590,7 @@ func (h *httpDelivery) mkpCollectionAttributes(w http.ResponseWriter, r *http.Re
 // @Accept  json
 // @Produce  json
 // @Param contract_address path string true "contract_address"
-// @Param status query bool false "0: open, 1: cancel, 2: done, default all"
+// @Param types query string false "0: mint, 1: listing, 2: cancel listing, 3: token matched, default all"
 // @Param limit query int false "limit default 10"
 // @Param page query int false "page start with 1"
 // @Success 200 {object} response.JsonResponse{}
@@ -602,6 +602,7 @@ func (h *httpDelivery) getCollectionActivities(w http.ResponseWriter, r *http.Re
 			p := iPagination.(request.PaginationReq)
 
 			contractAddresss := vars["contract_address"]
+			types := r.URL.Query().Get("types")
 
 			f := entity.FilterTokenActivities{
 				BaseFilters: entity.BaseFilters{
@@ -611,6 +612,19 @@ func (h *httpDelivery) getCollectionActivities(w http.ResponseWriter, r *http.Re
 					//Sort:   entity.SortType(*p.Sort),
 				},
 				ContractAddress: &contractAddresss,
+			}
+
+			if types != "" {
+				types = strings.ReplaceAll(types, " ", "")
+				t := strings.Split(types, ",")
+				for _, i := range t {
+					iInt, err := strconv.Atoi(i)
+					if err != nil {
+						return nil, err
+					}
+					f.Types = append(f.Types, iInt)
+				}
+
 			}
 
 			resp, err := h.Usecase.FilterTokenActivities(ctx, f)

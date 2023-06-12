@@ -26,6 +26,10 @@ func (r Repository) FilterTokenActivites(filter entity.FilterTokenActivities) ([
 		match = append(match, bson.E{"inscription_id", strings.ToLower(*filter.TokenID)})
 	}
 
+	if len(filter.Types) > 0 {
+		match = append(match, bson.E{"type", bson.D{{"$in", filter.Types}}})
+	}
+
 	mkpListing := []*entity.MarketplaceTokenActivity{}
 	f := bson.A{
 		bson.D{
