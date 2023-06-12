@@ -21,4 +21,6 @@ type FilterMarketplaceCollectionAttribute struct {
 	TraitType       *string
 	Value           *string
 	Percent         *float64
+	MinPercent      *float64
+	MaxPercent      *float64
 }
