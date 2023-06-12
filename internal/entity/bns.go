@@ -4,12 +4,18 @@ import "dapp-moderator/utils"
 
 type Bns struct {
 	BaseEntity        `bson:",inline"`
-	Name              string `json:"name" bson:"name"`
-	TokenID           string `json:"token_id" bson:"token_id"`
-	CollectionAddress string `json:"collection_address" bson:"collection_address"`
-	Owner             string `json:"owner" bson:"owner"`
-	Resolver          string `json:"resolver" bson:"resolver"`
-	Pfp               string `json:"pfp" bson:"pfp"`
+	Name              string      `json:"name" bson:"name"`
+	TokenID           string      `json:"token_id" bson:"token_id"`
+	CollectionAddress string      `json:"collection_address" bson:"collection_address"`
+	Owner             string      `json:"owner" bson:"owner"`
+	Resolver          string      `json:"resolver" bson:"resolver"`
+	Pfp               string      `json:"pfp" bson:"pfp"`
+	PfpData           *BnsPfpData `json:"pfp_data,omitempty" bson:"pfp_data,omitempty"`
+}
+
+type BnsPfpData struct {
+	GCSUrl   string `json:"gcs_url" bson:"gcs_url"`
+	Filename string `json:"filename" bson:"filename"`
 }
 
 type FilteredBNS struct {
