@@ -141,10 +141,12 @@ func (c *txTCServer) Task(wg *sync.WaitGroup, taskName string, processFunc func(
 func (c *txTCServer) StartServer() {
 
 	tasks := make(map[string]func(ctx context.Context) error)
-	//market-place
-	tasks["checkTxHashChunks"] = c.checkTxHashChunks
+	//function is being developed
+	tasks["checkSoulOwnerCrontab"] = c.checkSoulOwnerCrontab
 
+	//function have been done in develop
 	if os.Getenv("ENV") == "production" {
+		tasks["checkTxHashChunks"] = c.checkTxHashChunks
 		tasks["resolveTxTransaction"] = c.resolveTxTransaction
 		tasks["fetchToken"] = c.fetchToken
 		tasks["UpdateCollectionItems"] = c.Usecase.UpdateCollectionItems
@@ -249,6 +251,11 @@ func (c *txTCServer) fetchToken(ctx context.Context) error {
 
 func (c *txTCServer) checkTxHashChunks(ctx context.Context) error {
 	return c.Usecase.ListenedChunks()
+}
+
+func (c *txTCServer) checkSoulOwnerCrontab(ctx context.Context) error {
+	c.Usecase.SoulCrontab()
+	return nil
 }
 
 // the contracts, that will be listened (collection address erc721) + marketplace contract
