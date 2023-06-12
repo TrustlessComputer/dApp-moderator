@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func (u *Usecase) FilterMKListing(ctx context.Context, filter entity.FilterMarketplaceListings) ([]entity.MarketplaceListings, error) {
@@ -79,6 +80,42 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		filter.AttrValue = value
 	}
 
+	if filter.Price != nil {
+		btcRate := u.GetExternalRate(os.Getenv("WBTC_ADDRESS"))
+		ethRate := u.GetExternalRate(os.Getenv("WETH_ADDRESS"))
+		rate := btcRate / ethRate
+
+		minPrice := filter.Price.Min
+		maxPrice := filter.Price.Max
+
+		minPriceEth := minPrice * rate
+		maxPriceEth := maxPrice * rate
+
+		fPrice := bson.A{
+			bson.D{
+				{"$and",
+					bson.A{
+						bson.D{{"erc20", strings.ToLower(os.Getenv("WBTC_ADDRESS"))}},
+						bson.D{{"price", bson.D{{"$gt", minPrice}}}},
+						bson.D{{"price", bson.D{{"$lte", maxPrice}}}},
+					},
+				},
+			},
+			bson.D{
+				{"$and",
+					bson.A{
+						bson.D{{"erc20", strings.ToLower(os.Getenv("WETH_ADDRESS"))}},
+						bson.D{{"price", bson.D{{"$gt", minPriceEth}}}},
+						bson.D{{"price", bson.D{{"$lte", maxPriceEth}}}},
+					},
+				},
+			},
+		}
+
+		f = append(f, bson.E{"$or", fPrice})
+
+	}
+
 	if len(filter.AttrKey) > 0 {
 		f = append(f, bson.E{"attributes.trait_type", bson.M{"$in": filter.AttrKey}})
 	}
@@ -112,7 +149,7 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		{"activities", 0},
 	}
 
-	err := u.Repo.FindWithProjections(utils.VIEW_MARKETPLACE_NFTS, f, int64(filter.Limit), int64(filter.Offset), &resp, s, projections)
+	err := u.Repo.FindWithProjections(utils.VIEW_NEW_MARKETPLACE_NFTS, f, int64(filter.Limit), int64(filter.Offset), &resp, s, projections)
 	if err != nil {
 		return nil, err
 	}

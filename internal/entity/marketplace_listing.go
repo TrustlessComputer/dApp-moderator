@@ -61,6 +61,7 @@ type FilterNfts struct {
 	AttrKey   []string
 	AttrValue []string
 	Rarity    *Rarity
+	Price     *Rarity
 	IsBigFile *bool
 	IsBuyable *bool
 }

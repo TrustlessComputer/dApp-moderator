@@ -131,6 +131,38 @@ func (u *Usecase) calculateRate(volume *entity.MarketPlaceVolume) error {
 	return err
 }
 
+func (u *Usecase) GetExternalRate(tokenAddress string) float64 {
+	rate := float64(0)
+	symbol := "BTC"
+	if strings.ToLower(tokenAddress) == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
+		symbol = "ETH"
+	}
+
+	var err error
+	key := helpers.TokenRateKey(tokenAddress)
+	existed, _ := u.Cache.Exists(key)
+
+	if existed != nil && *existed == false {
+		rate, err = helpers.GetExternalPrice(symbol)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("StartWorker - GetExternalPrice -  %s", tokenAddress), zap.Error(err))
+		}
+
+		u.Cache.SetDataWithExpireTime(key, rate, 1200) // 20 min
+	} else {
+		cached, _ := u.Cache.GetData(key)
+		if cached != nil {
+			rate, err = strconv.ParseFloat(*cached, 10)
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("StartWorker - ParseFloat -  %s", tokenAddress), zap.Error(err))
+				rate = 0
+			}
+		}
+	}
+
+	return rate
+}
+
 func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAggregation, outputChan chan outputMkpCollectionChan) {
 	inputItem := <-inputItemChan
 	minNumber := float64(0)

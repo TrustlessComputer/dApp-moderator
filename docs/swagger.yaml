@@ -153,6 +153,8 @@ definitions:
     type: object
   structure.UpdateUploadedFileTxHash:
     properties:
+      token_id:
+        type: string
       wallet_address:
         type: string
     type: object
@@ -727,6 +729,10 @@ paths:
       - description: min,max - separated by comma
         in: query
         name: rarity
+        type: string
+      - description: min,max - separated by comma
+        in: query
+        name: price
         type: string
       - description: 'key:value,key:value - separated by comma ex: Base colour:Red,Base
           colour:Orange'
