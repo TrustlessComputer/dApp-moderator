@@ -895,6 +895,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "min,max - separated by comma",
+                        "name": "price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange",
                         "name": "attributes",
                         "in": "query"
@@ -3140,6 +3146,9 @@ const docTemplate = `{
         "structure.UpdateUploadedFileTxHash": {
             "type": "object",
             "properties": {
+                "token_id": {
+                    "type": "string"
+                },
                 "wallet_address": {
                     "type": "string"
                 }

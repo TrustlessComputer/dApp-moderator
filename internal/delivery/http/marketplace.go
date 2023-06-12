@@ -370,6 +370,7 @@ func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 // @Param rarity query string false "min,max - separated by comma"
+// @Param price query string false "min,max - separated by comma"
 // @Param attributes query string false "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange"
 // @Param token_id query string false "token id"
 // @Param contract_address path string true "contract_address"
@@ -429,6 +430,26 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 					max, _ := strconv.ParseFloat(rArray[1], 10)
 
 					f.Rarity = &entity.Rarity{
+						Min: min,
+						Max: max,
+					}
+				}
+			}
+
+			price := strings.ToLower(r.URL.Query().Get("price"))
+			if price != "" {
+				price = strings.ReplaceAll(price, " ", "")
+				prArray := strings.Split(price, ",")
+				if len(prArray) == 2 {
+
+					sort.SliceIsSorted(prArray, func(i, j int) bool {
+						return prArray[i] > prArray[j]
+					})
+
+					min, _ := strconv.ParseFloat(prArray[0], 10)
+					max, _ := strconv.ParseFloat(prArray[1], 10)
+
+					f.Price = &entity.Rarity{
 						Min: min,
 						Max: max,
 					}
