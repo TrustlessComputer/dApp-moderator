@@ -88,7 +88,7 @@ func (u *Usecase) calculateRate(volume *entity.MarketPlaceVolume) error {
 	volume.WEthRate = ethRate
 
 	if volume.WBTCRate != 0 && volume.WEthRate != 0 {
-		erc20Val := helpers.GetValue(fmt.Sprintf("%d", volume.TotalVolume), float64(volume.Erc20Decimal))
+		erc20Val := helpers.GetValue(fmt.Sprintf("%f", volume.TotalVolume), float64(volume.Erc20Decimal))
 
 		if strings.ToLower(tokenAddress) == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
 			rate = volume.WBTCRate
