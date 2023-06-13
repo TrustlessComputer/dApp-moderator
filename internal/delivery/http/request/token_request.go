@@ -14,3 +14,8 @@ type UpdateTokenReq struct {
 		Instagram string `json:"instagram" `
 	} `json:"social" `
 }
+
+type CaptureSoulTokenReq struct {
+	ContractAddress string `json:"contract_address" validate:"required"`
+	TokenID         string `json:"token_id" validate:"required"`
+}

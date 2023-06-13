@@ -3,20 +3,26 @@ package usecase
 import (
 	"context"
 	"dapp-moderator/external/nft_explorer"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/erc20"
+	"dapp-moderator/utils/contracts/generative_nft_contract"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.uber.org/zap"
 	"math/big"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.uber.org/zap"
 )
 
 type CheckGMBalanceOutputChan struct {
@@ -242,4 +248,81 @@ func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) 
 	}
 
 	return resp, nil
+}
+
+func (u *Usecase) CaptureSoulImage(ctx context.Context, request *request.CaptureSoulTokenReq) (*entity.Nfts, error) {
+	nftEntity, err := u.Repo.GetNft(request.ContractAddress, request.TokenID)
+	if err != nil {
+		return nil, err
+	}
+
+	animationFileUrl := nftEntity.AnimationFileUrl
+	var imagePath = nftEntity.Image
+	if animationFileUrl == "" {
+		animationFileUrl, err = u.GetAnimationFileUrl(ctx, nftEntity)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	newImagePath := u.ParseSvgImage(animationFileUrl)
+	if newImagePath == animationFileUrl {
+		return nil, errors.New("parse svg image error")
+	}
+	if newImagePath != "" {
+		imagePath = newImagePath
+	}
+
+	_, err = u.Repo.UpdateOne(utils.COLLECTION_NFTS, bson.D{{"_id", nftEntity.ID}}, bson.M{"$set": bson.M{
+		"image_capture":      imagePath,
+		"animation_file_url": animationFileUrl,
+	}})
+
+	if err != nil {
+		return nil, err
+	}
+
+	nftEntity.ImageCapture = imagePath
+	nftEntity.AnimationFileUrl = animationFileUrl
+
+	return nftEntity, nil
+}
+
+func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nfts) (string, error) {
+	contractS, err := generative_nft_contract.NewGenerativeNftContract(common.HexToAddress(nftEntity.ContractAddress),
+		u.TCPublicNode.GetClient())
+
+	if err != nil {
+		return "", err
+	}
+
+	tokenIdInt, _ := strconv.Atoi(nftEntity.TokenID)
+	tokenBigInt := big.NewInt(int64(tokenIdInt))
+
+	tokenUriData, err := contractS.TokenURI(&bind.CallOpts{Context: context.Background()}, tokenBigInt)
+	if err != nil {
+		return "", err
+	}
+
+	tokenUri := entity.TokenUri{}
+	if err := json.Unmarshal([]byte(tokenUriData), &tokenUri); err != nil {
+		return "", err
+	}
+	if tokenUri.AnimationUrl == "" {
+		return "", errors.New("animation url is empty")
+	}
+	if strings.Contains(tokenUri.AnimationUrl, "base64") {
+		tokenUri.AnimationUrl = strings.Replace(tokenUri.AnimationUrl, "data:text/html;base64,", "", -1)
+
+		fileName := fmt.Sprintf("%v_%v.html", nftEntity.ContractAddress, nftEntity.TokenID)
+		resp, err := u.Storage.UploadBaseToBucket(tokenUri.AnimationUrl, fmt.Sprintf("capture_animation_file/%v", fileName))
+		if err != nil {
+			return "", err
+		}
+
+		htmlFileLink := fmt.Sprintf("https://storage.googleapis.com%v", resp.Path)
+		return htmlFileLink, nil
+	}
+
+	return tokenUri.AnimationUrl, nil
 }
