@@ -200,6 +200,7 @@ func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAgg
 	inputItem.FloorPrice = min
 	inputItem.BtcFloorPrice = minBTC
 	inputItem.EthFloorPrice = minEth
+	inputItem.TotalSales = int64(len(inputItem.TotalSaleMarketPlace))
 
 	outputChan <- outputMkpCollectionChan{
 		Item: &inputItem,

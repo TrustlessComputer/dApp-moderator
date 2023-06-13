@@ -208,3 +208,20 @@ func (h *httpDelivery) soulNft(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
+
+// UserCredits godoc
+// @Summary Create signature
+// @Description Create signature
+// @Tags Soul
+// @Accept  json
+// @Produce  json
+// @Param requestdata body int true "request data"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /soul/signature [POST]
+func (h *httpDelivery) SoulCreateSignature(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			return nil, nil
+		},
+	).ServeHTTP(w, r)
+}

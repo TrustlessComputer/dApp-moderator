@@ -9,6 +9,7 @@ type MarketplaceCollectionAggregation struct {
 	Contract                     string               `bson:"contract" json:"contract"`
 	MarketPlaceVolumes           []*MarketPlaceVolume `bson:"market_place_volumes" json:"market_place_volumes"`
 	FloorPriceMarketPlaceVolumes []*MarketPlaceVolume `bson:"floor_price_market_place_volumes" json:"floor_price_market_place_volumes"`
+	TotalSaleMarketPlace         []*MarketPlaceVolume `bson:"marketplace_listing_total" json:"marketplace_listing_total"`
 	UniqueOwners                 int64                `json:"unique_owners" bson:"unique_owners"`
 	TotalNfts                    int64                `json:"total_nfts" bson:"total_nfts"`
 	TotalSales                   int64                `json:"total_sales" bson:"total_sales"`
