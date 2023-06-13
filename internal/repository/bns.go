@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,7 +17,11 @@ func (r *Repository) UpdateBnsResolver(tokenID string, resolver string) (*mongo.
 		{"token_id", tokenID},
 	}
 
-	update := bson.M{"$set": bson.M{"resolver": strings.ToLower(resolver)}}
+	now := time.Now()
+	update := bson.M{"$set": bson.M{
+		"resolver":   strings.ToLower(resolver),
+		"updated_at": now,
+	}}
 	updated, err := r.UpdateOne(utils.COLLECTION_BNS, f, update)
 
 	if err != nil {
@@ -56,7 +61,7 @@ func (r *Repository) UpdateBnsPfpData(tokenID string, pfp *entity.BnsPfpData) (*
 	return updated, nil
 }
 
-func (r *Repository) FilterBNS(filter entity.FilterBns) ([]*entity.FilteredBNS, error) {
+func (r *Repository) FilterBNS(filter entity.FilterBns, fromCollection ...string) ([]*entity.FilteredBNS, error) {
 	resp := []*entity.FilteredBNS{}
 	f := bson.A{}
 	match := bson.D{}
@@ -80,6 +85,10 @@ func (r *Repository) FilterBNS(filter entity.FilterBns) ([]*entity.FilteredBNS, 
 		match = append(match, bson.E{"token_id", *filter.TokenID})
 	}
 
+	if filter.Limit <= 0 {
+		filter.Limit = 100
+	}
+
 	if len(match) > 0 {
 		f = append(f, bson.D{{"$match", match}})
 	}
@@ -89,7 +98,11 @@ func (r *Repository) FilterBNS(filter entity.FilterBns) ([]*entity.FilteredBNS, 
 	f = append(f, bson.D{{"$skip", filter.Offset}})
 	f = append(f, bson.D{{"$limit", filter.Limit}})
 
-	cursor, err := r.DB.Collection(utils.VIEW_BNS).Aggregate(context.TODO(), f, nil)
+	collectionName := utils.VIEW_BNS // default from bns_view
+	if len(fromCollection) > 0 && fromCollection[0] != "" {
+		collectionName = fromCollection[0]
+	}
+	cursor, err := r.DB.Collection(collectionName).Aggregate(context.TODO(), f, nil)
 	if err != nil {
 		return nil, err
 	}

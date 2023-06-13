@@ -27,7 +27,7 @@ type FilteredBNS struct {
 	Owner             string      `json:"owner" bson:"owner"`
 	CollectionAddress string      `json:"collection_address" bson:"collection_address"`
 	Resolver          string      `json:"resolver" bson:"resolver"`
-	Pfp               string      `json:"pfp" bson:"pfp"`
+	Pfp               string      `json:"pfp,omitempty" bson:"pfp"`
 	PfpData           *BnsPfpData `json:"pfp_data,omitempty" bson:"pfp_data"`
 }
 
