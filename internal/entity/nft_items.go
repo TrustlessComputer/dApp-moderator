@@ -21,6 +21,9 @@ type Nfts struct {
 	Metadata        interface{} `json:"metadata" bson:"metadata"`
 	MetadataType    string      `json:"metadata_type"  bson:"metadata_type"`
 	Size            int64       `bson:"size" json:"size"`
+
+	AnimationFileUrl string `json:"animation_file_url,omitempty" bson:"animation_file_url,omitempty"`
+	ImageCapture     string `json:"image_capture,omitempty" bson:"image_capture,omitempty"`
 }
 
 type NftAttr struct {

@@ -103,3 +103,7 @@ func (t *TokenReportFilter) FromPagination(pag request.PaginationReq) {
 		t.Page = int64(*pag.Page)
 	}
 }
+
+type TokenUri struct {
+	AnimationUrl string `json:"animation_url"`
+}
