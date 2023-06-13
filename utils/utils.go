@@ -111,3 +111,7 @@ func NameOrAddress(name, address string) string {
 	}
 	return ShortenBlockAddress(address)
 }
+
+func ToPtr[T any](val T) *T {
+	return &val
+}
