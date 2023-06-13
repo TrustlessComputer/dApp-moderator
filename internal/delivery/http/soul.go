@@ -8,13 +8,15 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
-	"go.uber.org/zap"
+	"encoding/json"
 	"math/big"
 	"net/http"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 // UserCredits godoc
@@ -222,6 +224,38 @@ func (h *httpDelivery) SoulCreateSignature(w http.ResponseWriter, r *http.Reques
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			return nil, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// SoulCaptureImage godoc
+// @Summary SoulCaptureImage
+// @Description SoulCaptureImage
+// @Tags Soul
+// @Accept  json
+// @Produce  json
+// @Param requestdata body int true "request data"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /soul/capture [POST]
+func (h *httpDelivery) SoulCaptureImage(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			var reqBody request.CaptureSoulTokenReq
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			if err := h.Validator.Struct(&reqBody); err != nil {
+				return nil, err
+			}
+			nft, err := h.Usecase.CaptureSoulImage(ctx, &reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			return nft, nil
 		},
 	).ServeHTTP(w, r)
 }
