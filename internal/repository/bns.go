@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,7 +17,11 @@ func (r *Repository) UpdateBnsResolver(tokenID string, resolver string) (*mongo.
 		{"token_id", tokenID},
 	}
 
-	update := bson.M{"$set": bson.M{"resolver": strings.ToLower(resolver)}}
+	now := time.Now()
+	update := bson.M{"$set": bson.M{
+		"resolver":   strings.ToLower(resolver),
+		"updated_at": now,
+	}}
 	updated, err := r.UpdateOne(utils.COLLECTION_BNS, f, update)
 
 	if err != nil {
