@@ -139,7 +139,7 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 
 	s := bson.D{
 		{"buyable", -1},
-		{"price_erc20.price", 1},
+		{"price", 1},
 		{sortBy, sort},
 	}
 	//old: VIEW_MARKETPLACE_NFTS, VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES has attributes + percent
