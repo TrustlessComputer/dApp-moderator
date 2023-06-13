@@ -100,6 +100,7 @@ type MkpNftsResp struct {
 	Owner           string                     `bson:"owner" json:"owner"`
 	TokenURI        string                     `bson:"token_uri" json:"token_uri"`
 	Image           string                     `bson:"image" json:"image"`
+	ImageCapture    string                     `bson:"image_capture" json:"image_capture"` // capture thumbnail from html
 	MintedAt        float64                    `bson:"minted_at" json:"minted_at"`
 	Attributes      []MkpNftAttr               `json:"attributes" bson:"attributes"`
 	Metadata        interface{}                `json:"metadata" bson:"metadata"`
