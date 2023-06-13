@@ -2311,6 +2311,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/soul/signature": {
+            "post": {
+                "description": "Create signature",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Soul"
+                ],
+                "summary": "Create signature",
+                "parameters": [
+                    {
+                        "description": "request data",
+                        "name": "requestdata",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateSignatureRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/token-explorer/token/{address}": {
             "get": {
                 "description": "Update token",
@@ -3074,6 +3108,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "group": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CreateSignatureRequest": {
+            "type": "object",
+            "properties": {
+                "wallet_address": {
                     "type": "string"
                 }
             }

@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"encoding/json"
 	"go.uber.org/zap"
 	"math/big"
 	"net/http"
@@ -215,13 +216,20 @@ func (h *httpDelivery) soulNft(w http.ResponseWriter, r *http.Request) {
 // @Tags Soul
 // @Accept  json
 // @Produce  json
-// @Param requestdata body int true "request data"
+// @Param requestdata body request.CreateSignatureRequest true "request data"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /soul/signature [POST]
 func (h *httpDelivery) SoulCreateSignature(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			return nil, nil
+			var reqBody request.CreateSignatureRequest
+			decoder := json.NewDecoder(r.Body)
+			err := decoder.Decode(&reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			return h.Usecase.CreateSignature(reqBody)
 		},
 	).ServeHTTP(w, r)
 }
