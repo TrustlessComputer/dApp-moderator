@@ -1644,6 +1644,27 @@ paths:
       summary: Get Soul's Nfts
       tags:
       - Soul
+  /soul/nfts/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: Soul's Nft
+      parameters:
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Soul's Nft
+      tags:
+      - Soul
   /token-explorer/token/{address}:
     get:
       consumes:
