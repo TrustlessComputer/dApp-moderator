@@ -112,7 +112,8 @@ func (r *redisCache) Delete(key string) error {
 func (r *redisCache) Exists(key string) (*bool, error) {
 	value, err := r.client.Exists(key).Result()
 	if err != nil {
-		return nil, err
+		e := false
+		return &e, err
 	}
 	res := value > 0
 	return &res, nil

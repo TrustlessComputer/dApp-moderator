@@ -33,6 +33,11 @@ definitions:
       group:
         type: string
     type: object
+  request.CreateSignatureRequest:
+    properties:
+      wallet_address:
+        type: string
+    type: object
   request.UpdateTokenReq:
     properties:
       description:
@@ -1663,6 +1668,28 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Get Soul's Nft
+      tags:
+      - Soul
+  /soul/signature:
+    post:
+      consumes:
+      - application/json
+      description: Create signature
+      parameters:
+      - description: request data
+        in: body
+        name: requestdata
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateSignatureRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Create signature
       tags:
       - Soul
   /token-explorer/token/{address}:

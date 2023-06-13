@@ -86,3 +86,40 @@ type MarketplaceCollectionAttributeValue struct {
 	Value  string  `json:"value"`
 	Rarity float64 `json:"rarity"`
 }
+type GMDepositItemResponse struct {
+	Ens             string  `json:"ens"`
+	Avatar          string  `json:"avatar"`
+	From            string  `json:"from"`
+	To              string  `json:"to"`
+	Value           string  `json:"value"`
+	UsdtValue       float64 `json:"usdt_value"`
+	UsdtValueExtra  int     `json:"usdt_value_extra"`
+	ExtraPercent    int     `json:"extra_percent"`
+	Percent         float64 `json:"percent"`
+	GmReceive       float64 `json:"gm_receive"`
+	GmReceiveString string  `json:"gm_receive_string"`
+	Currency        string  `json:"currency"`
+}
+
+type GMDepositResponse struct {
+	Error  interface{} `json:"error"`
+	Status bool        `json:"status"`
+	Data   struct {
+		Value          string                  `json:"value"`
+		Currency       string                  `json:"currency"`
+		CurrencyRate   int                     `json:"currencyRate"`
+		UsdtValue      float64                 `json:"usdtValue"`
+		UsdtExtra      float64                 `json:"usdtExtra"`
+		TotalGMReceive float64                 `json:"totalGMReceive"`
+		Items          []GMDepositItemResponse `json:"items"`
+		MapItems       struct {
+		} `json:"MapItems"`
+		MapTokensDeposit struct {
+		} `json:"map_tokens_deposit"`
+	} `json:"data"`
+}
+
+type CreateSignatureResp struct {
+	Signature string `json:"signature"`
+	Deadline  string `json:"deadline"`
+}

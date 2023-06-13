@@ -3,13 +3,18 @@ package usecase
 import (
 	"context"
 	"dapp-moderator/external/nft_explorer"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/erc20"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 	"math/big"
@@ -17,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type CheckGMBalanceOutputChan struct {
@@ -28,7 +34,7 @@ type CheckGMBalanceOutputChan struct {
 func (u *Usecase) SoulCrontab() error {
 	maxProcess := 10
 	minBalance := float64(1)
-	erc20Addr := "0x2fe8d5A64afFc1d703aECa8a566f5e9FaeE0C003"
+	erc20Addr := strings.ToLower(os.Getenv("SOUL_GM_ADDRESS"))
 	instance, err := erc20.NewErc20(common.HexToAddress(erc20Addr), u.TCPublicNode.GetClient())
 	if err != nil {
 		logger.AtLog.Logger.Error("SoulCrontab", zap.Error(err))
@@ -242,4 +248,117 @@ func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) 
 	}
 
 	return resp, nil
+}
+
+func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*structure.CreateSignatureResp, error) {
+	soulChainID := os.Getenv("SOUL_CHAIN_ID")
+	chainID, _ := new(big.Int).SetString(soulChainID, 10)
+	contractAddr := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
+	signerMint := strings.ToLower(os.Getenv("SOUL_SIGNATURE_PUBLIC_KEY"))
+	userWalletAddress := strings.ToLower(requestData.WalletAddress)
+	gmTokenAddress := strings.ToLower(os.Getenv("SOUL_GM_ADDRESS"))
+	var err error
+
+	gm := float64(0)
+	key := fmt.Sprintf("gm.deposit.%s", userWalletAddress)
+	existed, _ := u.Cache.Exists(key)
+	if !*existed {
+		gm, err = u.GMDeposit(userWalletAddress)
+		if err != nil {
+			return nil, err
+		}
+
+		err = u.Cache.SetData(key, gm)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	cached, _ := u.Cache.GetData(key)
+	gm, _ = strconv.ParseFloat(*cached, 10)
+
+	//deposit GM - generative
+	totalGM := big.NewInt(0)
+
+	signature, deadline, err := u.PnftReferralPaymentSignMessage(contractAddr, *chainID, signerMint, userWalletAddress, gmTokenAddress, *totalGM)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &structure.CreateSignatureResp{
+		Signature: signature,
+		Deadline:  deadline.String(),
+	}
+
+	return resp, nil
+}
+
+func (u *Usecase) PnftReferralPaymentSignMessage(contractAddr string, chainID big.Int, signerMint string, userWalletAddress string, gmTokenAddress string, totalGM big.Int) (string, *big.Int, error) {
+	deadline := big.NewInt(time.Now().Unix() + 60*15)
+	privateKey := strings.ToLower(os.Getenv("SOUL_SIGNATURE_PRIVATE_KEY"))
+
+	datas := []byte{}
+
+	datas = append(datas, common.HexToHash(contractAddr).Bytes()...)
+	datas = append(datas, common.BytesToHash(chainID.Bytes()).Bytes()...)
+	datas = append(datas, common.HexToHash(signerMint).Bytes()...)
+	datas = append(datas, common.HexToHash(userWalletAddress).Bytes()...)
+	datas = append(datas, common.HexToHash(gmTokenAddress).Bytes()...)
+	datas = append(datas, common.BytesToHash(totalGM.Bytes()).Bytes()...)
+	datas = append(datas, common.BytesToHash(deadline.Bytes()).Bytes()...)
+
+	dataByteHash := crypto.Keccak256Hash(
+		datas,
+	)
+
+	signature, err := u.SignWithEthereum(privateKey, dataByteHash.Bytes())
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("PnftReferralPaymentSignMessage - %s", userWalletAddress), zap.String("userWalletAddress", userWalletAddress), zap.String("contractAddr", contractAddr), zap.String("chainID", chainID.String()), zap.Error(err))
+		return "", nil, err
+	}
+
+	logger.AtLog.Logger.Info(fmt.Sprintf("PnftReferralPaymentSignMessage - %s", userWalletAddress), zap.String("userWalletAddress", userWalletAddress), zap.String("contractAddr", contractAddr), zap.String("chainID", chainID.String()), zap.String("signature", signature), zap.String("deadline", deadline.String()))
+
+	return signature, deadline, nil
+}
+
+func (u *Usecase) SignWithEthereum(privateKey string, dataBytes []byte) (string, error) {
+	signBytes := append([]byte("\x19Ethereum Signed Message:\n32"), dataBytes...)
+	hash := crypto.Keccak256Hash(signBytes)
+	prk, err := crypto.HexToECDSA(privateKey)
+	if err != nil {
+		return "", err
+	}
+	signature, err := crypto.Sign(hash.Bytes(), prk)
+	if err != nil {
+		return "", err
+	}
+	signature[crypto.RecoveryIDOffset] += 27
+	sigHex := hexutil.Encode(signature)
+
+	return sigHex, nil
+}
+
+func (u *Usecase) GMDeposit(walletAddress string) (float64, error) {
+	generativeURL := "https://generative.xyz/generative/api/charts/gm-collections/deposit"
+	resp := &structure.GMDepositResponse{}
+
+	data, _, _, err := helpers.JsonRequest(generativeURL, "GET", make(map[string]string), nil)
+	if err != nil {
+		return 0, err
+	}
+
+	err = json.Unmarshal(data, resp)
+	if err != nil {
+		return 0, err
+	}
+
+	items := resp.Data.Items
+	for _, item := range items {
+		if strings.ToLower(item.From) == strings.ToLower(walletAddress) {
+			return item.GmReceive, nil
+		}
+	}
+
+	return 0, nil
 }
