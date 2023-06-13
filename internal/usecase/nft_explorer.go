@@ -350,6 +350,16 @@ func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress strin
 	}
 
 	resp.FileSize = len(bytes)
+
+	// get bns data
+	bnsResp, err := u.Repo.FilterBNS(entity.FilterBns{
+		Resolver: utils.ToPtr(resp.Owner),
+	})
+
+	if err == nil && len(bnsResp) > 0 {
+		resp.BnsData = bnsResp[0]
+	}
+
 	return resp, nil
 }
 
