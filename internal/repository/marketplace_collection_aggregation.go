@@ -42,7 +42,7 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 	}
 
 	f := bson.A{
-		//bson.D{{"$match", bson.D{{"contract", "0xb957f1a4a019decd4b75b2bfce01d4b7df358145"}}}},
+		//bson.D{{"$match", bson.D{{"contract", "0x9841faa1133da03b9ae09e8daa1a725bc15575f0"}}}},
 		bson.D{
 			{"$lookup",
 				bson.D{
@@ -93,7 +93,6 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 											},
 										},
 										{"total_volume", bson.D{{"$sum", bson.D{{"$toDouble", "$price"}}}}},
-										{"total_sales", bson.D{{"$sum", 1}}},
 									},
 								},
 							},
@@ -132,7 +131,6 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 											},
 										},
 										{"total_volume", bson.D{{"$sum", bson.D{{"$toDouble", "$price"}}}}},
-										{"total_sales", bson.D{{"$sum", 1}}},
 									},
 								},
 							},
@@ -182,6 +180,7 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 										{"erc_20_token", "$_id.erc_20_token"},
 										{"contract", "$_id.contract"},
 										{"marketplace_type", "marketplace_listings"},
+										{"total_sales", bson.D{{"$sum", 1}}},
 									},
 								},
 							},
@@ -193,6 +192,25 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 			},
 		},
 		//end floor-price
+
+		//Total sales
+		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "marketplace_listings"},
+					{"localField", "contract"},
+					{"foreignField", "collection_contract"},
+					{"pipeline",
+						bson.A{
+							bson.D{{"$match", bson.D{{"status", entity.MarketPlaceOpen}}}},
+							bson.D{{"$project", bson.D{{"_id", 0}}}},
+						},
+					},
+					{"as", "marketplace_listing_total"},
+				},
+			},
+		},
+
 		bson.D{
 			{"$addFields",
 				bson.D{
@@ -217,16 +235,6 @@ func (r *Repository) AggregatetMarketPlaceData(filter entity.FilterMarketplaceAg
 					{"unique_owners", bson.D{{"$size", "$nft_owners"}}},
 					{"total_owners", "$unique_onwers"},
 					{"total_nfts", "$total_items"},
-					{"total_sales",
-						bson.D{
-							{"$sum",
-								bson.A{
-									bson.D{{"$size", "$marketplace_listings"}},
-									bson.D{{"$size", "$marketplace_offers"}},
-								},
-							},
-						},
-					},
 					{"floor_price", 0},
 					{"volume", 0},
 				},

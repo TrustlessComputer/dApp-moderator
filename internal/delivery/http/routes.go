@@ -199,6 +199,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	marketplace.HandleFunc("/contract/{contract_address}/token/{token_id}/activities", h.getTokenActivities).Methods("GET")
 
 	soul := api.PathPrefix("/soul").Subrouter()
+	soul.HandleFunc("/signature", h.SoulCreateSignature).Methods("POST")
 	soul.HandleFunc("/nfts", h.soulNfts).Methods("GET")
 	soul.HandleFunc("/nfts/{token_id}", h.soulNfts).Methods("GET")
 
