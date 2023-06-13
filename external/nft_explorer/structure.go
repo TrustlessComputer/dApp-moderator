@@ -59,6 +59,11 @@ type MkpNftsResp struct {
 	Size            int64                             `json:"size" bson:"size"`
 }
 
+type MkpNftsPagination struct {
+	Items     []*MkpNftsResp `bson:"items" json:"items"`
+	TotalItem int            `json:"total_item" bson:"total_item"`
+}
+
 type SoulNft struct {
 	MkpNftsResp `bson:",inline"`
 	IsAuction   bool `json:"is_auction" bson:"is_auction"`
