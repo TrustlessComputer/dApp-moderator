@@ -357,7 +357,7 @@ func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data)))
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data.Items)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -490,7 +490,7 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 
 			data, err := h.Usecase.FilterMkplaceNfts(ctx, f)
 			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
-			for _, i := range data {
+			for _, i := range data.Items {
 				if i.Name == "" {
 					if bnsAddress == ca {
 						key := helpers.BnsTokenNameKey(i.TokenID)
@@ -525,7 +525,7 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data)))
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data.Items)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)

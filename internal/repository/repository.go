@@ -6,7 +6,6 @@ import (
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/helpers"
 	"errors"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -193,4 +192,13 @@ func (r *Repository) FindWithProjections(collectionName string, filter bson.D, l
 		return err
 	}
 	return nil
+}
+
+func (r *Repository) AllItems(collectionName string, filter bson.D) (int64, error) {
+	count, err := r.DB.Collection(collectionName).CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

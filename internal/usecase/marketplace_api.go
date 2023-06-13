@@ -24,8 +24,8 @@ func (u *Usecase) FilterTokenActivities(ctx context.Context, filter entity.Filte
 	return u.Repo.FilterTokenActivites(filter)
 }
 
-func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNfts) ([]*nft_explorer.MkpNftsResp, error) {
-	resp := []*nft_explorer.MkpNftsResp{}
+func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
+	resp := []*entity.MkpNftsResp{}
 	f := bson.D{}
 
 	maxFileSize := os.Getenv("FILE_CHUNK_SIZE")
@@ -153,7 +153,16 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		return nil, err
 	}
 
-	return resp, nil
+	total, err := u.Repo.AllItems(utils.VIEW_NEW_MARKETPLACE_NFTS, f)
+	if err != nil {
+		return nil, err
+	}
+
+	respData := &entity.MkpNftsPagination{
+		Items:     resp,
+		TotalItem: total,
+	}
+	return respData, nil
 }
 
 func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.MkpNftsResp, error) {
