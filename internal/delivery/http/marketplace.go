@@ -442,16 +442,24 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				prArray := strings.Split(price, ",")
 				if len(prArray) == 2 {
 
-					sort.SliceIsSorted(prArray, func(i, j int) bool {
-						return prArray[i] > prArray[j]
-					})
-
 					min, _ := strconv.ParseFloat(prArray[0], 10)
-					max, _ := strconv.ParseFloat(prArray[1], 10)
+					if min == -1 {
+						min = 0
+					}
 
+					max, _ := strconv.ParseFloat(prArray[1], 10)
+					if max == -1 {
+						max = 999999999
+					}
+
+					minBig := helpers.ConvertAmount(min)
+					maxBig := helpers.ConvertAmount(max)
+
+					minF, _ := minBig.Float64()
+					maxF, _ := maxBig.Float64()
 					f.Price = &entity.Rarity{
-						Min: min,
-						Max: max,
+						Min: minF,
+						Max: maxF,
 					}
 				}
 			}

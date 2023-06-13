@@ -418,7 +418,14 @@ func GetValue(amount string, decimal float64) float64 {
 	return amountInt
 }
 
-func ConvertAmount(amount float64) string {
+func ConvertAmountString(amount float64) string {
+
+	result := ConvertAmount(amount)
+	amountInt, _ := result.Int64()
+	return fmt.Sprintf("%d", amountInt)
+}
+
+func ConvertAmount(amount float64) *big.Float {
 	decimal := 18
 	amountBig := big.NewFloat(amount)
 
@@ -426,6 +433,5 @@ func ConvertAmount(amount float64) string {
 	pow10Big := big.NewFloat(pow10)
 
 	result := amountBig.Mul(amountBig, pow10Big) //divide
-	amountInt, _ := result.Int64()
-	return fmt.Sprintf("%d", amountInt)
+	return result
 }
