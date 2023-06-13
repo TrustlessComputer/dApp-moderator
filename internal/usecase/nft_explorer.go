@@ -357,7 +357,7 @@ func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress strin
 	})
 
 	if err == nil && len(bnsResp) > 0 {
-		resp.BnsData = bnsResp[0]
+		resp.BnsData = bnsResp
 	}
 
 	return resp, nil

@@ -62,8 +62,8 @@ type Result struct {
 
 type NftsResp struct {
 	nft_explorer.NftsResp
-	BnsData  *entity.FilteredBNS `json:"bns_data,omitempty"`
-	FileSize int                 `json:"file_size"` //bytes
+	BnsData  []*entity.FilteredBNS `json:"bns_data,omitempty"`
+	FileSize int                   `json:"file_size"` //bytes
 }
 
 type CompressedFile struct {
