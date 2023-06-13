@@ -200,6 +200,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	soul := api.PathPrefix("/soul").Subrouter()
 	soul.HandleFunc("/nfts", h.soulNfts).Methods("GET")
+	soul.HandleFunc("/nfts/{token_id}", h.soulNfts).Methods("GET")
 
 }
 

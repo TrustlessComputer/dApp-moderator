@@ -2279,6 +2279,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/soul/nfts/{token_id}": {
+            "get": {
+                "description": "Soul's Nft",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Soul"
+                ],
+                "summary": "Get Soul's Nft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/token-explorer/token/{address}": {
             "get": {
                 "description": "Update token",

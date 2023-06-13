@@ -182,3 +182,29 @@ func (h *httpDelivery) soulNfts(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
+
+// UserCredits godoc
+// @Summary Get Soul's Nft
+// @Description Soul's Nft
+// @Tags Soul
+// @Accept  json
+// @Produce  json
+// @Param token_id path string true "token_id"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /soul/nfts/{token_id} [GET]
+func (h *httpDelivery) soulNft(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			ca := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
+			tokID := vars["token_id"]
+
+			data, err := h.Usecase.CollectionNftDetail(ctx, ca, tokID)
+			if err != nil {
+				logger.AtLog.Logger.Error("Nfts", zap.Error(err))
+				return nil, err
+			}
+
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
