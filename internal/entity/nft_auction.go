@@ -12,6 +12,19 @@ type NftAuctions struct {
 	CreatedAt *time.Time         `json:"created_at" bson:"created_at"`
 	UpdatedAt *time.Time         `json:"updated_at" bson:"updated_at"`
 
+	Name         string      `json:"name" bson:"-"`
+	Owner        string      `json:"owner" bson:"-"`
+	TokenURI     string      `json:"token_uri" bson:"-"`
+	Image        string      `json:"image" bson:"-"`
+	MintedAt     float64     `json:"minted_at" bson:"-"`
+	Attributes   []NftAttr   `json:"attributes" bson:"-"`
+	Metadata     interface{} `json:"metadata" bson:"-"`
+	MetadataType string      `json:"metadata_type"  bson:"-"`
+	Size         int64       `bson:"-" json:"-"`
+
+	AnimationFileUrl string `json:"animation_file_url,omitempty" bson:"animation_file_url,omitempty"`
+	ImageCapture     string `json:"image_capture,omitempty" bson:"image_capture,omitempty"`
+
 	ContractAddress string `json:"collection_address" bson:"collection_address"`
 	TokenID         string `json:"token_id" bson:"token_id"`
 	TokenIDInt      int64  `json:"token_id_int" bson:"token_id_int"` //use it for sort

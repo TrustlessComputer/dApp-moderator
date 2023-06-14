@@ -501,3 +501,13 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 
 	return tokenUri.AnimationUrl, nil
 }
+
+func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tokenID string) (*entity.NftAuctions, error) {
+
+	data, err := u.Repo.FindAuction(contractAddress, tokenID)
+	if err != nil {
+		logger.AtLog.Logger.Error("CollectionNftDetail", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
+	}
+
+	return data, nil
+}

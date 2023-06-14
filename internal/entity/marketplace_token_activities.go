@@ -20,6 +20,7 @@ const (
 	BNSResolverUpdated TokenActivityType = 9
 	BNSResolverCreated TokenActivityType = 10
 	BNSPfpUpdated      TokenActivityType = 11
+	AuctionCreated     TokenActivityType = 12
 )
 
 var TokenActivityName = map[TokenActivityType]string{
@@ -35,6 +36,7 @@ var TokenActivityName = map[TokenActivityType]string{
 	BNSResolverUpdated: "BNS Resolver updated",
 	BNSResolverCreated: "BNS registered",
 	BNSPfpUpdated:      "BNS pfp updated",
+	AuctionCreated:     "auction created",
 }
 
 type MarketplaceTokenActivity struct {

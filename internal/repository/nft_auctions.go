@@ -39,3 +39,21 @@ func (r *Repository) InsertAuction(data *entity.NftAuctions) error {
 
 	return nil
 }
+
+func (r *Repository) FindAuction(contractAddress string, tokenID string) (*entity.NftAuctions, error) {
+
+	filter := bson.D{
+		{"collection_address", strings.ToLower(contractAddress)},
+		{"token_id", tokenID},
+	}
+
+	resp := r.DB.Collection(utils.VIEW_NFT_AUCTION).FindOne(context.TODO(), filter)
+
+	data := &entity.NftAuctions{}
+	err := resp.Decode(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}

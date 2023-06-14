@@ -20,6 +20,7 @@ type CollectionChart struct {
 	VolumeType          string     `bson:"volume_type" json:"volume_type"`
 	VolumeCreatedAtDate string     `bson:"volume_created_at_date" json:"volume_created_at_date"`
 	USDT                float64    `bson:"-" json:"usdt"`
+	BTC                 string     `bson:"-" json:"btc"`
 	USDTRate            float64    `bson:"-" json:"-"`
 }
 
