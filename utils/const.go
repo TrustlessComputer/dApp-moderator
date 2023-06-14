@@ -183,7 +183,7 @@ const (
 	VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS        string = "marketplace_aggregated_collections_view"
 	VIEW_MARKETPLACE_NFTS                          string = "marketplace_nfts_view"
 	VIEW_NEW_MARKETPLACE_NFTS                      string = "marketplace_new_nfts_view"
-	VIEW_NFT_AUCTION                               string = "nft_aution_view"
+	VIEW_NFT_AUCTION_AVAILABLE                     string = "nft_auction_available_view"
 	VIEW_MARKETPLACE_COLLECTION_CHART              string = "marketplace_collection_chart"
 	COLLECTION_MARKETPLACE_AGGREGATED_COLLECTIONS  string = "marketplace_aggregated_collections"
 

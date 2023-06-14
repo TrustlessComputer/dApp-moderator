@@ -48,7 +48,7 @@ func (r *Repository) FindAuction(contractAddress string, tokenID string) (*entit
 		{"token_id", tokenID},
 	}
 
-	resp := r.DB.Collection(utils.VIEW_NFT_AUCTION).FindOne(context.TODO(), filter)
+	resp := r.DB.Collection(utils.VIEW_NFT_AUCTION_AVAILABLE).FindOne(context.TODO(), filter)
 
 	data := &entity.NftAuctionsAvailable{}
 	err := resp.Decode(data)

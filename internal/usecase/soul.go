@@ -286,7 +286,7 @@ func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) 
 		{"activities", 0},
 	}
 
-	err := u.Repo.FindWithProjections(utils.VIEW_NFT_AUCTION, f, int64(filter.Limit), int64(filter.Offset), &resp, s, projections)
+	err := u.Repo.FindWithProjections(utils.VIEW_NFT_AUCTION_AVAILABLE, f, int64(filter.Limit), int64(filter.Offset), &resp, s, projections)
 	if err != nil {
 		return nil, err
 	}
