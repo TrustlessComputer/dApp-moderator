@@ -5,6 +5,8 @@ import (
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/helpers"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 	"os"
@@ -212,16 +214,23 @@ func (u *Usecase) FilterCollectionChart(ctx context.Context, filter entity.Filte
 		if !ok {
 			groupdata[nft.VolumeCreatedAtDate] = *nft
 		} else {
-			nft.USDT = value.USDT + nft.USDT
-			nft.USDTRate = value.USDTRate + nft.USDTRate
+			newUSDT := value.USDT + nft.USDT
+			nft.USDT = newUSDT
+
+			//nft.USDTRate = value.USDTRate + nft.USDTRate
 			groupdata[nft.VolumeCreatedAtDate] = *nft
 		}
 
 	}
 
+	btcRate := u.GetExternalRate(os.Getenv("WBTC_ADDRESS"))
+
 	//response data
 	resp := []*entity.CollectionChart{}
 	for _, item := range groupdata {
+		btc := helpers.ConvertAmount(item.USDT / btcRate)
+		btcI, _ := btc.Int64()
+		item.BTC = fmt.Sprintf("%d", btcI)
 		resp = append(resp, &item)
 	}
 
