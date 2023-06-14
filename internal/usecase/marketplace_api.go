@@ -7,10 +7,11 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 	"os"
 	"strconv"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (u *Usecase) FilterMKListing(ctx context.Context, filter entity.FilterMarketplaceListings) ([]entity.MarketplaceListings, error) {
@@ -181,6 +182,13 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 	err = cursor.Decode(resp)
 	if err != nil {
 		return nil, err
+	}
+
+	bnsData, err := u.Repo.FilterBNS(entity.FilterBns{
+		Resolver: utils.ToPtr(resp.TokenID),
+	})
+	if err == nil && len(bnsData) > 0 {
+		resp.BnsData = bnsData
 	}
 
 	return resp, nil
