@@ -148,7 +148,9 @@ func (c *txTCServer) StartServer() {
 	tasks["checkSoulOwnerCrontab"] = c.checkSoulOwnerCrontab
 
 	//function have been done in develop
-	if os.Getenv("ENV") == "production" {
+	if os.Getenv("ENV") == "production" ||
+		os.Getenv("ENV") == "develop" {
+
 		tasks["checkTxHashChunks"] = c.checkTxHashChunks
 		tasks["resolveTxTransaction"] = c.resolveTxTransaction
 		tasks["fetchToken"] = c.fetchToken
