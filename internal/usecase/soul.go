@@ -316,7 +316,9 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 		return nil, errors.New("User has a minted token")
 	}
 
-	if userWalletAddress != strings.ToLower(os.Getenv("SOUL_TEST_ACCOUNT")) {
+	testAccounts := strings.Split(strings.ReplaceAll(os.Getenv("SOUL_TEST_ACCOUNT"), " ", ""), ",")
+
+	if !helpers.InArray(userWalletAddress, testAccounts) {
 		key := fmt.Sprintf("gm.deposit.%s", userWalletAddress)
 		existed, _ := u.Cache.Exists(key)
 		if !*existed {

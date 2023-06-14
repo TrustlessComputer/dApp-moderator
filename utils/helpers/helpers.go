@@ -435,3 +435,13 @@ func ConvertAmount(amount float64) *big.Float {
 	result := amountBig.Mul(amountBig, pow10Big) //divide
 	return result
 }
+
+func InArray(text string, arrayText []string) bool {
+	for _, item := range arrayText {
+		if strings.ToLower(item) == strings.ToLower(text) {
+			return true
+		}
+	}
+
+	return false
+}
