@@ -205,7 +205,7 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		//activity.OfferingID = strings.ToLower(fmt.Sprintf("%x", event.OfferingId))
 		return activity, event, nil
 	case entity.AuctionCreated:
-		soulContract, err := soul_contract.NewSoulContract(chainLog.Address, u.TCPublicNode.GetClient())
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
 		if err != nil {
 			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
 			return nil, nil, err
@@ -677,7 +677,7 @@ func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) erro
 }
 
 func (u *Usecase) AuctionCreated(data interface{}, chainLog types.Log) error {
-	eventData, ok := data.(*soul_contract.SoulContractAuctionCreated)
+	eventData, ok := data.(*soul_contract.SoulAuctionCreated)
 	if !ok {
 		return errors.New("event data is not correct")
 	}
