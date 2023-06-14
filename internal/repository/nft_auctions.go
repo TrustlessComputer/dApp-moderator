@@ -4,13 +4,14 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
-	"go.mongodb.org/mongo-driver/bson"
-	options2 "go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	options2 "go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (r *Repository) InsertAuction(data *entity.NftAuctions) error {
+func (r *Repository) InsertAuction(data *entity.NftAuctionsAvailable) error {
 	now := time.Now().UTC()
 	data.UpdatedAt = &now
 	//data.SetID()
@@ -40,7 +41,7 @@ func (r *Repository) InsertAuction(data *entity.NftAuctions) error {
 	return nil
 }
 
-func (r *Repository) FindAuction(contractAddress string, tokenID string) (*entity.NftAuctions, error) {
+func (r *Repository) FindAuction(contractAddress string, tokenID string) (*entity.NftAuctionsAvailable, error) {
 
 	filter := bson.D{
 		{"collection_address", strings.ToLower(contractAddress)},
@@ -49,7 +50,7 @@ func (r *Repository) FindAuction(contractAddress string, tokenID string) (*entit
 
 	resp := r.DB.Collection(utils.VIEW_NFT_AUCTION).FindOne(context.TODO(), filter)
 
-	data := &entity.NftAuctions{}
+	data := &entity.NftAuctionsAvailable{}
 	err := resp.Decode(data)
 	if err != nil {
 		return nil, err

@@ -2,11 +2,12 @@ package entity
 
 import (
 	"dapp-moderator/utils"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type NftAuctions struct {
+type NftAuctionsAvailable struct {
 	ID        primitive.ObjectID `json:"-" bson:"-"`
 	DeletedAt *time.Time         `json:"deleted_at" bson:"deleted_at"`
 	CreatedAt *time.Time         `json:"created_at" bson:"created_at"`
@@ -31,6 +32,6 @@ type NftAuctions struct {
 	IsAuction       bool   `bson:"is_auction" json:"is_auction"`
 }
 
-func (u NftAuctions) CollectionName() string {
+func (u NftAuctionsAvailable) CollectionName() string {
 	return utils.COLLECTION_NFT_AUCTIONS
 }
