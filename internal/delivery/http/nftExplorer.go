@@ -6,11 +6,15 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -45,12 +49,11 @@ func (h *httpDelivery) collections(w http.ResponseWriter, r *http.Request) {
 			name := r.URL.Query().Get("name")
 
 			filter := request.CollectionsFilter{
-				Owner: &owner,
-				Address: &collectionAddress,
-				Name: &name,
+				Owner:         &owner,
+				Address:       &collectionAddress,
+				Name:          &name,
 				PaginationReq: p,
 			}
-
 
 			isAllowEmpty := r.URL.Query().Get("allow_empty")
 			if isAllowEmpty != "" {
@@ -61,14 +64,14 @@ func (h *httpDelivery) collections(w http.ResponseWriter, r *http.Request) {
 
 			}
 
-			filter.AllowEmpty =  &isAllowEmptyBool
+			filter.AllowEmpty = &isAllowEmptyBool
 			data, err := h.Usecase.Collections(ctx, filter)
 			if err != nil {
-				logger.AtLog.Logger.Error("collections", zap.Any("filter", filter) , zap.Error(err))
+				logger.AtLog.Logger.Error("collections", zap.Any("filter", filter), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("collections", zap.Any("filter", filter) , zap.Int("data", len(data)))
+			logger.AtLog.Logger.Info("collections", zap.Any("filter", filter), zap.Int("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -118,7 +121,7 @@ func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Req
 			decoder := json.NewDecoder(r.Body)
 			err := decoder.Decode(reqBody)
 			if err != nil {
-				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody) , zap.Error(err))
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody), zap.Error(err))
 				return nil, err
 			}
 
@@ -126,17 +129,17 @@ func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Req
 			walletAdress, ok := iwalletAdress.(string)
 			if !ok {
 				err := errors.New("Token is incorect")
-				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody) , zap.Error(err))
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody), zap.Error(err))
 				return nil, err
 			}
 
 			data, err := h.Usecase.UpdateCollection(ctx, contractAddress, walletAdress, reqBody)
 			if err != nil {
-				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody) , zap.Error(err))
+				logger.AtLog.Logger.Error("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody) , zap.Any("data", data))
+			logger.AtLog.Logger.Info("collectionDetail", zap.String("contractAddress", contractAddress), zap.Any("reqBody", reqBody), zap.Any("data", data))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -148,6 +151,7 @@ func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Req
 // @Tags nft-explorer
 // @Accept  json
 // @Produce  json
+// @Param is_big_file query bool false "is_big_file"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
 // @Param name query string false "name"
@@ -158,7 +162,7 @@ func (h *httpDelivery) updateCollectionDetail(w http.ResponseWriter, r *http.Req
 func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			contractAddress := vars["contractAddress"]
+			contractAddress := strings.ToLower(vars["contractAddress"])
 			iPagination := ctx.Value(utils.PAGINATION)
 
 			p := iPagination.(request.PaginationReq)
@@ -168,19 +172,70 @@ func (h *httpDelivery) collectionNfts(w http.ResponseWriter, r *http.Request) {
 			name := r.URL.Query().Get("name")
 
 			filter := request.CollectionsFilter{
-				Owner: &owner,
-				Address: &contractAddress,
-				Name: &name,
+				Owner:         &owner,
+				Address:       &contractAddress,
+				Name:          &name,
 				PaginationReq: p,
 			}
 
-			data, err := h.Usecase.CollectionNfts(ctx, contractAddress, filter)
+			isBigFile := r.URL.Query().Get("is_big_file")
+			if isBigFile != "" {
+				isBigFileBool, err := strconv.ParseBool(isBigFile)
+				if err == nil {
+					filter.IsBigFile = &isBigFileBool
+				}
+			}
+
+			if strings.ToLower(contractAddress) == strings.ToLower("0x16EfDc6D3F977E39DAc0Eb0E123FefFeD4320Bc0") {
+				if r.URL.Query().Get("allow_empty") == "false" {
+					// artifact
+					tmp := true
+					filter.ContentTypeNotEmpty = &tmp
+				}
+			}
+
+			coll, err := h.Usecase.CollectionDetail(ctx, contractAddress)
 			if err != nil {
-				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination",iPagination) , zap.String("contractAddress", contractAddress), zap.Error(err))
+				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination", iPagination), zap.String("contractAddress", contractAddress), zap.Error(err))
+			}
+			data, err := h.Usecase.CollectionNfts(ctx, contractAddress, filter)
+			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
+			for _, i := range data {
+				if i.Name == "" {
+					if bnsAddress == contractAddress {
+						key := helpers.BnsTokenNameKey(i.TokenID)
+						existed, _ := h.Usecase.Cache.Exists(key)
+						if existed != nil && *existed == true {
+							cached, _ := h.Usecase.Cache.GetData(key)
+							if cached != nil {
+								i.Name = *cached
+							}
+						} else {
+							bnsName, _ := h.Usecase.BnsService.NameByToken(i.TokenID)
+							if bnsName != nil {
+								i.Name = bnsName.Name
+								h.Usecase.Cache.SetStringData(key, i.Name)
+							}
+
+						}
+					} else {
+						tokenIdBigInt, _ := new(big.Int).SetString(i.TokenID, 10)
+						g, _ := new(big.Int).SetString("1000000", 10)
+						if tokenIdBigInt.Cmp(g) > 0 {
+							// TODO maybe from generative
+							i.Name = coll.Name + " #" + tokenIdBigInt.Mod(tokenIdBigInt, g).String()
+						} else {
+							i.Name = coll.Name + " #" + i.TokenID
+						}
+					}
+				}
+			}
+			if err != nil {
+				logger.AtLog.Logger.Error("collectionNfts", zap.Any("iPagination", iPagination), zap.String("contractAddress", contractAddress), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("collectionNfts", zap.Any("iPagination",iPagination), zap.String("contractAddress", contractAddress), zap.Any("data", len(data)))
+			logger.AtLog.Logger.Info("collectionNfts", zap.Any("iPagination", iPagination), zap.String("contractAddress", contractAddress), zap.Any("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -200,7 +255,7 @@ func (h *httpDelivery) collectionNftDetail(w http.ResponseWriter, r *http.Reques
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 
-			contractAddress := vars["contractAddress"]
+			contractAddress := strings.ToLower(vars["contractAddress"])
 			tokenID := vars["tokenID"]
 			data, err := h.Usecase.CollectionNftDetail(ctx, contractAddress, tokenID)
 			if err != nil {
@@ -227,22 +282,22 @@ func (h *httpDelivery) collectionNftDetail(w http.ResponseWriter, r *http.Reques
 func (h *httpDelivery) collectionNftContent(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
-	
+
 	contractAddress := vars["contractAddress"]
 	tokenID := vars["tokenID"]
 	data, ctype, err := h.Usecase.CollectionNftContent(ctx, contractAddress, tokenID)
 	if err != nil {
 		logger.AtLog.Logger.Error("collectionNftContent", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Error(err))
 		h.Response.RespondWithError(w, http.StatusBadRequest, response.Error, err)
-		return 
+		return
 	}
 
 	logger.AtLog.Logger.Info("collectionNftContent", zap.String("contractAddress", contractAddress), zap.String("tokenID", tokenID), zap.Any("data", len(data)))
-	
+
 	w.Header().Set("Content-Type", ctype)
 	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 	w.Write(data)
-	return 
+	return
 }
 
 // UserCredits godoc
@@ -262,11 +317,11 @@ func (h *httpDelivery) nfts(w http.ResponseWriter, r *http.Request) {
 
 			data, err := h.Usecase.Nfts(ctx, iPagination.(request.PaginationReq))
 			if err != nil {
-				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination",iPagination), zap.Error(err))
+				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination", iPagination), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination",iPagination), zap.Any("data", len(data)))
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -296,6 +351,32 @@ func (h *httpDelivery) nftByWalletAddress(w http.ResponseWriter, r *http.Request
 
 			logger.AtLog.Logger.Info("nftByWalletAddress", zap.Any("pagination", iPagination), zap.String("tokenID", tokenID), zap.Int("data", len(data)))
 			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
+// @Summary refresh-nft
+// @Description refresh-nft
+// @Tags nft-explorer
+// @Accept  json
+// @Produce  json
+// @Param contractAddress path string true "contractAddress"
+// @Param tokenID path string true "tokenID"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /nft-explorer/refresh-nft/contracts/{contractAddress}/token/{tokenID} [GET]
+func (h *httpDelivery) refreshNft(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			contractAddress := vars["contractAddress"]
+			tokenID := vars["tokenID"]
+
+			resp, err := h.Usecase.RefreshNft(context.Background(), contractAddress, tokenID)
+			if err != nil {
+				return nil, err
+			}
+
+			return resp, nil
 		},
 	).ServeHTTP(w, r)
 }

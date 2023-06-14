@@ -17,6 +17,11 @@ import (
 // @Tags BNS-service
 // @Accept  json
 // @Produce  json
+// @Param name query string false "name"
+// @Param token_id query string false "token id"
+// @Param resolver query string false "resolver"
+// @Param owner query string false "owner"
+// @Param pfp query string false "pfp"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
 // @Success 200 {object} response.JsonResponse{}
@@ -24,19 +29,19 @@ import (
 func (h *httpDelivery) bnsNames(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			iPagination := ctx.Value(utils.PAGINATION)
-			
-			filter := request.FilterBNSNames{
-				PaginationReq: iPagination.(request.PaginationReq),
-			}
-
-			data, err := h.Usecase.BnsNames(ctx, filter)
+			filter, err := h.createFilterBns(ctx, r, vars)
 			if err != nil {
-				logger.AtLog.Logger.Error("bnsNames",zap.Any("filter",filter), zap.Error(err))
+				logger.AtLog.Logger.Error("bnsNames", zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("bnsNames",zap.Any("filter",filter), zap.Any("data", len(data)))
+			data, err := h.Usecase.BnsNames(ctx, *filter)
+			if err != nil {
+				logger.AtLog.Logger.Error("bnsNames", zap.Any("filter", filter), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("bnsNames", zap.Any("filter", filter), zap.Any("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -48,21 +53,21 @@ func (h *httpDelivery) bnsNames(w http.ResponseWriter, r *http.Request) {
 // @Tags BNS-service
 // @Accept  json
 // @Produce  json
-// @Param name path string false "name"
+// @Param token_id path string true "token_id"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /bns-service/names/{name} [GET]
+// @Router /bns-service/names/{token_id} [GET]
 func (h *httpDelivery) bnsName(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			name := vars["name"]
+			tokenID := vars["token_id"]
 
-			data, err := h.Usecase.BnsName(ctx, name)
+			data, err := h.Usecase.BnsName(ctx, tokenID)
 			if err != nil {
-				logger.AtLog.Logger.Error("bnsName",zap.Any("filter",name), zap.Error(err))
+				logger.AtLog.Logger.Error("bnsName", zap.Any("tokenID", tokenID), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("bnsName",zap.Any("filter",name), zap.Any("data", data))
+			logger.AtLog.Logger.Info("bnsName", zap.Any("filter", tokenID), zap.Any("data", data))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -84,11 +89,11 @@ func (h *httpDelivery) bnsNameAvailable(w http.ResponseWriter, r *http.Request) 
 
 			data, err := h.Usecase.BnsNameAvailable(ctx, name)
 			if err != nil {
-				logger.AtLog.Logger.Error("bnsName",zap.Any("filter",name), zap.Error(err))
+				logger.AtLog.Logger.Error("bnsName", zap.Any("filter", name), zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("bnsName",zap.Any("filter",name), zap.Any("data", data))
+			logger.AtLog.Logger.Info("bnsName", zap.Any("filter", name), zap.Any("data", data))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
@@ -108,20 +113,65 @@ func (h *httpDelivery) bnsNameAvailable(w http.ResponseWriter, r *http.Request) 
 func (h *httpDelivery) bnsNameOwnedByWalletAddress(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			walletAddress := vars["wallet_address"]
-			iPagination := ctx.Value(utils.PAGINATION)
-			filter := request.FilterBNSNames{
-				PaginationReq: iPagination.(request.PaginationReq),
-			}
-
-			data, err := h.Usecase.BnsNamesOnwedByWalletAddress(ctx, walletAddress, filter)
+			filter, err := h.createFilterBns(ctx, r, vars)
 			if err != nil {
-				logger.AtLog.Logger.Error("bnsName",zap.Any("filter",walletAddress), zap.Error(err))
+				logger.AtLog.Logger.Error("bnsNameOwnedByWalletAddress", zap.Error(err))
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("bnsName",zap.Any("filter",walletAddress), zap.Any("data", len(data)))
+			data, err := h.Usecase.BnsNames(ctx, *filter)
+			if err != nil {
+				logger.AtLog.Logger.Error("bnsNameOwnedByWalletAddress", zap.Any("filter", filter), zap.Error(err))
+				return nil, err
+			}
+
+			logger.AtLog.Logger.Info("bnsNameOwnedByWalletAddress", zap.Any("filter", filter), zap.Any("data", len(data)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) createFilterBns(ctx context.Context, r *http.Request, vars map[string]string) (*request.FilterBNSNames, error) {
+	iPagination := ctx.Value(utils.PAGINATION)
+
+	filter := request.FilterBNSNames{
+		PaginationReq: iPagination.(request.PaginationReq),
+	}
+
+	name := r.URL.Query().Get("name")
+	if name != "" {
+		filter.Name = &name
+	}
+
+	owner := r.URL.Query().Get("owner")
+	if owner != "" {
+		filter.Owner = &owner
+	}
+
+	ownerVar := vars["wallet_address"]
+	if ownerVar != "" {
+		filter.Owner = &ownerVar
+	}
+
+	tokenID := r.URL.Query().Get("token_id")
+	if tokenID != "" {
+		filter.TokenID = &tokenID
+	}
+
+	tokenIDVar := vars["token_id"]
+	if tokenIDVar != "" {
+		filter.TokenID = &tokenIDVar
+	}
+
+	resolver := r.URL.Query().Get("resolver")
+	if resolver != "" {
+		filter.Resolver = &resolver
+	}
+
+	pfp := r.URL.Query().Get("pfp")
+	if resolver != "" {
+		filter.PFP = &pfp
+	}
+
+	return &filter, nil
 }

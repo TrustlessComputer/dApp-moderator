@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/secretmanager v1.10.1
 	cloud.google.com/go/storage v1.29.0
 	github.com/PuerkitoBio/goquery v1.8.1
+	github.com/andybalholm/brotli v1.0.5
 	github.com/aws/aws-sdk-go v1.44.211
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/btcutil v1.0.2

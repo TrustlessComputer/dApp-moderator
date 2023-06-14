@@ -24,16 +24,17 @@ type Token struct {
 	Slug            string `json:"slug" bson:"slug"`
 
 	// edit able
-	Status          string `json:"status" bson:"status"`
-	Symbol          string `json:"symbol" bson:"symbol"`
-	Name            string `json:"name" bson:"name"`
-	Thumbnail       string `json:"thumbnail" bson:"thumbnail"`
-	Description     string `json:"description" bson:"description"`
-	Social          Social `json:"social" bson:"social"`
-	Index           int64  `json:"index" bson:"index"`
-	Network         string `json:"network" bson:"network"`
-	Priority        int64  `json:"priority" bson:"priority"`
-	BaseTokenSymbol string `json:"base_token_symbol" bson:"base_token_symbol,omitempty"`
+	Status             string            `json:"status" bson:"status"`
+	Symbol             string            `json:"symbol" bson:"symbol"`
+	Name               string            `json:"name" bson:"name"`
+	Thumbnail          string            `json:"thumbnail" bson:"thumbnail"`
+	Description        string            `json:"description" bson:"description"`
+	Social             Social            `json:"social" bson:"social"`
+	Index              int64             `json:"index" bson:"index"`
+	Network            string            `json:"network" bson:"network"`
+	Priority           int64             `json:"priority" bson:"priority"`
+	BaseTokenSymbol    string            `json:"base_token_symbol" bson:"base_token_symbol,omitempty"`
+	BaseTokenSymbolObj map[string]string `json:"base_token_symbol_obj" bson:"base_token_symbol_obj,omitempty"`
 }
 
 func (t *Token) CollectionName() string {
@@ -101,4 +102,8 @@ func (t *TokenReportFilter) FromPagination(pag request.PaginationReq) {
 	if pag.Page != nil && *pag.Page > 0 {
 		t.Page = int64(*pag.Page)
 	}
+}
+
+type TokenUri struct {
+	AnimationUrl string `json:"animation_url"`
 }

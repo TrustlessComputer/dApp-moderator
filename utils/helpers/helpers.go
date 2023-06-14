@@ -7,13 +7,19 @@ import (
 	"crypto/cipher"
 	"crypto/md5"
 	"encoding/base64"
+	b64 "encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"math"
 	"math/big"
 	"net/http"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
@@ -190,7 +196,8 @@ func ConvertWeiToBigFloatNegative(amt *big.Int, decimals uint) *big.Float {
 }
 
 func SlackHook(channel, content string) error {
-	slackURL := "https://hooks.slack.com/services/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"
+	slackURL := "https://hooks.slack.com/services/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"
+	// slackURL := "https://hooks.slack.com/services/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"
 	go func() error {
 		bodyRequest, err := json.Marshal(map[string]interface{}{
 			"channel":  channel,
@@ -324,4 +331,117 @@ func GetGoogleSecretKey(name string) (string, error) {
 	}
 
 	return string(result.Payload.Data), nil
+}
+
+func Base64Decode(base64Str string) ([]byte, error) {
+	sDec, err := b64.StdEncoding.DecodeString(base64Str)
+	if err != nil {
+		return nil, err
+	}
+	return sDec, nil
+}
+
+func TxHashInfo(txhash string) ([]byte, *http.Header, int, error) {
+	txhash = strings.ToLower(txhash)
+	url := os.Getenv("TC_ENDPOINT")
+	requestBody := make(map[string]interface{})
+	requestBody["version"] = "2.0"
+	requestBody["method"] = "eth_getTransactionByHash"
+	requestBody["params"] = []string{txhash}
+	return HttpRequest(url, "POST", make(map[string]string), requestBody)
+}
+
+func BnsTokenNameKey(token string) string {
+	return fmt.Sprintf("bns.token.%s", token)
+}
+
+func TokenRateKey(address string) string {
+	return fmt.Sprintf("token.rate.%s", strings.ToLower(address))
+}
+
+func GetExternalPrice(tokenSymbol string) (float64, error) {
+	binanceAPI := os.Getenv("BINANCE_API")
+	if binanceAPI == "" {
+		binanceAPI = "https://api.binance.com"
+	}
+	binancePriceURL := fmt.Sprintf("%v/api/v3/ticker/price?symbol=", binanceAPI)
+	var price struct {
+		Symbol string `json:"symbol"`
+		Price  string `json:"price"`
+	}
+	var jsonErr struct {
+		Code int    `json:"code"`
+		Msg  string `json:"msg"`
+	}
+	retryTimes := 0
+retry:
+	retryTimes++
+	if retryTimes > 2 {
+		return 0, nil
+	}
+	tk := strings.ToUpper(tokenSymbol)
+	resp, err := http.Get(binancePriceURL + tk + "USDT")
+	if err != nil {
+		log.Println(err)
+		goto retry
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = json.Unmarshal(body, &price)
+	if err != nil {
+		err = json.Unmarshal(body, &jsonErr)
+		if err != nil {
+			log.Println(err)
+			goto retry
+		}
+	}
+	resp.Body.Close()
+	value, err := strconv.ParseFloat(price.Price, 32)
+	if err != nil {
+		log.Println("getExternalPrice", tokenSymbol, err)
+		return 0, nil
+	}
+	return value, nil
+}
+
+func GetValue(amount string, decimal float64) float64 {
+	amountBig := new(big.Float)
+	amountBig.SetString(amount)
+
+	pow10 := math.Pow10(int(decimal))
+	pow10Big := big.NewFloat(pow10)
+
+	result := amountBig.Quo(amountBig, pow10Big) //divide
+	amountInt, _ := result.Float64()
+	return amountInt
+}
+
+func ConvertAmountString(amount float64) string {
+
+	result := ConvertAmount(amount)
+	amountInt, _ := result.Int64()
+	return fmt.Sprintf("%d", amountInt)
+}
+
+func ConvertAmount(amount float64) *big.Float {
+	decimal := 18
+	amountBig := big.NewFloat(amount)
+
+	pow10 := math.Pow10(int(decimal))
+	pow10Big := big.NewFloat(pow10)
+
+	result := amountBig.Mul(amountBig, pow10Big) //divide
+	return result
+}
+
+func InArray(text string, arrayText []string) bool {
+	for _, item := range arrayText {
+		if strings.ToLower(item) == strings.ToLower(text) {
+			return true
+		}
+	}
+
+	return false
 }

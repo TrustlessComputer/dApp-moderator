@@ -5,6 +5,9 @@ import (
 	"dapp-moderator/external/bns_service"
 	"dapp-moderator/utils"
 	discordclient "dapp-moderator/utils/discord"
+	"dapp-moderator/utils/helpers"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -63,7 +66,7 @@ func (u *Usecase) NewCollectionNotify(collection *entity.Collections) error {
 					Url: fmt.Sprintf("https://explorer.trustless.computer/token/%s/token-transfers", collection.Contract),
 					Fields: []discordclient.Field{
 						{
-							Value:  fmt.Sprintf("**Collection Name: [%s](https://trustlessnfts.com/collection?contract=%s)**", utils.NameOrAddress(collection.Name, collection.Contract), collection.Contract),
+							Value:  fmt.Sprintf("**Collection Name: [%s](https://trustlessnfts.com/collection/%s)**", utils.NameOrAddress(collection.Name, collection.Contract), collection.Contract),
 							Inline: false,
 						},
 						{
@@ -111,19 +114,19 @@ func (u *Usecase) NewNameNotify(bns *bns_service.NameResp) error {
 
 func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	message := discordclient.Message{
-		Content:   fmt.Sprintf("**NEW ARTIFACT #%s**", nfts.TokenID),
+		Content:   fmt.Sprintf("**NEW SMART INSCRIPTION**"),
 		Username:  "Satoshi 27",
 		AvatarUrl: "",
 		Embeds: []discordclient.Embed{
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Owner: [%s](https://explorer.trustless.computer/address/%s/token-transfers)**", utils.ShortenBlockAddress(nfts.Owner), nfts.Owner),
-						Inline: false,
+						Value:  fmt.Sprintf("**Owner:** \n%s", utils.ShortenBlockAddress(nfts.Owner)),
+						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**Type: %s**", nfts.ContentType),
-						Inline: false,
+						Value:  fmt.Sprintf("**Type:** \n%s", nfts.ContentType),
+						Inline: true,
 					},
 				},
 			},
@@ -145,7 +148,57 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 
 	if nfts.Image != "" && strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
 		notify.Message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+	} else {
+		notify.Message.Embeds[0].Image.Url = nfts.Image
 	}
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Smart Inscription #%s", nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("https://smartinscription.xyz/%s", nfts.TokenID)
+
+	return u.CreateDiscordNotify(notify)
+}
+
+// it's disabled by order
+func (u *Usecase) NewMintTokenNotify(nfts *entity.Nfts) error {
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**MINT**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Owner:** \n%s", utils.ShortenBlockAddress(nfts.Owner)),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Type:** \n%s", nfts.ContentType),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+	if nfts.Image != "" {
+		if strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
+			message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+		} else {
+			message.Embeds[0].Image.Url = nfts.Image
+		}
+
+	}
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventNewArtifact,
+	}
+
+	if nfts.Image != "" && strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
+		notify.Message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+	} else {
+		notify.Message.Embeds[0].Image.Url = nfts.Image
+	}
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Smart Inscription #%s", nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("https://smartinscription.xyz/%s", nfts.TokenID)
 
 	return u.CreateDiscordNotify(notify)
 }
@@ -169,12 +222,13 @@ func (u *Usecase) JobSendDiscord() error {
 
 		for _, notify := range notifications {
 			if err = u.DiscordClient.SendMessage(context.TODO(), notify.Webhook, notify.Message); err != nil {
-				logger.AtLog.Logger.Info("Send discord message failed", zap.Error(err))
+
 				err = u.Repo.UpdateDiscord(context.TODO(), notify.Id(), map[string]interface{}{
 					"num_retried": notify.NumRetried + 1,
 				})
+
 				if err != nil {
-					logger.AtLog.Logger.Info("Update discord status failed", zap.Error(err))
+					logger.AtLog.Logger.Error(fmt.Sprintf("Send discord message failed - %s", notify.Message.Content), zap.Error(err))
 				}
 
 				if notify.NumRetried+1 == entity.MaxSendDiscordRetryTimes {
@@ -183,7 +237,7 @@ func (u *Usecase) JobSendDiscord() error {
 						"note":   fmt.Sprintf("failed after %d times", entity.MaxSendDiscordRetryTimes),
 					})
 					if err != nil {
-						logger.AtLog.Logger.Info("Update discord status failed", zap.Error(err))
+						logger.AtLog.Logger.Error(fmt.Sprintf("Send discord message failed - %s", notify.Message.Content), zap.Error(err))
 					}
 				}
 			} else {
@@ -192,7 +246,7 @@ func (u *Usecase) JobSendDiscord() error {
 					"note":   "messaged is sent at " + time.Now().Format(time.RFC3339),
 				})
 				if err != nil {
-					logger.AtLog.Logger.Info("Update discord status failed", zap.Error(err))
+					logger.AtLog.Logger.Error(fmt.Sprintf("Send discord message failed - %s", notify.Message.Content), zap.Error(err))
 				}
 			}
 		}
@@ -222,9 +276,204 @@ func (u *Usecase) CreateDiscordNotify(notify *entity.DiscordNotification) error 
 	return nil
 }
 
+func (u *Usecase) NewListForSaleNotify(listing *entity.MarketplaceListings) (*entity.DiscordNotification, error) {
+	logger.AtLog.Logger.Info(fmt.Sprintf("NewListForSaleNotify %s %s", listing.CollectionContract, listing.TokenId), zap.String("offering id", listing.OfferingId))
+
+	nfts, err := u.Repo.GetNft(listing.CollectionContract, listing.TokenId)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", listing.CollectionContract, listing.TokenId), zap.Error(err), zap.String("offering id", listing.OfferingId))
+		return nil, err
+	}
+
+	collection, err := u.Repo.GetCollection(nfts.ContractAddress)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", listing.CollectionContract, listing.TokenId), zap.Error(err), zap.String("offering id", listing.OfferingId))
+		return nil, err
+	}
+
+	p := helpers.GetValue(listing.Price, 18)
+	r := listing.Erc20Token
+	token := ""
+	if strings.ToLower(r) == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
+		token = "WETH"
+	} else if strings.ToLower(r) == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
+		token = "WBTC"
+	} else {
+		return nil, errors.New("Cannot detect ERC20")
+	}
+
+	owner := listing.Seller
+	price := fmt.Sprintf("%f %s", p, token)
+
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**NEW LISTING**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**List Price:** \n%s", price),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Seller:** \n%s", utils.ShortenBlockAddress(owner)),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventListForSale,
+	}
+
+	image := fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", nfts.ContractAddress, nfts.TokenID)
+	notify.Message.Embeds[0].Image.Url = u.ParseSvgImage(image)
+
+	notify.Message.Embeds[0].Title = fmt.Sprintf("%s #%s", collection.Name, nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("https://trustlessnfts.com/collection/%s/token/%s", nfts.ContractAddress, nfts.TokenID)
+
+	if os.Getenv("ENV") == "production" {
+		err = u.CreateDiscordNotify(notify)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("ListForSaleNotify %s %s", listing.CollectionContract, listing.TokenId), zap.Error(err), zap.String("offering id", listing.OfferingId))
+			return nil, err
+		}
+	}
+
+	return notify, nil
+}
+
+func (u *Usecase) NewPurchaseTokenNotify(offeringID string) (*entity.DiscordNotification, error) {
+	logger.AtLog.Logger.Info(fmt.Sprintf("NewPurchaseTokenNotify %s", offeringID), zap.String("offeringID", offeringID))
+
+	ml, err := u.Repo.GetMarketplaceListing(offeringID)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId))
+		return nil, err
+	}
+
+	nfts, err := u.Repo.GetNft(ml.CollectionContract, ml.TokenId)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId), zap.Any("nfts", nfts))
+		return nil, err
+	}
+
+	collection, err := u.Repo.GetCollection(nfts.ContractAddress)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId), zap.Any("nfts", nfts))
+		return nil, err
+	}
+
+	mkpActivities, err := u.Repo.PurchaseMKPActivity(offeringID)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("NewListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId), zap.Any("nfts", nfts))
+		return nil, err
+	}
+
+	p := helpers.GetValue(ml.Price, 18)
+	r := ml.Erc20Token
+	token := ""
+	if strings.ToLower(r) == strings.ToLower(os.Getenv("WETH_ADDRESS")) {
+		token = "WETH"
+	} else if strings.ToLower(r) == strings.ToLower(os.Getenv("WBTC_ADDRESS")) {
+		token = "WBTC"
+	} else {
+		return nil, errors.New("Cannot detect ERC20")
+	}
+
+	price := fmt.Sprintf("%f %s", p, token)
+
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**NEW SALE**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Sale Price:** \n%s", price),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Buyer:** \n%s", utils.ShortenBlockAddress(mkpActivities.UserBAddress)),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Seller:** \n%s", utils.ShortenBlockAddress(mkpActivities.UserAAddress)),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventPurchaseListing,
+	}
+
+	image := fmt.Sprintf("https://dapp.trustless.computer/dapp/api/nft-explorer/collections/%s/nfts/%s/content", nfts.ContractAddress, nfts.TokenID)
+	notify.Message.Embeds[0].Image.Url = u.ParseSvgImage(image)
+
+	notify.Message.Embeds[0].Title = fmt.Sprintf("%s #%s", collection.Name, nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("https://trustlessnfts.com/collection/%s/token/%s", nfts.ContractAddress, nfts.TokenID)
+
+	if os.Getenv("ENV") == "production" {
+		err = u.CreateDiscordNotify(notify)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("ListForSaleNotify %s %s", ml.CollectionContract, ml.TokenId), zap.Error(err), zap.String("offering id", ml.OfferingId))
+			return nil, err
+		}
+	}
+
+	return notify, nil
+}
+
+func (u *Usecase) ParseSvgImage(imageURL string) string {
+	parseImageUrl := "https://devnet.generative.xyz/generative/api/photo/pare-svg"
+
+	postData := make(map[string]interface{})
+	postData["display_url"] = imageURL
+	postData["delay_time"] = 1
+	postData["app_id"] = "dapp"
+
+	resp, _, _, err := helpers.HttpRequest(parseImageUrl, "POST", make(map[string]string), postData)
+	if err != nil {
+		return imageURL
+	}
+
+	type respdata struct {
+		Err    error  `json:"error"`
+		Status bool   `json:"status"`
+		Data   string `json:"data"`
+	}
+
+	response := &respdata{}
+	err = json.Unmarshal(resp, response)
+	if err != nil {
+		return imageURL
+	}
+
+	if !response.Status {
+		return imageURL
+	}
+
+	if response.Err != nil {
+		return imageURL
+	}
+
+	return strings.ReplaceAll(response.Data, "https", "http")
+}
+
 func (u *Usecase) TestSendNotify() {
 	env := os.Getenv("ENVIRONMENT")
-	if env == "local" {
+	if env == "production" {
 		nft := &entity.Nfts{
 			TokenID:     "1",
 			Owner:       "0xb764d696aa52f6a7e6ec6647c7d7a7736f3aff59",

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"strings"
 
@@ -83,4 +84,97 @@ func (r *Repository) UpdateNftOwner(contract string, tokenID string, owner strin
 
 	return updated, nil
 
+}
+
+func (r *Repository) GetNfts(collectionAddress string, skip int, limit int) ([]entity.Nfts, error) {
+	f2 := bson.A{
+		bson.D{
+			{"$match",
+				bson.D{
+					{"collection_address", strings.ToLower(collectionAddress)},
+					{"image", bson.D{{"$ne", ""}}},
+				},
+			},
+		},
+
+		bson.D{{"$skip", skip}},
+		bson.D{{"$limit", limit}},
+	}
+
+	groupedNfts := []entity.Nfts{}
+	cursor, err := r.DB.Collection(entity.Nfts{}.CollectionName()).Aggregate(context.TODO(), f2)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if err = cursor.All((context.TODO()), &groupedNfts); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return groupedNfts, nil
+}
+
+func (r *Repository) RefreshNft(contract string, tokenID string, metadataType string, contentType string, attributes []nft_explorer.NftAttr, mintedAt float64, metadata interface{}) (*mongo.UpdateResult, error) {
+	f := bson.D{
+		{"collection_address", contract},
+		{"token_id", tokenID},
+	}
+
+	update := bson.M{"$set": bson.M{
+		"content_type":  strings.ToLower(contentType),
+		"metadata_type": strings.ToLower(metadataType),
+		"minted_at":     mintedAt,
+		"attributes":    attributes,
+		"metadata":      metadata,
+	}}
+
+	updated, err := r.UpdateOne(entity.Nfts{}.CollectionName(), f, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+
+}
+
+func (r *Repository) GetMarketplaceListing(offeringID string) (*entity.MarketplaceListings, error) {
+	nftResp, err := r.FindOne(entity.MarketplaceListings{}.CollectionName(), bson.D{
+		{"offering_id", strings.ToLower(offeringID)},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	ml := &entity.MarketplaceListings{}
+	err = nftResp.Decode(ml)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ml, nil
+
+}
+
+func (r *Repository) SoulNfts(contract string) ([]entity.Nfts, error) {
+	result := []entity.Nfts{}
+
+	f := bson.A{
+		bson.D{
+			{"$match", bson.D{
+				{"collection_address", strings.ToLower(contract)},
+			}},
+		},
+	}
+
+	cursor, err := r.DB.Collection(entity.Nfts{}.CollectionName()).Aggregate(context.TODO(), f)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All((context.TODO()), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

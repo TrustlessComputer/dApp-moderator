@@ -6,7 +6,6 @@ import (
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/helpers"
 	"errors"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -63,7 +62,7 @@ func (r *Repository) InsertMany(data []entity.IEntity) (*mongo.InsertManyResult,
 		if err != nil {
 			return nil, err
 		}
-		insertedData  = append(insertedData, *tmp)
+		insertedData = append(insertedData, *tmp)
 	}
 
 	opts := options.InsertMany().SetOrdered(false)
@@ -71,7 +70,7 @@ func (r *Repository) InsertMany(data []entity.IEntity) (*mongo.InsertManyResult,
 	if err != nil {
 		return nil, err
 	}
-	return inserted,  nil
+	return inserted, nil
 }
 
 func (r *Repository) UpdateOne(collectionName string, filter bson.D, updatedData bson.M) (*mongo.UpdateResult, error) {
@@ -82,8 +81,24 @@ func (r *Repository) UpdateOne(collectionName string, filter bson.D, updatedData
 	return inserted, nil
 }
 
+func (r *Repository) UpdateOneWithOptions(collectionName string, filter bson.D, updatedData bson.M, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	inserted, err := r.DB.Collection(collectionName).UpdateOne(context.TODO(), filter, updatedData, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return inserted, nil
+}
+
 func (r *Repository) UpdateMany(collectionName string, filter bson.D, updatedData bson.M) (*mongo.UpdateResult, error) {
 	inserted, err := r.DB.Collection(collectionName).UpdateMany(context.TODO(), filter, updatedData)
+	if err != nil {
+		return nil, err
+	}
+	return inserted, nil
+}
+
+func (r *Repository) UpdateManyWithOptions(collectionName string, filter bson.D, updatedData bson.M, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	inserted, err := r.DB.Collection(collectionName).UpdateMany(context.TODO(), filter, updatedData, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +157,7 @@ func (r *Repository) FindOne(collectionName string, filter bson.D) (*mongo.Singl
 	return sr, nil
 }
 
-func (r *Repository) Find(collectionName string, filter bson.D, limit int64, offset int64, result interface{}, sort bson.D ) error {
+func (r *Repository) Find(collectionName string, filter bson.D, limit int64, offset int64, result interface{}, sort bson.D) error {
 	opts := &options.FindOptions{}
 	opts.Limit = &limit
 	opts.Skip = &offset
@@ -158,4 +173,32 @@ func (r *Repository) Find(collectionName string, filter bson.D, limit int64, off
 		return err
 	}
 	return nil
+}
+
+func (r *Repository) FindWithProjections(collectionName string, filter bson.D, limit int64, offset int64, result interface{}, sort bson.D, project bson.D) error {
+	opts := &options.FindOptions{}
+	opts.Limit = &limit
+	opts.Skip = &offset
+	opts.Sort = sort
+	opts.Projection = project
+
+	cursor, err := r.DB.Collection(collectionName).Find(context.TODO(), filter, opts)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	if err := cursor.All(ctx, result); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *Repository) AllItems(collectionName string, filter bson.D) (int64, error) {
+	count, err := r.DB.Collection(collectionName).CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

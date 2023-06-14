@@ -134,17 +134,25 @@ const (
 	KEY_LISTING_CONTRACT           string = "collection_contract"
 	KEY_BTC_WALLET_INFO            string = "btc_wallet_info"
 
-	COLLECTION_COLLECTIONS         string = "collections"   //ERC721, a collection has many nfts
-	COLLECTION_NFTS                string = "nfts"          //ERC721
-	COLLECTION_NFT_HISTORIES       string = "nft_histories" //ERC721 - histories
-	COLLECTION_ALLOW_LIST          string = "allow_list"
-	COLLECTION_INSERTED_ALLOW_LIST string = "inserted_allow_list"
-	COLLECTION_FAUCETS             string = "faucets"
+	COLLECTION_COLLECTIONS                string = "collections"   //ERC721, a collection has many nfts
+	COLLECTION_NFTS                       string = "nfts"          //ERC721
+	COLLECTION_NFT_AUCTIONS               string = "nft_auction"   //ERC721
+	COLLECTION_BNS                        string = "bns"           //ERC721
+	VIEW_BNS                              string = "bns_view"      //ERC721
+	COLLECTION_NFT_HISTORIES              string = "nft_histories" //ERC721 - histories
+	COLLECTION_ALLOW_LIST                 string = "allow_list"
+	COLLECTION_INSERTED_ALLOW_LIST        string = "inserted_allow_list"
+	COLLECTION_FAUCETS                    string = "faucets"
+	COLLECTION_MARKETPLACE_LISTING        string = "marketplace_listings"
+	COLLECTION_MARKETPLACE_OFFER          string = "marketplace_offers"
+	COLLECTION_MARKETPLACE_TOKEN_ACTIVITY string = "marketplace_token_activities"
 
-	COLLECTION_TOKEN_URI      string = "token_uris"
-	COLLECTION_TOKENS         string = "tokens"
-	COLLECTION_USERS          string = "users"
-	COLLECTION_USER_HISTORIES string = "user_histories"
+	COLLECTION_TOKEN_URI            string = "token_uris"
+	COLLECTION_TOKENS               string = "tokens"
+	COLLECTION_USERS                string = "users"
+	COLLECTION_USER_HISTORIES       string = "user_histories"
+	COLLECTION_UPLOADED_FILES       string = "uploaded_files"
+	COLLECTION_UPLOADED_FILE_CHUNKS string = "uploaded_file_chunks"
 
 	COLLECTION_SWAP_CONFIGS                string = "swap_configs"
 	COLLECTION_SWAP_FE_LOGS                string = "swap_fe_logs"
@@ -162,14 +170,25 @@ const (
 	COLLECTION_SWAP_USER_GM_PAID           string = "swap_user_gm_paid"
 	COLLECTION_SWAP_BLACKLIST_TOKENS       string = "swap_blacklist_tokens"
 
-	VIEW_SWAP_LIQUIDITY_REPORT_SLACK string = "swap_liquidity_report_view"
-	VIEW_SWAP_REPORT_SLACK           string = "swap_token_report_slack_view"
-	VIEW_SWAP_REPORT_FINAL           string = "swap_token_report_final_view"
-	VIEW_SWAP_IDO_TOKEN              string = "swap_ido_tokens_view"
-	VIEW_SWAP_PAIR_VOLUME            string = "swap_pair_volume_view"
-	VIEW_SWAP_PAIR_CURRENT_RESERVE   string = "swap_pair_current_reserve_view"
+
 	VIEW_SWAP_IDO_LIST_VIEW          string = "swap_ido_list_view"
-	VIEW_SWAP_PAIR_APR               string = "swap_pair_apr_view"
+	VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES           string = "marketplace_nft_with_attributes_view"
+	VIEW_SWAP_LIQUIDITY_REPORT_SLACK               string = "swap_liquidity_report_view"
+	VIEW_SWAP_REPORT_SLACK                         string = "swap_token_report_slack_view"
+	VIEW_SWAP_REPORT_FINAL                         string = "swap_token_report_final_view"
+	VIEW_SWAP_IDO_TOKEN                            string = "swap_ido_tokens_view"
+	VIEW_SWAP_PAIR_VOLUME                          string = "swap_pair_volume_view"
+	VIEW_SWAP_PAIR_CURRENT_RESERVE                 string = "swap_pair_current_reserve_view"
+	VIEW_SWAP_PAIR_APR                             string = "swap_pair_apr_view"
+	VIEW_MARKETPLACE_COLLECTION_ATTRIBUTES         string = "marketplace_collection_attributes_view"
+	VIEW_MARKETPLACE_COLLECTION_ATTRIBUTES_PERCENT string = "marketplace_collection_attribute_percent_view"
+	VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS        string = "marketplace_aggregated_collections_view"
+	VIEW_MARKETPLACE_NFTS                          string = "marketplace_nfts_view"
+	VIEW_NEW_MARKETPLACE_NFTS                      string = "marketplace_new_nfts_view"
+	VIEW_NFT_AUCTION                               string = "nft_aution_view"
+	VIEW_MARKETPLACE_COLLECTION_CHART              string = "marketplace_collection_chart"
+	COLLECTION_MARKETPLACE_AGGREGATED_COLLECTIONS  string = "marketplace_aggregated_collections"
+
 	TRANSACTIONS string = "transactions"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"

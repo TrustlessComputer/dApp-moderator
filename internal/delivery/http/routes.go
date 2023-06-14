@@ -37,6 +37,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	nftExplorer.HandleFunc("/collections/{contractAddress}/nfts/{tokenID}/content", h.collectionNftContent).Methods("GET")
 	nftExplorer.HandleFunc("/nfts", h.nfts).Methods("GET")
 	nftExplorer.HandleFunc("/owner-address/{ownerAddress}/nfts", h.nftByWalletAddress).Methods("GET")
+	nftExplorer.HandleFunc("/refresh-nft/contracts/{contractAddress}/token/{tokenID}", h.refreshNft).Methods("GET")
 
 	nftExplorerAuth := api.PathPrefix("/nft-explorer").Subrouter()
 	nftExplorerAuth.Use(h.MiddleWare.ValidateAccessToken)
@@ -52,8 +53,8 @@ func (h *httpDelivery) RegisterV1Routes() {
 	//bns services
 	bnsServices := api.PathPrefix("/bns-service").Subrouter()
 	bnsServices.HandleFunc("/names", h.bnsNames).Methods("GET")
-	bnsServices.HandleFunc("/names/{name}", h.bnsName).Methods("GET")
-	bnsServices.HandleFunc("/names/{name}/available", h.bnsNameAvailable).Methods("GET")
+	bnsServices.HandleFunc("/names/{token_id}", h.bnsName).Methods("GET")
+	bnsServices.HandleFunc("/names/{token_id}/available", h.bnsNameAvailable).Methods("GET")
 	bnsServices.HandleFunc("/names/owned/{wallet_address}", h.bnsNameOwnedByWalletAddress).Methods("GET")
 
 	// token explorer
@@ -82,7 +83,18 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	uploadRoute := api.PathPrefix("/upload").Subrouter()
 	// uploadRoute.Use(h.MiddleWare.AuthorizationFunc) // temp pause
+	uploadRoute.HandleFunc("/file", h.filterUploadedFile).Methods("GET")
 	uploadRoute.HandleFunc("/file", h.uploadFile).Methods("POST")
+	uploadRoute.HandleFunc("/file-size", h.calculateUploadedFile).Methods("POST")
+	//uploadRoute.HandleFunc("/file/multipart-fake", h.uploadFileMultiPartFake).Methods("POST")
+	uploadRoute.HandleFunc("/file/{file_id}/tx_hash/{tx_hash}", h.updateTxHashUploadedFile).Methods("PUT")
+	uploadRoute.HandleFunc("/file/{file_id}/chunks", h.fileChunks).Methods("GET")
+	uploadRoute.HandleFunc("/file/{file_id}/chunks/{chunk_id}", h.getChunkByID).Methods("GET")
+	uploadRoute.HandleFunc("/file/{file_id}/chunks/{chunk_id}/tx_hash/{tx_hash}", h.updateTxHashForAChunk).Methods("PUT")
+
+	uploadRoute.HandleFunc("/multipart", h.CreateMultipartUpload).Methods("POST")
+	uploadRoute.HandleFunc("/multipart/{uploadID}", h.UploadPart).Methods("PUT")
+	uploadRoute.HandleFunc("/multipart/{uploadID}", h.CompleteMultipartUpload).Methods("POST")
 
 	tools := api.PathPrefix("/tools").Subrouter()
 	tools.HandleFunc("/compile-contract", h.compileContract).Methods("POST")
@@ -169,6 +181,29 @@ func (h *httpDelivery) RegisterV1Routes() {
 	// evm bytescode check
 	evmRoutes := api.PathPrefix("/evm").Subrouter()
 	evmRoutes.HandleFunc("/bytescode", h.checkEvmBytescode).Methods("POST")
+
+	//marketplace
+	marketplace := api.PathPrefix("/marketplace").Subrouter()
+	marketplace.HandleFunc("/collections", h.mkpCollections).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}", h.mkpCollectionDetail).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}/activities", h.getCollectionActivities).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}/attributes", h.mkpCollectionAttributes).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}/chart", h.getCollectionChart).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}/nfts", h.mkplaceNftsOfACollection).Methods("GET")
+	marketplace.HandleFunc("/nfts", h.mkplaceNfts).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}/nfts/{token_id}", h.mkplaceNftDetail).Methods("GET")
+	marketplace.HandleFunc("/listing/{contract_address}/token/{token_id}", h.getListingViaGenAddressTokenID).Methods("GET")
+	marketplace.HandleFunc("/offers/{contract_address}/token/{token_id}", h.getOfferViaGenAddressTokenID).Methods("GET")
+	marketplace.HandleFunc("/wallet/{wallet_address}/listing", h.getListingOfAProfile).Methods("GET")
+	marketplace.HandleFunc("/wallet/{wallet_address}/offer", h.getOffersOfAProfile).Methods("GET")
+	marketplace.HandleFunc("/contract/{contract_address}/token/{token_id}/activities", h.getTokenActivities).Methods("GET")
+
+	soul := api.PathPrefix("/soul").Subrouter()
+	soul.HandleFunc("/signature", h.SoulCreateSignature).Methods("POST")
+	soul.HandleFunc("/capture", h.SoulCaptureImage).Methods("POST")
+	soul.HandleFunc("/nfts", h.soulNfts).Methods("GET")
+	soul.HandleFunc("/nfts/{token_id}", h.soulNfts).Methods("GET")
+
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

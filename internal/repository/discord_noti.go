@@ -7,13 +7,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (r *Repository) CreateDiscordNotification(ctx context.Context, notify *entity.DiscordNotification) error {
+	now := time.Now().UTC()
 	notify.ID = primitive.NewObjectID()
 	notify.UUID = notify.Id()
+	notify.CreatedAt = &now
+
 	_, err := r.DB.Collection(utils.COLLECTION_DISCORD_NOTIFICATION).InsertOne(ctx, notify)
 	return err
 }
@@ -59,6 +63,7 @@ func (r *Repository) UpdateDiscord(ctx context.Context, id string, fields map[st
 	for k, v := range fields {
 		update[k] = v
 	}
+	update["updated_at"] = time.Now().UTC()
 
 	result, err := r.DB.Collection(utils.COLLECTION_DISCORD_NOTIFICATION).UpdateOne(ctx, filter, bson.M{"$set": update})
 	if err != nil {

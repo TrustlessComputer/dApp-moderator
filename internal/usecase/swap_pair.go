@@ -236,6 +236,7 @@ func (u *Usecase) FindTokensInPoolV1(ctx context.Context, filter request.Paginat
 func (u *Usecase) ClearCache() error {
 	redisKey := "tc-swap:wrap-token-config"
 	u.Cache.Delete(redisKey)
+	u.Cache.DeleteAllKeys("tc-swap*")
 	return nil
 
 }
@@ -329,9 +330,9 @@ func (u *Usecase) FindTokensReport(ctx context.Context, filter request.Paginatio
 		btcPrice, ethPrice := u.GetWrapTokenPriceBySymbol(ctx)
 
 		for _, item := range reports {
-			if item.BaseTokenSymbol == "" {
-				item.BaseTokenSymbol = string(entity.SwapBaseTokenSymbolWBTC)
-			}
+			// if item.BaseTokenSymbol == "" {
+			// 	item.BaseTokenSymbol = string(entity.SwapBaseTokenSymbolWBTC)
+			// }
 
 			tmUsdPrice := float64(0)
 			if item.BaseTokenSymbol == string(entity.SwapBaseTokenSymbolWETH) {
@@ -628,26 +629,42 @@ func (u *Usecase) SwapGetPairAprListReport(ctx context.Context, filter request.P
 }
 
 func (u *Usecase) GetRoutePair(ctx context.Context, fromToken, toToken string) (interface{}, error) {
-	var err error
+	// var err error
 	listPairs := []*entity.SwapPair{}
-	pair, err := u.Repo.FindSwapPairByTokens(ctx, fromToken, toToken)
-	if err != nil && err != mongo.ErrNoDocuments {
-		logger.AtLog.Logger.Error("GetRoutePair", zap.Error(err))
-		return nil, err
-	}
 	wbtcContractAddr := u.Repo.ParseConfigByString(ctx, "wbtc_contract_address")
 	ethContractAddr := u.Repo.ParseConfigByString(ctx, "weth_contract_address")
-	if pair != nil {
-		listPairs = append(listPairs, pair)
-	} else {
-		pair1, _ := u.Repo.FindSwapPairByTokens(ctx, fromToken, wbtcContractAddr)
+
+	if (fromToken == wbtcContractAddr && toToken == "0x2fe8d5A64afFc1d703aECa8a566f5e9FaeE0C003") ||
+		(toToken == wbtcContractAddr && fromToken == "0x2fe8d5A64afFc1d703aECa8a566f5e9FaeE0C003") {
+		pair1, _ := u.Repo.FindSwapPairByTokens(ctx, fromToken, ethContractAddr)
 		if pair1 != nil {
 			listPairs = append(listPairs, pair1)
 		}
 
-		pair2, _ := u.Repo.FindSwapPairByTokens(ctx, wbtcContractAddr, toToken)
+		pair2, _ := u.Repo.FindSwapPairByTokens(ctx, ethContractAddr, toToken)
 		if pair2 != nil {
 			listPairs = append(listPairs, pair2)
+		}
+	}
+
+	if len(listPairs) == 0 {
+		pair, err := u.Repo.FindSwapPairByTokens(ctx, fromToken, toToken)
+		if err != nil && err != mongo.ErrNoDocuments {
+			logger.AtLog.Logger.Error("GetRoutePair", zap.Error(err))
+			return nil, err
+		}
+		if pair != nil {
+			listPairs = append(listPairs, pair)
+		} else {
+			pair1, _ := u.Repo.FindSwapPairByTokens(ctx, fromToken, wbtcContractAddr)
+			if pair1 != nil {
+				listPairs = append(listPairs, pair1)
+			}
+
+			pair2, _ := u.Repo.FindSwapPairByTokens(ctx, wbtcContractAddr, toToken)
+			if pair2 != nil {
+				listPairs = append(listPairs, pair2)
+			}
 		}
 	}
 
@@ -944,12 +961,22 @@ func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
 			baseToken = pair.Token0Obj
 		}
 		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
-		if token != nil && token.BaseTokenSymbol == "" {
-			token.BaseTokenSymbol = baseToken.Symbol
-			err = u.Repo.UpdateBaseSymbolToken(ctx, token)
-			if err != nil {
-				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
-				return err
+		if token != nil {
+			if token.BaseTokenSymbol == "" {
+				token.BaseTokenSymbol = baseToken.Symbol
+				token.SetUpdatedAt()
+				err = u.Repo.UpdateBaseSymbolToken(ctx, token)
+				if err != nil {
+					logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+					return err
+				}
+			} else if token.BaseTokenSymbolObj == nil {
+				token.SetUpdatedAt()
+				err = u.Repo.UpdateBaseSymbolToken(ctx, token)
+				if err != nil {
+					logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+					return err
+				}
 			}
 		}
 	}
@@ -969,13 +996,22 @@ func (u *Usecase) UpdateBaseSymbolToken(ctx context.Context) error {
 			baseToken = pair.Token0Obj
 		}
 		token, _ := u.Repo.FindToken(ctx, entity.TokenFilter{Address: tmpTokenAddr})
-		if token != nil && token.BaseTokenSymbol == "" {
-			token.BaseTokenSymbol = baseToken.Symbol
-			token.SetUpdatedAt()
-			err = u.Repo.UpdateBaseSymbolToken(ctx, token)
-			if err != nil {
-				logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
-				return err
+		if token != nil {
+			if token.BaseTokenSymbol == "" {
+				token.BaseTokenSymbol = baseToken.Symbol
+				token.SetUpdatedAt()
+				err = u.Repo.UpdateBaseSymbolToken(ctx, token)
+				if err != nil {
+					logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+					return err
+				}
+			} else if token.BaseTokenSymbolObj == nil {
+				token.SetUpdatedAt()
+				err = u.Repo.UpdateBaseSymbolToken(ctx, token)
+				if err != nil {
+					logger.AtLog.Logger.Error("UpdateDataSwapPair", zap.Error(err))
+					return err
+				}
 			}
 		}
 	}

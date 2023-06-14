@@ -470,11 +470,12 @@ func (u *Usecase) MemeAllowList(ctx context.Context, userAddress string) {
 						Amount:  fmt.Sprintf("%v", fcAmount),
 						Source:  "dapp-moderator",
 					}
+					_ = fc
 
-					_, err = u.GenerativeRepo.InsertFaucet(fc)
-					if err != nil {
-						logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Any("faucet", fc), zap.Error(err))
-					}
+					//_, err = u.GenerativeRepo.InsertFaucet(fc)
+					//if err != nil {
+					//	logger.AtLog.Logger.Error("MemeAllowList", zap.String("userAddress", userAddress), zap.Any("faucet", fc), zap.Error(err))
+					//}
 				}
 			}
 
