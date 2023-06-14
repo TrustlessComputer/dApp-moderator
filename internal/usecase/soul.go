@@ -14,19 +14,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
-	"os"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
+	"math/big"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 type CheckGMBalanceOutputChan struct {
@@ -276,31 +274,34 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 		if err != nil {
 			return nil, err
 		}
+
 	}
 
 	cached, _ := u.Cache.GetData(key)
 	gm, _ = strconv.ParseFloat(*cached, 10)
+	if gm < 1 {
+		return nil, errors.New("Not enough GM")
+	}
+	gmAmount := helpers.ConvertAmount(gm)
 
 	//deposit GM - generative
-	totalGM := big.NewInt(0)
-
-	signature, deadline, err := u.PnftReferralPaymentSignMessage(contractAddr, *chainID, signerMint, userWalletAddress, gmTokenAddress, *totalGM)
+	totalGM, _ := gmAmount.Int64()
+	g := big.NewInt(totalGM)
+	messageHash, signature, err := u.PnftReferralPaymentSignMessage(contractAddr, *chainID, signerMint, userWalletAddress, gmTokenAddress, *g)
 	if err != nil {
 		return nil, err
 	}
 
 	resp := &structure.CreateSignatureResp{
-		Signature: signature,
-		Deadline:  deadline.String(),
+		GM:          g.String(),
+		Signature:   signature,
+		MessageHash: messageHash,
 	}
-
 	return resp, nil
 }
 
-func (u *Usecase) PnftReferralPaymentSignMessage(contractAddr string, chainID big.Int, signerMint string, userWalletAddress string, gmTokenAddress string, totalGM big.Int) (string, *big.Int, error) {
-	deadline := big.NewInt(time.Now().Unix() + 60*15)
+func (u *Usecase) PnftReferralPaymentSignMessage(contractAddr string, chainID big.Int, signerMint string, userWalletAddress string, gmTokenAddress string, totalGM big.Int) (string, string, error) {
 	privateKey := strings.ToLower(os.Getenv("SOUL_SIGNATURE_PRIVATE_KEY"))
-
 	datas := []byte{}
 
 	datas = append(datas, common.HexToHash(contractAddr).Bytes()...)
@@ -309,7 +310,6 @@ func (u *Usecase) PnftReferralPaymentSignMessage(contractAddr string, chainID bi
 	datas = append(datas, common.HexToHash(userWalletAddress).Bytes()...)
 	datas = append(datas, common.HexToHash(gmTokenAddress).Bytes()...)
 	datas = append(datas, common.BytesToHash(totalGM.Bytes()).Bytes()...)
-	datas = append(datas, common.BytesToHash(deadline.Bytes()).Bytes()...)
 
 	dataByteHash := crypto.Keccak256Hash(
 		datas,
@@ -318,12 +318,12 @@ func (u *Usecase) PnftReferralPaymentSignMessage(contractAddr string, chainID bi
 	signature, err := u.SignWithEthereum(privateKey, dataByteHash.Bytes())
 	if err != nil {
 		logger.AtLog.Logger.Error(fmt.Sprintf("PnftReferralPaymentSignMessage - %s", userWalletAddress), zap.String("userWalletAddress", userWalletAddress), zap.String("contractAddr", contractAddr), zap.String("chainID", chainID.String()), zap.Error(err))
-		return "", nil, err
+		return "", "", err
 	}
 
-	logger.AtLog.Logger.Info(fmt.Sprintf("PnftReferralPaymentSignMessage - %s", userWalletAddress), zap.String("userWalletAddress", userWalletAddress), zap.String("contractAddr", contractAddr), zap.String("chainID", chainID.String()), zap.String("signature", signature), zap.String("deadline", deadline.String()))
+	logger.AtLog.Logger.Info(fmt.Sprintf("PnftReferralPaymentSignMessage - %s", userWalletAddress), zap.String("userWalletAddress", userWalletAddress), zap.String("contractAddr", contractAddr), zap.String("chainID", chainID.String()), zap.String("signature", signature))
 
-	return signature, deadline, nil
+	return dataByteHash.Hex(), signature, nil
 }
 
 func (u *Usecase) SignWithEthereum(privateKey string, dataBytes []byte) (string, error) {

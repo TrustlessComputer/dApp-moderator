@@ -2194,6 +2194,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/soul/capture": {
+            "post": {
+                "description": "SoulCaptureImage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Soul"
+                ],
+                "summary": "SoulCaptureImage",
+                "parameters": [
+                    {
+                        "description": "request data",
+                        "name": "requestdata",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CaptureSoulTokenReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/soul/nfts": {
             "get": {
                 "description": "Soul's Nfts",
@@ -3060,6 +3094,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "request.CaptureSoulTokenReq": {
+            "type": "object",
+            "required": [
+                "contract_address",
+                "token_id"
+            ],
+            "properties": {
+                "contract_address": {
+                    "type": "string"
+                },
+                "token_id": {
+                    "type": "string"
+                }
+            }
+        },
         "request.CompleteMultipartUploadRequest": {
             "type": "object",
             "properties": {

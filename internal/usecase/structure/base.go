@@ -120,6 +120,8 @@ type GMDepositResponse struct {
 }
 
 type CreateSignatureResp struct {
-	Signature string `json:"signature"`
-	Deadline  string `json:"deadline"`
+	Signature   string `json:"signature"`
+	MessageHash string `json:"message_hash"`
+	Deadline    string `json:"-"`
+	GM          string `json:"gm"`
 }
