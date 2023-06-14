@@ -172,7 +172,7 @@ func (h *httpDelivery) soulNft(w http.ResponseWriter, r *http.Request) {
 			ca := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
 			tokID := vars["token_id"]
 
-			data, err := h.Usecase.CollectionNftDetail(ctx, ca, tokID)
+			data, err := h.Usecase.SoulNftDetail(ctx, ca, tokID)
 			if err != nil {
 				logger.AtLog.Logger.Error("Nfts", zap.Error(err))
 				return nil, err
