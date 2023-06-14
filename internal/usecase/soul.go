@@ -260,30 +260,32 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 	userWalletAddress := strings.ToLower(requestData.WalletAddress)
 	gmTokenAddress := strings.ToLower(os.Getenv("SOUL_GM_ADDRESS"))
 	var err error
-
 	gm := float64(0)
-	key := fmt.Sprintf("gm.deposit.%s", userWalletAddress)
-	existed, _ := u.Cache.Exists(key)
-	if !*existed {
-		gm, err = u.GMDeposit(userWalletAddress)
-		if err != nil {
-			return nil, err
-		}
 
-		err = u.Cache.SetData(key, gm)
-		if err != nil {
-			return nil, err
-		}
+	if userWalletAddress != strings.ToLower(os.Getenv("SOUL_TEST_ACCOUNT")) {
+		key := fmt.Sprintf("gm.deposit.%s", userWalletAddress)
+		existed, _ := u.Cache.Exists(key)
+		if !*existed {
+			gm, err = u.GMDeposit(userWalletAddress)
+			if err != nil {
+				return nil, err
+			}
 
+			err = u.Cache.SetData(key, gm)
+			if err != nil {
+				return nil, err
+			}
+
+		}
+		cached, _ := u.Cache.GetData(key)
+		gm, _ = strconv.ParseFloat(*cached, 10)
+
+		if gm < 1 {
+			return nil, errors.New("Not enough GM")
+		}
 	}
 
-	cached, _ := u.Cache.GetData(key)
-	gm, _ = strconv.ParseFloat(*cached, 10)
-	if gm < 1 {
-		return nil, errors.New("Not enough GM")
-	}
 	gmAmount := helpers.ConvertAmount(gm)
-
 	//deposit GM - generative
 	totalGM, _ := gmAmount.Int64()
 	g := big.NewInt(totalGM)
