@@ -150,16 +150,17 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		return
 	}
 
-	tokenID, isSet := new(big.Int).SetString(nft.TokenID, 10)
-	if isSet == false {
-		err = errors.New("Cannot parse tokenID")
-		return
-	}
-
-	isAvailable, err = soulInstance.Available(nil, tokenID)
-	if err != nil {
-		return
-	}
+	//TODO - soul was not created in production
+	//tokenID, isSet := new(big.Int).SetString(nft.TokenID, 10)
+	//if isSet == false {
+	//	err = errors.New("Cannot parse tokenID")
+	//	return
+	//}
+	//
+	//isAvailable, err = soulInstance.Available(nil, tokenID)
+	//if err != nil {
+	//	return
+	//}
 }
 
 func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) ([]*nft_explorer.SoulNft, error) {
