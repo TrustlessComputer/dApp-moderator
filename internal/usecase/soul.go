@@ -15,18 +15,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.uber.org/zap"
 	"math/big"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.uber.org/zap"
 )
 
 type CheckGMBalanceOutputChan struct {
@@ -105,7 +106,7 @@ func (u *Usecase) SoulCrontab() error {
 
 		logger.AtLog.Logger.Info(fmt.Sprintf("SoulCrontab - %s - %s", out.Nft.ContractAddress, out.Nft.TokenID), zap.String("contract_address", collection.Contract), zap.String("token_id", out.Nft.TokenID), zap.String("owner", out.Nft.Owner), zap.String("balance", fmt.Sprintf("%d", out.Balance.Int64())))
 
-		insertData := &entity.NftAuctions{
+		insertData := &entity.NftAuctionsAvailable{
 			TokenID:         out.Nft.TokenID,
 			TokenIDInt:      int64(tokenIDInt),
 			ContractAddress: strings.ToLower(out.Nft.ContractAddress),
@@ -503,7 +504,7 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 	return tokenUri.AnimationUrl, nil
 }
 
-func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tokenID string) (*entity.NftAuctions, error) {
+func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tokenID string) (*entity.NftAuctionsAvailable, error) {
 
 	data, err := u.Repo.FindAuction(contractAddress, tokenID)
 	if err != nil {
