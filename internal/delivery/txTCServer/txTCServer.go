@@ -75,6 +75,8 @@ func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, erro
 	mkpEvents["MARKETPLACE_BNS_REGISTERED"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_REGISTERED"))
 	mkpEvents["MARKETPLACE_BNS_SET_FPF"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_SET_FPF"))
 
+	mkpEvents["AUCTION_CREATED_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CREATED_EVENT"))
+
 	m := &MarketPlace{
 		Contract: os.Getenv("MARKETPLACE_CONTRACT"),
 		Events:   mkpEvents,
