@@ -435,6 +435,36 @@
                 "summary": "Get bns names",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "resolver",
+                        "name": "resolver",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "owner",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "pfp",
+                        "name": "pfp",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "limit",
                         "name": "limit",
@@ -500,37 +530,6 @@
                 }
             }
         },
-        "/bns-service/names/{name}": {
-            "get": {
-                "description": "detail of bns name",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "BNS-service"
-                ],
-                "summary": "Get detail of bns name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "path"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.JsonResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/bns-service/names/{name}/available": {
             "get": {
                 "description": "Check bns name available for register",
@@ -562,6 +561,38 @@
                 }
             }
         },
+        "/bns-service/names/{token_id}": {
+            "get": {
+                "description": "detail of bns name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-service"
+                ],
+                "summary": "Get detail of bns name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/dapp-info/create": {
             "get": {
                 "description": "update load dapp info",
@@ -575,6 +606,766 @@
                     "dapp-service"
                 ],
                 "summary": "post dapp info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/collections": {
+            "get": {
+                "description": "Get Collections",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get Collections",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "contract",
+                        "name": "contract",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "allow_empty, default: false",
+                        "name": "allow_empty",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default deployed_at_block",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default -1",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/collections/{contract_address}": {
+            "get": {
+                "description": "Get Collections",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get Collections",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/collections/{contract_address}/activities": {
+            "get": {
+                "description": "Get collection's activities",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get collection's activities",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "0: mint, 1: listing, 2: cancel listing, 3: token matched, default all",
+                        "name": "types",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/collections/{contract_address}/attributes": {
+            "get": {
+                "description": "Get Collection's attributes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get Collection's attributes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "trait_type",
+                        "name": "trait_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "value",
+                        "name": "value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "contract address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/collections/{contract_address}/chart": {
+            "get": {
+                "description": "Get collection's chart",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get collection's chart",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "date range: 7D, month - default 7D",
+                        "name": "date_range",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/collections/{contract_address}/nfts": {
+            "get": {
+                "description": "Get marketplace Nfts of a collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get marketplace Nfts of a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "min,max - separated by comma",
+                        "name": "rarity",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "min,max - separated by comma",
+                        "name": "price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange",
+                        "name": "attributes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "true|false, default: all",
+                        "name": "is_big_file",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "true|false, default: all",
+                        "name": "buyable",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field: default volume",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort default: -1 desc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/collections/{contract_address}/nfts/{token_id}": {
+            "get": {
+                "description": "Get marketplace Nft's detail",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get marketplace Nft's detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/contract/{contract_address}/token/{token_id}/activities": {
+            "get": {
+                "description": "Get token's activities",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get token's activities",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/listing/{contract_address}/token/{token_id}": {
+            "get": {
+                "description": "Get market place listing",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get market place listing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/nfts": {
+            "get": {
+                "description": "Get marketplace Nfts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get marketplace Nfts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/offers/{contract_address}/token/{token_id}": {
+            "get": {
+                "description": "Get market place offers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get market place offers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract address",
+                        "name": "contract_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/wallet/{wallet_address}/listing": {
+            "get": {
+                "description": "listing of a profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get listing of a profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "wallet_address",
+                        "name": "wallet_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketplace/wallet/{wallet_address}/offer": {
+            "get": {
+                "description": "Offers of a profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketPlace"
+                ],
+                "summary": "Get offers of a profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "wallet_address",
+                        "name": "wallet_address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "0: open, 1: cancel, 2: done, default all",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "1: ASC, -1: DESC",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit default 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page start with 1",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -748,6 +1539,12 @@
                 ],
                 "summary": "Get nfts of a Collectionc",
                 "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "is_big_file",
+                        "name": "is_big_file",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "limit",
@@ -935,6 +1732,45 @@
                         "type": "string",
                         "description": "ownerAddress",
                         "name": "ownerAddress",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/nft-explorer/refresh-nft/contracts/{contractAddress}/token/{tokenID}": {
+            "get": {
+                "description": "refresh-nft",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "nft-explorer"
+                ],
+                "summary": "refresh-nft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contractAddress",
+                        "name": "contractAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tokenID",
+                        "name": "tokenID",
                         "in": "path",
                         "required": true
                     }
@@ -1350,6 +2186,191 @@
                 }
             }
         },
+        "/soul/capture": {
+            "post": {
+                "description": "SoulCaptureImage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Soul"
+                ],
+                "summary": "SoulCaptureImage",
+                "parameters": [
+                    {
+                        "description": "request data",
+                        "name": "requestdata",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CaptureSoulTokenReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/soul/nfts": {
+            "get": {
+                "description": "Soul's Nfts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Soul"
+                ],
+                "summary": "Get Soul's Nfts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "min,max - separated by comma",
+                        "name": "rarity",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "min,max - separated by comma",
+                        "name": "price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange",
+                        "name": "attributes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "true|false, default: all",
+                        "name": "is_big_file",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "true|false, default: all",
+                        "name": "buyable",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field: default volume",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort default: -1 desc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/soul/nfts/{token_id}": {
+            "get": {
+                "description": "Soul's Nft",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Soul"
+                ],
+                "summary": "Get Soul's Nft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/soul/signature": {
+            "post": {
+                "description": "Create signature",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Soul"
+                ],
+                "summary": "Create signature",
+                "parameters": [
+                    {
+                        "description": "request data",
+                        "name": "requestdata",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateSignatureRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/token-explorer/token/{address}": {
             "get": {
                 "description": "Update token",
@@ -1502,6 +2523,59 @@
             }
         },
         "/upload/file": {
+            "get": {
+                "description": "Get uploaded Files",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Get uploaded Files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "token_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "wallet_address",
+                        "name": "wallet_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "0: new, 1: has tx_hash and not fully uploaded to blockchain, 2: done. Statuses are separated by comma",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -1526,6 +2600,414 @@
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file-size": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload and compress file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Upload and compress file",
+                "parameters": [
+                    {
+                        "description": "requestBody",
+                        "name": "requestBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CompressFileSize"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/multipart": {
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Create multipart upload.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Create multipart upload",
+                "parameters": [
+                    {
+                        "description": "Create multipart upload request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateMultipartUploadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/multipart-fake": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload File multipart fake",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Upload File multipart fake",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/multipart/{uploadID}": {
+            "put": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Upload multipart file",
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Upload multipart file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "upload ID",
+                        "name": "uploadID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "part number",
+                        "name": "partNumber",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Finish multipart upload",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Finish multipart upload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "upload ID",
+                        "name": "uploadID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request data",
+                        "name": "requestData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CompleteMultipartUploadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/{file_id}/chunks": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get chunks of the uploaded file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Get chunks of the uploaded file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "fileID",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "path"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0: new, 1: processing, 2: done - default: all",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/{file_id}/chunks/{chunk_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get chunk by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "Get chunk by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "fileID",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "chunk_id",
+                        "name": "chunk_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0: new, 1: processing, 2: done - default: all",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/{file_id}/chunks/{chunk_id}/tx_hash/{tx_hash}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "update tx_hash for a chunk",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "update tx_hash for a chunk",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file_id",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "chunk_id",
+                        "name": "chunk_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/file/{file_id}/tx_hash/{tx_hash}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "update tx_hash for the uploaded file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Uploader"
+                ],
+                "summary": "update tx_hash for the uploaded file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file_id",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tx_hash",
+                        "name": "tx_hash",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "request body",
+                        "name": "request_body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structure.UpdateUploadedFileTxHash"
+                        }
                     }
                 ],
                 "responses": {
@@ -1604,6 +3086,37 @@
         }
     },
     "definitions": {
+        "request.CaptureSoulTokenReq": {
+            "type": "object",
+            "required": [
+                "contract_address",
+                "token_id"
+            ],
+            "properties": {
+                "contract_address": {
+                    "type": "string"
+                },
+                "token_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CompleteMultipartUploadRequest": {
+            "type": "object",
+            "properties": {
+                "walletAddress": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CompressFileSize": {
+            "type": "object",
+            "properties": {
+                "file_content": {
+                    "type": "string"
+                }
+            }
+        },
         "request.ConfirmHistoriesReq": {
             "type": "object",
             "properties": {
@@ -1626,6 +3139,25 @@
                             }
                         }
                     }
+                }
+            }
+        },
+        "request.CreateMultipartUploadRequest": {
+            "type": "object",
+            "properties": {
+                "fileName": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CreateSignatureRequest": {
+            "type": "object",
+            "properties": {
+                "wallet_address": {
+                    "type": "string"
                 }
             }
         },
@@ -1807,6 +3339,17 @@
                     "$ref": "#/definitions/structure.Social"
                 },
                 "thumbnail": {
+                    "type": "string"
+                }
+            }
+        },
+        "structure.UpdateUploadedFileTxHash": {
+            "type": "object",
+            "properties": {
+                "token_id": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }

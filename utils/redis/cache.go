@@ -20,6 +20,7 @@ type IRedisCache interface {
 	SetStringDataWithExpTime(key string, value string, exipredIn int) error
 	GetData(key string) (*string, error)
 	Delete(key string) error
+	DeleteAllKeys(partern string) error
 	SetDataWithExpireTime(key string, value interface{}, exipredIn int) error //exipredIn second
 }
 
@@ -72,7 +73,7 @@ func (r *redisCache) SetData(key string, value interface{}) error {
 		return err
 	}
 
-	err = r.client.Set(key, valueByte, time.Second * time.Duration(utils.REDIS_CACHE_EXPIRED_TIME)).Err()
+	err = r.client.Set(key, valueByte, time.Second*time.Duration(utils.REDIS_CACHE_EXPIRED_TIME)).Err()
 	if err != nil {
 		return err
 	}
@@ -111,7 +112,8 @@ func (r *redisCache) Delete(key string) error {
 func (r *redisCache) Exists(key string) (*bool, error) {
 	value, err := r.client.Exists(key).Result()
 	if err != nil {
-		return nil, err
+		e := false
+		return &e, err
 	}
 	res := value > 0
 	return &res, nil
@@ -131,5 +133,37 @@ func (r *redisCache) GetAll() ([]string, error) {
 		keys = append(keys, key)
 	}
 
-	return  keys, err
+	return keys, err
+}
+
+func (r *redisCache) GetAllKeys(partern string) ([]string, error) {
+	var keys []string
+	var err error
+	//ctx := context.Background()
+	keys, err = r.client.Keys(partern).Result()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, key := range keys {
+		keys = append(keys, key)
+	}
+
+	return keys, err
+}
+
+func (r *redisCache) DeleteAllKeys(partern string) error {
+	var keys []string
+	var err error
+	//ctx := context.Background()
+	keys, err = r.client.Keys(partern).Result()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, key := range keys {
+		r.client.Del(key).Err()
+	}
+
+	return nil
 }

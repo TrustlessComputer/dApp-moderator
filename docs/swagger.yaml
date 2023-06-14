@@ -1,5 +1,25 @@
 basePath: /dapp-moderator/v1
 definitions:
+  request.CaptureSoulTokenReq:
+    properties:
+      contract_address:
+        type: string
+      token_id:
+        type: string
+    required:
+    - contract_address
+    - token_id
+    type: object
+  request.CompleteMultipartUploadRequest:
+    properties:
+      walletAddress:
+        type: string
+    type: object
+  request.CompressFileSize:
+    properties:
+      file_content:
+        type: string
+    type: object
   request.ConfirmHistoriesReq:
     properties:
       data:
@@ -15,6 +35,18 @@ definitions:
               type: array
           type: object
         type: array
+    type: object
+  request.CreateMultipartUploadRequest:
+    properties:
+      fileName:
+        type: string
+      group:
+        type: string
+    type: object
+  request.CreateSignatureRequest:
+    properties:
+      wallet_address:
+        type: string
     type: object
   request.UpdateTokenReq:
     properties:
@@ -132,6 +164,13 @@ definitions:
       social:
         $ref: '#/definitions/structure.Social'
       thumbnail:
+        type: string
+    type: object
+  structure.UpdateUploadedFileTxHash:
+    properties:
+      token_id:
+        type: string
+      wallet_address:
         type: string
     type: object
   structure.VerifyMessage:
@@ -409,6 +448,26 @@ paths:
       - application/json
       description: Get bns names
       parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: token id
+        in: query
+        name: token_id
+        type: string
+      - description: resolver
+        in: query
+        name: resolver
+        type: string
+      - description: owner
+        in: query
+        name: owner
+        type: string
+      - description: pfp
+        in: query
+        name: pfp
+        type: string
       - description: limit
         in: query
         name: limit
@@ -425,26 +484,6 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Get bns names
-      tags:
-      - BNS-service
-  /bns-service/names/{name}:
-    get:
-      consumes:
-      - application/json
-      description: detail of bns name
-      parameters:
-      - description: name
-        in: path
-        name: name
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.JsonResponse'
-      summary: Get detail of bns name
       tags:
       - BNS-service
   /bns-service/names/{name}/available:
@@ -465,6 +504,27 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Check bns name available for register
+      tags:
+      - BNS-service
+  /bns-service/names/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: detail of bns name
+      parameters:
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get detail of bns name
       tags:
       - BNS-service
   /bns-service/names/owned/{wallet_address}:
@@ -510,6 +570,511 @@ paths:
       summary: post dapp info
       tags:
       - dapp-service
+  /marketplace/collections:
+    get:
+      consumes:
+      - application/json
+      description: Get Collections
+      parameters:
+      - description: owner
+        in: query
+        name: owner
+        type: string
+      - description: contract
+        in: query
+        name: contract
+        type: string
+      - description: 'allow_empty, default: false'
+        in: query
+        name: allow_empty
+        type: boolean
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: default deployed_at_block
+        in: query
+        name: sort_by
+        type: string
+      - description: default -1
+        in: query
+        name: sort
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collections
+      tags:
+      - MarketPlace
+  /marketplace/collections/{contract_address}:
+    get:
+      consumes:
+      - application/json
+      description: Get Collections
+      parameters:
+      - description: contract address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collections
+      tags:
+      - MarketPlace
+  /marketplace/collections/{contract_address}/activities:
+    get:
+      consumes:
+      - application/json
+      description: Get collection's activities
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: '0: mint, 1: listing, 2: cancel listing, 3: token matched, default
+          all'
+        in: query
+        name: types
+        type: string
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get collection's activities
+      tags:
+      - MarketPlace
+  /marketplace/collections/{contract_address}/attributes:
+    get:
+      consumes:
+      - application/json
+      description: Get Collection's attributes
+      parameters:
+      - description: trait_type
+        in: query
+        name: trait_type
+        type: string
+      - description: value
+        in: query
+        name: value
+        type: string
+      - description: contract address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Collection's attributes
+      tags:
+      - MarketPlace
+  /marketplace/collections/{contract_address}/chart:
+    get:
+      consumes:
+      - application/json
+      description: Get collection's chart
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: 'date range: 7D, month - default 7D'
+        in: query
+        name: date_range
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get collection's chart
+      tags:
+      - MarketPlace
+  /marketplace/collections/{contract_address}/nfts:
+    get:
+      consumes:
+      - application/json
+      description: Get marketplace Nfts of a collection
+      parameters:
+      - description: min,max - separated by comma
+        in: query
+        name: rarity
+        type: string
+      - description: min,max - separated by comma
+        in: query
+        name: price
+        type: string
+      - description: 'key:value,key:value - separated by comma ex: Base colour:Red,Base
+          colour:Orange'
+        in: query
+        name: attributes
+        type: string
+      - description: token id
+        in: query
+        name: token_id
+        type: string
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: 'true|false, default: all'
+        in: query
+        name: is_big_file
+        type: boolean
+      - description: 'true|false, default: all'
+        in: query
+        name: buyable
+        type: boolean
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: 'sort by field: default volume'
+        in: query
+        name: sort_by
+        type: string
+      - description: 'sort default: -1 desc'
+        in: query
+        name: sort
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get marketplace Nfts of a collection
+      tags:
+      - MarketPlace
+  /marketplace/collections/{contract_address}/nfts/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get marketplace Nft's detail
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get marketplace Nft's detail
+      tags:
+      - MarketPlace
+  /marketplace/contract/{contract_address}/token/{token_id}/activities:
+    get:
+      consumes:
+      - application/json
+      description: Get token's activities
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get token's activities
+      tags:
+      - MarketPlace
+  /marketplace/listing/{contract_address}/token/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get market place listing
+      parameters:
+      - description: contract address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get market place listing
+      tags:
+      - MarketPlace
+  /marketplace/nfts:
+    get:
+      consumes:
+      - application/json
+      description: Get marketplace Nfts
+      parameters:
+      - description: contract_address
+        in: query
+        name: contract_address
+        type: string
+      - description: token_id
+        in: query
+        name: token_id
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get marketplace Nfts
+      tags:
+      - MarketPlace
+  /marketplace/offers/{contract_address}/token/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get market place offers
+      parameters:
+      - description: contract address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get market place offers
+      tags:
+      - MarketPlace
+  /marketplace/wallet/{wallet_address}/listing:
+    get:
+      consumes:
+      - application/json
+      description: listing of a profile
+      parameters:
+      - description: wallet_address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get listing of a profile
+      tags:
+      - MarketPlace
+  /marketplace/wallet/{wallet_address}/offer:
+    get:
+      consumes:
+      - application/json
+      description: Offers of a profile
+      parameters:
+      - description: wallet_address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get offers of a profile
+      tags:
+      - MarketPlace
   /nft-explorer/collections:
     get:
       consumes:
@@ -613,6 +1178,10 @@ paths:
       - application/json
       description: Get nfts of a Collectionc
       parameters:
+      - description: is_big_file
+        in: query
+        name: is_big_file
+        type: boolean
       - description: limit
         in: query
         name: limit
@@ -747,6 +1316,32 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Get tokens of a wallet address
+      tags:
+      - nft-explorer
+  /nft-explorer/refresh-nft/contracts/{contractAddress}/token/{tokenID}:
+    get:
+      consumes:
+      - application/json
+      description: refresh-nft
+      parameters:
+      - description: contractAddress
+        in: path
+        name: contractAddress
+        required: true
+        type: string
+      - description: tokenID
+        in: path
+        name: tokenID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: refresh-nft
       tags:
       - nft-explorer
   /profile/histories:
@@ -1007,6 +1602,128 @@ paths:
       summary: qn_addressBalance RPC Method
       tags:
       - QuickNode
+  /soul/capture:
+    post:
+      consumes:
+      - application/json
+      description: SoulCaptureImage
+      parameters:
+      - description: request data
+        in: body
+        name: requestdata
+        required: true
+        schema:
+          $ref: '#/definitions/request.CaptureSoulTokenReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: SoulCaptureImage
+      tags:
+      - Soul
+  /soul/nfts:
+    get:
+      consumes:
+      - application/json
+      description: Soul's Nfts
+      parameters:
+      - description: min,max - separated by comma
+        in: query
+        name: rarity
+        type: string
+      - description: min,max - separated by comma
+        in: query
+        name: price
+        type: string
+      - description: 'key:value,key:value - separated by comma ex: Base colour:Red,Base
+          colour:Orange'
+        in: query
+        name: attributes
+        type: string
+      - description: token id
+        in: query
+        name: token_id
+        type: string
+      - description: 'true|false, default: all'
+        in: query
+        name: is_big_file
+        type: boolean
+      - description: 'true|false, default: all'
+        in: query
+        name: buyable
+        type: boolean
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: 'sort by field: default volume'
+        in: query
+        name: sort_by
+        type: string
+      - description: 'sort default: -1 desc'
+        in: query
+        name: sort
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Soul's Nfts
+      tags:
+      - Soul
+  /soul/nfts/{token_id}:
+    get:
+      consumes:
+      - application/json
+      description: Soul's Nft
+      parameters:
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Soul's Nft
+      tags:
+      - Soul
+  /soul/signature:
+    post:
+      consumes:
+      - application/json
+      description: Create signature
+      parameters:
+      - description: request data
+        in: body
+        name: requestdata
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateSignatureRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Create signature
+      tags:
+      - Soul
   /token-explorer/token/{address}:
     get:
       consumes:
@@ -1107,6 +1824,42 @@ paths:
       tags:
       - BNS-service
   /upload/file:
+    get:
+      consumes:
+      - application/json
+      description: Get uploaded Files
+      parameters:
+      - description: contract_address
+        in: query
+        name: contract_address
+        type: string
+      - description: token_id
+        in: query
+        name: token_id
+        type: string
+      - description: wallet_address
+        in: query
+        name: wallet_address
+        type: string
+      - description: tx_hash
+        in: query
+        name: tx_hash
+        type: string
+      - description: '0: new, 1: has tx_hash and not fully uploaded to blockchain,
+          2: done. Statuses are separated by comma'
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      summary: Get uploaded Files
+      tags:
+      - Uploader
     post:
       consumes:
       - application/json
@@ -1127,6 +1880,264 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Upload File
+      tags:
+      - Uploader
+  /upload/file-size:
+    post:
+      consumes:
+      - application/json
+      description: Upload and compress file
+      parameters:
+      - description: requestBody
+        in: body
+        name: requestBody
+        required: true
+        schema:
+          $ref: '#/definitions/request.CompressFileSize'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload and compress file
+      tags:
+      - Uploader
+  /upload/file/{file_id}/chunks:
+    get:
+      consumes:
+      - application/json
+      description: Get chunks of the uploaded file
+      parameters:
+      - description: fileID
+        in: path
+        name: file_id
+        required: true
+        type: string
+      - description: tx_hash
+        in: path
+        name: tx_hash
+        type: string
+      - description: '0: new, 1: processing, 2: done - default: all'
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get chunks of the uploaded file
+      tags:
+      - Uploader
+  /upload/file/{file_id}/chunks/{chunk_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get chunk by ID
+      parameters:
+      - description: fileID
+        in: path
+        name: file_id
+        required: true
+        type: string
+      - description: chunk_id
+        in: path
+        name: chunk_id
+        required: true
+        type: string
+      - description: '0: new, 1: processing, 2: done - default: all'
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get chunk by ID
+      tags:
+      - Uploader
+  /upload/file/{file_id}/chunks/{chunk_id}/tx_hash/{tx_hash}:
+    put:
+      consumes:
+      - application/json
+      description: update tx_hash for a chunk
+      parameters:
+      - description: file_id
+        in: path
+        name: file_id
+        required: true
+        type: string
+      - description: chunk_id
+        in: path
+        name: chunk_id
+        required: true
+        type: string
+      - description: tx_hash
+        in: path
+        name: tx_hash
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: update tx_hash for a chunk
+      tags:
+      - Uploader
+  /upload/file/{file_id}/tx_hash/{tx_hash}:
+    put:
+      consumes:
+      - application/json
+      description: update tx_hash for the uploaded file
+      parameters:
+      - description: file_id
+        in: path
+        name: file_id
+        required: true
+        type: string
+      - description: tx_hash
+        in: path
+        name: tx_hash
+        required: true
+        type: string
+      - description: request body
+        in: body
+        name: request_body
+        required: true
+        schema:
+          $ref: '#/definitions/structure.UpdateUploadedFileTxHash'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: update tx_hash for the uploaded file
+      tags:
+      - Uploader
+  /upload/file/multipart:
+    post:
+      consumes:
+      - application/json
+      description: Create multipart upload.
+      parameters:
+      - description: Create multipart upload request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateMultipartUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - Authorization: []
+      summary: Create multipart upload
+      tags:
+      - Uploader
+  /upload/file/multipart-fake:
+    post:
+      consumes:
+      - application/json
+      description: Upload File multipart fake
+      parameters:
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UploadResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload File multipart fake
+      tags:
+      - Uploader
+  /upload/file/multipart/{uploadID}:
+    post:
+      consumes:
+      - application/json
+      description: Finish multipart upload
+      parameters:
+      - description: upload ID
+        in: path
+        name: uploadID
+        required: true
+        type: string
+      - description: Request data
+        in: body
+        name: requestData
+        required: true
+        schema:
+          $ref: '#/definitions/request.CompleteMultipartUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - Authorization: []
+      summary: Finish multipart upload
+      tags:
+      - Uploader
+    put:
+      description: Upload multipart file
+      parameters:
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: upload ID
+        in: path
+        name: uploadID
+        required: true
+        type: string
+      - description: part number
+        in: query
+        name: partNumber
+        type: string
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - Authorization: []
+      summary: Upload multipart file
       tags:
       - Uploader
   /wallets/{walletAddress}:

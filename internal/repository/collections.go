@@ -7,6 +7,8 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"errors"
+	"os"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -151,4 +153,87 @@ func (r *Repository) UpdateCollectionThumbnail(ctx context.Context, contract str
 	}
 
 	return nil
+}
+
+func (r *Repository) UpdateCollectionIndex(ctx context.Context, contract string, index int) error {
+	filter := bson.M{
+		"contract": contract,
+	}
+
+	update := bson.M{
+		"index": index,
+	}
+
+	result, err := r.DB.Collection(entity.Collections{}.CollectionName()).UpdateOne(ctx, filter, bson.M{"$set": update})
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return errors.New("no document")
+	}
+
+	return nil
+}
+
+func (r *Repository) AllCollections() ([]entity.FilteredCollections, error) {
+	result := []entity.FilteredCollections{}
+
+	f := bson.A{
+		bson.D{
+			{"$project",
+				bson.D{
+					{"contract", 1},
+					{"deployed_at_block", 1},
+					{"contract_type", 1},
+				},
+			},
+		},
+	}
+
+	cursor, err := r.DB.Collection(entity.Collections{}.CollectionName()).Aggregate(context.TODO(), f)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All((context.TODO()), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (r *Repository) GetCollection(contractAddress string) (*entity.Collections, error) {
+	res := &entity.Collections{}
+	f := bson.D{{
+		"contract", contractAddress,
+	}}
+
+	s, err := r.FindOne(utils.COLLECTION_COLLECTIONS, f)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.Decode(res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+
+}
+
+func (r *Repository) GetSoulCollection() (*entity.Collections, error) {
+	result := &entity.Collections{}
+
+	f := bson.D{
+		{"contract", strings.ToLower(os.Getenv("SOUL_CONTRACT"))},
+	}
+
+	cursor := r.DB.Collection(entity.Collections{}.CollectionName()).FindOne(context.TODO(), f)
+
+	if err := cursor.Decode(result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

@@ -15,10 +15,12 @@ type PaginationReq struct {
 
 type CollectionsFilter struct {
 	PaginationReq
-	Owner      *string
-	Name       *string
-	Address    *string
-	AllowEmpty *bool
+	Owner               *string
+	Name                *string
+	Address             *string
+	AllowEmpty          *bool
+	ContentTypeNotEmpty *bool
+	IsBigFile           *bool
 }
 
 type HistoriesFilter struct {
@@ -47,6 +49,11 @@ type FilterBNSNames struct {
 	PaginationReq
 	FromBlock *int
 	ToBlock   *int
+	PFP       *string
+	Resolver  *string
+	Owner     *string
+	Name      *string
+	TokenID   *string
 }
 
 func (pq PaginationReq) ToNFTServiceUrlQuery() url.Values {

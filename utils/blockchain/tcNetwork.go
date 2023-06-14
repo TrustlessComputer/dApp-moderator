@@ -36,20 +36,18 @@ func (a *TcNetwork) GetBlockNumber() (*big.Int, error) {
 		return nil, err
 	}
 
-	logger.AtLog.Logger.Info("GetBlockNumber", zap.Any("blockNumber", header.Number))
 	return header.Number, nil
 }
 
-
-func (a *TcNetwork) GetBlock () (*types.Header, error) {
+func (a *TcNetwork) GetBlock() (*types.Header, error) {
 	return a.client.HeaderByNumber(context.Background(), nil)
 }
 
 func (a *TcNetwork) GetEventLogs(fromBlock big.Int, toBlock big.Int, addresses []common.Address) ([]types.Log, error) {
 	query := ethereum.FilterQuery{
 		FromBlock: &fromBlock,
-		ToBlock: &toBlock, 
-		//Addresses: addresses,
+		ToBlock:   &toBlock,
+		Addresses: addresses,
 	}
 	logs, err := a.client.FilterLogs(context.Background(), query)
 	if err != nil {
@@ -60,6 +58,22 @@ func (a *TcNetwork) GetEventLogs(fromBlock big.Int, toBlock big.Int, addresses [
 
 func (a *TcNetwork) GetBlockByNumber(blockNumber big.Int) (*types.Block, error) {
 	block, err := a.client.BlockByNumber(context.Background(), &blockNumber)
+	if err != nil {
+		return nil, err
+	}
+	return block, nil
+}
+
+func (a *TcNetwork) TransactionByHash(hash common.Hash) (*types.Transaction, bool, error) {
+	block, isPending, err := a.client.TransactionByHash(context.Background(), hash)
+	if err != nil {
+		return nil, false, err
+	}
+	return block, isPending, nil
+}
+
+func (a *TcNetwork) HeaderByHash(hash common.Hash) (*types.Header, error) {
+	block, err := a.client.HeaderByHash(context.Background(), hash)
 	if err != nil {
 		return nil, err
 	}

@@ -160,7 +160,16 @@ func (r *Repository) FindBlackListTokens(ctx context.Context, filter entity.Swap
 
 func (r *Repository) UpdateBaseSymbolToken(ctx context.Context, token *entity.Token) error {
 	collectionName := token.CollectionName()
-	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"address": token.Address}, bson.M{"$set": bson.M{"base_token_symbol": token.BaseTokenSymbol}})
+	mapBaseTk := map[string]string{
+		"token":             token.Address,
+		"base_token_symbol": token.BaseTokenSymbol,
+	}
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"address": token.Address},
+		bson.M{"$set": bson.M{
+			"base_token_symbol":     token.BaseTokenSymbol,
+			"base_token_symbol_obj": mapBaseTk,
+		}},
+	)
 	if err != nil {
 		return err
 	}
@@ -168,4 +177,31 @@ func (r *Repository) UpdateBaseSymbolToken(ctx context.Context, token *entity.To
 		return mongo.ErrNoDocuments
 	}
 	return nil
+}
+
+func (r *Repository) AggregateAllTokens(ctx context.Context, filter entity.TokenFilter) ([]entity.Token, error) {
+	var tokens []entity.Token
+	f := bson.A{
+		bson.D{
+			{"$project",
+				bson.D{
+					{"address", 1},
+					{"symbol", 1},
+					{"decimal", 1},
+				},
+			},
+		},
+	}
+
+	cursor, err := r.DB.Collection(utils.COLLECTION_TOKENS).Aggregate(context.TODO(), f, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor.All((context.TODO()), &tokens)
+	if err != nil {
+		return nil, err
+	}
+
+	return tokens, nil
 }

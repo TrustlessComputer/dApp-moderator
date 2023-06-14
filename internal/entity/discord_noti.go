@@ -17,10 +17,12 @@ const (
 	DONE    DiscordStatus = 1
 	FAILED  DiscordStatus = 2
 
-	EventNewCollection DiscordEvent = "new_collection"
-	EventNewArtifact   DiscordEvent = "new_artifact"
-	EventNewToken      DiscordEvent = "new_token"
-	EventNewName       DiscordEvent = "new_name"
+	EventNewCollection   DiscordEvent = "new_collection"
+	EventNewArtifact     DiscordEvent = "new_artifact"
+	EventNewToken        DiscordEvent = "new_token"
+	EventNewName         DiscordEvent = "new_name"
+	EventListForSale     DiscordEvent = "list_for_sale"
+	EventPurchaseListing DiscordEvent = "purchase_listing"
 
 	ImageFromInscriptionID DiscordImageSourceType = 1
 	ThumbNailPosition      DiscordImagePosition   = 1

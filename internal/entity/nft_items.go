@@ -7,7 +7,7 @@ import (
 type Nfts struct {
 	BaseEntity `bson:",inline"`
 
-	Collection      string      `json:"collection" bson:"collection"`
+	//Collection      string      `json:"collection" bson:"collection"`
 	ContractAddress string      `json:"collection_address" bson:"collection_address"`
 	TokenID         string      `json:"token_id" bson:"token_id"`
 	TokenIDInt      int64       `json:"token_id_int" bson:"token_id_int"` //use it for sort
@@ -20,6 +20,10 @@ type Nfts struct {
 	Attributes      []NftAttr   `json:"attributes" bson:"attributes"`
 	Metadata        interface{} `json:"metadata" bson:"metadata"`
 	MetadataType    string      `json:"metadata_type"  bson:"metadata_type"`
+	Size            int64       `bson:"size" json:"size"`
+
+	AnimationFileUrl string `json:"animation_file_url,omitempty" bson:"animation_file_url,omitempty"`
+	ImageCapture     string `json:"image_capture,omitempty" bson:"image_capture,omitempty"`
 }
 
 type NftAttr struct {

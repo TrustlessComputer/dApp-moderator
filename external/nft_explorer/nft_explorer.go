@@ -99,7 +99,14 @@ func (q NftExplorer) CollectionNftContent(contractAddress string, tokenID string
 	if err != nil {
 		return nil, "", err
 	}
-	return data, resHeader.Get("content-type"), nil
+
+	contentType := resHeader.Get("content-type")
+	txt := string(data)
+	if strings.Contains(txt, `<svg xmlns="http://www.w3.org/2000/svg" `) {
+		contentType = "image/svg+xml"
+	}
+
+	return data, contentType, nil
 }
 
 func (q NftExplorer) Nfts(params url.Values) ([]*NftsResp, error) {
@@ -181,4 +188,19 @@ func (q *NftExplorer) FillDataMultiple(nfts []*NftsResp) {
 	for _, nft := range nfts {
 		q.FillData(nft)
 	}
+}
+
+func (q NftExplorer) RefreshNft(contractAddress string, tokenID string) (*ServiceResp, error) {
+	headers := make(map[string]string)
+	data, _, _, err := helpers.JsonRequest(fmt.Sprintf("%s/%s/%s/%s", q.serverURL, "refresh-nft", contractAddress, tokenID), "GET", headers, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := q.ParseData(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

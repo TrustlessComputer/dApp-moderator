@@ -51,8 +51,8 @@ func init() {
 	}
 
 	mongoCnn := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", c.Databases.Mongo.Scheme, c.Databases.Mongo.User, c.Databases.Mongo.Pass, c.Databases.Mongo.Host)
-	if c.ENV == "dev" {
-		mongoCnn = "mongodb://127.0.0.1:27017/?retryWrites=true&w=majority"
+	if c.ENV == "local" {
+		mongoCnn = "mongodb://127.0.0.1:27017/tc_dapp?retryWrites=true&w=majority"
 	}
 
 	mongoDbConnection, err := connections.NewMongo(mongoCnn)
@@ -69,7 +69,7 @@ func init() {
 	gccnn, err := connections.NewMongo(generativeMongoCnn)
 	if err != nil {
 		logger.AtLog().Logger.Error("Cannot connect mongoDB ", zap.Error(err))
-		panic(err)
+		//panic(err)
 	}
 
 	conf = c
@@ -99,10 +99,9 @@ func main() {
 
 func startServer() {
 	logger.AtLog().Logger.Info("starting server ...")
-	cache, _ := redis.NewRedisCache(conf.Redis)
+	cache, redisClient := redis.NewRedisCache(conf.Redis)
 	r := mux.NewRouter()
 	gcs, err := googlecloud.NewDataGCStorage(*conf)
-
 	qn := quicknode.NewQuickNode(conf, cache)
 	bst := block_stream.NewBlockStream(conf, cache)
 	nex := nft_explorer.NewNftExplorer(conf, cache)
@@ -114,6 +113,15 @@ func startServer() {
 	moralis := moralis2.NewMoralisService(cache)
 
 	auth2Service := oauth2service.NewAuth2()
+
+	s3Adapter := googlecloud.NewS3Adapter(googlecloud.S3AdapterConfig{
+		BucketName: conf.Gcs.Bucket,
+		Endpoint:   conf.Gcs.Endpoint,
+		Region:     conf.Gcs.Region,
+		AccessKey:  conf.Gcs.AccessKey,
+		SecretKey:  conf.Gcs.SecretKey,
+	}, redisClient)
+
 	g := global.Global{
 		MuxRouter:              r,
 		Conf:                   conf,
@@ -131,6 +139,7 @@ func startServer() {
 		DiscordClient:          dcl,
 		BlockChainApi:          bca,
 		Moralis:                moralis,
+		S3Adapter:              &s3Adapter,
 	}
 
 	repo, err := repository.NewRepository(&g)
@@ -156,7 +165,8 @@ func startServer() {
 		logger.AtLog().Error("LoadUsecases - Cannot init usecase", zap.Error(err))
 		return
 	}
-	uc.TestSendNotify()
+	//uc.TestSendNotify()
+	//uc.UpdateAllCollectionIndex(context.Background())
 
 	servers := make(map[string]delivery.AddedServer)
 	// api fixed run:
@@ -172,6 +182,18 @@ func startServer() {
 		txConsumerStatrBool = true //alway start this server, if config is missing
 	}
 
+	trendingStart := os.Getenv("TRENDING_SERVER_START")
+	trendingStartBool, err := strconv.ParseBool(trendingStart)
+	if err != nil {
+		trendingStartBool = true //alway start this server, if config is missing
+	}
+
+	jobSendDiscordStart := os.Getenv("JOB_SEND_DISCORD_START")
+	jobSendDiscordStartBool, err := strconv.ParseBool(jobSendDiscordStart)
+	if err != nil {
+		jobSendDiscordStartBool = true //alway start this server, if config is missing
+	}
+
 	tx, _ := txTCServer.NewTxTCServer(&g, *uc)
 	servers["tx-consumer"] = delivery.AddedServer{
 		Server:  tx,
@@ -180,7 +202,13 @@ func startServer() {
 
 	servers["job-discord"] = delivery.AddedServer{
 		Server:  txTCServer.NewJobDisCord(&g, *uc),
-		Enabled: true,
+		Enabled: jobSendDiscordStartBool,
+	}
+
+	trendingServer, _ := txTCServer.NewTrendingServer(&g, *uc)
+	servers["job-trending"] = delivery.AddedServer{
+		Server:  trendingServer,
+		Enabled: trendingStartBool,
 	}
 
 	//var wait time.Duration
