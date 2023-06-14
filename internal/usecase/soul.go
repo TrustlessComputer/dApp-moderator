@@ -9,6 +9,7 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/erc20"
 	"dapp-moderator/utils/contracts/generative_nft_contract"
+	"dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
@@ -28,16 +29,24 @@ import (
 )
 
 type CheckGMBalanceOutputChan struct {
-	Nft     entity.Nfts
-	Err     error
-	Balance *big.Int
+	Nft         entity.Nfts
+	Err         error
+	Balance     *big.Int
+	IsAvailable bool
 }
 
 func (u *Usecase) SoulCrontab() error {
 	maxProcess := 10
 	minBalance := float64(1)
 	erc20Addr := strings.ToLower(os.Getenv("SOUL_GM_ADDRESS"))
-	instance, err := erc20.NewErc20(common.HexToAddress(erc20Addr), u.TCPublicNode.GetClient())
+
+	erc20instance, err := erc20.NewErc20(common.HexToAddress(erc20Addr), u.TCPublicNode.GetClient())
+	if err != nil {
+		logger.AtLog.Logger.Error("SoulCrontab", zap.Error(err))
+		return err
+	}
+
+	soulInstance, err := soul.NewSoul(common.HexToAddress(os.Getenv("SOUL_CONTRACT")), u.TCPublicNode.GetClient())
 	if err != nil {
 		logger.AtLog.Logger.Error("SoulCrontab", zap.Error(err))
 		return err
@@ -61,13 +70,13 @@ func (u *Usecase) SoulCrontab() error {
 	logger.AtLog.Logger.Info("SoulCrontab", zap.String("contract_address", collection.Contract), zap.Int("nfts", len(nfts)))
 
 	for i := 0; i < len(nfts); i++ {
-		go u.CheckGMBalanceWorker(&wg, instance, inputChan, outputChan)
+		go u.CheckGMBalanceWorker(&wg, erc20instance, soulInstance, inputChan, outputChan)
 	}
 
 	for i, nft := range nfts {
 		wg.Add(1)
 		inputChan <- nft
-		if i%maxProcess == 0 && i > 0 {
+		if i%maxProcess == 0 && i > 0 || i == len(nfts)-1 {
 			wg.Wait()
 		}
 	}
@@ -86,9 +95,10 @@ func (u *Usecase) SoulCrontab() error {
 		}
 
 		isAuction := false
+		isAvailable := out.IsAvailable
 
 		value := helpers.GetValue(fmt.Sprintf("%d", out.Balance.Int64()), 18)
-		if value < minBalance {
+		if value < minBalance && isAvailable {
 			isAuction = true
 		}
 
@@ -106,17 +116,47 @@ func (u *Usecase) SoulCrontab() error {
 	return nil
 }
 
-func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.Erc20, input chan entity.Nfts, output chan CheckGMBalanceOutputChan) {
+func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.Erc20, soulInstance *soul.Soul, input chan entity.Nfts, output chan CheckGMBalanceOutputChan) {
 	defer wg.Done()
 	nft := <-input
+	var err error
+	isAvailableP := new(bool)
+	isAvailable := false
+	isAvailableP = &isAvailable
+	balanceOf := &big.Int{}
+
+	defer func() {
+		outData := CheckGMBalanceOutputChan{
+			Nft:         nft,
+			Balance:     balanceOf,
+			Err:         err,
+			IsAvailable: *isAvailableP,
+		}
+
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID), zap.String("tokenID", nft.TokenID), zap.Error(err), zap.Any("outData", outData))
+		} else {
+			logger.AtLog.Logger.Info(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID), zap.String("tokenID", nft.TokenID), zap.Any("outData", outData))
+		}
+
+		output <- outData
+	}()
 
 	owner := nft.Owner
-	balanceOf, err := erc20Instance.BalanceOf(nil, common.HexToAddress(owner))
+	balanceOf, err = erc20Instance.BalanceOf(nil, common.HexToAddress(owner))
+	if err != nil {
+		return
+	}
 
-	output <- CheckGMBalanceOutputChan{
-		Nft:     nft,
-		Balance: balanceOf,
-		Err:     err,
+	tokenID, isSet := new(big.Int).SetString(nft.TokenID, 10)
+	if isSet == false {
+		err = errors.New("Cannot parse tokenID")
+		return
+	}
+
+	isAvailable, err = soulInstance.Available(nil, tokenID)
+	if err != nil {
+		return
 	}
 }
 
@@ -262,6 +302,20 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 	var err error
 	gm := float64(0)
 
+	soulInstance, err := soul.NewSoul(common.HexToAddress(contractAddr), u.TCPublicNode.GetClient())
+	if err != nil {
+		return nil, err
+	}
+
+	minted, err := soulInstance.Minted(nil, common.HexToAddress(userWalletAddress))
+	if err != nil {
+		return nil, err
+	}
+
+	if minted.Int64() > 0 {
+		return nil, errors.New("User has a minted token")
+	}
+
 	if userWalletAddress != strings.ToLower(os.Getenv("SOUL_TEST_ACCOUNT")) {
 		key := fmt.Sprintf("gm.deposit.%s", userWalletAddress)
 		existed, _ := u.Cache.Exists(key)
@@ -275,8 +329,8 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 			if err != nil {
 				return nil, err
 			}
-
 		}
+
 		cached, _ := u.Cache.GetData(key)
 		gm, _ = strconv.ParseFloat(*cached, 10)
 
