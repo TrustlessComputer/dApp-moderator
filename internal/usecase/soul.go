@@ -26,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type CheckGMBalanceOutputChan struct {
@@ -489,7 +490,7 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 	if strings.Contains(tokenUri.AnimationUrl, "base64") {
 		tokenUri.AnimationUrl = strings.Replace(tokenUri.AnimationUrl, "data:text/html;base64,", "", -1)
 
-		fileName := fmt.Sprintf("%v_%v.html", nftEntity.ContractAddress, nftEntity.TokenID)
+		fileName := fmt.Sprintf("%v_%v_%v.html", nftEntity.ContractAddress, nftEntity.TokenID, time.Now().UTC().Unix())
 		resp, err := u.Storage.UploadBaseToBucket(tokenUri.AnimationUrl, fmt.Sprintf("capture_animation_file/%v", fileName))
 		if err != nil {
 			return "", err
