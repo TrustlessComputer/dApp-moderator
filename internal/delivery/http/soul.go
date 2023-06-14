@@ -90,26 +90,6 @@ func (h *httpDelivery) soulNfts(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			price := strings.ToLower(r.URL.Query().Get("price"))
-			if price != "" {
-				price = strings.ReplaceAll(price, " ", "")
-				prArray := strings.Split(price, ",")
-				if len(prArray) == 2 {
-
-					sort.SliceIsSorted(prArray, func(i, j int) bool {
-						return prArray[i] > prArray[j]
-					})
-
-					min, _ := strconv.ParseFloat(prArray[0], 10)
-					max, _ := strconv.ParseFloat(prArray[1], 10)
-
-					f.Price = &entity.Rarity{
-						Min: min,
-						Max: max,
-					}
-				}
-			}
-
 			attributes := r.URL.Query().Get("attributes")
 			if attributes != "" {
 				attributeArr := strings.Split(attributes, ",")
@@ -126,19 +106,11 @@ func (h *httpDelivery) soulNfts(w http.ResponseWriter, r *http.Request) {
 				f.AttrValue = val
 			}
 
-			isBigFile := r.URL.Query().Get("is_big_file")
-			if isBigFile != "" {
-				isBigFileBool, err := strconv.ParseBool(isBigFile)
+			isAuction := r.URL.Query().Get("is_auction")
+			if isAuction != "" {
+				isAuctionBool, err := strconv.ParseBool(isAuction)
 				if err == nil {
-					f.IsBigFile = &isBigFileBool
-				}
-			}
-
-			isBuyable := r.URL.Query().Get("buyable")
-			if isBuyable != "" {
-				isBuyableBool, err := strconv.ParseBool(isBuyable)
-				if err == nil {
-					f.IsBuyable = &isBuyableBool
+					f.IsBuyable = &isAuctionBool
 				}
 			}
 
@@ -241,7 +213,7 @@ func (h *httpDelivery) SoulCreateSignature(w http.ResponseWriter, r *http.Reques
 // @Tags Soul
 // @Accept  json
 // @Produce  json
-// @Param requestdata body int true "request data"
+// @Param requestdata body request.CaptureSoulTokenReq true "request data"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /soul/capture [POST]
 func (h *httpDelivery) SoulCaptureImage(w http.ResponseWriter, r *http.Request) {

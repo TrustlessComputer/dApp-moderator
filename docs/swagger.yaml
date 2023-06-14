@@ -1,5 +1,15 @@
 basePath: /dapp-moderator/v1
 definitions:
+  request.CaptureSoulTokenReq:
+    properties:
+      contract_address:
+        type: string
+      token_id:
+        type: string
+    required:
+    - contract_address
+    - token_id
+    type: object
   request.CompleteMultipartUploadRequest:
     properties:
       walletAddress:
@@ -1592,6 +1602,28 @@ paths:
       summary: qn_addressBalance RPC Method
       tags:
       - QuickNode
+  /soul/capture:
+    post:
+      consumes:
+      - application/json
+      description: SoulCaptureImage
+      parameters:
+      - description: request data
+        in: body
+        name: requestdata
+        required: true
+        schema:
+          $ref: '#/definitions/request.CaptureSoulTokenReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: SoulCaptureImage
+      tags:
+      - Soul
   /soul/nfts:
     get:
       consumes:
