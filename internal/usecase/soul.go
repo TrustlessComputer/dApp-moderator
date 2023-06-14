@@ -123,7 +123,7 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 	nft := <-input
 	var err error
 	isAvailableP := new(bool)
-	isAvailable := false
+	isAvailable := true
 	isAvailableP = &isAvailable
 	balanceOf := &big.Int{}
 
