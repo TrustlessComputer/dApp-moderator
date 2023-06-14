@@ -202,7 +202,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	soul.HandleFunc("/signature", h.SoulCreateSignature).Methods("POST")
 	soul.HandleFunc("/capture", h.SoulCaptureImage).Methods("POST")
 	soul.HandleFunc("/nfts", h.soulNfts).Methods("GET")
-	soul.HandleFunc("/nfts/{token_id}", h.soulNfts).Methods("GET")
+	soul.HandleFunc("/nfts/{token_id}", h.soulNft).Methods("GET")
 
 }
 
