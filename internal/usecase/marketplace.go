@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/bns"
 	"dapp-moderator/utils/contracts/generative_marketplace_lib"
+	soul_contract "dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/generative_nft_contract"
 	"dapp-moderator/utils/logger"
 	"encoding/base64"
@@ -202,6 +203,24 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		activity.InscriptionID = strings.ToLower(event.Id.String())
 		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
 		//activity.OfferingID = strings.ToLower(fmt.Sprintf("%x", event.OfferingId))
+		return activity, event, nil
+	case entity.AuctionCreated:
+		soulContract, err := soul_contract.NewSoulContract(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseAuctionCreated(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionCreated", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+
 		return activity, event, nil
 	}
 
@@ -546,7 +565,7 @@ func (u *Usecase) MarketplaceBNSCreated(eventData interface{}, chainLog types.Lo
 	event := eventData.(*bns.BnsNameRegistered)
 	tokenID := event.Id.String()
 	contractAddress := chainLog.Address.Hex()
-	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSCreated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("contract_address", contractAddress))
+	logger.AtLog.Logger.Info(fmt.Sprintf("MarketplaceBNSCreated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("contract_address", contractAddress))
 
 	inputChan := make(chan entity.Nfts, 1)
 	outputChan := make(chan structure.BnsRespChan, 1)
@@ -651,6 +670,30 @@ func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) erro
 	})
 	if err != nil {
 		logger.AtLog.Logger.Error("UploadBnsPFPToGCSRepo - UpdateBnsPfpData", zap.String("tokenID", tokenID), zap.Any("bns", bnsEntity), zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (u *Usecase) AuctionCreated(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulContractAuctionCreated)
+	if !ok {
+		return errors.New("event data is not correct")
+	}
+	logger.AtLog.Logger.Info("AuctionCreated", zap.String("tokenID", eventData.TokenId.String()),
+		zap.String("contract", chainLog.Address.Hex()), zap.Uint64("startTime", eventData.StartTime.Uint64()),
+		zap.Uint64("endTime", eventData.EndTime.Uint64()))
+
+	_, err := u.Repo.InsertOne(&entity.Auction{
+		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
+		TokenID:           strings.ToLower(eventData.TokenId.String()),
+		StartTimeBlock:    eventData.StartTime.Uint64(),
+		EndTimeBlock:      eventData.EndTime.Uint64(),
+		Status:            entity.AuctionStatusInProgress,
+	})
+	if err != nil {
+		logger.AtLog.Logger.Error("useCase.AuctionCreated-InsertOne", zap.Error(err))
 		return err
 	}
 
