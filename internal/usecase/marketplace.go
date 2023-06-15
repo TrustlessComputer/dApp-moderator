@@ -12,6 +12,7 @@ import (
 	"dapp-moderator/utils/generative_nft_contract"
 	"dapp-moderator/utils/logger"
 	"encoding/base64"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"math/big"
@@ -204,7 +205,7 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
 		//activity.OfferingID = strings.ToLower(fmt.Sprintf("%x", event.OfferingId))
 		return activity, event, nil
-	case entity.AuctionCreated:
+	case entity.AuctionCreatedActivity:
 		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
 		if err != nil {
 			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
@@ -220,6 +221,30 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		activity.Time = &tm
 		activity.InscriptionID = strings.ToLower(event.TokenId.String())
 		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.UserAAddress = strings.ToLower(event.Sender.Hex())
+		activity.AuctionID = utils.ToPtr(binary.BigEndian.Uint64(event.Auction.AuctionId[:]))
+
+		return activity, event, nil
+	case entity.AuctionBidActivity:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseAuctionBid(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionCreated", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.UserAAddress = strings.ToLower(event.Sender.Hex())
+		activity.Amount = event.Value.Int64()
+		activity.AmountStr = fmt.Sprintf("%d", event.Value.Int64())
+		activity.AuctionID = utils.ToPtr(binary.BigEndian.Uint64(event.Auction.AuctionId[:]))
 
 		return activity, event, nil
 	}
@@ -676,26 +701,96 @@ func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) erro
 	return nil
 }
 
-func (u *Usecase) AuctionCreated(data interface{}, chainLog types.Log) error {
+func (u *Usecase) HandleAuctionCreated(data interface{}, chainLog types.Log) error {
 	eventData, ok := data.(*soul_contract.SoulAuctionCreated)
 	if !ok {
+		logger.AtLog.Logger.Error("HandleAuctionCreated - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
 		return errors.New("event data is not correct")
 	}
-	logger.AtLog.Logger.Info("AuctionCreated", zap.String("tokenID", eventData.TokenId.String()),
+	logger.AtLog.Logger.Info("HandleAuctionCreated", zap.String("tokenID", eventData.TokenId.String()),
 		zap.String("contract", chainLog.Address.Hex()), zap.Uint64("startTime", eventData.StartTime.Uint64()),
 		zap.Uint64("endTime", eventData.EndTime.Uint64()))
 
-	_, err := u.Repo.InsertOne(&entity.Auction{
+	tokenIDInt, _ := strconv.Atoi(eventData.TokenId.String())
+	auctionID := binary.BigEndian.Uint64(eventData.AuctionId[:])
+
+	auctionEntity := &entity.Auction{
 		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
 		TokenID:           strings.ToLower(eventData.TokenId.String()),
+		TokenIDInt:        uint64(tokenIDInt),
+		AuctionID:         auctionID,
 		StartTimeBlock:    eventData.StartTime.Uint64(),
 		EndTimeBlock:      eventData.EndTime.Uint64(),
 		Status:            entity.AuctionStatusInProgress,
-	})
+	}
+
+	_, err := u.Repo.InsertOne(auctionEntity)
 	if err != nil {
-		logger.AtLog.Logger.Error("useCase.AuctionCreated-InsertOne", zap.Error(err))
+		logger.AtLog.Logger.Error("useCase.HandleAuctionCreated-InsertOne", zap.Error(err))
 		return err
 	}
 
 	return nil
+}
+
+func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulAuctionBid)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleAuctionBid - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+	logger.AtLog.Logger.Info("HandleAuctionBid", zap.String("tokenID", eventData.TokenId.String()),
+		zap.Any("eventData", eventData), zap.String("contract", chainLog.Address.Hex()))
+
+	chainAuctionID := binary.BigEndian.Uint64(eventData.Auction.AuctionId[:])
+	result, err := u.Repo.FindOne(utils.COLLECTION_AUCTION, bson.D{
+		{"auction_id", chainAuctionID},
+	})
+	if err != nil {
+		logger.AtLog.Logger.Info("HandleAuctionBid - FindOne auction error", zap.String("tokenID", eventData.TokenId.String()),
+			zap.Any("eventData", eventData), zap.Error(err))
+		return err
+	}
+
+	auction := &entity.Auction{}
+	if err := result.Decode(auction); err != nil {
+		logger.AtLog.Logger.Info("HandleAuctionBid - Decode auction error", zap.String("tokenID", eventData.TokenId.String()),
+			zap.Any("eventData", eventData), zap.Error(err))
+		return err
+	}
+
+	auctionBid, err := u.validateAuctionBid(eventData, auction, chainLog)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionBid - validateAuctionBid", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+
+	_, err = u.Repo.InsertOne(auctionBid)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionBid - InsertOne", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (u *Usecase) validateAuctionBid(auctionBid *soul_contract.SoulAuctionBid, auction *entity.Auction, chainLog types.Log) (*entity.AuctionBid, error) {
+	chainLatestBlock, err := u.TCPublicNode.GetBlockNumber()
+	if err != nil {
+		logger.AtLog.Logger.Error("validateAuctionBid - GetBlockNumber", zap.Error(err))
+		return nil, err
+	}
+
+	if !(auctionBid.Auction.StartTime.Uint64() <= chainLatestBlock.Uint64() && chainLatestBlock.Uint64() <= auctionBid.Auction.EndTime.Uint64()) {
+		logger.AtLog.Logger.Error("validateAuctionBid - auction is not in progress", zap.Any("auction", auctionBid.Auction))
+		return nil, errors.New("auction is not in progress")
+	}
+
+	return &entity.AuctionBid{
+		DBAuctionID:       auction.ID,
+		ChainAuctionID:    auction.AuctionID,
+		TokenID:           strings.ToLower(auctionBid.TokenId.String()),
+		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
+		Amount:            fmt.Sprintf("%d", auctionBid.Value.Int64()),
+		Sender:            strings.ToLower(auctionBid.Sender.Hex()),
+	}, nil
 }

@@ -13,14 +13,14 @@ type NftAuctionsAvailable struct {
 	CreatedAt *time.Time         `json:"created_at" bson:"created_at"`
 	UpdatedAt *time.Time         `json:"updated_at" bson:"updated_at"`
 
-	Name         string      `json:"name" bson:"-"`
-	Owner        string      `json:"owner" bson:"-"`
-	TokenURI     string      `json:"token_uri" bson:"-"`
-	Image        string      `json:"image" bson:"-"`
-	MintedAt     float64     `json:"minted_at" bson:"-"`
-	Attributes   []NftAttr   `json:"attributes" bson:"-"`
-	Metadata     interface{} `json:"metadata" bson:"-"`
-	MetadataType string      `json:"metadata_type"  bson:"-"`
+	Name         string      `json:"name" bson:"name"`
+	Owner        string      `json:"owner" bson:"owner"`
+	TokenURI     string      `json:"token_uri" bson:"token_uri"`
+	Image        string      `json:"image" bson:"image"`
+	MintedAt     float64     `json:"minted_at" bson:"minted_at"`
+	Attributes   []NftAttr   `json:"attributes" bson:"attributes"`
+	Metadata     interface{} `json:"metadata" bson:"metadata"`
+	MetadataType string      `json:"metadata_type"  bson:"metadata_type"`
 	Size         int64       `bson:"-" json:"-"`
 
 	AnimationFileUrl string `json:"animation_file_url,omitempty" bson:"animation_file_url,omitempty"`

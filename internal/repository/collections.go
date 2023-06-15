@@ -237,3 +237,62 @@ func (r *Repository) GetSoulCollection() (*entity.Collections, error) {
 
 	return result, nil
 }
+
+func (r *Repository) CollectionNftOwner(f entity.FilterCollectionNftOwners) (*entity.CollectionNftOwnerFiltered, error) {
+	result := []entity.CollectionNftOwnerFiltered{}
+
+	filter := bson.A{
+		bson.D{
+			{"$facet",
+				bson.D{
+					{"total",
+						bson.A{
+							bson.D{{"$match", bson.D{{"collection_address", strings.ToLower(*f.ContractAddress)}}}},
+							bson.D{
+								{"$group",
+									bson.D{
+										{"_id", bson.D{{"collection_address", "$collection_address"}}},
+										{"total", bson.D{{"$sum", 1}}},
+									},
+								},
+							},
+							bson.D{{"$project", bson.D{{"_id", 0}}}},
+						},
+					},
+					{"items",
+						bson.A{
+							bson.D{{"$match", bson.D{{"collection_address", strings.ToLower(*f.ContractAddress)}}}},
+							bson.D{{"$skip", f.Offset}},
+							bson.D{{"$limit", f.Limit}},
+						},
+					},
+				},
+			},
+		},
+		bson.D{
+			{"$unwind",
+				bson.D{
+					{"path", "$total"},
+					{"preserveNullAndEmptyArrays", true},
+				},
+			},
+		},
+		bson.D{{"$addFields", bson.D{{"total_items", "$total.total"}}}},
+		bson.D{{"$project", bson.D{{"total", 0}}}},
+	}
+
+	cursor, err := r.DB.Collection(utils.VIEW_MARKETPLACE_COUNT_COLLECTION_OWNER).Aggregate(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All((context.TODO()), &result); err != nil {
+		return nil, err
+	}
+
+	if len(result) > 0 {
+		return &result[0], nil
+	}
+
+	return nil, nil
+
+}
