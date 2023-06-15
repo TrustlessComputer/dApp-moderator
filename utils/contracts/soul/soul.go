@@ -29,9 +29,24 @@ var (
 	_ = abi.ConvertType
 )
 
+// AuctionHouseAuction is an auto generated low-level Go binding around an user-defined struct.
+type AuctionHouseAuction struct {
+	TokenId                   *big.Int
+	Erc20Token                common.Address
+	Amount                    *big.Int
+	StartTime                 *big.Int
+	EndTime                   *big.Int
+	Bidder                    common.Address
+	Settled                   bool
+	TimeBuffer                *big.Int
+	ReservePrice              *big.Int
+	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
+}
+
 // SoulMetaData contains all meta data concerning the Soul contract.
 var SoulMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"extended\",\"type\":\"bool\"}],\"name\":\"AuctionBid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"AuctionClaimBid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"AuctionClosed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"AuctionCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"AuctionExtended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"}],\"name\":\"AuctionMinBidIncrementPercentageUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"}],\"name\":\"AuctionReservePriceUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"AuctionSettled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"}],\"name\":\"AuctionTimeBufferUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"reserver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"Claim\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"reserver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"Reserve\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"_admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_auctions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_bfs\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_bidders\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_gmToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_maxSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_mintAt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_minted\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_paramsAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_randomizerAddr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_script\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_signerMint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"available\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"n\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"batchMint\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"biddable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdm\",\"type\":\"address\"}],\"name\":\"changeAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBfs\",\"type\":\"address\"}],\"name\":\"changeBfs\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBrc20\",\"type\":\"address\"}],\"name\":\"changeBrc20Token\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddr\",\"type\":\"address\"}],\"name\":\"changeParamAddr\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddr\",\"type\":\"address\"}],\"name\":\"changeRandomizerAddr\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"newScript\",\"type\":\"string\"}],\"name\":\"changeScript\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdd\",\"type\":\"address\"}],\"name\":\"changeSignerMint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"claimBid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"createAuction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"createBid\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalGM\",\"type\":\"uint256\"}],\"name\":\"getMessageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paramsAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"randomizerAddr\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"gmToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"bfs\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signerMint\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalGM\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"p5jsScript\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"projectId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_salePrice\",\"type\":\"uint256\"}],\"name\":\"royaltyInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"royaltyAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"settleAuction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenHTML\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenIdToHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"variableScript\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"web3Script\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"extended\",\"type\":\"bool\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structAuctionHouse.Auction\",\"name\":\"auction\",\"type\":\"tuple\"}],\"name\":\"HandleAuctionBid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"name\":\"AuctionClaimBid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"AuctionClosed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structAuctionHouse.Auction\",\"name\":\"auction\",\"type\":\"tuple\"}],\"name\":\"HandleAuctionCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structAuctionHouse.Auction\",\"name\":\"auction\",\"type\":\"tuple\"}],\"name\":\"AuctionExtended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"}],\"name\":\"AuctionMinBidIncrementPercentageUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"}],\"name\":\"AuctionReservePriceUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structAuctionHouse.Auction\",\"name\":\"auction\",\"type\":\"tuple\"}],\"name\":\"AuctionSettled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"}],\"name\":\"AuctionTimeBufferUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"reserver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"Claim\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"reserver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"Reserve\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"_admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_auctions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"_auctionsList\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_bfs\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_bidderAuctions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_coreTeamTreasury\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_gmToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_maxSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_mintAt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_minted\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_paramsAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_randomizerAddr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_script\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_signerMint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"available\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"n\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"batchMint\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"biddable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdm\",\"type\":\"address\"}],\"name\":\"changeAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBfs\",\"type\":\"address\"}],\"name\":\"changeBfs\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBrc20\",\"type\":\"address\"}],\"name\":\"changeBrc20Token\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddr\",\"type\":\"address\"}],\"name\":\"changeParamAddr\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddr\",\"type\":\"address\"}],\"name\":\"changeRandomizerAddr\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"newScript\",\"type\":\"string\"}],\"name\":\"changeScript\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdd\",\"type\":\"address\"}],\"name\":\"changeSignerMint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"name\":\"claimBid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"createAuction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"createBid\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalGM\",\"type\":\"uint256\"}],\"name\":\"getMessageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paramsAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"randomizerAddr\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"gmToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"bfs\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signerMint\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalGM\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"p5jsScript\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"projectId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_salePrice\",\"type\":\"uint256\"}],\"name\":\"royaltyInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"royaltyAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"settleAuction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenHTML\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenIdToHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"variableScript\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"web3Script\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"erc20Addr\",\"type\":\"address\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // SoulABI is the input ABI used to generate the binding from.
@@ -213,7 +228,7 @@ func (_Soul *SoulCallerSession) Admin() (common.Address, error) {
 
 // Auctions is a free data retrieval call binding the contract method 0x17dc6bf6.
 //
-// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage)
+// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
 func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 	TokenId                   *big.Int
 	Erc20Token                common.Address
@@ -225,6 +240,7 @@ func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 	TimeBuffer                *big.Int
 	ReservePrice              *big.Int
 	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
 }, error) {
 	var out []interface{}
 	err := _Soul.contract.Call(opts, &out, "_auctions", arg0)
@@ -240,6 +256,7 @@ func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 		TimeBuffer                *big.Int
 		ReservePrice              *big.Int
 		MinBidIncrementPercentage *big.Int
+		AuctionId                 [32]byte
 	})
 	if err != nil {
 		return *outstruct, err
@@ -255,6 +272,7 @@ func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 	outstruct.TimeBuffer = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
 	outstruct.ReservePrice = *abi.ConvertType(out[8], new(*big.Int)).(**big.Int)
 	outstruct.MinBidIncrementPercentage = *abi.ConvertType(out[9], new(*big.Int)).(**big.Int)
+	outstruct.AuctionId = *abi.ConvertType(out[10], new([32]byte)).(*[32]byte)
 
 	return *outstruct, err
 
@@ -262,7 +280,7 @@ func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 
 // Auctions is a free data retrieval call binding the contract method 0x17dc6bf6.
 //
-// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage)
+// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
 func (_Soul *SoulSession) Auctions(arg0 *big.Int) (struct {
 	TokenId                   *big.Int
 	Erc20Token                common.Address
@@ -274,13 +292,14 @@ func (_Soul *SoulSession) Auctions(arg0 *big.Int) (struct {
 	TimeBuffer                *big.Int
 	ReservePrice              *big.Int
 	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
 }, error) {
 	return _Soul.Contract.Auctions(&_Soul.CallOpts, arg0)
 }
 
 // Auctions is a free data retrieval call binding the contract method 0x17dc6bf6.
 //
-// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage)
+// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
 func (_Soul *SoulCallerSession) Auctions(arg0 *big.Int) (struct {
 	TokenId                   *big.Int
 	Erc20Token                common.Address
@@ -292,8 +311,99 @@ func (_Soul *SoulCallerSession) Auctions(arg0 *big.Int) (struct {
 	TimeBuffer                *big.Int
 	ReservePrice              *big.Int
 	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
 }, error) {
 	return _Soul.Contract.Auctions(&_Soul.CallOpts, arg0)
+}
+
+// AuctionsList is a free data retrieval call binding the contract method 0x9a247cb3.
+//
+// Solidity: function _auctionsList(bytes32 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
+func (_Soul *SoulCaller) AuctionsList(opts *bind.CallOpts, arg0 [32]byte) (struct {
+	TokenId                   *big.Int
+	Erc20Token                common.Address
+	Amount                    *big.Int
+	StartTime                 *big.Int
+	EndTime                   *big.Int
+	Bidder                    common.Address
+	Settled                   bool
+	TimeBuffer                *big.Int
+	ReservePrice              *big.Int
+	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
+}, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "_auctionsList", arg0)
+
+	outstruct := new(struct {
+		TokenId                   *big.Int
+		Erc20Token                common.Address
+		Amount                    *big.Int
+		StartTime                 *big.Int
+		EndTime                   *big.Int
+		Bidder                    common.Address
+		Settled                   bool
+		TimeBuffer                *big.Int
+		ReservePrice              *big.Int
+		MinBidIncrementPercentage *big.Int
+		AuctionId                 [32]byte
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.TokenId = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Erc20Token = *abi.ConvertType(out[1], new(common.Address)).(*common.Address)
+	outstruct.Amount = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.StartTime = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.EndTime = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.Bidder = *abi.ConvertType(out[5], new(common.Address)).(*common.Address)
+	outstruct.Settled = *abi.ConvertType(out[6], new(bool)).(*bool)
+	outstruct.TimeBuffer = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.ReservePrice = *abi.ConvertType(out[8], new(*big.Int)).(**big.Int)
+	outstruct.MinBidIncrementPercentage = *abi.ConvertType(out[9], new(*big.Int)).(**big.Int)
+	outstruct.AuctionId = *abi.ConvertType(out[10], new([32]byte)).(*[32]byte)
+
+	return *outstruct, err
+
+}
+
+// AuctionsList is a free data retrieval call binding the contract method 0x9a247cb3.
+//
+// Solidity: function _auctionsList(bytes32 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
+func (_Soul *SoulSession) AuctionsList(arg0 [32]byte) (struct {
+	TokenId                   *big.Int
+	Erc20Token                common.Address
+	Amount                    *big.Int
+	StartTime                 *big.Int
+	EndTime                   *big.Int
+	Bidder                    common.Address
+	Settled                   bool
+	TimeBuffer                *big.Int
+	ReservePrice              *big.Int
+	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
+}, error) {
+	return _Soul.Contract.AuctionsList(&_Soul.CallOpts, arg0)
+}
+
+// AuctionsList is a free data retrieval call binding the contract method 0x9a247cb3.
+//
+// Solidity: function _auctionsList(bytes32 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
+func (_Soul *SoulCallerSession) AuctionsList(arg0 [32]byte) (struct {
+	TokenId                   *big.Int
+	Erc20Token                common.Address
+	Amount                    *big.Int
+	StartTime                 *big.Int
+	EndTime                   *big.Int
+	Bidder                    common.Address
+	Settled                   bool
+	TimeBuffer                *big.Int
+	ReservePrice              *big.Int
+	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
+}, error) {
+	return _Soul.Contract.AuctionsList(&_Soul.CallOpts, arg0)
 }
 
 // Bfs is a free data retrieval call binding the contract method 0x33348979.
@@ -327,12 +437,12 @@ func (_Soul *SoulCallerSession) Bfs() (common.Address, error) {
 	return _Soul.Contract.Bfs(&_Soul.CallOpts)
 }
 
-// Bidders is a free data retrieval call binding the contract method 0x2d61bd09.
+// BidderAuctions is a free data retrieval call binding the contract method 0x55cd6326.
 //
-// Solidity: function _bidders(uint256 , address ) view returns(uint256)
-func (_Soul *SoulCaller) Bidders(opts *bind.CallOpts, arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
+// Solidity: function _bidderAuctions(uint256 , bytes32 , address ) view returns(uint256)
+func (_Soul *SoulCaller) BidderAuctions(opts *bind.CallOpts, arg0 *big.Int, arg1 [32]byte, arg2 common.Address) (*big.Int, error) {
 	var out []interface{}
-	err := _Soul.contract.Call(opts, &out, "_bidders", arg0, arg1)
+	err := _Soul.contract.Call(opts, &out, "_bidderAuctions", arg0, arg1, arg2)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -344,18 +454,49 @@ func (_Soul *SoulCaller) Bidders(opts *bind.CallOpts, arg0 *big.Int, arg1 common
 
 }
 
-// Bidders is a free data retrieval call binding the contract method 0x2d61bd09.
+// BidderAuctions is a free data retrieval call binding the contract method 0x55cd6326.
 //
-// Solidity: function _bidders(uint256 , address ) view returns(uint256)
-func (_Soul *SoulSession) Bidders(arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
-	return _Soul.Contract.Bidders(&_Soul.CallOpts, arg0, arg1)
+// Solidity: function _bidderAuctions(uint256 , bytes32 , address ) view returns(uint256)
+func (_Soul *SoulSession) BidderAuctions(arg0 *big.Int, arg1 [32]byte, arg2 common.Address) (*big.Int, error) {
+	return _Soul.Contract.BidderAuctions(&_Soul.CallOpts, arg0, arg1, arg2)
 }
 
-// Bidders is a free data retrieval call binding the contract method 0x2d61bd09.
+// BidderAuctions is a free data retrieval call binding the contract method 0x55cd6326.
 //
-// Solidity: function _bidders(uint256 , address ) view returns(uint256)
-func (_Soul *SoulCallerSession) Bidders(arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
-	return _Soul.Contract.Bidders(&_Soul.CallOpts, arg0, arg1)
+// Solidity: function _bidderAuctions(uint256 , bytes32 , address ) view returns(uint256)
+func (_Soul *SoulCallerSession) BidderAuctions(arg0 *big.Int, arg1 [32]byte, arg2 common.Address) (*big.Int, error) {
+	return _Soul.Contract.BidderAuctions(&_Soul.CallOpts, arg0, arg1, arg2)
+}
+
+// CoreTeamTreasury is a free data retrieval call binding the contract method 0x2824d162.
+//
+// Solidity: function _coreTeamTreasury(address ) view returns(uint256)
+func (_Soul *SoulCaller) CoreTeamTreasury(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "_coreTeamTreasury", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// CoreTeamTreasury is a free data retrieval call binding the contract method 0x2824d162.
+//
+// Solidity: function _coreTeamTreasury(address ) view returns(uint256)
+func (_Soul *SoulSession) CoreTeamTreasury(arg0 common.Address) (*big.Int, error) {
+	return _Soul.Contract.CoreTeamTreasury(&_Soul.CallOpts, arg0)
+}
+
+// CoreTeamTreasury is a free data retrieval call binding the contract method 0x2824d162.
+//
+// Solidity: function _coreTeamTreasury(address ) view returns(uint256)
+func (_Soul *SoulCallerSession) CoreTeamTreasury(arg0 common.Address) (*big.Int, error) {
+	return _Soul.Contract.CoreTeamTreasury(&_Soul.CallOpts, arg0)
 }
 
 // GmToken is a free data retrieval call binding the contract method 0x9c6f35f9.
@@ -1398,25 +1539,25 @@ func (_Soul *SoulTransactorSession) ChangeSignerMint(newAdd common.Address) (*ty
 	return _Soul.Contract.ChangeSignerMint(&_Soul.TransactOpts, newAdd)
 }
 
-// ClaimBid is a paid mutator transaction binding the contract method 0x21113057.
+// ClaimBid is a paid mutator transaction binding the contract method 0xf50cbc8b.
 //
-// Solidity: function claimBid(uint256 tokenId) returns()
-func (_Soul *SoulTransactor) ClaimBid(opts *bind.TransactOpts, tokenId *big.Int) (*types.Transaction, error) {
-	return _Soul.contract.Transact(opts, "claimBid", tokenId)
+// Solidity: function claimBid(uint256 tokenId, bytes32 auctionId) returns()
+func (_Soul *SoulTransactor) ClaimBid(opts *bind.TransactOpts, tokenId *big.Int, auctionId [32]byte) (*types.Transaction, error) {
+	return _Soul.contract.Transact(opts, "claimBid", tokenId, auctionId)
 }
 
-// ClaimBid is a paid mutator transaction binding the contract method 0x21113057.
+// ClaimBid is a paid mutator transaction binding the contract method 0xf50cbc8b.
 //
-// Solidity: function claimBid(uint256 tokenId) returns()
-func (_Soul *SoulSession) ClaimBid(tokenId *big.Int) (*types.Transaction, error) {
-	return _Soul.Contract.ClaimBid(&_Soul.TransactOpts, tokenId)
+// Solidity: function claimBid(uint256 tokenId, bytes32 auctionId) returns()
+func (_Soul *SoulSession) ClaimBid(tokenId *big.Int, auctionId [32]byte) (*types.Transaction, error) {
+	return _Soul.Contract.ClaimBid(&_Soul.TransactOpts, tokenId, auctionId)
 }
 
-// ClaimBid is a paid mutator transaction binding the contract method 0x21113057.
+// ClaimBid is a paid mutator transaction binding the contract method 0xf50cbc8b.
 //
-// Solidity: function claimBid(uint256 tokenId) returns()
-func (_Soul *SoulTransactorSession) ClaimBid(tokenId *big.Int) (*types.Transaction, error) {
-	return _Soul.Contract.ClaimBid(&_Soul.TransactOpts, tokenId)
+// Solidity: function claimBid(uint256 tokenId, bytes32 auctionId) returns()
+func (_Soul *SoulTransactorSession) ClaimBid(tokenId *big.Int, auctionId [32]byte) (*types.Transaction, error) {
+	return _Soul.Contract.ClaimBid(&_Soul.TransactOpts, tokenId, auctionId)
 }
 
 // CreateAuction is a paid mutator transaction binding the contract method 0xd5563f31.
@@ -1459,6 +1600,27 @@ func (_Soul *SoulSession) CreateBid(tokenId *big.Int, amount *big.Int) (*types.T
 // Solidity: function createBid(uint256 tokenId, uint256 amount) payable returns()
 func (_Soul *SoulTransactorSession) CreateBid(tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
 	return _Soul.Contract.CreateBid(&_Soul.TransactOpts, tokenId, amount)
+}
+
+// Deposit is a paid mutator transaction binding the contract method 0xb6b55f25.
+//
+// Solidity: function deposit(uint256 amount) payable returns()
+func (_Soul *SoulTransactor) Deposit(opts *bind.TransactOpts, amount *big.Int) (*types.Transaction, error) {
+	return _Soul.contract.Transact(opts, "deposit", amount)
+}
+
+// Deposit is a paid mutator transaction binding the contract method 0xb6b55f25.
+//
+// Solidity: function deposit(uint256 amount) payable returns()
+func (_Soul *SoulSession) Deposit(amount *big.Int) (*types.Transaction, error) {
+	return _Soul.Contract.Deposit(&_Soul.TransactOpts, amount)
+}
+
+// Deposit is a paid mutator transaction binding the contract method 0xb6b55f25.
+//
+// Solidity: function deposit(uint256 amount) payable returns()
+func (_Soul *SoulTransactorSession) Deposit(amount *big.Int) (*types.Transaction, error) {
+	return _Soul.Contract.Deposit(&_Soul.TransactOpts, amount)
 }
 
 // Initialize is a paid mutator transaction binding the contract method 0x94f5a66e.
@@ -1648,6 +1810,27 @@ func (_Soul *SoulSession) TransferOwnership(newOwner common.Address) (*types.Tra
 // Solidity: function transferOwnership(address newOwner) returns()
 func (_Soul *SoulTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
 	return _Soul.Contract.TransferOwnership(&_Soul.TransactOpts, newOwner)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0x51cff8d9.
+//
+// Solidity: function withdraw(address erc20Addr) returns()
+func (_Soul *SoulTransactor) Withdraw(opts *bind.TransactOpts, erc20Addr common.Address) (*types.Transaction, error) {
+	return _Soul.contract.Transact(opts, "withdraw", erc20Addr)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0x51cff8d9.
+//
+// Solidity: function withdraw(address erc20Addr) returns()
+func (_Soul *SoulSession) Withdraw(erc20Addr common.Address) (*types.Transaction, error) {
+	return _Soul.Contract.Withdraw(&_Soul.TransactOpts, erc20Addr)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0x51cff8d9.
+//
+// Solidity: function withdraw(address erc20Addr) returns()
+func (_Soul *SoulTransactorSession) Withdraw(erc20Addr common.Address) (*types.Transaction, error) {
+	return _Soul.Contract.Withdraw(&_Soul.TransactOpts, erc20Addr)
 }
 
 // SoulApprovalIterator is returned from FilterApproval and is used to iterate over the raw logs and unpacked data for Approval events raised by the Soul contract.
@@ -1966,7 +2149,7 @@ func (_Soul *SoulFilterer) ParseApprovalForAll(log types.Log) (*SoulApprovalForA
 	return event, nil
 }
 
-// SoulAuctionBidIterator is returned from FilterAuctionBid and is used to iterate over the raw logs and unpacked data for AuctionBid events raised by the Soul contract.
+// SoulAuctionBidIterator is returned from FilterAuctionBid and is used to iterate over the raw logs and unpacked data for HandleAuctionBid events raised by the Soul contract.
 type SoulAuctionBidIterator struct {
 	Event *SoulAuctionBid // Event containing the contract specifics and raw log
 
@@ -2033,18 +2216,19 @@ func (it *SoulAuctionBidIterator) Close() error {
 	return nil
 }
 
-// SoulAuctionBid represents a AuctionBid event raised by the Soul contract.
+// SoulAuctionBid represents a HandleAuctionBid event raised by the Soul contract.
 type SoulAuctionBid struct {
 	TokenId  *big.Int
 	Sender   common.Address
 	Value    *big.Int
 	Extended bool
+	Auction  AuctionHouseAuction
 	Raw      types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionBid is a free log retrieval operation binding the contract event 0x1159164c56f277e6fc99c11731bd380e0347deb969b75523398734c252706ea3.
+// FilterAuctionBid is a free log retrieval operation binding the contract event 0xfd09e259e5c48be16f7dd63468e19266c684a9f3dce3b31881dbc1f909fc0d7c.
 //
-// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended)
+// Solidity: event HandleAuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) FilterAuctionBid(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionBidIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -2052,16 +2236,16 @@ func (_Soul *SoulFilterer) FilterAuctionBid(opts *bind.FilterOpts, tokenId []*bi
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
 	}
 
-	logs, sub, err := _Soul.contract.FilterLogs(opts, "AuctionBid", tokenIdRule)
+	logs, sub, err := _Soul.contract.FilterLogs(opts, "HandleAuctionBid", tokenIdRule)
 	if err != nil {
 		return nil, err
 	}
-	return &SoulAuctionBidIterator{contract: _Soul.contract, event: "AuctionBid", logs: logs, sub: sub}, nil
+	return &SoulAuctionBidIterator{contract: _Soul.contract, event: "HandleAuctionBid", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionBid is a free log subscription operation binding the contract event 0x1159164c56f277e6fc99c11731bd380e0347deb969b75523398734c252706ea3.
+// WatchAuctionBid is a free log subscription operation binding the contract event 0xfd09e259e5c48be16f7dd63468e19266c684a9f3dce3b31881dbc1f909fc0d7c.
 //
-// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended)
+// Solidity: event HandleAuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) WatchAuctionBid(opts *bind.WatchOpts, sink chan<- *SoulAuctionBid, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -2069,7 +2253,7 @@ func (_Soul *SoulFilterer) WatchAuctionBid(opts *bind.WatchOpts, sink chan<- *So
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
 	}
 
-	logs, sub, err := _Soul.contract.WatchLogs(opts, "AuctionBid", tokenIdRule)
+	logs, sub, err := _Soul.contract.WatchLogs(opts, "HandleAuctionBid", tokenIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2080,7 +2264,7 @@ func (_Soul *SoulFilterer) WatchAuctionBid(opts *bind.WatchOpts, sink chan<- *So
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
 				event := new(SoulAuctionBid)
-				if err := _Soul.contract.UnpackLog(event, "AuctionBid", log); err != nil {
+				if err := _Soul.contract.UnpackLog(event, "HandleAuctionBid", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -2101,12 +2285,12 @@ func (_Soul *SoulFilterer) WatchAuctionBid(opts *bind.WatchOpts, sink chan<- *So
 	}), nil
 }
 
-// ParseAuctionBid is a log parse operation binding the contract event 0x1159164c56f277e6fc99c11731bd380e0347deb969b75523398734c252706ea3.
+// ParseAuctionBid is a log parse operation binding the contract event 0xfd09e259e5c48be16f7dd63468e19266c684a9f3dce3b31881dbc1f909fc0d7c.
 //
-// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended)
+// Solidity: event HandleAuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) ParseAuctionBid(log types.Log) (*SoulAuctionBid, error) {
 	event := new(SoulAuctionBid)
-	if err := _Soul.contract.UnpackLog(event, "AuctionBid", log); err != nil {
+	if err := _Soul.contract.UnpackLog(event, "HandleAuctionBid", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -2182,15 +2366,16 @@ func (it *SoulAuctionClaimBidIterator) Close() error {
 
 // SoulAuctionClaimBid represents a AuctionClaimBid event raised by the Soul contract.
 type SoulAuctionClaimBid struct {
-	TokenId *big.Int
-	Sender  common.Address
-	Value   *big.Int
-	Raw     types.Log // Blockchain specific contextual infos
+	TokenId   *big.Int
+	Sender    common.Address
+	Value     *big.Int
+	AuctionId [32]byte
+	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionClaimBid is a free log retrieval operation binding the contract event 0x63ad079d900b92497dd34dccc37cb42c76aff5798f6084bd35af77d8cb5473fe.
+// FilterAuctionClaimBid is a free log retrieval operation binding the contract event 0x3efeb5ca9b10c05ba2df4bcac38445e4a4e8a996887f004e5036d254c14a9864.
 //
-// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value)
+// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value, bytes32 auctionId)
 func (_Soul *SoulFilterer) FilterAuctionClaimBid(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionClaimBidIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -2205,9 +2390,9 @@ func (_Soul *SoulFilterer) FilterAuctionClaimBid(opts *bind.FilterOpts, tokenId 
 	return &SoulAuctionClaimBidIterator{contract: _Soul.contract, event: "AuctionClaimBid", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionClaimBid is a free log subscription operation binding the contract event 0x63ad079d900b92497dd34dccc37cb42c76aff5798f6084bd35af77d8cb5473fe.
+// WatchAuctionClaimBid is a free log subscription operation binding the contract event 0x3efeb5ca9b10c05ba2df4bcac38445e4a4e8a996887f004e5036d254c14a9864.
 //
-// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value)
+// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value, bytes32 auctionId)
 func (_Soul *SoulFilterer) WatchAuctionClaimBid(opts *bind.WatchOpts, sink chan<- *SoulAuctionClaimBid, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -2247,9 +2432,9 @@ func (_Soul *SoulFilterer) WatchAuctionClaimBid(opts *bind.WatchOpts, sink chan<
 	}), nil
 }
 
-// ParseAuctionClaimBid is a log parse operation binding the contract event 0x63ad079d900b92497dd34dccc37cb42c76aff5798f6084bd35af77d8cb5473fe.
+// ParseAuctionClaimBid is a log parse operation binding the contract event 0x3efeb5ca9b10c05ba2df4bcac38445e4a4e8a996887f004e5036d254c14a9864.
 //
-// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value)
+// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value, bytes32 auctionId)
 func (_Soul *SoulFilterer) ParseAuctionClaimBid(log types.Log) (*SoulAuctionClaimBid, error) {
 	event := new(SoulAuctionClaimBid)
 	if err := _Soul.contract.UnpackLog(event, "AuctionClaimBid", log); err != nil {
@@ -2403,7 +2588,7 @@ func (_Soul *SoulFilterer) ParseAuctionClosed(log types.Log) (*SoulAuctionClosed
 	return event, nil
 }
 
-// SoulAuctionCreatedIterator is returned from FilterAuctionCreated and is used to iterate over the raw logs and unpacked data for AuctionCreated events raised by the Soul contract.
+// SoulAuctionCreatedIterator is returned from FilterAuctionCreated and is used to iterate over the raw logs and unpacked data for HandleAuctionCreated events raised by the Soul contract.
 type SoulAuctionCreatedIterator struct {
 	Event *SoulAuctionCreated // Event containing the contract specifics and raw log
 
@@ -2470,17 +2655,20 @@ func (it *SoulAuctionCreatedIterator) Close() error {
 	return nil
 }
 
-// SoulAuctionCreated represents a AuctionCreated event raised by the Soul contract.
+// SoulAuctionCreated represents a HandleAuctionCreated event raised by the Soul contract.
 type SoulAuctionCreated struct {
 	TokenId   *big.Int
 	StartTime *big.Int
 	EndTime   *big.Int
+	Sender    common.Address
+	AuctionId [32]byte
+	Auction   AuctionHouseAuction
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionCreated is a free log retrieval operation binding the contract event 0xd6eddd1118d71820909c1197aa966dbc15ed6f508554252169cc3d5ccac756ca.
+// FilterAuctionCreated is a free log retrieval operation binding the contract event 0xb404e07dbfe9071da655c32567071b2ee4e88867784a1b39f01a8457787e504f.
 //
-// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime)
+// Solidity: event HandleAuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime, address sender, bytes32 auctionId, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) FilterAuctionCreated(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionCreatedIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -2488,16 +2676,16 @@ func (_Soul *SoulFilterer) FilterAuctionCreated(opts *bind.FilterOpts, tokenId [
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
 	}
 
-	logs, sub, err := _Soul.contract.FilterLogs(opts, "AuctionCreated", tokenIdRule)
+	logs, sub, err := _Soul.contract.FilterLogs(opts, "HandleAuctionCreated", tokenIdRule)
 	if err != nil {
 		return nil, err
 	}
-	return &SoulAuctionCreatedIterator{contract: _Soul.contract, event: "AuctionCreated", logs: logs, sub: sub}, nil
+	return &SoulAuctionCreatedIterator{contract: _Soul.contract, event: "HandleAuctionCreated", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionCreated is a free log subscription operation binding the contract event 0xd6eddd1118d71820909c1197aa966dbc15ed6f508554252169cc3d5ccac756ca.
+// WatchAuctionCreated is a free log subscription operation binding the contract event 0xb404e07dbfe9071da655c32567071b2ee4e88867784a1b39f01a8457787e504f.
 //
-// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime)
+// Solidity: event HandleAuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime, address sender, bytes32 auctionId, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) WatchAuctionCreated(opts *bind.WatchOpts, sink chan<- *SoulAuctionCreated, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -2505,7 +2693,7 @@ func (_Soul *SoulFilterer) WatchAuctionCreated(opts *bind.WatchOpts, sink chan<-
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
 	}
 
-	logs, sub, err := _Soul.contract.WatchLogs(opts, "AuctionCreated", tokenIdRule)
+	logs, sub, err := _Soul.contract.WatchLogs(opts, "HandleAuctionCreated", tokenIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2516,7 +2704,7 @@ func (_Soul *SoulFilterer) WatchAuctionCreated(opts *bind.WatchOpts, sink chan<-
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
 				event := new(SoulAuctionCreated)
-				if err := _Soul.contract.UnpackLog(event, "AuctionCreated", log); err != nil {
+				if err := _Soul.contract.UnpackLog(event, "HandleAuctionCreated", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -2537,12 +2725,12 @@ func (_Soul *SoulFilterer) WatchAuctionCreated(opts *bind.WatchOpts, sink chan<-
 	}), nil
 }
 
-// ParseAuctionCreated is a log parse operation binding the contract event 0xd6eddd1118d71820909c1197aa966dbc15ed6f508554252169cc3d5ccac756ca.
+// ParseAuctionCreated is a log parse operation binding the contract event 0xb404e07dbfe9071da655c32567071b2ee4e88867784a1b39f01a8457787e504f.
 //
-// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime)
+// Solidity: event HandleAuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime, address sender, bytes32 auctionId, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) ParseAuctionCreated(log types.Log) (*SoulAuctionCreated, error) {
 	event := new(SoulAuctionCreated)
-	if err := _Soul.contract.UnpackLog(event, "AuctionCreated", log); err != nil {
+	if err := _Soul.contract.UnpackLog(event, "HandleAuctionCreated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -2620,12 +2808,13 @@ func (it *SoulAuctionExtendedIterator) Close() error {
 type SoulAuctionExtended struct {
 	TokenId *big.Int
 	EndTime *big.Int
+	Auction AuctionHouseAuction
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionExtended is a free log retrieval operation binding the contract event 0x6e912a3a9105bdd2af817ba5adc14e6c127c1035b5b648faa29ca0d58ab8ff4e.
+// FilterAuctionExtended is a free log retrieval operation binding the contract event 0x4c1666cb87ed4fd7706cb19b1e3160612601aca7235c307fe64a11bc8db0f41f.
 //
-// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime)
+// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) FilterAuctionExtended(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionExtendedIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -2640,9 +2829,9 @@ func (_Soul *SoulFilterer) FilterAuctionExtended(opts *bind.FilterOpts, tokenId 
 	return &SoulAuctionExtendedIterator{contract: _Soul.contract, event: "AuctionExtended", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionExtended is a free log subscription operation binding the contract event 0x6e912a3a9105bdd2af817ba5adc14e6c127c1035b5b648faa29ca0d58ab8ff4e.
+// WatchAuctionExtended is a free log subscription operation binding the contract event 0x4c1666cb87ed4fd7706cb19b1e3160612601aca7235c307fe64a11bc8db0f41f.
 //
-// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime)
+// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) WatchAuctionExtended(opts *bind.WatchOpts, sink chan<- *SoulAuctionExtended, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -2682,9 +2871,9 @@ func (_Soul *SoulFilterer) WatchAuctionExtended(opts *bind.WatchOpts, sink chan<
 	}), nil
 }
 
-// ParseAuctionExtended is a log parse operation binding the contract event 0x6e912a3a9105bdd2af817ba5adc14e6c127c1035b5b648faa29ca0d58ab8ff4e.
+// ParseAuctionExtended is a log parse operation binding the contract event 0x4c1666cb87ed4fd7706cb19b1e3160612601aca7235c307fe64a11bc8db0f41f.
 //
-// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime)
+// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) ParseAuctionExtended(log types.Log) (*SoulAuctionExtended, error) {
 	event := new(SoulAuctionExtended)
 	if err := _Soul.contract.UnpackLog(event, "AuctionExtended", log); err != nil {
@@ -3034,12 +3223,13 @@ type SoulAuctionSettled struct {
 	TokenId *big.Int
 	Winner  common.Address
 	Amount  *big.Int
+	Auction AuctionHouseAuction
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionSettled is a free log retrieval operation binding the contract event 0xc9f72b276a388619c6d185d146697036241880c36654b1a3ffdad07c24038d99.
+// FilterAuctionSettled is a free log retrieval operation binding the contract event 0x727cff623966c8adc61ac68940e8c898c04ff7ced5d69d9735d51f0589daf532.
 //
-// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount)
+// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) FilterAuctionSettled(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionSettledIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -3054,9 +3244,9 @@ func (_Soul *SoulFilterer) FilterAuctionSettled(opts *bind.FilterOpts, tokenId [
 	return &SoulAuctionSettledIterator{contract: _Soul.contract, event: "AuctionSettled", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionSettled is a free log subscription operation binding the contract event 0xc9f72b276a388619c6d185d146697036241880c36654b1a3ffdad07c24038d99.
+// WatchAuctionSettled is a free log subscription operation binding the contract event 0x727cff623966c8adc61ac68940e8c898c04ff7ced5d69d9735d51f0589daf532.
 //
-// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount)
+// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) WatchAuctionSettled(opts *bind.WatchOpts, sink chan<- *SoulAuctionSettled, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -3096,9 +3286,9 @@ func (_Soul *SoulFilterer) WatchAuctionSettled(opts *bind.WatchOpts, sink chan<-
 	}), nil
 }
 
-// ParseAuctionSettled is a log parse operation binding the contract event 0xc9f72b276a388619c6d185d146697036241880c36654b1a3ffdad07c24038d99.
+// ParseAuctionSettled is a log parse operation binding the contract event 0x727cff623966c8adc61ac68940e8c898c04ff7ced5d69d9735d51f0589daf532.
 //
-// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount)
+// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) ParseAuctionSettled(log types.Log) (*SoulAuctionSettled, error) {
 	event := new(SoulAuctionSettled)
 	if err := _Soul.contract.UnpackLog(event, "AuctionSettled", log); err != nil {
