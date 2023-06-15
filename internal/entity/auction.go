@@ -6,7 +6,13 @@ type AuctionStatus int
 
 const (
 	AuctionStatusInProgress AuctionStatus = 1
+	AuctionStatusEnded      AuctionStatus = 2
+	AuctionStatusSettled    AuctionStatus = 3
 )
+
+func (v AuctionStatus) Ordinal() int {
+	return int(v)
+}
 
 type Auction struct {
 	BaseEntity        `bson:",inline"`
