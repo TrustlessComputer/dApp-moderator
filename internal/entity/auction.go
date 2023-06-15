@@ -10,6 +10,8 @@ type Auction struct {
 	BaseEntity        `bson:",inline"`
 	CollectionAddress string `json:"collection_address" bson:"collection_address"`
 	TokenID           string `json:"token_id" bson:"token_id"`
+	TokenIDInt        uint64 `json:"token_id_int" bson:"token_id_int"`
+	AuctionID         uint64 `json:"auction_id" bson:"auction_id"`
 	StartTimeBlock    uint64 `json:"start_time_block" bson:"start_time_block"`
 	EndTimeBlock      uint64 `json:"end_time_block" bson:"end_time_block"`
 

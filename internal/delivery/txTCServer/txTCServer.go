@@ -76,6 +76,7 @@ func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, erro
 	mkpEvents["MARKETPLACE_BNS_SET_FPF"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_SET_FPF"))
 
 	mkpEvents["AUCTION_CREATED_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CREATED_EVENT"))
+	mkpEvents["AUCTION_BID_EVENT"] = strings.ToLower(os.Getenv("AUCTION_BID_EVENT"))
 
 	m := &MarketPlace{
 		Contract: os.Getenv("MARKETPLACE_CONTRACT"),
@@ -154,6 +155,10 @@ func (c *txTCServer) StartServer() {
 		tasks["fetchToken"] = c.fetchToken
 		tasks["UpdateCollectionItems"] = c.Usecase.UpdateCollectionItems
 		tasks["UpdateCollectionThumbnails"] = c.Usecase.UpdateCollectionThumbnails
+	}
+
+	if os.Getenv("ENV") == "local" {
+		// Add task local here
 	}
 
 	var wg sync.WaitGroup

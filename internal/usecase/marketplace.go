@@ -222,6 +222,24 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
 
 		return activity, event, nil
+	case entity.AuctionBid:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseAuctionBid(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionCreated", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+
+		return activity, event, nil
 	}
 
 	return nil, nil, errors.New(fmt.Sprintf("Cannot detect event log - %d - txHash: %s, topics %s ", eventType, chainLog.TxHash, chainLog.Topics[0].String()))
@@ -685,17 +703,28 @@ func (u *Usecase) AuctionCreated(data interface{}, chainLog types.Log) error {
 		zap.String("contract", chainLog.Address.Hex()), zap.Uint64("startTime", eventData.StartTime.Uint64()),
 		zap.Uint64("endTime", eventData.EndTime.Uint64()))
 
-	_, err := u.Repo.InsertOne(&entity.Auction{
+	tokenIDInt, _ := strconv.Atoi(eventData.TokenId.String())
+	auctionID := uint64(1) // TODO khoa auctionID from event
+	auctionEntity := &entity.Auction{
 		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
 		TokenID:           strings.ToLower(eventData.TokenId.String()),
+		TokenIDInt:        uint64(tokenIDInt),
+		AuctionID:         auctionID,
 		StartTimeBlock:    eventData.StartTime.Uint64(),
 		EndTimeBlock:      eventData.EndTime.Uint64(),
 		Status:            entity.AuctionStatusInProgress,
-	})
+	}
+
+	_, err := u.Repo.InsertOne(auctionEntity)
 	if err != nil {
 		logger.AtLog.Logger.Error("useCase.AuctionCreated-InsertOne", zap.Error(err))
 		return err
 	}
 
+	return nil
+}
+
+func (u *Usecase) AuctionBid(data interface{}, chainLog types.Log) error {
+	//eventData, ok := data.(*soul_contract.SoulAuctionBid)
 	return nil
 }
