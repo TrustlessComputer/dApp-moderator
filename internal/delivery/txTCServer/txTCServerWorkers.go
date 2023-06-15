@@ -139,6 +139,10 @@ func (c *txTCServer) Worker(inputDataChan chan types.Log, result chan *eventLog)
 		pFunction = c.Usecase.AuctionCreated
 		eventType = entity.AuctionCreated
 		break
+	case c.MarketPlace.Events["AUCTION_BID_EVENT"]:
+		pFunction = c.Usecase.AuctionBid
+		eventType = entity.AuctionBid
+		break
 	}
 
 	activity, eventData, err = c.Usecase.ParseMkplaceData(log, eventType)
