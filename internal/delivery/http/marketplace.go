@@ -759,7 +759,7 @@ func (h *httpDelivery) mkplaceNftOwnerCollection(w http.ResponseWriter, r *http.
 			if err != nil {
 				return nil, err
 			}
-			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data)))
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data.Items)))
 			return data, nil
 		},
 	).ServeHTTP(w, r)

@@ -17,7 +17,13 @@ type CollectionNftOwner struct {
 	Address           string `json:"address" bson:"address"`
 	CollectionAddress string `json:"-" bson:"collection_address"`
 	Name              string `json:"name" bson:"name"`
+	Avatar            string `json:"avatar" bson:"avatar"`
 	Count             int64  `bson:"count" json:"count"`
+}
+
+type CollectionNftOwnerFiltered struct {
+	Items      []*CollectionNftOwner `json:"items" bson:"items"`
+	TotalItems int                   `json:"total_items" bson:"total_items"`
 }
 
 type FilteredCollections struct {
