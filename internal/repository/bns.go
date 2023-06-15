@@ -94,7 +94,11 @@ func (r *Repository) FilterBNS(filter entity.FilterBns, fromCollection ...string
 	}
 
 	f = append(f, bson.D{{"$addFields", bson.D{{"id", "$token_id"}}}})
-	f = append(f, bson.D{{"$sort", bson.D{{"token_id_int", entity.SORT_DESC}}}})
+	sort := bson.D{{"token_id_int", entity.SORT_DESC}}
+	if filter.SortBy != "" && filter.Sort != 0 {
+		sort = bson.D{{filter.SortBy, filter.Sort}}
+	}
+	f = append(f, bson.D{{"$sort", sort}})
 	f = append(f, bson.D{{"$skip", filter.Offset}})
 	f = append(f, bson.D{{"$limit", filter.Limit}})
 
