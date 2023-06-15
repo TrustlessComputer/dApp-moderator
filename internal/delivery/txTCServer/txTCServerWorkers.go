@@ -136,8 +136,12 @@ func (c *txTCServer) Worker(inputDataChan chan types.Log, result chan *eventLog)
 		eventType = entity.BNSPfpUpdated
 		break
 	case c.MarketPlace.Events["AUCTION_CREATED_EVENT"]:
-		pFunction = c.Usecase.AuctionCreated
-		eventType = entity.AuctionCreated
+		pFunction = c.Usecase.HandleAuctionCreated
+		eventType = entity.AuctionCreatedActivity
+		break
+	case c.MarketPlace.Events["AUCTION_BID_EVENT"]:
+		pFunction = c.Usecase.HandleAuctionBid
+		eventType = entity.AuctionBidActivity
 		break
 	}
 

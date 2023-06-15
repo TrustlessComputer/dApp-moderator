@@ -113,6 +113,7 @@ type MkpNftsResp struct {
 	PriceERC20      *MkpPriceERC20             `bson:"price_erc20" json:"price_erc20"`
 	Collection      Collections                `json:"collection" bson:"collection"`
 	Size            int64                      `json:"size" bson:"size"`
+	BnsData         []*FilteredBNS             `json:"bns_data,omitempty" bson:"bns_data"`
 }
 
 type MkpNftsPagination struct {

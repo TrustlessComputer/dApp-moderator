@@ -76,6 +76,7 @@ func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, erro
 	mkpEvents["MARKETPLACE_BNS_SET_FPF"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_SET_FPF"))
 
 	mkpEvents["AUCTION_CREATED_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CREATED_EVENT"))
+	mkpEvents["AUCTION_BID_EVENT"] = strings.ToLower(os.Getenv("AUCTION_BID_EVENT"))
 
 	m := &MarketPlace{
 		Contract: os.Getenv("MARKETPLACE_CONTRACT"),
@@ -158,6 +159,12 @@ func (c *txTCServer) StartServer() {
 		tasks["UpdateCollectionThumbnails"] = c.Usecase.UpdateCollectionThumbnails
 	}
 
+	if os.Getenv("ENV") == "local" {
+		// Override task local here
+		tasks = make(map[string]func(ctx context.Context) error)
+		tasks["resolveTxTransaction"] = c.resolveTxTransaction
+	}
+
 	var wg sync.WaitGroup
 	for {
 		// tasks ==> start
@@ -198,11 +205,13 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	logger.AtLog.Logger.Info("resolveTransaction", zap.Int64("fromBlock", fromBlock), zap.Int64("toBlock", toBlock), zap.Int64("chainBlock", chainBlock.Int64()))
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	go c.TokenEvents(&wg, ctx, int64(fromBlock), int64(toBlock))
 
 	go c.processTxTransaction(&wg, ctx, int32(fromBlock), int32(toBlock))
+
+	go c.Usecase.UpdateAuctionStatus(ctx)
 
 	wg.Wait()
 

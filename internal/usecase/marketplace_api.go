@@ -7,10 +7,11 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
 	"math/big"
 	"os"
 	"strconv"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (u *Usecase) FilterMKListing(ctx context.Context, filter entity.FilterMarketplaceListings) ([]entity.MarketplaceListings, error) {
@@ -183,6 +184,17 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 		return nil, err
 	}
 
+	bnsData, err := u.Repo.FilterBNS(entity.FilterBns{
+		BaseFilters: entity.BaseFilters{
+			SortBy: "_id",
+			Sort:   entity.SORT_ASC,
+		},
+		Resolver: utils.ToPtr(resp.Owner),
+	})
+	if err == nil && len(bnsData) > 0 {
+		resp.BnsData = bnsData
+	}
+
 	return resp, nil
 }
 
@@ -235,4 +247,12 @@ func (u *Usecase) FilterCollectionChart(ctx context.Context, filter entity.Filte
 	}
 
 	return resp, nil
+}
+
+func (u *Usecase) FilterNftOwners(ctx context.Context, filter entity.FilterCollectionNftOwners) (*entity.CollectionNftOwnerFiltered, error) {
+	owners, err := u.Repo.CollectionNftOwner(filter)
+	if err != nil {
+		return nil, err
+	}
+	return owners, nil
 }

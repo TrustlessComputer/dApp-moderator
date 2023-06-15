@@ -20,7 +20,9 @@ const (
 	BNSResolverUpdated TokenActivityType = 9
 	BNSResolverCreated TokenActivityType = 10
 	BNSPfpUpdated      TokenActivityType = 11
-	AuctionCreated     TokenActivityType = 12
+
+	AuctionCreatedActivity TokenActivityType = 12
+	AuctionBidActivity     TokenActivityType = 13
 )
 
 var TokenActivityName = map[TokenActivityType]string{
@@ -36,7 +38,9 @@ var TokenActivityName = map[TokenActivityType]string{
 	BNSResolverUpdated: "BNS Resolver updated",
 	BNSResolverCreated: "BNS registered",
 	BNSPfpUpdated:      "BNS pfp updated",
-	AuctionCreated:     "auction created",
+
+	AuctionCreatedActivity: "auction created",
+	AuctionBidActivity:     "auction bid",
 }
 
 type MarketplaceTokenActivity struct {
@@ -57,6 +61,7 @@ type MarketplaceTokenActivity struct {
 	BlockNumber        uint64            `bson:"block_number" json:"block_number"`
 	TxHash             string            `json:"tx_hash" bson:"tx_hash"`
 	LogIndex           uint              `json:"log_index" bson:"log_index"`
+	AuctionID          *uint64           `bson:"auction_id,omitempty" json:"auction_id,omitempty"`
 }
 
 func (u MarketplaceTokenActivity) CollectionName() string {
