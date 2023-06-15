@@ -1,5 +1,7 @@
 package entity
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type AuctionStatus int
 
 const (
@@ -20,4 +22,18 @@ type Auction struct {
 
 func (Auction) CollectionName() string {
 	return "auction"
+}
+
+type AuctionBid struct {
+	BaseEntity        `bson:",inline"`
+	DBAuctionID       primitive.ObjectID `json:"db_auction_id" bson:"db_auction_id"`
+	ChainAuctionID    uint64             `json:"chain_auction_id" bson:"chain_auction_id"`
+	TokenID           string             `json:"token_id" bson:"token_id"`
+	CollectionAddress string             `json:"collection_address" bson:"collection_address"`
+	Amount            string             `json:"amount" bson:"amount"`
+	Sender            string             `json:"sender" bson:"sender"`
+}
+
+func (AuctionBid) CollectionName() string {
+	return "auction_bid"
 }
