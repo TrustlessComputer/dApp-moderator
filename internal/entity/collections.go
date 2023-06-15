@@ -13,6 +13,13 @@ type GroupedCollectionID struct {
 	CollectionAddress string `bson:"collection_address"`
 }
 
+type CollectionNftOwner struct {
+	Address           string `json:"address" bson:"address"`
+	CollectionAddress string `json:"-" bson:"collection_address"`
+	Name              string `json:"name" bson:"name"`
+	Count             int64  `bson:"count" json:"count"`
+}
+
 type FilteredCollections struct {
 	Contract        string `json:"contract" bson:"contract"`
 	ContractType    string `json:"contract_type" bson:"contract_type"`
