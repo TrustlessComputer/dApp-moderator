@@ -353,6 +353,10 @@ func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress strin
 
 	// get bns data
 	bnsResp, err := u.Repo.FilterBNS(entity.FilterBns{
+		BaseFilters: entity.BaseFilters{
+			SortBy: "_id",
+			Sort:   entity.SORT_ASC,
+		},
 		Resolver: utils.ToPtr(resp.Owner),
 	})
 

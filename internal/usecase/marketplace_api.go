@@ -185,6 +185,10 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 	}
 
 	bnsData, err := u.Repo.FilterBNS(entity.FilterBns{
+		BaseFilters: entity.BaseFilters{
+			SortBy: "_id",
+			Sort:   entity.SORT_ASC,
+		},
 		Resolver: utils.ToPtr(resp.Owner),
 	})
 	if err == nil && len(bnsData) > 0 {
@@ -245,7 +249,7 @@ func (u *Usecase) FilterCollectionChart(ctx context.Context, filter entity.Filte
 	return resp, nil
 }
 
-func (u *Usecase) FilterNftOwners(ctx context.Context, filter entity.FilterCollectionNftOwners) ([]*entity.CollectionNftOwner, error) {
+func (u *Usecase) FilterNftOwners(ctx context.Context, filter entity.FilterCollectionNftOwners) (*entity.CollectionNftOwnerFiltered, error) {
 	owners, err := u.Repo.CollectionNftOwner(filter)
 	if err != nil {
 		return nil, err
