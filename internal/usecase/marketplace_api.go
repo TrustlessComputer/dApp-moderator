@@ -185,6 +185,10 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 	}
 
 	bnsData, err := u.Repo.FilterBNS(entity.FilterBns{
+		BaseFilters: entity.BaseFilters{
+			SortBy: "_id",
+			Sort:   entity.SORT_ASC,
+		},
 		Resolver: utils.ToPtr(resp.Owner),
 	})
 	if err == nil && len(bnsData) > 0 {
