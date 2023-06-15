@@ -20,6 +20,11 @@ type CollectionNftOwner struct {
 	Count             int64  `bson:"count" json:"count"`
 }
 
+type CollectionNftOwnerFiltered struct {
+	Items      []*CollectionNftOwner `json:"items" bson:"items"`
+	TotalItems int                   `json:"total_items" bson:"total_items"`
+}
+
 type FilteredCollections struct {
 	Contract        string `json:"contract" bson:"contract"`
 	ContractType    string `json:"contract_type" bson:"contract_type"`
