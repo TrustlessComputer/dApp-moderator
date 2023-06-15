@@ -158,7 +158,9 @@ func (c *txTCServer) StartServer() {
 	}
 
 	if os.Getenv("ENV") == "local" {
-		// Add task local here
+		// Override task local here
+		tasks = make(map[string]func(ctx context.Context) error)
+		tasks["resolveTxTransaction"] = c.resolveTxTransaction
 	}
 
 	var wg sync.WaitGroup
@@ -201,11 +203,13 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	logger.AtLog.Logger.Info("resolveTransaction", zap.Int64("fromBlock", fromBlock), zap.Int64("toBlock", toBlock), zap.Int64("chainBlock", chainBlock.Int64()))
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	go c.TokenEvents(&wg, ctx, int64(fromBlock), int64(toBlock))
 
 	go c.processTxTransaction(&wg, ctx, int32(fromBlock), int32(toBlock))
+
+	go c.Usecase.UpdateAuctionStatus(ctx)
 
 	wg.Wait()
 
