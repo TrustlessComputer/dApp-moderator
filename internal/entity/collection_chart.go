@@ -11,6 +11,11 @@ type FilterCollectionChart struct {
 	ToDate          *time.Time
 }
 
+type FilterCollectionNftOwners struct {
+	ContractAddress *string
+	BaseFilters
+}
+
 type CollectionChart struct {
 	Contract            string     `bson:"contract" json:"contract"`
 	OfferingID          string     `bson:"offering_id" json:"-"`
