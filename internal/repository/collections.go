@@ -237,3 +237,32 @@ func (r *Repository) GetSoulCollection() (*entity.Collections, error) {
 
 	return result, nil
 }
+
+func (r *Repository) CollectionNftOwner(f entity.FilterCollectionNftOwners) ([]*entity.CollectionNftOwner, error) {
+	result := []*entity.CollectionNftOwner{}
+
+	filter := bson.A{
+		bson.D{
+			{"$match",
+				bson.D{
+					{"collection_address", strings.ToLower(*f.ContractAddress)},
+				},
+			},
+		},
+		bson.D{{"$skip", f.Offset}},
+		bson.D{{"$limit", f.Limit}},
+		bson.D{{"$sort", bson.D{
+			{"count", entity.SORT_DESC},
+		}}},
+	}
+
+	cursor, err := r.DB.Collection(utils.VIEW_MARKETPLACE_COUNT_COLLECTION_OWNER).Aggregate(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All((context.TODO()), &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

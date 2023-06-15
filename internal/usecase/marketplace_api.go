@@ -244,3 +244,11 @@ func (u *Usecase) FilterCollectionChart(ctx context.Context, filter entity.Filte
 
 	return resp, nil
 }
+
+func (u *Usecase) FilterNftOwners(ctx context.Context, filter entity.FilterCollectionNftOwners) ([]*entity.CollectionNftOwner, error) {
+	owners, err := u.Repo.CollectionNftOwner(filter)
+	if err != nil {
+		return nil, err
+	}
+	return owners, nil
+}
