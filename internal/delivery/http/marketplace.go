@@ -713,3 +713,54 @@ func (h *httpDelivery) getCollectionChart(w http.ResponseWriter, r *http.Request
 		},
 	).ServeHTTP(w, r)
 }
+
+// UserCredits godoc
+// @Summary Get marketplace Nft owners of a collection
+// @Description Get marketplace Nft owners of a collection
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address path string true "contract_address"
+// @Param limit query int false "limit"
+// @Param sort_by query string false "sort by field: default volume"
+// @Param sort query int false "sort default: -1 desc"
+// @Param page query int false "page"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/collections/{contract_address}/nft-owners [GET]
+func (h *httpDelivery) mkplaceNftOwnerCollection(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+
+			if p.SortBy == nil {
+				sortBy := "count"
+				p.SortBy = &sortBy
+			}
+
+			if p.Sort == nil {
+				s := int(entity.SORT_DESC)
+				p.Sort = &s
+			}
+
+			contractAddress := vars["contract_address"]
+			f := entity.FilterCollectionNftOwners{
+				ContractAddress: &contractAddress,
+				BaseFilters: entity.BaseFilters{
+					Limit:  int64(*p.Limit),
+					Page:   int64(*p.Page),
+					Offset: int64(*p.Offset),
+					SortBy: *p.SortBy,
+					Sort:   entity.SortType(*p.Sort),
+				},
+			}
+
+			data, err := h.Usecase.FilterNftOwners(ctx, f)
+			if err != nil {
+				return nil, err
+			}
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data)))
+			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
