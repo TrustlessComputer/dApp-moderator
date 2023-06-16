@@ -147,6 +147,8 @@ const (
 	COLLECTION_MARKETPLACE_OFFER          string = "marketplace_offers"
 	COLLECTION_MARKETPLACE_TOKEN_ACTIVITY string = "marketplace_token_activities"
 	COLLECTION_AUCTION                    string = "auction"
+	COLLECTION_AUCTION_BID                string = "auction_bid"
+	COLLECTION_AUCTION_CLAIM              string = "auction_claim"
 
 	COLLECTION_TOKEN_URI            string = "token_uris"
 	COLLECTION_TOKENS               string = "tokens"
@@ -171,6 +173,7 @@ const (
 	COLLECTION_SWAP_USER_GM_PAID           string = "swap_user_gm_paid"
 	COLLECTION_SWAP_BLACKLIST_TOKENS       string = "swap_blacklist_tokens"
 
+	VIEW_SWAP_IDO_LIST_VIEW                        string = "swap_ido_list_view"
 	VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES           string = "marketplace_nft_with_attributes_view"
 	VIEW_SWAP_LIQUIDITY_REPORT_SLACK               string = "swap_liquidity_report_view"
 	VIEW_SWAP_REPORT_SLACK                         string = "swap_token_report_slack_view"

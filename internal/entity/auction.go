@@ -1,6 +1,10 @@
 package entity
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"dapp-moderator/utils"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type AuctionStatus int
 
@@ -44,5 +48,19 @@ type AuctionBid struct {
 }
 
 func (AuctionBid) CollectionName() string {
-	return "auction_bid"
+	return utils.COLLECTION_AUCTION_BID
+}
+
+type AuctionClaim struct {
+	BaseEntity        `bson:",inline"`
+	DBAuctionID       primitive.ObjectID `json:"db_auction_id" bson:"db_auction_id"`
+	ChainAuctionID    string             `json:"chain_auction_id" bson:"chain_auction_id"`
+	TokenID           string             `json:"token_id" bson:"token_id"`
+	CollectionAddress string             `json:"collection_address" bson:"collection_address"`
+	Claimer           string             `json:"claimer" bson:"claimer"`
+	Amount            string             `json:"amount" bson:"amount"`
+}
+
+func (AuctionClaim) CollectionName() string {
+	return utils.COLLECTION_AUCTION_CLAIM
 }
