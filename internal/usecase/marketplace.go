@@ -794,3 +794,37 @@ func (u *Usecase) validateAuctionBid(auctionBid *soul_contract.SoulAuctionBid, a
 		Sender:            strings.ToLower(auctionBid.Sender.Hex()),
 	}, nil
 }
+
+func (u *Usecase) HandleAuctionSettle(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulAuctionSettled)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleAuctionBid - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+
+	logger.AtLog.Logger.Info("HandleAuctionSettle", zap.String("tokenID", eventData.TokenId.String()),
+		zap.Any("eventData", eventData), zap.String("contract", chainLog.Address.Hex()))
+
+	chainAuctionID := binary.BigEndian.Uint64(eventData.Auction.AuctionId[:])
+	auction, err := u.Repo.FindAuctionByChainAuctionID(context.TODO(), chainAuctionID)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - FindAuctionByChainAuctionID", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+
+	updateAuction := &bson.M{
+		"status":       entity.AuctionStatusSettled.Ordinal(),
+		"winner":       utils.ToPtr(strings.ToLower(eventData.Winner.Hex())),
+		"total_amount": fmt.Sprintf("%d", eventData.Amount.Int64()),
+	}
+
+	_, err = u.Repo.UpdateOne(utils.COLLECTION_AUCTION, bson.D{{"_id", auction.ID}}, bson.M{
+		"$set": updateAuction,
+	})
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - UpdateOne", zap.String("auctionObjectID", auction.ID.Hex()), zap.Error(err))
+		return err
+	}
+
+	return nil
+}
