@@ -250,36 +250,74 @@ func (u *Usecase) FindTokenSumary(ctx context.Context, contractAddress string) (
 }
 
 func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, chartType string, limit int) (interface{}, error) {
+	isBtc := false
+	if strings.EqualFold(contractAddress, "0xfB83c18569fB43f1ABCbae09Baf7090bFFc8CBBD") {
+		isBtc = true
+		contractAddress = "0x3ED8040D47133AB8A73Dc41d365578D6e7643E54"
+	}
 	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType, limit)
 	if err != nil {
-		//logger.AtLog.Logger.Error("Save the last fetched page to redis failed", zap.Error(err))
 		return reports, nil
 	}
 	btcPrice := u.Repo.ParseConfigByFloat64(ctx, "swap_btc_price")
 
 	for _, item := range reports {
-		if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
-			item.BtcPrice = s
+		if isBtc {
+			if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
+				item.BtcPrice = 1 / s
 
-			item.UsdPrice = fmt.Sprint(s * btcPrice)
-			item.CloseUsd = fmt.Sprint(s * btcPrice)
+				item.UsdPrice = fmt.Sprint(item.BtcPrice)
+				item.CloseUsd = fmt.Sprint(s * btcPrice)
+			}
+
+			if s, err := strconv.ParseFloat(item.VolumeFrom.String(), 64); err == nil {
+				item.VolumeFrom, _ = primitive.ParseDecimal128(fmt.Sprintf("%f", 1/s))
+			}
+
+			if s, err := strconv.ParseFloat(item.VolumeTo.String(), 64); err == nil {
+				item.VolumeTo, _ = primitive.ParseDecimal128(fmt.Sprintf("%f", 1/s))
+			}
+
+			if s, err := strconv.ParseFloat(item.Low.String(), 64); err == nil {
+				item.Low, _ = primitive.ParseDecimal128(fmt.Sprintf("%f", 1/s))
+			}
+
+			if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
+				item.High, _ = primitive.ParseDecimal128(fmt.Sprintf("%f", 1/s))
+			}
+
+			if s, err := strconv.ParseFloat(item.Open.String(), 64); err == nil {
+				item.Open, _ = primitive.ParseDecimal128(fmt.Sprintf("%f", 1/s))
+			}
+
+			if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
+				item.Close, _ = primitive.ParseDecimal128(fmt.Sprintf("%f", 1/s))
+			}
+
+		} else {
+			if s, err := strconv.ParseFloat(item.Close.String(), 64); err == nil {
+				item.BtcPrice = s
+
+				item.UsdPrice = fmt.Sprint(s * btcPrice)
+				item.CloseUsd = fmt.Sprint(s * btcPrice)
+			}
+			if s, err := strconv.ParseFloat(item.Open.String(), 64); err == nil {
+				item.OpenUsd = fmt.Sprint(s * btcPrice)
+			}
+			if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
+				item.HighUsd = fmt.Sprint(s * btcPrice)
+			}
+			if s, err := strconv.ParseFloat(item.Low.String(), 64); err == nil {
+				item.LowUsd = fmt.Sprint(s * btcPrice)
+			}
+			if s, err := strconv.ParseFloat(item.VolumeTo.String(), 64); err == nil {
+				item.VolumeToUsd = fmt.Sprint(s * btcPrice)
+			}
+			if s, err := strconv.ParseFloat(item.VolumeFrom.String(), 64); err == nil {
+				item.VolumeFromUsd = fmt.Sprint(s * btcPrice)
+			}
+			item.TotalVolumeUsd = fmt.Sprint(item.TotalVolume * btcPrice)
 		}
-		if s, err := strconv.ParseFloat(item.Open.String(), 64); err == nil {
-			item.OpenUsd = fmt.Sprint(s * btcPrice)
-		}
-		if s, err := strconv.ParseFloat(item.High.String(), 64); err == nil {
-			item.HighUsd = fmt.Sprint(s * btcPrice)
-		}
-		if s, err := strconv.ParseFloat(item.Low.String(), 64); err == nil {
-			item.LowUsd = fmt.Sprint(s * btcPrice)
-		}
-		if s, err := strconv.ParseFloat(item.VolumeTo.String(), 64); err == nil {
-			item.VolumeToUsd = fmt.Sprint(s * btcPrice)
-		}
-		if s, err := strconv.ParseFloat(item.VolumeFrom.String(), 64); err == nil {
-			item.VolumeFromUsd = fmt.Sprint(s * btcPrice)
-		}
-		item.TotalVolumeUsd = fmt.Sprint(item.TotalVolume * btcPrice)
 	}
 	return reports, nil
 }
