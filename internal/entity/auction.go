@@ -19,13 +19,14 @@ type Auction struct {
 	CollectionAddress string `json:"collection_address" bson:"collection_address"`
 	TokenID           string `json:"token_id" bson:"token_id"`
 	TokenIDInt        uint64 `json:"token_id_int" bson:"token_id_int"`
-	AuctionID         uint64 `json:"auction_id" bson:"auction_id"`
-	StartTimeBlock    uint64 `json:"start_time_block" bson:"start_time_block"`
-	EndTimeBlock      uint64 `json:"end_time_block" bson:"end_time_block"`
+	AuctionID         string `json:"auction_id" bson:"auction_id"`
+	StartTimeBlock    string `json:"start_time_block" bson:"start_time_block"`
+	EndTimeBlock      string `json:"end_time_block" bson:"end_time_block"`
 
 	Status      AuctionStatus `json:"status" bson:"status"`
 	TotalAmount string        `json:"total_amount" bson:"total_amount"`
-	Winner      *string       `json:"winner,omitempty" bson:"winner,omitempty"`
+
+	Winner *string `json:"winner,omitempty" bson:"winner,omitempty"`
 }
 
 func (Auction) CollectionName() string {
@@ -35,7 +36,7 @@ func (Auction) CollectionName() string {
 type AuctionBid struct {
 	BaseEntity        `bson:",inline"`
 	DBAuctionID       primitive.ObjectID `json:"db_auction_id" bson:"db_auction_id"`
-	ChainAuctionID    uint64             `json:"chain_auction_id" bson:"chain_auction_id"`
+	ChainAuctionID    string             `json:"chain_auction_id" bson:"chain_auction_id"`
 	TokenID           string             `json:"token_id" bson:"token_id"`
 	CollectionAddress string             `json:"collection_address" bson:"collection_address"`
 	Amount            string             `json:"amount" bson:"amount"`

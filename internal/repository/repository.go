@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/helpers"
 	"errors"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -48,6 +49,32 @@ func (r *Repository) InsertOne(data entity.IEntity) (*mongo.InsertOneResult, err
 	}
 
 	return inserted, nil
+}
+
+func (r *Repository) InsertOneWithContext(ctx context.Context, data entity.IEntity) (*mongo.InsertOneResult, error) {
+	data.SetID()
+	data.SetCreatedAt()
+	insertedData, err := helpers.ToDoc(data)
+	if err != nil {
+		return nil, err
+	}
+
+	collectionName := data.CollectionName()
+	inserted, err := r.DB.Collection(collectionName).InsertOne(ctx, *insertedData)
+	if err != nil {
+		return nil, err
+	}
+
+	return inserted, nil
+}
+
+func (r *Repository) WithTransaction(ctx context.Context, callback func(sessCtx mongo.SessionContext) (interface{}, error), opts ...*options.TransactionOptions) (interface{}, error) {
+	session, err := r.DB.Client().StartSession()
+	defer session.EndSession(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return session.WithTransaction(ctx, callback, opts...)
 }
 
 func (r *Repository) InsertMany(data []entity.IEntity) (*mongo.InsertManyResult, error) {
