@@ -23,6 +23,7 @@ const (
 
 	AuctionCreatedActivity TokenActivityType = 12
 	AuctionBidActivity     TokenActivityType = 13
+	AuctionSettledActivity TokenActivityType = 14
 )
 
 var TokenActivityName = map[TokenActivityType]string{
@@ -41,6 +42,7 @@ var TokenActivityName = map[TokenActivityType]string{
 
 	AuctionCreatedActivity: "auction created",
 	AuctionBidActivity:     "auction bid",
+	AuctionSettledActivity: "auction settled",
 }
 
 type MarketplaceTokenActivity struct {
@@ -61,7 +63,7 @@ type MarketplaceTokenActivity struct {
 	BlockNumber        uint64            `bson:"block_number" json:"block_number"`
 	TxHash             string            `json:"tx_hash" bson:"tx_hash"`
 	LogIndex           uint              `json:"log_index" bson:"log_index"`
-	AuctionID          *uint64           `bson:"auction_id,omitempty" json:"auction_id,omitempty"`
+	AuctionID          *string           `bson:"auction_id,omitempty" json:"auction_id,omitempty"`
 }
 
 func (u MarketplaceTokenActivity) CollectionName() string {
