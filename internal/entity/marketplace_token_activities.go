@@ -24,6 +24,7 @@ const (
 	AuctionCreatedActivity TokenActivityType = 12
 	AuctionBidActivity     TokenActivityType = 13
 	AuctionSettledActivity TokenActivityType = 14
+	AuctionClaimActivity   TokenActivityType = 15
 )
 
 var TokenActivityName = map[TokenActivityType]string{
@@ -43,6 +44,7 @@ var TokenActivityName = map[TokenActivityType]string{
 	AuctionCreatedActivity: "auction created",
 	AuctionBidActivity:     "auction bid",
 	AuctionSettledActivity: "auction settled",
+	AuctionClaimActivity:   "auction claim",
 }
 
 type MarketplaceTokenActivity struct {
