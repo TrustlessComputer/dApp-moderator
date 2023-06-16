@@ -373,6 +373,7 @@ func (h *httpDelivery) mkplaceNfts(w http.ResponseWriter, r *http.Request) {
 // @Param price query string false "min,max - separated by comma"
 // @Param attributes query string false "key:value,key:value - separated by comma ex: Base colour:Red,Base colour:Orange"
 // @Param token_id query string false "token id"
+// @Param owner query string false "owner"
 // @Param contract_address path string true "contract_address"
 // @Param is_big_file query bool false "true|false, default: all"
 // @Param buyable query bool false "true|false, default: all"
@@ -414,6 +415,11 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			tokenID := strings.ToLower(r.URL.Query().Get("token_id"))
 			if tokenID != "" {
 				f.TokenID = &tokenID
+			}
+
+			owner := strings.ToLower(r.URL.Query().Get("owner"))
+			if owner != "" {
+				f.Owner = &owner
 			}
 
 			rarity := strings.ToLower(r.URL.Query().Get("rarity"))

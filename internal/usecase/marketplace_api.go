@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -45,11 +46,15 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	}
 
 	if filter.ContractAddress != nil && *filter.ContractAddress != "" {
-		f = append(f, bson.E{"collection_address", *filter.ContractAddress})
+		f = append(f, bson.E{"collection_address", strings.ToLower(*filter.ContractAddress)})
 	}
 
 	if filter.TokenID != nil && *filter.TokenID != "" {
 		f = append(f, bson.E{"token_id", *filter.TokenID})
+	}
+
+	if filter.Owner != nil && *filter.Owner != "" {
+		f = append(f, bson.E{"owner", strings.ToLower(*filter.Owner)})
 	}
 
 	if filter.Rarity != nil {

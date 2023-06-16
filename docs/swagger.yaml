@@ -795,6 +795,10 @@ paths:
         in: query
         name: token_id
         type: string
+      - description: owner
+        in: query
+        name: owner
+        type: string
       - description: contract_address
         in: path
         name: contract_address
