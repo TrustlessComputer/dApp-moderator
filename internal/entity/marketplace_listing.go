@@ -57,6 +57,7 @@ type FilterNfts struct {
 	BaseFilters
 	ContractAddress *string
 	TokenID         *string
+	Owner           *string
 	//Rarity          *string
 	AttrKey   []string
 	AttrValue []string
