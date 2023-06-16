@@ -23,7 +23,9 @@ type Auction struct {
 	StartTimeBlock    uint64 `json:"start_time_block" bson:"start_time_block"`
 	EndTimeBlock      uint64 `json:"end_time_block" bson:"end_time_block"`
 
-	Status AuctionStatus `json:"status" bson:"status"`
+	Status      AuctionStatus `json:"status" bson:"status"`
+	TotalAmount string        `json:"total_amount" bson:"total_amount"`
+	Winner      *string       `json:"winner,omitempty" bson:"winner,omitempty"`
 }
 
 func (Auction) CollectionName() string {
