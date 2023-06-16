@@ -265,6 +265,27 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		activity.AuctionID = utils.ToPtr(new(big.Int).SetBytes(event.Auction.AuctionId[:]).String())
 
 		return activity, event, nil
+	case entity.AuctionClaimActivity:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseAuctionClaimBid(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionClaimBid", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.AmountStr = event.Value.String()
+		activity.UserAAddress = strings.ToLower(event.Sender.String())
+		activity.AuctionID = utils.ToPtr(new(big.Int).SetBytes(event.AuctionId[:]).String())
+
+		return activity, event, nil
 	}
 
 	return nil, nil, errors.New(fmt.Sprintf("Cannot detect event log - %d - txHash: %s, topics %s ", eventType, chainLog.TxHash, chainLog.Topics[0].String()))
@@ -858,6 +879,44 @@ func (u *Usecase) HandleAuctionSettle(data interface{}, chainLog types.Log) erro
 	})
 	if err != nil {
 		logger.AtLog.Logger.Error("HandleAuctionSettle - UpdateOne", zap.String("auctionObjectID", auction.ID.Hex()), zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (u *Usecase) HandleAuctionClaim(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulAuctionClaimBid)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleAuctionClaim - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+
+	logger.AtLog.Logger.Info("HandleAuctionClaim", zap.String("tokenID", eventData.TokenId.String()),
+		zap.Any("eventData", eventData), zap.String("contract", chainLog.Address.Hex()))
+
+	chainAuctionID := new(big.Int).SetBytes(eventData.AuctionId[:]).String()
+	auction, err := u.Repo.FindAuctionByChainAuctionID(context.TODO(), chainAuctionID)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - FindAuctionByChainAuctionID", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+	if auction.Status == entity.AuctionStatusInProgress {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - auctionInProgress - Cannot claim", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("auctionInProgress - Cannot claim")
+	}
+
+	auctionClaim := &entity.AuctionClaim{
+		DBAuctionID:       auction.ID,
+		ChainAuctionID:    chainAuctionID,
+		TokenID:           strings.ToLower(eventData.TokenId.String()),
+		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
+		Claimer:           strings.ToLower(eventData.Sender.Hex()),
+		Amount:            eventData.Value.String(),
+	}
+
+	if _, err := u.Repo.InsertOne(auctionClaim); err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionClaim - InsertOne", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
 		return err
 	}
 
