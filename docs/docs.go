@@ -969,6 +969,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "owner",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "contract_address",
                         "name": "contract_address",
                         "in": "path",
