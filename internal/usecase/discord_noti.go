@@ -471,8 +471,8 @@ func (u *Usecase) ParseSvgImage(imageURL string) string {
 	return strings.ReplaceAll(response.Data, "https", "http")
 }
 
-func (u *Usecase) ParseHtmlImage(imageURL string) (string, map[string]string) {
-	parseImageUrl := "http://localhost:8000/generative/api/photo/pare-html"
+func (u *Usecase) ParseHtmlImage(imageURL string) (string, map[string]string, error) {
+	parseImageUrl := "https://devnet.generative.xyz/generative/api/photo/pare-html"
 
 	postData := make(map[string]interface{})
 	postData["display_url"] = imageURL
@@ -481,7 +481,7 @@ func (u *Usecase) ParseHtmlImage(imageURL string) (string, map[string]string) {
 
 	resp, _, _, err := helpers.HttpRequest(parseImageUrl, "POST", make(map[string]string), postData)
 	if err != nil {
-		return imageURL, make(map[string]string)
+		return "", nil, err
 	}
 
 	type respdata struct {
@@ -496,18 +496,18 @@ func (u *Usecase) ParseHtmlImage(imageURL string) (string, map[string]string) {
 	response := &respdata{}
 	err = json.Unmarshal(resp, response)
 	if err != nil {
-		return imageURL, make(map[string]string)
+		return "", nil, err
 	}
 
 	if !response.Status {
-		return imageURL, make(map[string]string)
+		return "", nil, err
 	}
 
 	if response.Err != nil {
-		return imageURL, make(map[string]string)
+		return "", nil, err
 	}
 
-	return response.Data.Image, response.Data.Traits
+	return response.Data.Image, response.Data.Traits, nil
 }
 
 func (u *Usecase) TestSendNotify() {

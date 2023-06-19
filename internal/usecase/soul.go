@@ -443,10 +443,15 @@ func (u *Usecase) CaptureSoulImage(ctx context.Context, request *request.Capture
 		}
 	}
 
-	newImagePath, traits := u.ParseHtmlImage(animationFileUrl)
+	newImagePath, traits, err := u.ParseHtmlImage(animationFileUrl)
+	if err != nil {
+		return nil, err
+	}
+
 	if newImagePath == animationFileUrl {
 		return nil, errors.New("parse svg image error")
 	}
+
 	if newImagePath != "" {
 		imagePath = newImagePath
 	}
