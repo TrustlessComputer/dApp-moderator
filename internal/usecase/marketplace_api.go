@@ -175,7 +175,7 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.MkpNftsResp, error) {
 	resp := &nft_explorer.MkpNftsResp{}
 	f := bson.D{
-		bson.E{"collection_address", contractAddress},
+		bson.E{"collection_address", strings.ToLower(contractAddress)},
 		bson.E{"token_id", tokenID},
 	}
 

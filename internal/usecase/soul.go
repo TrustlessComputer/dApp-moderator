@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/delivery/http/request"
@@ -498,8 +499,29 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 	if strings.Contains(tokenUri.AnimationUrl, "base64") {
 		tokenUri.AnimationUrl = strings.Replace(tokenUri.AnimationUrl, "data:text/html;base64,", "", -1)
 
+		byteArray, err := helpers.Base64Decode(tokenUri.AnimationUrl)
+		if err != nil {
+			return "", err
+		}
+
+		replaceTo1 := ""
+		replaceTo3 := ""
+
+		if os.Getenv("SOUL_CHAIN_ID") == "22213" { //production
+			replaceTo1 = `"https://tc-node.trustless.computer"`
+			replaceTo3 = `isFakeData = true`
+		} else {
+			replaceTo1 = `"https://tc-node-manual.regtest.trustless.computer"`
+			replaceTo3 = `isFakeData = true`
+		}
+
+		html := bytes.NewBuffer(byteArray).String()
+		html = strings.ReplaceAll(html, "Web3.givenProvider", replaceTo1)
+		html = strings.ReplaceAll(html, "isFakeData=!1", replaceTo3)
+
+		encoded := helpers.Base64Encode(html)
 		fileName := fmt.Sprintf("%v_%v_%v.html", nftEntity.ContractAddress, nftEntity.TokenID, time.Now().UTC().Unix())
-		resp, err := u.Storage.UploadBaseToBucket(tokenUri.AnimationUrl, fmt.Sprintf("capture_animation_file/%v", fileName))
+		resp, err := u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
 		if err != nil {
 			return "", err
 		}
