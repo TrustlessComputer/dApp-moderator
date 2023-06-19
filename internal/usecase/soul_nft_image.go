@@ -41,6 +41,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 
 		var wg1 sync.WaitGroup
 		var wg2 sync.WaitGroup
+		var wg3 sync.WaitGroup
 		inputWorker1Chan := make(chan entity.Nfts, len(nfts))
 		outputFromWorker1Chan := make(chan CaptureSoulImageChan, len(nfts))
 		outputFromWorker2Chan := make(chan CaptureSoulImageChan, len(nfts))
@@ -61,61 +62,13 @@ func (u *Usecase) SoulNftImageCrontab() error {
 
 		for i := 0; i < len(nfts); i++ {
 			out := <-outputFromWorker2Chan
-			nft := out.Nft
-			err = out.Err
-			if err != nil {
-				logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageCrontab - page: %d, limit: %d", page, limit),
-					zap.Error(err),
-					zap.String("tokenID", nft.TokenID),
-					zap.String("contractAddress", nft.ContractAddress),
-				)
-				continue
-			}
-
-			image := out.Image
-			traits := out.Traits
-			animationFileUrl := out.AnimationFileUrl
-
-			if os.Getenv("ENV") != "mainnet" {
-				updated, err := u.Repo.UpdateOne(utils.COLLECTION_NFTS, bson.D{{"_id", nft.ID}}, bson.M{"$set": bson.M{
-					"image_capture":      *image,
-					"animation_file_url": animationFileUrl,
-					"attributes":         *traits,
-				}})
-
-				if err != nil {
-					logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageCrontab - page: %d, limit: %d", page, limit),
-						zap.Error(err),
-						zap.String("tokenID", nft.TokenID),
-						zap.String("contractAddress", nft.ContractAddress),
-						zap.Any("image", image),
-						zap.Any("traits", traits),
-						zap.Any("animationFileUrl", animationFileUrl),
-					)
-					continue
-				}
-
-				logger.AtLog.Logger.Info(fmt.Sprintf("SoulNftImageCrontab - page: %d, limit: %d", page, limit),
-					zap.String("tokenID", nft.TokenID),
-					zap.String("contractAddress", nft.ContractAddress),
-					zap.Any("image", image),
-					zap.Any("traits", traits),
-					zap.Any("animationFileUrl", animationFileUrl),
-					zap.Any("updated", updated),
-				)
-			} else {
-				logger.AtLog.Logger.Info(fmt.Sprintf("SoulNftImageCrontab - page: %d, limit: %d", page, limit),
-					zap.String("tokenID", nft.TokenID),
-					zap.String("contractAddress", nft.ContractAddress),
-					zap.Any("image", image),
-					zap.Any("traits", traits),
-					zap.Any("animationFileUrl", animationFileUrl),
-				)
-			}
+			wg3.Add(1)
+			go u.UpdateSoulNftImageWorker(&wg3, out)
 		}
 
 		wg1.Wait()
 		wg2.Wait()
+		wg3.Wait()
 
 		page++
 	}
@@ -192,4 +145,65 @@ func (u *Usecase) CaptureSoulNftImageWorker(wg *sync.WaitGroup, inputChan chan C
 	}
 
 	traitP = &traitObjs
+}
+
+func (u *Usecase) UpdateSoulNftImageWorker(wg *sync.WaitGroup, inputChan CaptureSoulImageChan) {
+	defer wg.Done()
+	out := inputChan
+	nft := out.Nft
+
+	newImagePathP := new(string)
+	traitP := new([]entity.NftAttr)
+	var err error
+
+	defer func() {
+		if err == nil {
+			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("newImagePathP", newImagePathP), zap.Any("traitP", traitP))
+		} else {
+			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Error(err))
+		}
+
+	}()
+
+	err = out.Err
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
+			zap.Error(err),
+			zap.String("tokenID", nft.TokenID),
+			zap.String("contractAddress", nft.ContractAddress),
+		)
+		return
+	}
+
+	image := out.Image
+	traits := out.Traits
+	animationFileUrl := out.AnimationFileUrl
+
+	updated, err := u.Repo.UpdateOne(utils.COLLECTION_NFTS, bson.D{{"_id", nft.ID}}, bson.M{"$set": bson.M{
+		"image_capture":      *image,
+		"animation_file_url": animationFileUrl,
+		"attributes":         *traits,
+	}})
+
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
+			zap.Error(err),
+			zap.String("tokenID", nft.TokenID),
+			zap.String("contractAddress", nft.ContractAddress),
+			zap.Any("image", image),
+			zap.Any("traits", traits),
+			zap.Any("animationFileUrl", animationFileUrl),
+		)
+		return
+	}
+
+	logger.AtLog.Logger.Info(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
+		zap.String("tokenID", nft.TokenID),
+		zap.String("contractAddress", nft.ContractAddress),
+		zap.Any("image", image),
+		zap.Any("traits", traits),
+		zap.Any("animationFileUrl", animationFileUrl),
+		zap.Any("updated", updated),
+	)
+
 }
