@@ -443,10 +443,15 @@ func (u *Usecase) CaptureSoulImage(ctx context.Context, request *request.Capture
 		}
 	}
 
-	newImagePath := u.ParseSvgImage(animationFileUrl)
+	newImagePath, traits, err := u.ParseHtmlImage(animationFileUrl)
+	if err != nil {
+		return nil, err
+	}
+
 	if newImagePath == animationFileUrl {
 		return nil, errors.New("parse svg image error")
 	}
+
 	if newImagePath != "" {
 		imagePath = newImagePath
 	}
@@ -454,6 +459,7 @@ func (u *Usecase) CaptureSoulImage(ctx context.Context, request *request.Capture
 	_, err = u.Repo.UpdateOne(utils.COLLECTION_NFTS, bson.D{{"_id", nftEntity.ID}}, bson.M{"$set": bson.M{
 		"image_capture":      imagePath,
 		"animation_file_url": animationFileUrl,
+		"attributes":         traits,
 	}})
 
 	if err != nil {
