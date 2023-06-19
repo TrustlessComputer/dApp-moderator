@@ -175,7 +175,7 @@ func startServer() {
 	h, _ := httpHandler.NewHandler(&g, *uc)
 	servers["http"] = delivery.AddedServer{
 		Server:  h,
-		Enabled: false,
+		Enabled: true,
 	}
 
 	txConsumerStatr := os.Getenv("TX_CONSUMER_START")
@@ -183,7 +183,6 @@ func startServer() {
 	if err != nil {
 		txConsumerStatrBool = true //alway start this server, if config is missing
 	}
-	txConsumerStatrBool = true
 
 	trendingStart := os.Getenv("TRENDING_SERVER_START")
 	trendingStartBool, err := strconv.ParseBool(trendingStart)
