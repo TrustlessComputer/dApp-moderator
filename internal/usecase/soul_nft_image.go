@@ -176,7 +176,11 @@ func (u *Usecase) CaptureSoulNftImageWorker(wg *sync.WaitGroup, inputChan chan C
 		return
 	}
 
-	newImagePath, traits := u.ParseHtmlImage(*inChan.AnimationFileUrl)
+	newImagePath, traits, err := u.ParseHtmlImage(*inChan.AnimationFileUrl)
+	if err != nil {
+		return
+	}
+
 	newImagePathP = &newImagePath
 
 	traitObjs := []entity.NftAttr{}
