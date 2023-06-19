@@ -123,6 +123,42 @@ func (u *Usecase) BnsDefault(ctx context.Context, resolver string) (*entity.Bns,
 	return bnsEntityPickToDefault, nil
 }
 
+func (u *Usecase) UpdateBnsDefault(ctx context.Context, request *request.UpdateBNSDefaultRequest) (*entity.Bns, error) {
+	result, err := u.Repo.FindOne(utils.COLLECTION_BNS, bson.D{{"token_id", strings.ToLower(request.TokenID)}})
+	if err != nil {
+		logger.AtLog.Logger.Error("UpdateBnsDefault but not found bns items", zap.String("token_id", request.TokenID))
+		return nil, err
+	}
+	bnsEntity := &entity.Bns{}
+	if err := result.Decode(bnsEntity); err != nil {
+		return nil, err
+	}
+	if bnsEntity.Resolver != request.Resolver {
+		logger.AtLog.Logger.Error("UpdateBnsDefault token_id is not permit", zap.String("token_id", request.TokenID),
+			zap.String("resolver", request.Resolver))
+		return nil, errors.New("UpdateBnsDefault token_id is not permit")
+	}
+
+	_, err = u.Repo.FindOne(utils.COLLECTION_BNS_DEFAULT, bson.D{{"resolver", request.Resolver}})
+	if err == nil {
+		if _, err := u.Repo.UpdateOne(utils.COLLECTION_BNS_DEFAULT,
+			bson.D{{"resolver", request.Resolver}}, bson.M{"$set": bson.M{"bns_default_id": bnsEntity.ID}}); err != nil {
+			return nil, err
+		}
+
+		return bnsEntity, nil
+	} else {
+		if _, err := u.Repo.InsertOne(&entity.BNSDefault{
+			Resolver:     request.Resolver,
+			BNSDefaultID: bnsEntity.ID,
+		}); err != nil {
+			return nil, err
+		}
+
+		return bnsEntity, nil
+	}
+}
+
 // Start: only called by test/main.go
 func (u *Usecase) CrontabBns(ctx context.Context) error {
 	page := 1
