@@ -6,15 +6,20 @@ import (
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
+	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/bns"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.uber.org/zap"
 )
 
 func (u *Usecase) BnsNames(ctx context.Context, filter request.FilterBNSNames) ([]*entity.FilteredBNS, error) {
@@ -66,6 +71,56 @@ func (u *Usecase) BnsNamesOnwedByWalletAddress(ctx context.Context, walletAdress
 	}
 
 	return resp, nil
+}
+
+func (u *Usecase) BnsDefault(ctx context.Context, resolver string) (*entity.Bns, error) {
+	result, err := u.Repo.FindOne(utils.COLLECTION_BNS_DEFAULT, bson.D{{"resolver", resolver}})
+	if err == nil { // Nếu đã có data bns_default rồi thì lấy bns ra và trả về
+		bnsDefault := &entity.BNSDefault{}
+		if err := result.Decode(bnsDefault); err == nil {
+			var bnsEntity = &entity.Bns{} // SHOULD Optimize to 1 query
+			if result, err := u.Repo.FindOne(utils.COLLECTION_BNS, bson.D{{"_id", bnsDefault.BNSDefaultID}}); err == nil {
+				if err := result.Decode(bnsEntity); err == nil {
+					return bnsEntity, nil
+				}
+			}
+		}
+	}
+
+	// Nếu chưa có data bns_default thì lấy bns từ resolver và lưu vào db
+	bnsEntities := []*entity.Bns{}
+	err = u.Repo.Find(utils.COLLECTION_BNS, bson.D{{"resolver", resolver}}, 100, 0, &bnsEntities, bson.D{
+		{"_id", -1},
+	})
+	if err != nil || len(bnsEntities) == 0 {
+		logger.AtLog.Logger.Error("BNSDefault but dont have any bns items", zap.String("resolver", resolver))
+		return nil, errors.New("BNSDefault but dont have any bns items")
+	}
+
+	// Ưu tiên lấy bns nào mà có pfp_data, ko thì lấy cái đầu tiên
+	var bnsEntityPickToDefault *entity.Bns
+	for index, item := range bnsEntities {
+		if item.PfpData != nil {
+			bnsEntityPickToDefault = bnsEntities[index]
+			break
+		}
+	}
+	if bnsEntityPickToDefault == nil {
+		bnsEntityPickToDefault = bnsEntities[0]
+	}
+
+	// Lưu bns default vào db
+	bnsDefault := &entity.BNSDefault{
+		Resolver:     resolver,
+		BNSDefaultID: bnsEntityPickToDefault.ID,
+	}
+
+	_, err = u.Repo.InsertOne(bnsDefault)
+	if err != nil {
+		return nil, err
+	}
+
+	return bnsEntityPickToDefault, nil
 }
 
 // Start: only called by test/main.go

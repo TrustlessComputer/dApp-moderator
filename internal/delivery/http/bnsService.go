@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/logger"
+	"errors"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -129,6 +130,30 @@ func (h *httpDelivery) bnsNameOwnedByWalletAddress(w http.ResponseWriter, r *htt
 			return data, nil
 		},
 	).ServeHTTP(w, r)
+}
+
+// @Summary bnsDefault
+// @Description bnsDefault
+// @Tags BNS-service
+// @Accept  json
+// @Produce  json
+// @Param wallet_address path string true "wallet_address"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /bns-service/default/{wallet_address} [GET]
+func (h *httpDelivery) bnsDefault(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+		resolver := vars["wallet_address"]
+		if resolver == "" {
+			return nil, errors.New("resolver is required")
+		}
+
+		data, err := h.Usecase.BnsDefault(ctx, resolver)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
+	}).ServeHTTP(w, r)
 }
 
 func (h *httpDelivery) createFilterBns(ctx context.Context, r *http.Request, vars map[string]string) (*request.FilterBNSNames, error) {
