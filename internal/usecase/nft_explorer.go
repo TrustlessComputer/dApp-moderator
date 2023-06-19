@@ -7,10 +7,14 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/contracts/generative_project_contract"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"errors"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 	"net/url"
 	"os"
 	"sort"
@@ -648,6 +652,24 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 		tmp.TokenIDInt = int64(tokenIDInt)
 	}
 
+	blockNumber := item.BlockNumber
+	blockNumberInt, err := strconv.Atoi(blockNumber)
+	if err != nil {
+		blockNumberInt = 0
+	}
+	mintedAdd := item.MintedAt
+
+	tmp.MintedAt = mintedAdd
+	tmp.BlockNumberInt = uint64(blockNumberInt)
+
+	erc721, erc721Err := generative_project_contract.NewGenerativeProjectContract(common.HexToAddress(tmp.ContractAddress), u.TCPublicNode.GetClient())
+	if erc721Err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s.%s", contract, tmp.TokenID),
+			zap.String("contract", tmp.ContractAddress),
+			zap.String("tokenID", tmp.TokenID),
+			zap.Error(erc721Err))
+	}
+
 	artfactAddress := strings.ToLower(os.Getenv("ARTIFACT_ADDRESS"))
 	bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 
@@ -656,19 +678,6 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 	nft, err := u.Repo.GetNft(tmp.ContractAddress, tmp.TokenID)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-
-			_, err = u.Repo.CreateNftHistories(&entity.NftHistories{
-				//Collection:        strings.ToLower(tmp.Collection),
-				ContractAddress:   strings.ToLower(tmp.ContractAddress),
-				TokenID:           tmp.TokenID,
-				TokenIDInt:        tmp.TokenIDInt,
-				FromWalletAddress: strings.ToLower(tmp.Owner),
-				ToWalletAddress:   strings.ToLower(tmp.Owner),
-				Action:            "mint",
-			})
-			if err != nil {
-				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
-			}
 
 			_, err = u.Repo.InsertOne(tmp)
 			if err != nil {
@@ -697,34 +706,68 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 				}()
 			}
 
+			err = u.Repo.InsertActivity(&entity.MarketplaceTokenActivity{
+				//Collection:        strings.ToLower(tmp.Collection),
+				CollectionContract: strings.ToLower(tmp.ContractAddress),
+				InscriptionID:      tmp.TokenID,
+				BlockNumber:        uint64(blockNumberInt),
+				UserAAddress:       strings.ToLower("0x0000000000000000000000000000000000000000"),
+				UserBAddress:       strings.ToLower(tmp.Owner),
+				Type:               entity.TokenTransfer,
+			})
+			if err != nil {
+				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+			}
+
 		} else {
 			logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
 			return err
 		}
 	} else {
-		//the current owner != owner from chain
-		if strings.ToLower(nft.Owner) != strings.ToLower(tmp.Owner) {
+		//the current owner != owner
+		if (strings.ToLower(nft.Owner) != strings.ToLower(tmp.Owner)) || (tmp.Owner == "") {
 
 			//using for logging
-			_, err := u.Repo.CreateNftHistories(&entity.NftHistories{
-				//Collection:        strings.ToLower(tmp.Collection),
-				ContractAddress:   strings.ToLower(tmp.ContractAddress),
-				TokenID:           tmp.TokenID,
-				TokenIDInt:        tmp.TokenIDInt,
-				FromWalletAddress: strings.ToLower(nft.Owner),
-				ToWalletAddress:   strings.ToLower(tmp.Owner),
-				Action:            "transfer",
-			})
+			if erc721 != nil {
 
-			if err != nil {
-				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				tokenID, _ := new(big.Int).SetString(tmp.TokenID, 10)
+				owner, err := erc721.OwnerOf(nil, tokenID)
+				if err == nil {
+					spew.Dump(owner.String())
+
+					_, err = u.Repo.UpdateNftOwner(tmp.ContractAddress, tmp.TokenID, strings.ToLower(owner.String()))
+					if err != nil {
+						logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s.%s", contract, tmp.TokenID),
+							zap.String("contract", tmp.ContractAddress),
+							zap.String("tokenID", tmp.TokenID),
+							zap.Error(erc721Err))
+					} else {
+						logger.AtLog.Logger.Info(fmt.Sprintf("InsertOrUpdateNft.%s.%s", contract, tmp.TokenID),
+							zap.String("contract", tmp.ContractAddress),
+							zap.String("tokenID", tmp.TokenID))
+
+						err = u.Repo.InsertActivity(&entity.MarketplaceTokenActivity{
+							//Collection:        strings.ToLower(tmp.Collection),
+							CollectionContract: strings.ToLower(tmp.ContractAddress),
+							InscriptionID:      tmp.TokenID,
+							BlockNumber:        uint64(blockNumberInt),
+							UserAAddress:       strings.ToLower(nft.Owner),
+							UserBAddress:       strings.ToLower(tmp.Owner),
+							Type:               entity.TokenTransfer,
+						})
+						if err != nil {
+							logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+						}
+					}
+
+				} else {
+					logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s.%s", contract, tmp.TokenID),
+						zap.String("contract", tmp.ContractAddress),
+						zap.String("tokenID", tmp.TokenID),
+						zap.Error(err))
+				}
+
 			}
-
-			///we don't need it, marketplace crontab is handling this
-			//_, err = u.Repo.UpdateNftOwner(tmp.ContractAddress, tmp.TokenID, tmp.Owner)
-			//if err != nil {
-			//	logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("owner", tmp.Owner), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
-			//}
 
 		}
 	}

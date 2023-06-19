@@ -22,6 +22,8 @@ type Nfts struct {
 	MetadataType    string      `json:"metadata_type"  bson:"metadata_type"`
 	Size            int64       `bson:"size" json:"size"`
 
+	BlockNumber      string `bson:"block_number" json:"block_number"`
+	BlockNumberInt   uint64 `bson:"block_number_int" json:"block_number_int"`
 	AnimationFileUrl string `json:"animation_file_url,omitempty" bson:"animation_file_url,omitempty"`
 	ImageCapture     string `json:"image_capture,omitempty" bson:"image_capture,omitempty"`
 }

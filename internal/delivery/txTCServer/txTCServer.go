@@ -151,7 +151,6 @@ func (c *txTCServer) StartServer() {
 		tasks["checkTxHashChunks"] = c.checkTxHashChunks
 		tasks["resolveTxTransaction"] = c.resolveTxTransaction
 		tasks["fetchToken"] = c.fetchToken
-		tasks["UpdateCollectionItems"] = c.Usecase.UpdateCollectionItems
 		tasks["UpdateCollectionThumbnails"] = c.Usecase.UpdateCollectionThumbnails
 	}
 
