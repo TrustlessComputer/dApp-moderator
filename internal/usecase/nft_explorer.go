@@ -12,7 +12,6 @@ import (
 	"dapp-moderator/utils/logger"
 	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/url"
@@ -733,8 +732,6 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 				tokenID, _ := new(big.Int).SetString(tmp.TokenID, 10)
 				owner, err := erc721.OwnerOf(nil, tokenID)
 				if err == nil {
-					spew.Dump(owner.String())
-
 					_, err = u.Repo.UpdateNftOwner(tmp.ContractAddress, tmp.TokenID, strings.ToLower(owner.String()))
 					if err != nil {
 						logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s.%s", contract, tmp.TokenID),
