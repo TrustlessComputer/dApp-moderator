@@ -341,6 +341,11 @@ func Base64Decode(base64Str string) ([]byte, error) {
 	return sDec, nil
 }
 
+func Base64Encode(base64Str string) string {
+	sDec := b64.StdEncoding.EncodeToString([]byte(base64Str))
+	return sDec
+}
+
 func TxHashInfo(txhash string) ([]byte, *http.Header, int, error) {
 	txhash = strings.ToLower(txhash)
 	url := os.Getenv("TC_ENDPOINT")
