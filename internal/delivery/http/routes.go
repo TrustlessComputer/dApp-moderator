@@ -56,6 +56,8 @@ func (h *httpDelivery) RegisterV1Routes() {
 	bnsServices.HandleFunc("/names/{token_id}", h.bnsName).Methods("GET")
 	bnsServices.HandleFunc("/names/{token_id}/available", h.bnsNameAvailable).Methods("GET")
 	bnsServices.HandleFunc("/names/owned/{wallet_address}", h.bnsNameOwnedByWalletAddress).Methods("GET")
+	bnsServices.HandleFunc("/default/{wallet_address}", h.bnsDefault).Methods("GET")
+	bnsServices.HandleFunc("/default/{wallet_address}", h.updateBnsDefault).Methods("PUT")
 
 	// token explorer
 	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()

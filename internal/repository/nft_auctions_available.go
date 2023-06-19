@@ -4,6 +4,7 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strings"
 	"time"
 
@@ -57,4 +58,35 @@ func (r *Repository) FindAuction(contractAddress string, tokenID string) (*entit
 	}
 
 	return data, nil
+}
+
+func (r *Repository) NftWithoutCapturedImage(contractAddress string, offset int, limit int) ([]entity.Nfts, error) {
+	resp := []entity.Nfts{}
+
+	f := bson.A{
+		bson.D{
+			{"$match",
+				bson.D{
+					{"collection_address", strings.ToLower(contractAddress)},
+					{"image_capture", bson.D{{"$in", bson.A{
+						"",
+						primitive.Null{},
+					},
+					}}},
+				},
+			},
+		},
+		bson.D{{"$skip", offset}},
+		bson.D{{"$limit", limit}},
+	}
+
+	cursor, err := r.DB.Collection(entity.Nfts{}.CollectionName()).Aggregate(context.TODO(), f)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All((context.TODO()), &resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
