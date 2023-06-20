@@ -12,7 +12,6 @@ import (
 	"dapp-moderator/utils/logger"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/url"
 	"os"
@@ -20,6 +19,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -292,7 +293,6 @@ func (u *Usecase) CollectionNftDetail(ctx context.Context, contractAddress strin
 				data.Name = bnsName.Name
 				u.Cache.SetStringData(key, data.Name)
 			}
-
 		}
 	}
 

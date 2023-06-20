@@ -165,6 +165,17 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		return nil, err
 	}
 
+	for index, item := range resp {
+		if item.BnsDefault != nil && item.BnsDefault.Resolver != "" {
+			for j, bnsItem := range resp[index].BnsData {
+				if bnsItem.ID.Hex() == item.BnsDefault.BNSDefaultID.Hex() {
+					resp[index].BnsData[0], resp[index].BnsData[j] = resp[index].BnsData[j], resp[index].BnsData[0]
+					break
+				}
+			}
+		}
+	}
+
 	respData := &entity.MkpNftsPagination{
 		Items:     resp,
 		TotalItem: total,
