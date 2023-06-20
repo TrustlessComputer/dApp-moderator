@@ -471,6 +471,46 @@ func (u *Usecase) ParseSvgImage(imageURL string) string {
 	return strings.ReplaceAll(response.Data, "https", "http")
 }
 
+func (u *Usecase) ParseHtmlImage(imageURL string) (string, map[string]string, error) {
+	parseImageUrl := "https://devnet.generative.xyz/generative/api/photo/pare-html"
+
+	now := time.Now().UTC().UnixNano()
+	postData := make(map[string]interface{})
+	postData["display_url"] = imageURL
+	postData["delay_time"] = 20
+	postData["app_id"] = fmt.Sprintf("dapp-%d", now)
+
+	resp, _, _, err := helpers.HttpRequest(parseImageUrl, "POST", make(map[string]string), postData)
+	if err != nil {
+		return "", nil, err
+	}
+
+	type respdata struct {
+		Err    error `json:"error"`
+		Status bool  `json:"status"`
+		Data   struct {
+			Image  string            `json:"image"`
+			Traits map[string]string `json:"traits"`
+		} `json:"data"`
+	}
+
+	response := &respdata{}
+	err = json.Unmarshal(resp, response)
+	if err != nil {
+		return "", nil, err
+	}
+
+	if !response.Status {
+		return "", nil, err
+	}
+
+	if response.Err != nil {
+		return "", nil, err
+	}
+
+	return response.Data.Image, response.Data.Traits, nil
+}
+
 func (u *Usecase) TestSendNotify() {
 	env := os.Getenv("ENVIRONMENT")
 	if env == "production" {

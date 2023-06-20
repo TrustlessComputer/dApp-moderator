@@ -179,7 +179,9 @@ func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAgg
 	}
 
 	if len(floorPriceVolumes) >= 1 {
-		minBTC = floorPriceVolumes[0].BTCValue
+		//all volume is changed to BTC
+		//minBTC = floorPriceVolumes[0].BTCValue
+		minBTC = floorPriceVolumes[0].TotalVolume
 	}
 
 	if len(floorPriceVolumes) >= 1 {
@@ -197,8 +199,9 @@ func (u *Usecase) StartWorker(inputItemChan chan entity.MarketplaceCollectionAgg
 	inputItem.BtcVolume = totalBTC
 	inputItem.EthVolume = totalEth
 
+	btc := helpers.GetValue(fmt.Sprintf("%f", minBTC), float64(18))
 	inputItem.FloorPrice = min
-	inputItem.BtcFloorPrice = minBTC
+	inputItem.BtcFloorPrice = btc
 	inputItem.EthFloorPrice = minEth
 	inputItem.TotalSales = int64(len(inputItem.TotalSaleMarketPlace))
 

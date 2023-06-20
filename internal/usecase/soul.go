@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/delivery/http/request"
@@ -296,6 +297,9 @@ func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) 
 }
 
 func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*structure.CreateSignatureResp, error) {
+	//return error
+	return nil, errors.New("Cannot create signature")
+
 	soulChainID := os.Getenv("SOUL_CHAIN_ID")
 	chainID, _ := new(big.Int).SetString(soulChainID, 10)
 	contractAddr := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
@@ -443,10 +447,15 @@ func (u *Usecase) CaptureSoulImage(ctx context.Context, request *request.Capture
 		}
 	}
 
-	newImagePath := u.ParseSvgImage(animationFileUrl)
+	newImagePath, traits, err := u.ParseHtmlImage(animationFileUrl)
+	if err != nil {
+		return nil, err
+	}
+
 	if newImagePath == animationFileUrl {
 		return nil, errors.New("parse svg image error")
 	}
+
 	if newImagePath != "" {
 		imagePath = newImagePath
 	}
@@ -454,6 +463,7 @@ func (u *Usecase) CaptureSoulImage(ctx context.Context, request *request.Capture
 	_, err = u.Repo.UpdateOne(utils.COLLECTION_NFTS, bson.D{{"_id", nftEntity.ID}}, bson.M{"$set": bson.M{
 		"image_capture":      imagePath,
 		"animation_file_url": animationFileUrl,
+		"attributes":         traits,
 	}})
 
 	if err != nil {
@@ -492,8 +502,29 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 	if strings.Contains(tokenUri.AnimationUrl, "base64") {
 		tokenUri.AnimationUrl = strings.Replace(tokenUri.AnimationUrl, "data:text/html;base64,", "", -1)
 
+		byteArray, err := helpers.Base64Decode(tokenUri.AnimationUrl)
+		if err != nil {
+			return "", err
+		}
+
+		replaceTo1 := ""
+		replaceTo3 := ""
+
+		if os.Getenv("SOUL_CHAIN_ID") == "22213" { //production
+			replaceTo1 = `"https://tc-node.trustless.computer"`
+			replaceTo3 = `isFakeData = true`
+		} else {
+			replaceTo1 = `"https://tc-node-manual.regtest.trustless.computer"`
+			replaceTo3 = `isFakeData = true`
+		}
+
+		html := bytes.NewBuffer(byteArray).String()
+		html = strings.ReplaceAll(html, "Web3.givenProvider", replaceTo1)
+		html = strings.ReplaceAll(html, "isFakeData=!1", replaceTo3)
+
+		encoded := helpers.Base64Encode(html)
 		fileName := fmt.Sprintf("%v_%v_%v.html", nftEntity.ContractAddress, nftEntity.TokenID, time.Now().UTC().Unix())
-		resp, err := u.Storage.UploadBaseToBucket(tokenUri.AnimationUrl, fmt.Sprintf("capture_animation_file/%v", fileName))
+		resp, err := u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
 		if err != nil {
 			return "", err
 		}
