@@ -165,6 +165,17 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		return nil, err
 	}
 
+	for index, item := range resp {
+		if len(item.BnsDefault) > 0 && item.BnsDefault[0].Resolver != "" {
+			for j, bnsItem := range resp[index].BnsData {
+				if bnsItem.ID.Hex() == item.BnsDefault[0].BNSDefaultID.Hex() {
+					resp[index].BnsData[0], resp[index].BnsData[j] = resp[index].BnsData[j], resp[index].BnsData[0]
+					break
+				}
+			}
+		}
+	}
+
 	respData := &entity.MkpNftsPagination{
 		Items:     resp,
 		TotalItem: total,
@@ -175,7 +186,7 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.MkpNftsResp, error) {
 	resp := &nft_explorer.MkpNftsResp{}
 	f := bson.D{
-		bson.E{"collection_address", contractAddress},
+		bson.E{"collection_address", strings.ToLower(contractAddress)},
 		bson.E{"token_id", tokenID},
 	}
 

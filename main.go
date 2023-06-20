@@ -211,6 +211,17 @@ func startServer() {
 		Enabled: trendingStartBool,
 	}
 
+	thumbnailStart := os.Getenv("THUMBNAIL_HISTORIES_START")
+	thumbnailStartBool, err := strconv.ParseBool(thumbnailStart)
+	if err != nil {
+		thumbnailStartBool = true //alway start this server, if config is missing
+	}
+	thumbnailHistoriesServer := txTCServer.NewJobCaptureThumbnailHistories(&g, *uc)
+	servers["thumbnail-histories"] = delivery.AddedServer{
+		Server:  thumbnailHistoriesServer,
+		Enabled: thumbnailStartBool,
+	}
+
 	//var wait time.Duration
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)

@@ -6,7 +6,11 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/logger"
+	"encoding/json"
+	"errors"
 	"net/http"
+	"os"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -129,6 +133,67 @@ func (h *httpDelivery) bnsNameOwnedByWalletAddress(w http.ResponseWriter, r *htt
 			return data, nil
 		},
 	).ServeHTTP(w, r)
+}
+
+// @Summary bnsDefault
+// @Description bnsDefault
+// @Tags BNS-service
+// @Accept  json
+// @Produce  json
+// @Param wallet_address path string true "wallet_address"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /bns-service/default/{wallet_address} [GET]
+func (h *httpDelivery) bnsDefault(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+		resolver := vars["wallet_address"]
+		if resolver == "" {
+			return nil, errors.New("resolver is required")
+		}
+
+		data, err := h.Usecase.BnsDefault(ctx, resolver)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
+	}).ServeHTTP(w, r)
+}
+
+// @Summary updateBnsDefault
+// @Description updateBnsDefault
+// @Tags BNS-service
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param request body request.UpdateBNSDefaultRequest true "body"
+// @Param wallet_address path string true "user wallet address
+// @Success 200 {object} response.JsonResponse{}
+// @Router /bns-service/default/{wallet_address} [PUT]
+func (h *httpDelivery) updateBnsDefault(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+		resolver := vars["wallet_address"]
+		if resolver == "" {
+			return nil, errors.New("resolver is required")
+		}
+		var reqBody = &request.UpdateBNSDefaultRequest{}
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(reqBody)
+		if err != nil {
+			return nil, err
+		}
+		if os.Getenv("ENV") != "local" {
+			if resolver != ctx.Value(utils.SIGNED_WALLET_ADDRESS) {
+				return nil, errors.New("permission denied")
+			}
+		}
+		reqBody.Resolver = strings.ToLower(resolver)
+		reqBody.TokenID = strings.ToLower(reqBody.TokenID)
+		bns, err := h.Usecase.UpdateBnsDefault(ctx, reqBody)
+		if err != nil {
+			return nil, err
+		}
+		return bns, nil
+	}).ServeHTTP(w, r)
 }
 
 func (h *httpDelivery) createFilterBns(ctx context.Context, r *http.Request, vars map[string]string) (*request.FilterBNSNames, error) {
