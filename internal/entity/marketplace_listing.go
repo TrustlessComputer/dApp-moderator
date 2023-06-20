@@ -116,7 +116,7 @@ type MkpNftsResp struct {
 	Collection       Collections                `json:"collection" bson:"collection"`
 	Size             int64                      `json:"size" bson:"size"`
 	BnsData          []*Bns                     `json:"bns_data,omitempty" bson:"bns_data"`
-	BnsDefault       *BNSDefault                `json:"bns_default,omitempty" bson:"bns_default"`
+	BnsDefault       []*BNSDefault              `json:"bns_default,omitempty" bson:"bns_default"`
 }
 
 type MkpNftsPagination struct {
