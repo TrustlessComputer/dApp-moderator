@@ -109,7 +109,7 @@ func (h *httpDelivery) bnsNameAvailable(w http.ResponseWriter, r *http.Request) 
 // @Tags BNS-service
 // @Accept  json
 // @Produce  json
-// @Param wallet_address path string false "wallet_address"
+// @Param wallet_address path string true "wallet_address"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
 // @Success 200 {object} response.JsonResponse{}
