@@ -240,7 +240,7 @@ func (u *Usecase) CollectionNfts(ctx context.Context, contractAddress string, fi
 	}
 
 	s := bson.D{{sortBy, sort}}
-	err := u.Repo.Find(utils.COLLECTION_NFTS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
+	err := u.Repo.Find(utils.VIEW_NFTS_WITH_SIZE, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
 	}
