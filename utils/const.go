@@ -136,6 +136,7 @@ const (
 
 	COLLECTION_COLLECTIONS                string = "collections"           //ERC721, a collection has many nfts
 	COLLECTION_NFTS                       string = "nfts"                  //ERC721
+	COLLECTION_SOUL_IMAGE_HISTORIES       string = "soul_image_histories"  //ERC721
 	COLLECTION_NFT_AUCTIONS               string = "nft_auction_available" //ERC721
 	COLLECTION_BNS                        string = "bns"                   //ERC721
 	COLLECTION_BNS_DEFAULT                string = "bns_default"           //ERC721
@@ -192,8 +193,8 @@ const (
 	VIEW_MARKETPLACE_COLLECTION_CHART              string = "marketplace_collection_chart"
 	VIEW_MARKETPLACE_COUNT_COLLECTION_OWNER        string = "marketplace_count_collection_owner"
 	COLLECTION_MARKETPLACE_AGGREGATED_COLLECTIONS  string = "marketplace_aggregated_collections"
-
-	TRANSACTIONS string = "transactions"
+	VIEW_NFTS_WITH_SIZE                            string = "nft_with_size_view"
+	TRANSACTIONS                                   string = "transactions"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"
 	EVM_NULL_ADDRESS                          string = "0x0000000000000000000000000000000000000000"

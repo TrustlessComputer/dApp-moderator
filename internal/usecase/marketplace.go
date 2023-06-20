@@ -622,6 +622,29 @@ func (u *Usecase) MarketplaceBNSResolverUpdated(eventData interface{}, chainLog 
 	}
 
 	logger.AtLog.Logger.Info(fmt.Sprintf("MarketplaceBNSResolverUpdated -  %s", tokenID), zap.String("resolver", resolver), zap.Any("updated", updated))
+
+	// nếu bns này đang sử dụng cho 1 resolver nào đó -> update lại default cho resolver đó
+	bnsEntity := &entity.Bns{}
+	result, err := u.Repo.FindOne(utils.COLLECTION_BNS, bson.D{{"token_id", tokenID}})
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSResolverUpdated -  %s", tokenID),
+			zap.String("resolver", resolver), zap.Error(err))
+		return err
+	}
+	if err := result.Decode(bnsEntity); err != nil {
+		return err
+	}
+
+	result, err = u.Repo.FindOne(utils.COLLECTION_BNS_DEFAULT, bson.D{{"bns_default_id", bnsEntity.ID}})
+	if err == nil {
+		bnsDefault := &entity.BNSDefault{}
+		if err := result.Decode(bnsDefault); err == nil && bnsDefault.Resolver != resolver {
+			if _, err := u.Repo.DeleteOne(utils.COLLECTION_BNS_DEFAULT, bson.D{{"_id", bnsDefault.ID}}); err == nil {
+				_, _ = u.BnsDefault(context.TODO(), bnsDefault.Resolver)
+			}
+		}
+	}
+
 	return nil
 }
 
