@@ -166,9 +166,9 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	}
 
 	for index, item := range resp {
-		if item.BnsDefault != nil && item.BnsDefault.Resolver != "" {
+		if len(item.BnsDefault) > 0 && item.BnsDefault[0].Resolver != "" {
 			for j, bnsItem := range resp[index].BnsData {
-				if bnsItem.ID.Hex() == item.BnsDefault.BNSDefaultID.Hex() {
+				if bnsItem.ID.Hex() == item.BnsDefault[0].BNSDefaultID.Hex() {
 					resp[index].BnsData[0], resp[index].BnsData[j] = resp[index].BnsData[j], resp[index].BnsData[0]
 					break
 				}
