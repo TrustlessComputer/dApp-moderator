@@ -4,6 +4,7 @@ import (
 	"context"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
+	"dapp-moderator/utils"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -177,4 +178,50 @@ func (r *Repository) SoulNfts(contract string) ([]entity.Nfts, error) {
 	}
 
 	return result, nil
+}
+
+func (r *Repository) UpdateNftSize(contract string, tokenID string, size int64) (*mongo.UpdateResult, error) {
+	f := bson.D{
+		{"collection_address", contract},
+		{"token_id", tokenID},
+	}
+
+	update := bson.M{"$set": bson.M{"size": size}}
+
+	updated, err := r.UpdateOne(entity.Nfts{}.CollectionName(), f, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+
+}
+
+func (r *Repository) GetNftsWithoutSize(collectionAddress string, skip int, limit int) ([]entity.Nfts, error) {
+	f2 := bson.A{
+		bson.D{
+			{"$match",
+				bson.D{
+					{"collection_address", strings.ToLower(collectionAddress)},
+					{"image", bson.D{{"$ne", ""}}},
+					{"size", 0},
+				},
+			},
+		},
+
+		bson.D{{"$skip", skip}},
+		bson.D{{"$limit", limit}},
+	}
+
+	groupedNfts := []entity.Nfts{}
+	cursor, err := r.DB.Collection(utils.VIEW_NFTS_WITH_SIZE).Aggregate(context.TODO(), f2)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if err = cursor.All((context.TODO()), &groupedNfts); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return groupedNfts, nil
 }
