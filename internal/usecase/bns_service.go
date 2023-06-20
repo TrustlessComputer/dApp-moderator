@@ -34,56 +34,7 @@ func (u *Usecase) BnsNames(ctx context.Context, filter request.FilterBNSNames) (
 		return nil, err
 	}
 
-	if filter.Resolver != nil && *filter.Resolver != "" {
-		u.SortBNSDefaultOfResolverFirst(ctx, resp, *filter.Resolver)
-	}
-
 	return resp, nil
-}
-
-func (u *Usecase) SortBNSDefaultOfResolverFirst(ctx context.Context, bns []*entity.FilteredBNS, resolver string) {
-	if len(bns) < 2 {
-		return
-	}
-
-	result, err := u.Repo.FindOne(utils.COLLECTION_BNS_DEFAULT, bson.D{{"resolver", resolver}})
-	if err != nil {
-		return
-	}
-	bnsDefault := &entity.BNSDefault{}
-	if err := result.Decode(bnsDefault); err != nil {
-		return
-	}
-	bnsEntity := &entity.Bns{}
-	result, err = u.Repo.FindOne(utils.COLLECTION_BNS, bson.D{{"_id", bnsDefault.BNSDefaultID}})
-	if err != nil {
-		return
-	}
-	if err := result.Decode(bnsEntity); err != nil {
-		return
-	}
-
-	if bnsDefault != nil {
-		for index, item := range bns {
-			if strings.ToLower(item.TokenID) == strings.ToLower(bnsEntity.TokenID) {
-				// swap item to first index
-				bns[0], bns[index] = bns[index], bns[0]
-			}
-		}
-
-		return
-	}
-
-	if bns[0].PfpData == nil {
-		// Ưu tiên set phần tử đầu tiên là item có pfp_data
-		for index, item := range bns {
-			if item.PfpData != nil {
-				bns[0], bns[index] = bns[index], bns[0]
-			}
-		}
-	}
-
-	return
 }
 
 func (u *Usecase) BnsName(ctx context.Context, tokenID string) (*entity.FilteredBNS, error) {
