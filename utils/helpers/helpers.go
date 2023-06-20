@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
@@ -449,4 +450,9 @@ func InArray(text string, arrayText []string) bool {
 	}
 
 	return false
+}
+
+func ParseUintToUnixTime(number uint64) *time.Time {
+	t := time.Unix(int64(number), 0)
+	return &t
 }

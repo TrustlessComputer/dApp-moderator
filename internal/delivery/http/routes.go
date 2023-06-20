@@ -210,6 +210,14 @@ func (h *httpDelivery) RegisterV1Routes() {
 	soul.HandleFunc("/nfts", h.soulNfts).Methods("GET")
 	soul.HandleFunc("/nfts/{token_id}", h.soulNft).Methods("GET")
 
+	//dao
+	dao := api.PathPrefix("/dao").Subrouter()
+	dao.HandleFunc("/proposals", h.proposals).Methods("GET")
+	dao.HandleFunc("/proposals", h.createDraftProposals).Methods("POST")
+	dao.HandleFunc("/proposals/{proposal_id}", h.getProposal).Methods("GET")
+	dao.HandleFunc("/proposals/{proposal_id}/votes", h.getProposalVotes).Methods("GET")
+	dao.HandleFunc("/proposals/{id}/{proposal_id}", h.mapOffAndOnChainProposal).Methods("PUT")
+
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

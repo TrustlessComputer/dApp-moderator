@@ -184,6 +184,12 @@ func startServer() {
 		txConsumerStatrBool = true //alway start this server, if config is missing
 	}
 
+	proposalStart := os.Getenv("DAO_CONSUMER_START")
+	proposalStartBool, err := strconv.ParseBool(proposalStart)
+	if err != nil {
+		proposalStartBool = true //alway start this server, if config is missing
+	}
+
 	trendingStart := os.Getenv("TRENDING_SERVER_START")
 	trendingStartBool, err := strconv.ParseBool(trendingStart)
 	if err != nil {
@@ -200,6 +206,12 @@ func startServer() {
 	servers["tx-consumer"] = delivery.AddedServer{
 		Server:  tx,
 		Enabled: txConsumerStatrBool,
+	}
+
+	proposalServer, _ := txTCServer.NewTxDaoProposalServer(&g, *uc)
+	servers["proposal-consumer"] = delivery.AddedServer{
+		Server:  proposalServer,
+		Enabled: proposalStartBool,
 	}
 
 	servers["job-discord"] = delivery.AddedServer{

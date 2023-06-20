@@ -192,6 +192,12 @@ const (
 	VIEW_NFTS_WITH_SIZE                            string = "nft_with_size_view"
 	TRANSACTIONS                                   string = "transactions"
 
+	COLLECTION_DAO_PROPOSAL           string = "proposals"
+	COLLECTION_DAO_PROPOSAL_CONTRACTS string = "proposal_dao_contracts"
+	COLLECTION_DAO_PROPOSAL_DETAIL    string = "proposal_detail"
+	COLLECTION_DAO_PROPOSAL_VOTES     string = "proposal_votes"
+	COLLECTION_DAO_PROPOSAL_RAW       string = "proposal_raw"
+
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"
 	EVM_NULL_ADDRESS                          string = "0x0000000000000000000000000000000000000000"
 	PUBSUB_TOKEN_THUMBNAIL                    string = "token_thumbnail"
