@@ -79,21 +79,28 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 		return nil, err
 	}
 
+	available, err := soulContract.Available(&bind.CallOpts{Context: context.Background()}, tokenIDBigInt)
+	if err != nil {
+		return nil, err
+	}
+	var auctionEntity = &entity.Auction{}
+	err = u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{
+		"collection_address": contractAddr,
+		"token_id":           tokenID,
+	}, auctionEntity, &options.FindOneOptions{
+		Sort: bson.M{"_id": -1},
+	})
+	if err != nil || auctionEntity.ID.IsZero() {
+		return &response.AuctionDetailResponse{
+			Available: available,
+		}, nil
+	}
+
 	chainLatestBlock, err := u.TCPublicNode.GetBlockNumber()
 	if err != nil {
 		logger.AtLog.Logger.Error("Usecase.UpdateAuctionStatus", zap.Error(err))
 	}
 
-	var auctionEntity = &entity.Auction{}
-	if err := u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{
-		"collection_address": contractAddr,
-		"token_id":           tokenID,
-	}, auctionEntity, &options.FindOneOptions{
-		Sort: bson.M{"_id": -1},
-	}); err != nil {
-		logger.AtLog.Logger.Error("Usecase.AuctionDetail", zap.Error(err))
-		return nil, err
-	}
 	status := entity.AuctionStatusInProgress
 	if chainLatestBlock.Cmp(resp.EndTime) > 0 {
 		status = entity.AuctionStatusEnded
@@ -109,11 +116,6 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 			logger.AtLog.Logger.Error("Usecase.AuctionDetail", zap.Error(err))
 			return nil, err
 		}
-	}
-
-	available, err := soulContract.Available(&bind.CallOpts{Context: context.Background()}, tokenIDBigInt)
-	if err != nil {
-		return nil, err
 	}
 
 	return &response.AuctionDetailResponse{
