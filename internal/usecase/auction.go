@@ -117,9 +117,11 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 	}
 
 	return &response.AuctionDetailResponse{
-		Available:     available,
-		AuctionStatus: status,
-		HighestBid:    resp.Amount.String(),
-		EndTime:       resp.EndTime.String(),
+		Available:      available,
+		AuctionStatus:  status,
+		HighestBid:     resp.Amount.String(),
+		EndTime:        resp.EndTime.String(),
+		DBAuctionID:    auctionEntity.ID.Hex(),
+		ChainAuctionID: new(big.Int).SetBytes(resp.AuctionId[:]).String(),
 	}, nil
 }
