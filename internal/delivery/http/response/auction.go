@@ -15,12 +15,12 @@ type AuctionDetailResponse struct {
 	ChainAuctionID string `json:"chain_auction_id"`
 }
 
-type AuctionBidResponseItem struct {
-	Items []*AuctionBidItemResponse `json:"items"`
-	Total int64                     `json:"total"`
+type AuctionListBidResponse struct {
+	Items []*AuctionListBidResponseItem `json:"items"`
+	Total int64                         `json:"total"`
 }
 
-type AuctionBidItemResponse struct {
+type AuctionListBidResponseItem struct {
 	Amount string    `json:"amount"`
 	Sender string    `json:"sender"`
 	Time   time.Time `json:"time"`

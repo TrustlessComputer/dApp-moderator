@@ -10,6 +10,7 @@ import (
 	"dapp-moderator/utils/logger"
 	"errors"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -135,7 +136,7 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 	}, nil
 }
 
-func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.PaginationReq) (*response.AuctionBidItemResponse, error) {
+func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.PaginationReq) (*response.AuctionListBidResponse, error) {
 	objectID, err := primitive.ObjectIDFromHex(dbAuctionID)
 	if err != nil {
 		logger.AtLog.Logger.Error("Usecase.AuctionListBid", zap.Error(err))
@@ -148,5 +149,70 @@ func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.Paginat
 		return nil, err
 	}
 
-	return nil, nil
+	filter := bson.M{
+		"chain_auction_id": auctionEntity.AuctionID,
+	}
+
+	pipelines := bson.A{}
+
+	if len(filter) > 0 {
+		pipelines = append(pipelines, bson.M{"$match": filter})
+	}
+	var (
+		offset = 0
+		limit  = 32
+	)
+	if pagination != nil {
+		if pagination.Offset != nil {
+			offset = *pagination.Offset
+		}
+		if pagination.Page != nil {
+			offset = (int(*pagination.Page) - 1) * limit
+		}
+		if pagination.Limit != nil {
+			limit = *pagination.Limit
+		}
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit <= 0 || limit > 1000 {
+		limit = 32
+	}
+
+	total, err := u.Repo.CountTotalFromPipeline(utils.COLLECTION_AUCTION_BID_SUMMARY, pipelines)
+	if err != nil {
+		return nil, err
+	}
+
+	pipelines = append(pipelines, bson.D{{"$sort", bson.M{"updated_at": -1}}})
+	pipelines = append(pipelines, bson.D{{"$skip", offset}})
+	pipelines = append(pipelines, bson.D{{"$limit", limit}})
+	cursor, err := u.Repo.DB.Collection(utils.COLLECTION_AUCTION_BID_SUMMARY).Aggregate(context.TODO(), pipelines)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := []*entity.AuctionBidSummary{}
+	err = cursor.All((context.TODO()), &resp)
+	if err != nil {
+		return nil, err
+	}
+	result := &response.AuctionListBidResponse{
+		Items: make([]*response.AuctionListBidResponseItem, 0, len(resp)),
+		Total: int64(total),
+	}
+
+	for _, item := range resp {
+		updatedAt := item.UpdatedAt
+		if updatedAt == nil {
+			updatedAt = utils.ToPtr(time.Now())
+		}
+		result.Items = append(result.Items, &response.AuctionListBidResponseItem{
+			Amount: item.TotalAmount,
+			Sender: item.Sender,
+			Time:   *updatedAt,
+		})
+	}
+	return result, nil
 }
