@@ -214,7 +214,10 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 
 	go c.processTxTransaction(&wg, ctx, int32(fromBlock), int32(toBlock))
 
-	go c.Usecase.UpdateAuctionStatus(ctx)
+	go func() {
+		defer wg.Done()
+		c.Usecase.UpdateAuctionStatus(ctx)
+	}()
 
 	wg.Wait()
 
