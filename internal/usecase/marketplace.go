@@ -803,20 +803,17 @@ func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
 		zap.Any("eventData", eventData), zap.String("contract", chainLog.Address.Hex()))
 
 	chainAuctionID := new(big.Int).SetBytes(eventData.Auction.AuctionId[:]).String()
-	result, err := u.Repo.FindOne(utils.COLLECTION_AUCTION, bson.D{
-		{"auction_id", chainAuctionID},
-	})
-	if err != nil {
-		logger.AtLog.Logger.Info("HandleAuctionBid - FindOne auctionEntity error", zap.String("tokenID", eventData.TokenId.String()),
-			zap.Any("eventData", eventData), zap.Error(err))
-		return err
-	}
-
+	// async here => so retry to have data auctionEntity
 	auctionEntity := &entity.Auction{}
-	if err := result.Decode(auctionEntity); err != nil {
-		logger.AtLog.Logger.Info("HandleAuctionBid - Decode auctionEntity error", zap.String("tokenID", eventData.TokenId.String()),
-			zap.Any("eventData", eventData), zap.Error(err))
-		return err
+	for {
+		err := u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{
+			"auction_id": chainAuctionID,
+		}, auctionEntity)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(3 * time.Second)
 	}
 
 	auctionBid, err := u.validateAuctionBid(eventData, auctionEntity, chainLog)

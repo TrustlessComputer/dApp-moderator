@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
@@ -13,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 )
@@ -131,4 +133,20 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 		DBAuctionID:    auctionEntity.ID.Hex(),
 		ChainAuctionID: new(big.Int).SetBytes(resp.AuctionId[:]).String(),
 	}, nil
+}
+
+func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.PaginationReq) (*response.AuctionBidItemResponse, error) {
+	objectID, err := primitive.ObjectIDFromHex(dbAuctionID)
+	if err != nil {
+		logger.AtLog.Logger.Error("Usecase.AuctionListBid", zap.Error(err))
+		return nil, err
+	}
+
+	var auctionEntity = &entity.Auction{}
+	if err = u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{"_id": objectID}, auctionEntity); err != nil {
+		logger.AtLog.Logger.Error("Usecase.AuctionListBid", zap.Error(err))
+		return nil, err
+	}
+
+	return nil, nil
 }
