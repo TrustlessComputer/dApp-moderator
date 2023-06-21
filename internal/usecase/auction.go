@@ -118,8 +118,13 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 		}
 	}
 
+	availableToFE := available
+	if status == entity.AuctionStatusInProgress || status == entity.AuctionStatusEnded {
+		availableToFE = true
+	}
+
 	return &response.AuctionDetailResponse{
-		Available:      available,
+		Available:      availableToFE,
 		AuctionStatus:  status,
 		HighestBid:     resp.Amount.String(),
 		EndTime:        resp.EndTime.String(),
