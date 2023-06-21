@@ -56,6 +56,31 @@ type FilterBNSNames struct {
 	TokenID   *string
 }
 
+func (pagination *PaginationReq) GetOffsetAndLimit() (int, int) {
+	limit := 32
+	offset := 0
+
+	if pagination != nil {
+		if pagination.Offset != nil {
+			offset = *pagination.Offset
+		}
+		if pagination.Page != nil {
+			offset = (int(*pagination.Page) - 1) * limit
+		}
+		if pagination.Limit != nil {
+			limit = *pagination.Limit
+		}
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit <= 0 || limit > 1000 {
+		limit = 32
+	}
+
+	return limit, offset
+}
+
 func (pq PaginationReq) ToNFTServiceUrlQuery() url.Values {
 	q := url.Values{}
 
