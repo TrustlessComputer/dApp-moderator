@@ -63,9 +63,9 @@ func (h *httpDelivery) RegisterV1Routes() {
 	bnsServicesAuth.HandleFunc("/default/{wallet_address}", h.updateBnsDefault).Methods("PUT")
 
 	//auction
-	auctionRoutesAuth := api.PathPrefix("/soul-auction").Subrouter()
+	auctionRoutesAuth := api.PathPrefix("/auction").Subrouter()
 	//auctionRoutesAuth.Use(h.MiddleWare.ValidateAccessToken)
-	auctionRoutesAuth.HandleFunc("/detail", h.auctionDetail).Methods("GET")
+	auctionRoutesAuth.HandleFunc("/detail/{contractAddress}/{tokenID}", h.auctionDetail).Methods("GET")
 
 	// token explorer
 	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()
