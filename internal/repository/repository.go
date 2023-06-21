@@ -242,3 +242,25 @@ func (r *Repository) AllItems(collectionName string, filter bson.D) (int64, erro
 
 	return count, nil
 }
+
+// Count before add sort and skip
+func (r *Repository) CountTotalFromPipeline(collectionName string, pipelines bson.A) (int32, error) {
+	var countPipeline = bson.A(make([]interface{}, len(pipelines), len(pipelines)))
+	copy(countPipeline, pipelines)
+	countPipeline = append(countPipeline, bson.M{"$count": "total"})
+	totalCur, err := r.DB.Collection(collectionName).Aggregate(context.TODO(), countPipeline)
+	if err != nil {
+		return 0, err
+	}
+	var totalResult []bson.M
+	if err := totalCur.All(context.TODO(), &totalResult); err != nil {
+		return 0, err
+	}
+	if len(totalResult) > 0 {
+		if _val, ok := totalResult[0]["total"].(int32); ok {
+			return _val, nil
+		}
+	}
+
+	return 0, errors.New("can not get total")
+}
