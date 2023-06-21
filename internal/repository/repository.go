@@ -184,8 +184,8 @@ func (r *Repository) FindOne(collectionName string, filter bson.D) (*mongo.Singl
 	return sr, nil
 }
 
-func (r *Repository) FindOneWithResult(collectionName string, filter bson.M, result interface{}) error {
-	sr := r.DB.Collection(collectionName).FindOne(context.TODO(), filter)
+func (r *Repository) FindOneWithResult(collectionName string, filter bson.M, result interface{}, opts ...*options.FindOneOptions) error {
+	sr := r.DB.Collection(collectionName).FindOne(context.TODO(), filter, opts...)
 	if sr.Err() != nil {
 		return sr.Err()
 	}
