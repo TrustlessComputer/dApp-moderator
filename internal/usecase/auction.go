@@ -18,13 +18,13 @@ func (u *Usecase) UpdateAuctionStatus(ctx context.Context) {
 	}
 
 	limit := int64(100)
-	page := int64(1)
+	offset := int64(0)
 	success := 0
 	for {
 		var auctions []*entity.Auction
 		if err := u.Repo.Find(utils.COLLECTION_AUCTION, bson.D{
 			{"status", entity.AuctionStatusInProgress.Ordinal()},
-		}, limit, page, &auctions, bson.D{{"_id", 1}}); err != nil {
+		}, limit, offset, &auctions, bson.D{{"_id", 1}}); err != nil {
 			logger.AtLog.Logger.Error("Usecase.UpdateAuctionStatus", zap.Error(err))
 			return
 		}
@@ -49,6 +49,7 @@ func (u *Usecase) UpdateAuctionStatus(ctx context.Context) {
 				}
 			}
 		}
+		offset = offset + limit
 	}
 
 	logger.AtLog.Logger.Info("Finish Usecase.UpdateAuctionStatus", zap.Int64("chainLatestBlock", chainLatestBlock.Int64()),
