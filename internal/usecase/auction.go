@@ -158,33 +158,13 @@ func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.Paginat
 	if len(filter) > 0 {
 		pipelines = append(pipelines, bson.M{"$match": filter})
 	}
-	var (
-		offset = 0
-		limit  = 32
-	)
-	if pagination != nil {
-		if pagination.Offset != nil {
-			offset = *pagination.Offset
-		}
-		if pagination.Page != nil {
-			offset = (int(*pagination.Page) - 1) * limit
-		}
-		if pagination.Limit != nil {
-			limit = *pagination.Limit
-		}
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	if limit <= 0 || limit > 1000 {
-		limit = 32
-	}
 
 	total, err := u.Repo.CountTotalFromPipeline(utils.COLLECTION_AUCTION_BID_SUMMARY, pipelines)
 	if err != nil {
 		return nil, err
 	}
 
+	limit, offset := pagination.GetOffsetAndLimit()
 	pipelines = append(pipelines, bson.D{{"$sort", bson.M{"updated_at": -1}}})
 	pipelines = append(pipelines, bson.D{{"$skip", offset}})
 	pipelines = append(pipelines, bson.D{{"$limit", limit}})
@@ -193,8 +173,11 @@ func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.Paginat
 		return nil, err
 	}
 
-	resp := []*entity.AuctionBidSummary{}
-	err = cursor.All((context.TODO()), &resp)
+	type AuctionBidSummary struct {
+		entity.AuctionBidSummary `bson:",inline"`
+	}
+	resp := make([]*AuctionBidSummary, 0)
+	err = cursor.All(context.TODO(), &resp)
 	if err != nil {
 		return nil, err
 	}
