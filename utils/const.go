@@ -151,6 +151,7 @@ const (
 	COLLECTION_AUCTION                    string = "auction"
 	COLLECTION_AUCTION_BID                string = "auction_bid"
 	COLLECTION_AUCTION_CLAIM              string = "auction_claim"
+	VIEW_NFT_WITH_AUCTION_DATA                   = "nfts_with_auction_data_view"
 
 	COLLECTION_TOKEN_URI            string = "token_uris"
 	COLLECTION_TOKENS               string = "tokens"
