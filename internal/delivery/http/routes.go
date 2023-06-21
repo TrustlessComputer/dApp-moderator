@@ -66,6 +66,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	auctionRoutesAuth := api.PathPrefix("/auction").Subrouter()
 	//auctionRoutesAuth.Use(h.MiddleWare.ValidateAccessToken)
 	auctionRoutesAuth.HandleFunc("/detail/{contractAddress}/{tokenID}", h.auctionDetail).Methods("GET")
+	auctionRoutesAuth.HandleFunc("/list-bid/{contractAddress}/{tokenID}", h.listBid).Methods("GET")
 
 	// token explorer
 	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()

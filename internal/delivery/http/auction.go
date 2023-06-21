@@ -30,6 +30,8 @@ func (h *httpDelivery) auctionDetail(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
-func (h *httpDelivery) listBidByAuction(w http.Request, r *http.Request) {
-
+func (h *httpDelivery) listBid(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+		return nil, nil
+	}).ServeHTTP(w, r)
 }

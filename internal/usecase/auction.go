@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 )
 
@@ -87,7 +88,9 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 	if err := u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{
 		"collection_address": contractAddr,
 		"token_id":           tokenID,
-	}, auctionEntity); err != nil {
+	}, auctionEntity, &options.FindOneOptions{
+		Sort: bson.M{"_id": -1},
+	}); err != nil {
 		logger.AtLog.Logger.Error("Usecase.AuctionDetail", zap.Error(err))
 		return nil, err
 	}
@@ -108,17 +111,13 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 		}
 	}
 
-	var auctionAvailable = &entity.NftAuctionsAvailable{}
-	if err := u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{
-		"collection_address": contractAddr,
-		"token_id":           tokenID,
-	}, auctionEntity); err != nil {
-		logger.AtLog.Logger.Error("Usecase.AuctionDetail", zap.Error(err))
+	available, err := soulContract.Available(&bind.CallOpts{Context: context.Background()}, tokenIDBigInt)
+	if err != nil {
 		return nil, err
 	}
 
 	return &response.AuctionDetailResponse{
-		Available:     auctionAvailable.IsAuction,
+		Available:     available,
 		AuctionStatus: status,
 		HighestBid:    resp.Amount.String(),
 		EndTime:       resp.EndTime.String(),
