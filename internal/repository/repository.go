@@ -184,6 +184,19 @@ func (r *Repository) FindOne(collectionName string, filter bson.D) (*mongo.Singl
 	return sr, nil
 }
 
+func (r *Repository) FindOneWithResult(collectionName string, filter bson.M, result interface{}) error {
+	sr := r.DB.Collection(collectionName).FindOne(context.TODO(), filter)
+	if sr.Err() != nil {
+		return sr.Err()
+	}
+
+	if err := sr.Decode(result); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Repository) Find(collectionName string, filter bson.D, limit int64, offset int64, result interface{}, sort bson.D) error {
 	opts := &options.FindOptions{}
 	opts.Limit = &limit
