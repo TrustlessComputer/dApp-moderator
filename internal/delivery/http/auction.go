@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"errors"
 	"net/http"
+	"strings"
 )
 
 // @Summary auctionDetail
@@ -18,12 +19,13 @@ import (
 func (h *httpDelivery) auctionDetail(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
-			auctionID := r.URL.Query().Get("auction_id")
-			if auctionID == "" {
-				return nil, errors.New("auction_id is required")
+			contractAddress := strings.ToLower(vars["contractAddress"])
+			tokenID := strings.ToLower(vars["tokenID"])
+			if contractAddress == "" || tokenID == "" {
+				return nil, errors.New("missing required info")
 			}
 
-			return nil, nil
+			return h.Usecase.AuctionDetail(contractAddress, tokenID)
 		},
 	).ServeHTTP(w, r)
 }
