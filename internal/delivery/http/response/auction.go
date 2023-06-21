@@ -1,6 +1,9 @@
 package response
 
-import "dapp-moderator/internal/entity"
+import (
+	"dapp-moderator/internal/entity"
+	"time"
+)
 
 type AuctionDetailResponse struct {
 	Available     bool                 `json:"available"`
@@ -13,4 +16,12 @@ type AuctionDetailResponse struct {
 }
 
 type AuctionBidResponseItem struct {
+	Items []*AuctionBidItemResponse `json:"items"`
+	Total int64                     `json:"total"`
+}
+
+type AuctionBidItemResponse struct {
+	Amount string    `json:"amount"`
+	Sender string    `json:"sender"`
+	Time   time.Time `json:"time"`
 }
