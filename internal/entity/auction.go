@@ -37,7 +37,7 @@ func (Auction) CollectionName() string {
 	return "auction"
 }
 
-type AuctionBid struct {
+type AuctionBid struct { // auctionBid History
 	BaseEntity        `bson:",inline"`
 	DBAuctionID       primitive.ObjectID `json:"db_auction_id" bson:"db_auction_id"`
 	ChainAuctionID    string             `json:"chain_auction_id" bson:"chain_auction_id"`
@@ -49,6 +49,20 @@ type AuctionBid struct {
 
 func (AuctionBid) CollectionName() string {
 	return utils.COLLECTION_AUCTION_BID
+}
+
+type AuctionBidSummary struct { // summary total amount per auction per user
+	BaseEntity        `bson:",inline"`
+	DBAuctionID       primitive.ObjectID `json:"db_auction_id" bson:"db_auction_id"`
+	ChainAuctionID    string             `json:"chain_auction_id" bson:"chain_auction_id"`
+	TokenID           string             `json:"token_id" bson:"token_id"`
+	CollectionAddress string             `json:"collection_address" bson:"collection_address"`
+	TotalAmount       string             `json:"total_amount" bson:"total_amount"`
+	Sender            string             `json:"sender" bson:"sender"`
+}
+
+func (AuctionBidSummary) CollectionName() string {
+	return utils.COLLECTION_AUCTION_BID_SUMMARY
 }
 
 type AuctionClaim struct {

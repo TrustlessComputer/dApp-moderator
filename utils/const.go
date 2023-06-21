@@ -150,6 +150,7 @@ const (
 	COLLECTION_MARKETPLACE_TOKEN_ACTIVITY string = "marketplace_token_activities"
 	COLLECTION_AUCTION                    string = "auction"
 	COLLECTION_AUCTION_BID                string = "auction_bid"
+	COLLECTION_AUCTION_BID_SUMMARY        string = "auction_bid_summary"
 	COLLECTION_AUCTION_CLAIM              string = "auction_claim"
 	VIEW_NFT_WITH_AUCTION_DATA                   = "nfts_with_auction_data_view"
 
