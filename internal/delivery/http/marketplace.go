@@ -502,7 +502,7 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				}
 			}
 
-			data, err := h.Usecase.FilterMkplaceNfts(ctx, f)
+			data, err := h.Usecase.FilterMkplaceNftNew(ctx, f)
 			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 			for _, i := range data.Items {
 				if i.Name == "" {
