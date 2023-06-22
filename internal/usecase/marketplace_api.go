@@ -155,12 +155,17 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		{"activities", 0},
 	}
 
-	err := u.Repo.FindWithProjections(utils.VIEW_NEW_MARKETPLACE_NFTS, f, int64(filter.Limit), int64(filter.Offset), &resp, s, projections)
+	queryFromView := utils.VIEW_NEW_MARKETPLACE_NFTS
+	if filter.ContractAddress != nil && strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+		queryFromView = utils.VIEW_SOUL_MARKETPLACE_NFTS_AUCTION_RARITY
+	}
+
+	err := u.Repo.FindWithProjections(queryFromView, f, filter.Limit, filter.Offset, &resp, s, projections)
 	if err != nil {
 		return nil, err
 	}
 
-	total, err := u.Repo.AllItems(utils.VIEW_NEW_MARKETPLACE_NFTS, f)
+	total, err := u.Repo.AllItems(queryFromView, f)
 	if err != nil {
 		return nil, err
 	}
