@@ -194,7 +194,7 @@ func (h *httpDelivery) soulNft(w http.ResponseWriter, r *http.Request) {
 // @Param requestdata body request.CreateSignatureRequest true "request data"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /soul/signature [POST]
-func (h *httpDelivery) gSoulCreateSignature(w http.ResponseWriter, r *http.Request) {
+func (h *httpDelivery) SoulCreateSignature(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			var reqBody request.CreateSignatureRequest
