@@ -298,7 +298,8 @@ func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) 
 
 func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*structure.CreateSignatureResp, error) {
 	//return error
-	return nil, errors.New("Cannot create signature")
+	//Only develop
+	//return nil, errors.New("Cannot create signature")
 
 	soulChainID := os.Getenv("SOUL_CHAIN_ID")
 	chainID, _ := new(big.Int).SetString(soulChainID, 10)
