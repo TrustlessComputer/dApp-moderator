@@ -216,6 +216,8 @@ func (h *httpDelivery) RegisterV1Routes() {
 	soul.HandleFunc("/nfts", h.soulNfts).Methods("GET")
 	soul.HandleFunc("/nfts/{token_id}", h.soulNft).Methods("GET")
 
+	api.HandleFunc("/time", h.serverTime).Methods("GET")
+
 }
 
 func (h *httpDelivery) RegisterDocumentRoutes() {

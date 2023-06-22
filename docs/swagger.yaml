@@ -48,6 +48,11 @@ definitions:
       wallet_address:
         type: string
     type: object
+  request.UpdateBNSDefaultRequest:
+    properties:
+      token_id:
+        type: string
+    type: object
   request.UpdateTokenReq:
     properties:
       description:
@@ -302,6 +307,26 @@ paths:
       summary: Get Redis
       tags:
       - Admin
+  /auctions:
+    get:
+      consumes:
+      - application/json
+      description: auctionDetail
+      parameters:
+      - description: token_id
+        in: query
+        name: token_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: auctionDetail
+      tags:
+      - Auction
   /auth/nonce:
     post:
       consumes:
@@ -442,6 +467,55 @@ paths:
       summary: Get file info
       tags:
       - BFS-service
+  /bns-service/default/{wallet_address}:
+    get:
+      consumes:
+      - application/json
+      description: bnsDefault
+      parameters:
+      - description: wallet_address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: bnsDefault
+      tags:
+      - BNS-service
+    put:
+      consumes:
+      - application/json
+      description: updateBnsDefault
+      parameters:
+      - description: body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateBNSDefaultRequest'
+      - description: user wallet address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: updateBnsDefault
+      tags:
+      - BNS-service
   /bns-service/names:
     get:
       consumes:
@@ -1765,6 +1839,21 @@ paths:
       summary: Create signature
       tags:
       - Soul
+  /time:
+    get:
+      consumes:
+      - application/json
+      description: Get server's time (UTC)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get server's time (UTC)
+      tags:
+      - Common
   /token-explorer/token/{address}:
     get:
       consumes:
