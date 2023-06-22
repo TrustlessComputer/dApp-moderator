@@ -246,7 +246,7 @@ func (r *Repository) AllItems(collectionName string, filter bson.D) (int64, erro
 // Count before add sort and skip
 func (r *Repository) CountTotalFromPipeline(collectionName string, pipelines bson.A) (int32, error) {
 	var countPipeline = bson.A(make([]interface{}, len(pipelines), len(pipelines)))
-	copy(countPipeline, pipelines)
+	copy(countPipeline, pipelines) // để ko change trên pipeline truyền vào
 	countPipeline = append(countPipeline, bson.M{"$count": "total"})
 	totalCur, err := r.DB.Collection(collectionName).Aggregate(context.TODO(), countPipeline)
 	if err != nil {

@@ -23,5 +23,7 @@ type AuctionListBidResponse struct {
 type AuctionListBidResponseItem struct {
 	Amount string    `json:"amount"`
 	Sender string    `json:"sender"`
+	Avatar string    `json:"avatar"`
+	Name   string    `json:"name"`
 	Time   time.Time `json:"time"`
 }

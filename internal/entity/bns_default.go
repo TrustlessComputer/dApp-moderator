@@ -11,6 +11,8 @@ type BNSDefault struct {
 
 	Resolver     string             `json:"resolver" bson:"resolver"`
 	BNSDefaultID primitive.ObjectID `json:"bns_default_id" bson:"bns_default_id"`
+
+	BNSDefaultData *Bns `json:"bns_default_data,omitempty" bson:"bns_default_data,omitempty"`
 }
 
 func (b *BNSDefault) CollectionName() string {
