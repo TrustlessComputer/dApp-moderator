@@ -117,6 +117,18 @@ type MkpNftsResp struct {
 	Size             int64                      `json:"size" bson:"size"`
 	BnsData          []*Bns                     `json:"bns_data,omitempty" bson:"bns_data"`
 	BnsDefault       []*BNSDefault              `json:"bns_default,omitempty" bson:"bns_default"`
+
+	*MkpNftsAuctionDataResp `json:",inline,omitempty" bson:",inline,omitempty"`
+}
+
+type MkpNftsAuctionDataResp struct {
+	DbAuctionId           string  `json:"db_auction_id" bson:"db_auction_id"`
+	StartTimeBlock        string  `json:"start_time_block" bson:"start_time_block"`
+	EndTimeBlock          string  `json:"end_time_block" bson:"end_time_block"`
+	AuctionId             string  `json:"auction_id" bson:"auction_id"`
+	IsAvailableForAuction bool    `json:"is_available_for_auction" bson:"is_available_for_auction"`
+	IsLiveAuction         bool    `json:"is_live_auction" bson:"is_live_auction"`
+	Rarity                float64 `json:"rarity" bson:"rarity"`
 }
 
 type MkpNftsPagination struct {
