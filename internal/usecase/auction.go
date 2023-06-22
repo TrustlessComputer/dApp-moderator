@@ -149,14 +149,52 @@ func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.Paginat
 		return nil, err
 	}
 
-	filter := bson.M{
-		"chain_auction_id": auctionEntity.AuctionID,
+	type AuctionBidSummary struct {
+		entity.AuctionBidSummary `bson:",inline"`
+		BnsData                  []*entity.Bns      `bson:"bns_data,omitempty"`
+		BnsDefault               *entity.BNSDefault `bson:"bns_default"`
 	}
 
-	pipelines := bson.A{}
-
-	if len(filter) > 0 {
-		pipelines = append(pipelines, bson.M{"$match": filter})
+	pipelines := bson.A{
+		bson.M{"$match": bson.M{
+			"chain_auction_id": auctionEntity.AuctionID,
+		}},
+		bson.M{"$lookup": bson.M{
+			"from":         "bns",
+			"localField":   "sender",
+			"foreignField": "resolver",
+			"as":           "bns_data",
+		}},
+		bson.M{"$lookup": bson.M{
+			"from":         "bns_default",
+			"localField":   "sender",
+			"foreignField": "resolver",
+			"pipeline": bson.A{
+				bson.M{"$skip": 0},
+				bson.M{"$limit": 1},
+				bson.M{
+					"$lookup": bson.M{
+						"from":         "bns",
+						"localField":   "bns_default_id",
+						"foreignField": "_id",
+						"as":           "bns_default_data",
+					},
+				},
+				bson.M{
+					"$unwind": bson.M{
+						"path":                       "$bns_default_data",
+						"preserveNullAndEmptyArrays": true,
+					},
+				},
+			},
+			"as": "bns_default",
+		}},
+		bson.M{
+			"$unwind": bson.M{
+				"path":                       "$bns_default",
+				"preserveNullAndEmptyArrays": true,
+			},
+		},
 	}
 
 	total, err := u.Repo.CountTotalFromPipeline(utils.COLLECTION_AUCTION_BID_SUMMARY, pipelines)
@@ -173,29 +211,42 @@ func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.Paginat
 		return nil, err
 	}
 
-	type AuctionBidSummary struct {
-		entity.AuctionBidSummary `bson:",inline"`
-	}
 	resp := make([]*AuctionBidSummary, 0)
 	err = cursor.All(context.TODO(), &resp)
 	if err != nil {
 		return nil, err
 	}
+
 	result := &response.AuctionListBidResponse{
 		Items: make([]*response.AuctionListBidResponseItem, 0, len(resp)),
 		Total: int64(total),
 	}
 
 	for _, item := range resp {
+		avatar := ""
+		name := ""
+		if item.BnsDefault != nil && item.BnsDefault.BNSDefaultData != nil {
+			avatar = item.BnsDefault.BNSDefaultData.PfpData.GCSUrl
+			name = item.BnsDefault.BNSDefaultData.Name
+		} else {
+			if len(item.BnsData) > 0 {
+				avatar = item.BnsData[0].PfpData.GCSUrl
+				name = item.BnsData[0].Name
+			}
+		}
 		updatedAt := item.UpdatedAt
 		if updatedAt == nil {
 			updatedAt = utils.ToPtr(time.Now())
 		}
-		result.Items = append(result.Items, &response.AuctionListBidResponseItem{
+		responseItem := &response.AuctionListBidResponseItem{
+			Avatar: avatar,
+			Name:   name,
 			Amount: item.TotalAmount,
 			Sender: item.Sender,
 			Time:   *updatedAt,
-		})
+		}
+
+		result.Items = append(result.Items, responseItem)
 	}
 	return result, nil
 }
