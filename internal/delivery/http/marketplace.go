@@ -6,9 +6,9 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	soul_contract "dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
-	"go.uber.org/zap"
 	"math/big"
 	"net/http"
 	"os"
@@ -16,6 +16,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"go.uber.org/zap"
 )
 
 // UserCredits godoc
@@ -503,8 +506,20 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			}
 
 			data, err := h.Usecase.FilterMkplaceNfts(ctx, f)
+			if err != nil {
+				logger.AtLog.Logger.Error("can not get nfts", zap.Error(err))
+				return nil, err
+			}
 			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
-			for _, i := range data.Items {
+			soulAddress := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
+			var soulContract interface{}
+			if ca == soulAddress {
+				soulContract, err = soul_contract.NewSoul(common.HexToAddress(soulAddress), h.Usecase.TCPublicNode.GetClient())
+				if err != nil {
+					logger.AtLog.Logger.Error("can not init soulContract", zap.Error(err))
+				}
+			}
+			for index, i := range data.Items {
 				if i.Name == "" {
 					if bnsAddress == ca {
 						key := helpers.BnsTokenNameKey(i.TokenID)
@@ -520,7 +535,6 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 								i.Name = bnsName.Name
 								h.Usecase.Cache.SetStringData(key, i.Name)
 							}
-
 						}
 					} else {
 						tokenIdBigInt, _ := new(big.Int).SetString(i.TokenID, 10)
@@ -530,6 +544,15 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 							i.Name = i.Collection.Name + " #" + tokenIdBigInt.Mod(tokenIdBigInt, g).String()
 						} else {
 							i.Name = i.Collection.Name + " #" + i.TokenID
+						}
+					}
+				}
+				if ca == soulAddress {
+					if _val, ok := soulContract.(*soul_contract.Soul); ok {
+						if name, err := h.Usecase.SoulNFTName(i.TokenID, _val); err == nil {
+							data.Items[index].Name = name
+						} else {
+							data.Items[index].Name = ""
 						}
 					}
 				}
