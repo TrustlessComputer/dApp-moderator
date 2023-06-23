@@ -93,6 +93,10 @@ type MkpPriceERC20 struct {
 	Price      string `bson:"price" json:"price"`
 }
 
+type TotalResp struct {
+	Total int64 `json:"total" bson:"total"`
+}
+
 type MkpNftsResp struct {
 	ContractAddress  string                     `bson:"collection_address" json:"collection_address"`
 	TokenID          string                     `bson:"token_id" json:"token_id"`
