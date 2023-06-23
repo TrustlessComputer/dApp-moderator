@@ -137,6 +137,7 @@ const (
 	COLLECTION_COLLECTIONS                string = "collections"           //ERC721, a collection has many nfts
 	COLLECTION_NFTS                       string = "nfts"                  //ERC721
 	COLLECTION_SOUL_IMAGE_HISTORIES       string = "soul_image_histories"  //ERC721
+	COLLECTION_SOUL_IMAGES                string = "soul_images"           //ERC721
 	COLLECTION_NFT_AUCTIONS               string = "nft_auction_available" //ERC721
 	COLLECTION_BNS                        string = "bns"                   //ERC721
 	COLLECTION_BNS_DEFAULT                string = "bns_default"           //ERC721

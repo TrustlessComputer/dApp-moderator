@@ -500,29 +500,12 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 		return "", errors.New("animation url is empty")
 	}
 	if strings.Contains(tokenUri.AnimationUrl, "base64") {
-		tokenUri.AnimationUrl = strings.Replace(tokenUri.AnimationUrl, "data:text/html;base64,", "", -1)
 
-		byteArray, err := helpers.Base64Decode(tokenUri.AnimationUrl)
+		html, err := u.ReplaceSoulHtml(tokenUri.AnimationUrl)
 		if err != nil {
 			return "", err
 		}
-
-		replaceTo1 := ""
-		replaceTo3 := ""
-
-		if os.Getenv("SOUL_CHAIN_ID") == "22213" { //production
-			replaceTo1 = `"https://tc-node.trustless.computer"`
-			replaceTo3 = `isFakeData = true`
-		} else {
-			replaceTo1 = `"https://tc-node-manual.regtest.trustless.computer"`
-			replaceTo3 = `isFakeData = true`
-		}
-
-		html := bytes.NewBuffer(byteArray).String()
-		html = strings.ReplaceAll(html, "Web3.givenProvider", replaceTo1)
-		html = strings.ReplaceAll(html, "isFakeData=!1", replaceTo3)
-
-		encoded := helpers.Base64Encode(html)
+		encoded := helpers.Base64Encode(*html)
 		fileName := fmt.Sprintf("%v_%v_%v.html", nftEntity.ContractAddress, nftEntity.TokenID, time.Now().UTC().Unix())
 		resp, err := u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
 		if err != nil {
@@ -534,6 +517,31 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 	}
 
 	return tokenUri.AnimationUrl, nil
+}
+
+func (u *Usecase) ReplaceSoulHtml(input string) (*string, error) {
+	input = strings.Replace(input, "data:text/html;base64,", "", -1)
+
+	byteArray, err := helpers.Base64Decode(input)
+	if err != nil {
+		return nil, err
+	}
+
+	replaceTo1 := ""
+	replaceTo3 := ""
+
+	if os.Getenv("SOUL_CHAIN_ID") == "22213" { //production
+		replaceTo1 = `"https://tc-node.trustless.computer"`
+		replaceTo3 = `isFakeData = true`
+	} else {
+		replaceTo1 = `"https://tc-node-manual.regtest.trustless.computer"`
+		replaceTo3 = `isFakeData = true`
+	}
+
+	html := bytes.NewBuffer(byteArray).String()
+	html = strings.ReplaceAll(html, "Web3.givenProvider", replaceTo1)
+	html = strings.ReplaceAll(html, "isFakeData=!1", replaceTo3)
+	return &html, nil
 }
 
 func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tokenID string) (*entity.NftAuctionsAvailable, error) {
