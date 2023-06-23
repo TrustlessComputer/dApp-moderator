@@ -545,3 +545,28 @@ func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tok
 
 	return data, nil
 }
+
+func (u *Usecase) SoulNFTName(tokenId string, contracts ...*soul.Soul) (string, error) {
+	var (
+		soulContract *soul.Soul
+		err          error
+	)
+	if len(contracts) > 0 && contracts[0] != nil {
+		soulContract = contracts[0]
+	} else {
+		soulContract, err = soul.NewSoul(common.HexToAddress(os.Getenv("SOUL_CONTRACT")), u.TCPublicNode.GetClient())
+		if err != nil {
+			return "", err
+		}
+	}
+	tokenIDInt, ok := new(big.Int).SetString(tokenId, 10)
+	if !ok {
+		return "", errors.New("invalid token id")
+	}
+	name, err := soulContract.Names(&bind.CallOpts{Context: context.Background()}, tokenIDInt)
+	if err != nil {
+		return "", err
+	}
+
+	return name, nil
+}
