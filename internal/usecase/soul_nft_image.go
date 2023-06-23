@@ -17,7 +17,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 	"math/big"
-	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -314,13 +313,15 @@ func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan 
 
 		for i := 1; i <= 4; i++ {
 			//TODO - replace via random number here
-			randomNumber1 := rand.Intn(100)
-			randomNumber2 := rand.Intn(100)
-			randomArray := make(map[string]string)
-			randomArray["replace_1"] = fmt.Sprintf("%d", randomNumber1)
-			randomArray["replace_2"] = fmt.Sprintf("%d", randomNumber2)
+			capKey := fmt.Sprintf("capture%d", i)
+			replaced := fmt.Sprintf("%s=!1", capKey)
+			replaceTo := fmt.Sprintf("%s=true", capKey)
 
-			encoded := helpers.Base64Encode(*html)
+			randomArray := make(map[string]string)
+			randomArray[replaced] = replaceTo
+			html1 := strings.ReplaceAll(*html, replaced, replaceTo)
+
+			encoded := helpers.Base64Encode(html1)
 			fileName := fmt.Sprintf("%v_%v_%v.html", nft.ContractAddress, nft.TokenID, time.Now().UTC().Unix())
 			resp, err := u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
 			if err != nil {
