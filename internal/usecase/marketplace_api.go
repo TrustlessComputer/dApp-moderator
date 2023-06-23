@@ -188,6 +188,14 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	return respData, nil
 }
 
+func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
+	resp, err := u.Repo.FilterMKPNfts(filter)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.MkpNftsResp, error) {
 	resp := &nft_explorer.MkpNftsResp{}
 	f := bson.D{
