@@ -227,12 +227,9 @@ func (r *Repository) GetNftsWithoutSize(collectionAddress string, skip int, limi
 }
 
 func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
-	f := bson.A{}
 
+	f := bson.A{}
 	match := bson.D{}
-	if filter.IsBuyable != nil {
-		match = append(match, bson.E{"buyable", *filter.IsBuyable})
-	}
 
 	if filter.TokenID != nil && *filter.TokenID != "" {
 		match = append(match, bson.E{"token_id", *filter.TokenID})
@@ -273,42 +270,6 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 
 		filter.AttrKey = key
 		filter.AttrValue = value
-	}
-
-	if filter.Price != nil {
-		//btcRate := u.GetExternalRate(os.Getenv("WBTC_ADDRESS"))
-		//ethRate := u.GetExternalRate(os.Getenv("WETH_ADDRESS"))
-		//rate := btcRate / ethRate
-
-		minPrice := filter.Price.Min
-		maxPrice := filter.Price.Max
-
-		//minPriceEth := minPrice * rate
-		//maxPriceEth := maxPrice * rate
-
-		fPrice := bson.A{
-			bson.D{
-				{"$and",
-					bson.A{
-						//bson.D{{"erc20", strings.ToLower(os.Getenv("WBTC_ADDRESS"))}},
-						bson.D{{"price", bson.D{{"$gte", minPrice}}}},
-						bson.D{{"price", bson.D{{"$lte", maxPrice}}}},
-					},
-				},
-			},
-			//bson.D{
-			//	{"$and",
-			//		bson.A{
-			//			//bson.D{{"erc20", strings.ToLower(os.Getenv("WETH_ADDRESS"))}},
-			//			bson.D{{"price", bson.D{{"$gte", minPriceEth}}}},
-			//			bson.D{{"price", bson.D{{"$lte", maxPriceEth}}}},
-			//		},
-			//	},
-			//},
-		}
-
-		match = append(match, bson.E{"$or", fPrice})
-
 	}
 
 	if len(filter.AttrKey) > 0 {
@@ -484,65 +445,105 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 				},
 			},
 		},
-		bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "bns_default"},
-					{"localField", "owner"},
-					{"foreignField", "resolver"},
-					{"pipeline",
-						bson.A{
-							bson.D{{"$skip", 0}},
-							bson.D{{"$limit", 1}},
-						},
+	}
+
+	f1 = append(f1, bson.D{
+		{"$lookup",
+			bson.D{
+				{"from", "bns_default"},
+				{"localField", "owner"},
+				{"foreignField", "resolver"},
+				{"pipeline",
+					bson.A{
+						bson.D{{"$skip", 0}},
+						bson.D{{"$limit", 1}},
 					},
-					{"as", "bns_default"},
+				},
+				{"as", "bns_default"},
+			},
+		},
+	})
+	f1 = append(f1, bson.D{
+		{"$sort",
+			bson.D{
+				{"buyable", -1},
+				{"price", 1},
+				{filter.SortBy, filter.Sort},
+			},
+		},
+	})
+
+	matchPrice := bson.D{}
+	if filter.IsBuyable != nil {
+		matchPrice = append(matchPrice, bson.E{"buyable", *filter.IsBuyable})
+	}
+
+	if filter.Price != nil {
+		//matchPrice = append(matchPrice, bson.E{"buyable", true})
+		matchPrice = append(matchPrice, bson.E{"$and", bson.A{
+			bson.D{{"price", bson.D{{"$lte", filter.Price.Max}}}},
+			bson.D{{"price", bson.D{{"$gte", filter.Price.Min}}}},
+		}})
+	}
+
+	if len(matchPrice) > 0 {
+		f1 = append(f1, bson.D{{"$match", matchPrice}})
+	}
+
+	fPagination := append(f, f1...)
+
+	//count all items
+	fCount := fPagination
+	fCount = append(fCount, bson.D{
+		{"$group",
+			bson.D{
+				{"_id", bson.D{{"collection_address", "$collection_address"}}},
+				{"all", bson.D{{"$sum", 1}}},
+			},
+		},
+	})
+
+	fPagination = append(fPagination, bson.D{{"$skip", filter.Offset}})
+	fPagination = append(fPagination, bson.D{{"$limit", filter.Limit}})
+
+	fAll := bson.A{
+		bson.D{
+			{"$facet",
+				bson.D{
+					{"items",
+						fPagination, //filter with pagination
+					},
+					{"count",
+						fCount, // count all items
+					},
 				},
 			},
 		},
 		bson.D{
-			{"$sort",
+			{"$unwind",
 				bson.D{
-					{"buyable", -1},
-					{"price", 1},
-					{filter.SortBy, filter.Sort},
+					{"path", "$count"},
+					{"preserveNullAndEmptyArrays", true},
 				},
 			},
 		},
+		bson.D{{"$addFields", bson.D{{"total_item", "$count.all"}}}},
+		bson.D{{"$project", bson.D{{"count", 0}}}},
 	}
 
-	fP := append(f, f1...)
-	fP = append(fP, bson.D{{"$skip", filter.Offset}})
-	fP = append(fP, bson.D{{"$limit", filter.Limit}})
-
-	resp := []*entity.MkpNftsResp{}
-	cursor, err := r.DB.Collection(utils.COLLECTION_NFTS).Aggregate(context.TODO(), fP)
+	pResp := []entity.MkpNftsPagination{}
+	cursor, err := r.DB.Collection(utils.COLLECTION_NFTS).Aggregate(context.TODO(), fAll)
+	if err != nil {
+		return nil, err
+	}
+	err = cursor.All((context.TODO()), &pResp)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = cursor.All((context.TODO()), &resp); err != nil {
-		return nil, err
+	if len(pResp) == 0 {
+		return nil, errors.New("Cannot get nfts")
 	}
 
-	pResp := &entity.MkpNftsPagination{}
-
-	count, err := r.DB.Collection(utils.COLLECTION_NFTS).CountDocuments(context.TODO(), match)
-	if err != nil {
-		return nil, err
-	}
-
-	for index, item := range resp {
-		if len(item.BnsDefault) > 0 && item.BnsDefault[0].Resolver != "" {
-			for j, bnsItem := range resp[index].BnsData {
-				if bnsItem.ID.Hex() == item.BnsDefault[0].BNSDefaultID.Hex() {
-					resp[index].BnsData[0], resp[index].BnsData[j] = resp[index].BnsData[j], resp[index].BnsData[0]
-					break
-				}
-			}
-		}
-	}
-	pResp.Items = resp
-	pResp.TotalItem = count
-	return pResp, nil
+	return &pResp[0], nil
 }
