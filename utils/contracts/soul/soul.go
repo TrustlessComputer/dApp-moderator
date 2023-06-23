@@ -29,9 +29,24 @@ var (
 	_ = abi.ConvertType
 )
 
+// AuctionHouseAuction is an auto generated low-level Go binding around an user-defined struct.
+type AuctionHouseAuction struct {
+	TokenId                   *big.Int
+	Erc20Token                common.Address
+	Amount                    *big.Int
+	StartTime                 *big.Int
+	EndTime                   *big.Int
+	Bidder                    common.Address
+	Settled                   bool
+	TimeBuffer                *big.Int
+	ReservePrice              *big.Int
+	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
+}
+
 // SoulMetaData contains all meta data concerning the Soul contract.
 var SoulMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"extended\",\"type\":\"bool\"}],\"name\":\"AuctionBid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"AuctionClaimBid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"AuctionClosed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"AuctionCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"AuctionExtended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"}],\"name\":\"AuctionMinBidIncrementPercentageUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"}],\"name\":\"AuctionReservePriceUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"AuctionSettled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"}],\"name\":\"AuctionTimeBufferUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"reserver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"Claim\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"reserver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"blockNumber\",\"type\":\"uint256\"}],\"name\":\"Reserve\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"_admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_auctions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_bfs\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_bidders\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_gmToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_maxSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_mintAt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_minted\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_paramsAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_randomizerAddr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_script\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_signerMint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"available\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"n\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"batchMint\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"biddable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdm\",\"type\":\"address\"}],\"name\":\"changeAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBfs\",\"type\":\"address\"}],\"name\":\"changeBfs\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBrc20\",\"type\":\"address\"}],\"name\":\"changeBrc20Token\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddr\",\"type\":\"address\"}],\"name\":\"changeParamAddr\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddr\",\"type\":\"address\"}],\"name\":\"changeRandomizerAddr\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"newScript\",\"type\":\"string\"}],\"name\":\"changeScript\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdd\",\"type\":\"address\"}],\"name\":\"changeSignerMint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"claimBid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"createAuction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"createBid\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalGM\",\"type\":\"uint256\"}],\"name\":\"getMessageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paramsAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"randomizerAddr\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"gmToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"bfs\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signerMint\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalGM\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"p5jsScript\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"projectId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_salePrice\",\"type\":\"uint256\"}],\"name\":\"royaltyInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"royaltyAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"settleAuction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenHTML\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenIdToHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"variableScript\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"web3Script\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"extended\",\"type\":\"bool\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structAuctionHouse.Auction\",\"name\":\"auction\",\"type\":\"tuple\"}],\"name\":\"AuctionBid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"name\":\"AuctionClaimBid\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"AuctionClosed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structAuctionHouse.Auction\",\"name\":\"auction\",\"type\":\"tuple\"}],\"name\":\"AuctionCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structAuctionHouse.Auction\",\"name\":\"auction\",\"type\":\"tuple\"}],\"name\":\"AuctionExtended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"}],\"name\":\"AuctionMinBidIncrementPercentageUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"}],\"name\":\"AuctionReservePriceUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structAuctionHouse.Auction\",\"name\":\"auction\",\"type\":\"tuple\"}],\"name\":\"AuctionSettled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"}],\"name\":\"AuctionTimeBufferUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"_admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_auctions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"_auctionsList\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"addresspayable\",\"name\":\"bidder\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"settled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"timeBuffer\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minBidIncrementPercentage\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"auctionId\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_bfs\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_bidderAuctions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_bidderAuctionsList\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_biddingBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_coreTeamTreasury\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"_features\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_gmToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_maxSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_mintAt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"_minted\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"_names\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_paramsAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_randomizerAddr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_script\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_signerMint\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"available\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"walletAddress\",\"type\":\"address\"}],\"name\":\"biddable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"featureName\",\"type\":\"string\"}],\"name\":\"canUnlockFeature\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdm\",\"type\":\"address\"}],\"name\":\"changeAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBfs\",\"type\":\"address\"}],\"name\":\"changeBfs\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newBrc20\",\"type\":\"address\"}],\"name\":\"changeBrc20Token\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddr\",\"type\":\"address\"}],\"name\":\"changeParamAddr\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAddr\",\"type\":\"address\"}],\"name\":\"changeRandomizerAddr\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"newScript\",\"type\":\"string\"}],\"name\":\"changeScript\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdd\",\"type\":\"address\"}],\"name\":\"changeSignerMint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"createAuction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"createBid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalGM\",\"type\":\"uint256\"}],\"name\":\"getMessageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getSettingFeatures\",\"outputs\":[{\"internalType\":\"string[10]\",\"name\":\"features\",\"type\":\"string[10]\"},{\"internalType\":\"uint16[10]\",\"name\":\"balances\",\"type\":\"uint16[10]\"},{\"internalType\":\"uint16[10]\",\"name\":\"holdTimes\",\"type\":\"uint16[10]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paramsAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"randomizerAddr\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"gmToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"bfs\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signerMint\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalGM\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"p5jsScript\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"projectId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_salePrice\",\"type\":\"uint256\"}],\"name\":\"royaltyInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"royaltyAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"setName\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"settleAuction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenHTML\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenIdToHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"featureName\",\"type\":\"string\"}],\"name\":\"unlockFeature\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"variableScript\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"web3Script\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"result\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"erc20Addr\",\"type\":\"address\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // SoulABI is the input ABI used to generate the binding from.
@@ -213,7 +228,7 @@ func (_Soul *SoulCallerSession) Admin() (common.Address, error) {
 
 // Auctions is a free data retrieval call binding the contract method 0x17dc6bf6.
 //
-// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage)
+// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
 func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 	TokenId                   *big.Int
 	Erc20Token                common.Address
@@ -225,6 +240,7 @@ func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 	TimeBuffer                *big.Int
 	ReservePrice              *big.Int
 	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
 }, error) {
 	var out []interface{}
 	err := _Soul.contract.Call(opts, &out, "_auctions", arg0)
@@ -240,6 +256,7 @@ func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 		TimeBuffer                *big.Int
 		ReservePrice              *big.Int
 		MinBidIncrementPercentage *big.Int
+		AuctionId                 [32]byte
 	})
 	if err != nil {
 		return *outstruct, err
@@ -255,6 +272,7 @@ func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 	outstruct.TimeBuffer = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
 	outstruct.ReservePrice = *abi.ConvertType(out[8], new(*big.Int)).(**big.Int)
 	outstruct.MinBidIncrementPercentage = *abi.ConvertType(out[9], new(*big.Int)).(**big.Int)
+	outstruct.AuctionId = *abi.ConvertType(out[10], new([32]byte)).(*[32]byte)
 
 	return *outstruct, err
 
@@ -262,7 +280,7 @@ func (_Soul *SoulCaller) Auctions(opts *bind.CallOpts, arg0 *big.Int) (struct {
 
 // Auctions is a free data retrieval call binding the contract method 0x17dc6bf6.
 //
-// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage)
+// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
 func (_Soul *SoulSession) Auctions(arg0 *big.Int) (struct {
 	TokenId                   *big.Int
 	Erc20Token                common.Address
@@ -274,13 +292,14 @@ func (_Soul *SoulSession) Auctions(arg0 *big.Int) (struct {
 	TimeBuffer                *big.Int
 	ReservePrice              *big.Int
 	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
 }, error) {
 	return _Soul.Contract.Auctions(&_Soul.CallOpts, arg0)
 }
 
 // Auctions is a free data retrieval call binding the contract method 0x17dc6bf6.
 //
-// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage)
+// Solidity: function _auctions(uint256 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
 func (_Soul *SoulCallerSession) Auctions(arg0 *big.Int) (struct {
 	TokenId                   *big.Int
 	Erc20Token                common.Address
@@ -292,8 +311,99 @@ func (_Soul *SoulCallerSession) Auctions(arg0 *big.Int) (struct {
 	TimeBuffer                *big.Int
 	ReservePrice              *big.Int
 	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
 }, error) {
 	return _Soul.Contract.Auctions(&_Soul.CallOpts, arg0)
+}
+
+// AuctionsList is a free data retrieval call binding the contract method 0x9a247cb3.
+//
+// Solidity: function _auctionsList(bytes32 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
+func (_Soul *SoulCaller) AuctionsList(opts *bind.CallOpts, arg0 [32]byte) (struct {
+	TokenId                   *big.Int
+	Erc20Token                common.Address
+	Amount                    *big.Int
+	StartTime                 *big.Int
+	EndTime                   *big.Int
+	Bidder                    common.Address
+	Settled                   bool
+	TimeBuffer                *big.Int
+	ReservePrice              *big.Int
+	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
+}, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "_auctionsList", arg0)
+
+	outstruct := new(struct {
+		TokenId                   *big.Int
+		Erc20Token                common.Address
+		Amount                    *big.Int
+		StartTime                 *big.Int
+		EndTime                   *big.Int
+		Bidder                    common.Address
+		Settled                   bool
+		TimeBuffer                *big.Int
+		ReservePrice              *big.Int
+		MinBidIncrementPercentage *big.Int
+		AuctionId                 [32]byte
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.TokenId = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Erc20Token = *abi.ConvertType(out[1], new(common.Address)).(*common.Address)
+	outstruct.Amount = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.StartTime = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.EndTime = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.Bidder = *abi.ConvertType(out[5], new(common.Address)).(*common.Address)
+	outstruct.Settled = *abi.ConvertType(out[6], new(bool)).(*bool)
+	outstruct.TimeBuffer = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.ReservePrice = *abi.ConvertType(out[8], new(*big.Int)).(**big.Int)
+	outstruct.MinBidIncrementPercentage = *abi.ConvertType(out[9], new(*big.Int)).(**big.Int)
+	outstruct.AuctionId = *abi.ConvertType(out[10], new([32]byte)).(*[32]byte)
+
+	return *outstruct, err
+
+}
+
+// AuctionsList is a free data retrieval call binding the contract method 0x9a247cb3.
+//
+// Solidity: function _auctionsList(bytes32 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
+func (_Soul *SoulSession) AuctionsList(arg0 [32]byte) (struct {
+	TokenId                   *big.Int
+	Erc20Token                common.Address
+	Amount                    *big.Int
+	StartTime                 *big.Int
+	EndTime                   *big.Int
+	Bidder                    common.Address
+	Settled                   bool
+	TimeBuffer                *big.Int
+	ReservePrice              *big.Int
+	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
+}, error) {
+	return _Soul.Contract.AuctionsList(&_Soul.CallOpts, arg0)
+}
+
+// AuctionsList is a free data retrieval call binding the contract method 0x9a247cb3.
+//
+// Solidity: function _auctionsList(bytes32 ) view returns(uint256 tokenId, address erc20Token, uint256 amount, uint256 startTime, uint256 endTime, address bidder, bool settled, uint256 timeBuffer, uint256 reservePrice, uint256 minBidIncrementPercentage, bytes32 auctionId)
+func (_Soul *SoulCallerSession) AuctionsList(arg0 [32]byte) (struct {
+	TokenId                   *big.Int
+	Erc20Token                common.Address
+	Amount                    *big.Int
+	StartTime                 *big.Int
+	EndTime                   *big.Int
+	Bidder                    common.Address
+	Settled                   bool
+	TimeBuffer                *big.Int
+	ReservePrice              *big.Int
+	MinBidIncrementPercentage *big.Int
+	AuctionId                 [32]byte
+}, error) {
+	return _Soul.Contract.AuctionsList(&_Soul.CallOpts, arg0)
 }
 
 // Bfs is a free data retrieval call binding the contract method 0x33348979.
@@ -327,12 +437,12 @@ func (_Soul *SoulCallerSession) Bfs() (common.Address, error) {
 	return _Soul.Contract.Bfs(&_Soul.CallOpts)
 }
 
-// Bidders is a free data retrieval call binding the contract method 0x2d61bd09.
+// BidderAuctions is a free data retrieval call binding the contract method 0x55cd6326.
 //
-// Solidity: function _bidders(uint256 , address ) view returns(uint256)
-func (_Soul *SoulCaller) Bidders(opts *bind.CallOpts, arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
+// Solidity: function _bidderAuctions(uint256 , bytes32 , address ) view returns(uint256)
+func (_Soul *SoulCaller) BidderAuctions(opts *bind.CallOpts, arg0 *big.Int, arg1 [32]byte, arg2 common.Address) (*big.Int, error) {
 	var out []interface{}
-	err := _Soul.contract.Call(opts, &out, "_bidders", arg0, arg1)
+	err := _Soul.contract.Call(opts, &out, "_bidderAuctions", arg0, arg1, arg2)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -344,18 +454,142 @@ func (_Soul *SoulCaller) Bidders(opts *bind.CallOpts, arg0 *big.Int, arg1 common
 
 }
 
-// Bidders is a free data retrieval call binding the contract method 0x2d61bd09.
+// BidderAuctions is a free data retrieval call binding the contract method 0x55cd6326.
 //
-// Solidity: function _bidders(uint256 , address ) view returns(uint256)
-func (_Soul *SoulSession) Bidders(arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
-	return _Soul.Contract.Bidders(&_Soul.CallOpts, arg0, arg1)
+// Solidity: function _bidderAuctions(uint256 , bytes32 , address ) view returns(uint256)
+func (_Soul *SoulSession) BidderAuctions(arg0 *big.Int, arg1 [32]byte, arg2 common.Address) (*big.Int, error) {
+	return _Soul.Contract.BidderAuctions(&_Soul.CallOpts, arg0, arg1, arg2)
 }
 
-// Bidders is a free data retrieval call binding the contract method 0x2d61bd09.
+// BidderAuctions is a free data retrieval call binding the contract method 0x55cd6326.
 //
-// Solidity: function _bidders(uint256 , address ) view returns(uint256)
-func (_Soul *SoulCallerSession) Bidders(arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
-	return _Soul.Contract.Bidders(&_Soul.CallOpts, arg0, arg1)
+// Solidity: function _bidderAuctions(uint256 , bytes32 , address ) view returns(uint256)
+func (_Soul *SoulCallerSession) BidderAuctions(arg0 *big.Int, arg1 [32]byte, arg2 common.Address) (*big.Int, error) {
+	return _Soul.Contract.BidderAuctions(&_Soul.CallOpts, arg0, arg1, arg2)
+}
+
+// BidderAuctionsList is a free data retrieval call binding the contract method 0x06cb20c1.
+//
+// Solidity: function _bidderAuctionsList(uint256 , bytes32 , uint256 ) view returns(address)
+func (_Soul *SoulCaller) BidderAuctionsList(opts *bind.CallOpts, arg0 *big.Int, arg1 [32]byte, arg2 *big.Int) (common.Address, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "_bidderAuctionsList", arg0, arg1, arg2)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// BidderAuctionsList is a free data retrieval call binding the contract method 0x06cb20c1.
+//
+// Solidity: function _bidderAuctionsList(uint256 , bytes32 , uint256 ) view returns(address)
+func (_Soul *SoulSession) BidderAuctionsList(arg0 *big.Int, arg1 [32]byte, arg2 *big.Int) (common.Address, error) {
+	return _Soul.Contract.BidderAuctionsList(&_Soul.CallOpts, arg0, arg1, arg2)
+}
+
+// BidderAuctionsList is a free data retrieval call binding the contract method 0x06cb20c1.
+//
+// Solidity: function _bidderAuctionsList(uint256 , bytes32 , uint256 ) view returns(address)
+func (_Soul *SoulCallerSession) BidderAuctionsList(arg0 *big.Int, arg1 [32]byte, arg2 *big.Int) (common.Address, error) {
+	return _Soul.Contract.BidderAuctionsList(&_Soul.CallOpts, arg0, arg1, arg2)
+}
+
+// BiddingBalance is a free data retrieval call binding the contract method 0xc5c1b8af.
+//
+// Solidity: function _biddingBalance(address , address ) view returns(uint256)
+func (_Soul *SoulCaller) BiddingBalance(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "_biddingBalance", arg0, arg1)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// BiddingBalance is a free data retrieval call binding the contract method 0xc5c1b8af.
+//
+// Solidity: function _biddingBalance(address , address ) view returns(uint256)
+func (_Soul *SoulSession) BiddingBalance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+	return _Soul.Contract.BiddingBalance(&_Soul.CallOpts, arg0, arg1)
+}
+
+// BiddingBalance is a free data retrieval call binding the contract method 0xc5c1b8af.
+//
+// Solidity: function _biddingBalance(address , address ) view returns(uint256)
+func (_Soul *SoulCallerSession) BiddingBalance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+	return _Soul.Contract.BiddingBalance(&_Soul.CallOpts, arg0, arg1)
+}
+
+// CoreTeamTreasury is a free data retrieval call binding the contract method 0x2824d162.
+//
+// Solidity: function _coreTeamTreasury(address ) view returns(uint256)
+func (_Soul *SoulCaller) CoreTeamTreasury(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "_coreTeamTreasury", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// CoreTeamTreasury is a free data retrieval call binding the contract method 0x2824d162.
+//
+// Solidity: function _coreTeamTreasury(address ) view returns(uint256)
+func (_Soul *SoulSession) CoreTeamTreasury(arg0 common.Address) (*big.Int, error) {
+	return _Soul.Contract.CoreTeamTreasury(&_Soul.CallOpts, arg0)
+}
+
+// CoreTeamTreasury is a free data retrieval call binding the contract method 0x2824d162.
+//
+// Solidity: function _coreTeamTreasury(address ) view returns(uint256)
+func (_Soul *SoulCallerSession) CoreTeamTreasury(arg0 common.Address) (*big.Int, error) {
+	return _Soul.Contract.CoreTeamTreasury(&_Soul.CallOpts, arg0)
+}
+
+// Features is a free data retrieval call binding the contract method 0x2e0048ad.
+//
+// Solidity: function _features(uint256 , address , string ) view returns(bool)
+func (_Soul *SoulCaller) Features(opts *bind.CallOpts, arg0 *big.Int, arg1 common.Address, arg2 string) (bool, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "_features", arg0, arg1, arg2)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// Features is a free data retrieval call binding the contract method 0x2e0048ad.
+//
+// Solidity: function _features(uint256 , address , string ) view returns(bool)
+func (_Soul *SoulSession) Features(arg0 *big.Int, arg1 common.Address, arg2 string) (bool, error) {
+	return _Soul.Contract.Features(&_Soul.CallOpts, arg0, arg1, arg2)
+}
+
+// Features is a free data retrieval call binding the contract method 0x2e0048ad.
+//
+// Solidity: function _features(uint256 , address , string ) view returns(bool)
+func (_Soul *SoulCallerSession) Features(arg0 *big.Int, arg1 common.Address, arg2 string) (bool, error) {
+	return _Soul.Contract.Features(&_Soul.CallOpts, arg0, arg1, arg2)
 }
 
 // GmToken is a free data retrieval call binding the contract method 0x9c6f35f9.
@@ -480,6 +714,37 @@ func (_Soul *SoulSession) Minted(arg0 common.Address) (*big.Int, error) {
 // Solidity: function _minted(address ) view returns(uint256)
 func (_Soul *SoulCallerSession) Minted(arg0 common.Address) (*big.Int, error) {
 	return _Soul.Contract.Minted(&_Soul.CallOpts, arg0)
+}
+
+// Names is a free data retrieval call binding the contract method 0x25c5aa06.
+//
+// Solidity: function _names(uint256 ) view returns(string)
+func (_Soul *SoulCaller) Names(opts *bind.CallOpts, arg0 *big.Int) (string, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "_names", arg0)
+
+	if err != nil {
+		return *new(string), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+
+	return out0, err
+
+}
+
+// Names is a free data retrieval call binding the contract method 0x25c5aa06.
+//
+// Solidity: function _names(uint256 ) view returns(string)
+func (_Soul *SoulSession) Names(arg0 *big.Int) (string, error) {
+	return _Soul.Contract.Names(&_Soul.CallOpts, arg0)
+}
+
+// Names is a free data retrieval call binding the contract method 0x25c5aa06.
+//
+// Solidity: function _names(uint256 ) view returns(string)
+func (_Soul *SoulCallerSession) Names(arg0 *big.Int) (string, error) {
+	return _Soul.Contract.Names(&_Soul.CallOpts, arg0)
 }
 
 // ParamsAddress is a free data retrieval call binding the contract method 0xadfc7dae.
@@ -668,12 +933,12 @@ func (_Soul *SoulCallerSession) BalanceOf(owner common.Address) (*big.Int, error
 	return _Soul.Contract.BalanceOf(&_Soul.CallOpts, owner)
 }
 
-// Biddable is a free data retrieval call binding the contract method 0x68a17bd8.
+// Biddable is a free data retrieval call binding the contract method 0x75b4ab5d.
 //
-// Solidity: function biddable(uint256 tokenId) view returns(bool)
-func (_Soul *SoulCaller) Biddable(opts *bind.CallOpts, tokenId *big.Int) (bool, error) {
+// Solidity: function biddable(address walletAddress) view returns(bool)
+func (_Soul *SoulCaller) Biddable(opts *bind.CallOpts, walletAddress common.Address) (bool, error) {
 	var out []interface{}
-	err := _Soul.contract.Call(opts, &out, "biddable", tokenId)
+	err := _Soul.contract.Call(opts, &out, "biddable", walletAddress)
 
 	if err != nil {
 		return *new(bool), err
@@ -685,18 +950,49 @@ func (_Soul *SoulCaller) Biddable(opts *bind.CallOpts, tokenId *big.Int) (bool, 
 
 }
 
-// Biddable is a free data retrieval call binding the contract method 0x68a17bd8.
+// Biddable is a free data retrieval call binding the contract method 0x75b4ab5d.
 //
-// Solidity: function biddable(uint256 tokenId) view returns(bool)
-func (_Soul *SoulSession) Biddable(tokenId *big.Int) (bool, error) {
-	return _Soul.Contract.Biddable(&_Soul.CallOpts, tokenId)
+// Solidity: function biddable(address walletAddress) view returns(bool)
+func (_Soul *SoulSession) Biddable(walletAddress common.Address) (bool, error) {
+	return _Soul.Contract.Biddable(&_Soul.CallOpts, walletAddress)
 }
 
-// Biddable is a free data retrieval call binding the contract method 0x68a17bd8.
+// Biddable is a free data retrieval call binding the contract method 0x75b4ab5d.
 //
-// Solidity: function biddable(uint256 tokenId) view returns(bool)
-func (_Soul *SoulCallerSession) Biddable(tokenId *big.Int) (bool, error) {
-	return _Soul.Contract.Biddable(&_Soul.CallOpts, tokenId)
+// Solidity: function biddable(address walletAddress) view returns(bool)
+func (_Soul *SoulCallerSession) Biddable(walletAddress common.Address) (bool, error) {
+	return _Soul.Contract.Biddable(&_Soul.CallOpts, walletAddress)
+}
+
+// CanUnlockFeature is a free data retrieval call binding the contract method 0xdd07662f.
+//
+// Solidity: function canUnlockFeature(uint256 tokenId, address user, string featureName) view returns(bool)
+func (_Soul *SoulCaller) CanUnlockFeature(opts *bind.CallOpts, tokenId *big.Int, user common.Address, featureName string) (bool, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "canUnlockFeature", tokenId, user, featureName)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// CanUnlockFeature is a free data retrieval call binding the contract method 0xdd07662f.
+//
+// Solidity: function canUnlockFeature(uint256 tokenId, address user, string featureName) view returns(bool)
+func (_Soul *SoulSession) CanUnlockFeature(tokenId *big.Int, user common.Address, featureName string) (bool, error) {
+	return _Soul.Contract.CanUnlockFeature(&_Soul.CallOpts, tokenId, user, featureName)
+}
+
+// CanUnlockFeature is a free data retrieval call binding the contract method 0xdd07662f.
+//
+// Solidity: function canUnlockFeature(uint256 tokenId, address user, string featureName) view returns(bool)
+func (_Soul *SoulCallerSession) CanUnlockFeature(tokenId *big.Int, user common.Address, featureName string) (bool, error) {
+	return _Soul.Contract.CanUnlockFeature(&_Soul.CallOpts, tokenId, user, featureName)
 }
 
 // GetApproved is a free data retrieval call binding the contract method 0x081812fc.
@@ -761,6 +1057,56 @@ func (_Soul *SoulCallerSession) GetMessageHash(user common.Address, totalGM *big
 	return _Soul.Contract.GetMessageHash(&_Soul.CallOpts, user, totalGM)
 }
 
+// GetSettingFeatures is a free data retrieval call binding the contract method 0x2fd6a692.
+//
+// Solidity: function getSettingFeatures() view returns(string[10] features, uint16[10] balances, uint16[10] holdTimes)
+func (_Soul *SoulCaller) GetSettingFeatures(opts *bind.CallOpts) (struct {
+	Features  [10]string
+	Balances  [10]uint16
+	HoldTimes [10]uint16
+}, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "getSettingFeatures")
+
+	outstruct := new(struct {
+		Features  [10]string
+		Balances  [10]uint16
+		HoldTimes [10]uint16
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.Features = *abi.ConvertType(out[0], new([10]string)).(*[10]string)
+	outstruct.Balances = *abi.ConvertType(out[1], new([10]uint16)).(*[10]uint16)
+	outstruct.HoldTimes = *abi.ConvertType(out[2], new([10]uint16)).(*[10]uint16)
+
+	return *outstruct, err
+
+}
+
+// GetSettingFeatures is a free data retrieval call binding the contract method 0x2fd6a692.
+//
+// Solidity: function getSettingFeatures() view returns(string[10] features, uint16[10] balances, uint16[10] holdTimes)
+func (_Soul *SoulSession) GetSettingFeatures() (struct {
+	Features  [10]string
+	Balances  [10]uint16
+	HoldTimes [10]uint16
+}, error) {
+	return _Soul.Contract.GetSettingFeatures(&_Soul.CallOpts)
+}
+
+// GetSettingFeatures is a free data retrieval call binding the contract method 0x2fd6a692.
+//
+// Solidity: function getSettingFeatures() view returns(string[10] features, uint16[10] balances, uint16[10] holdTimes)
+func (_Soul *SoulCallerSession) GetSettingFeatures() (struct {
+	Features  [10]string
+	Balances  [10]uint16
+	HoldTimes [10]uint16
+}, error) {
+	return _Soul.Contract.GetSettingFeatures(&_Soul.CallOpts)
+}
+
 // IsApprovedForAll is a free data retrieval call binding the contract method 0xe985e9c5.
 //
 // Solidity: function isApprovedForAll(address owner, address operator) view returns(bool)
@@ -821,6 +1167,37 @@ func (_Soul *SoulSession) Name() (string, error) {
 // Solidity: function name() view returns(string)
 func (_Soul *SoulCallerSession) Name() (string, error) {
 	return _Soul.Contract.Name(&_Soul.CallOpts)
+}
+
+// OnERC721Received is a free data retrieval call binding the contract method 0x150b7a02.
+//
+// Solidity: function onERC721Received(address , address , uint256 , bytes ) pure returns(bytes4)
+func (_Soul *SoulCaller) OnERC721Received(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address, arg2 *big.Int, arg3 []byte) ([4]byte, error) {
+	var out []interface{}
+	err := _Soul.contract.Call(opts, &out, "onERC721Received", arg0, arg1, arg2, arg3)
+
+	if err != nil {
+		return *new([4]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([4]byte)).(*[4]byte)
+
+	return out0, err
+
+}
+
+// OnERC721Received is a free data retrieval call binding the contract method 0x150b7a02.
+//
+// Solidity: function onERC721Received(address , address , uint256 , bytes ) pure returns(bytes4)
+func (_Soul *SoulSession) OnERC721Received(arg0 common.Address, arg1 common.Address, arg2 *big.Int, arg3 []byte) ([4]byte, error) {
+	return _Soul.Contract.OnERC721Received(&_Soul.CallOpts, arg0, arg1, arg2, arg3)
+}
+
+// OnERC721Received is a free data retrieval call binding the contract method 0x150b7a02.
+//
+// Solidity: function onERC721Received(address , address , uint256 , bytes ) pure returns(bytes4)
+func (_Soul *SoulCallerSession) OnERC721Received(arg0 common.Address, arg1 common.Address, arg2 *big.Int, arg3 []byte) ([4]byte, error) {
+	return _Soul.Contract.OnERC721Received(&_Soul.CallOpts, arg0, arg1, arg2, arg3)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -1230,27 +1607,6 @@ func (_Soul *SoulTransactorSession) Approve(to common.Address, tokenId *big.Int)
 	return _Soul.Contract.Approve(&_Soul.TransactOpts, to, tokenId)
 }
 
-// BatchMint is a paid mutator transaction binding the contract method 0x624de2a9.
-//
-// Solidity: function batchMint(address to, uint256 n, bytes signatures) payable returns(uint256[])
-func (_Soul *SoulTransactor) BatchMint(opts *bind.TransactOpts, to common.Address, n *big.Int, signatures []byte) (*types.Transaction, error) {
-	return _Soul.contract.Transact(opts, "batchMint", to, n, signatures)
-}
-
-// BatchMint is a paid mutator transaction binding the contract method 0x624de2a9.
-//
-// Solidity: function batchMint(address to, uint256 n, bytes signatures) payable returns(uint256[])
-func (_Soul *SoulSession) BatchMint(to common.Address, n *big.Int, signatures []byte) (*types.Transaction, error) {
-	return _Soul.Contract.BatchMint(&_Soul.TransactOpts, to, n, signatures)
-}
-
-// BatchMint is a paid mutator transaction binding the contract method 0x624de2a9.
-//
-// Solidity: function batchMint(address to, uint256 n, bytes signatures) payable returns(uint256[])
-func (_Soul *SoulTransactorSession) BatchMint(to common.Address, n *big.Int, signatures []byte) (*types.Transaction, error) {
-	return _Soul.Contract.BatchMint(&_Soul.TransactOpts, to, n, signatures)
-}
-
 // ChangeAdmin is a paid mutator transaction binding the contract method 0x8f283970.
 //
 // Solidity: function changeAdmin(address newAdm) returns()
@@ -1398,27 +1754,6 @@ func (_Soul *SoulTransactorSession) ChangeSignerMint(newAdd common.Address) (*ty
 	return _Soul.Contract.ChangeSignerMint(&_Soul.TransactOpts, newAdd)
 }
 
-// ClaimBid is a paid mutator transaction binding the contract method 0x21113057.
-//
-// Solidity: function claimBid(uint256 tokenId) returns()
-func (_Soul *SoulTransactor) ClaimBid(opts *bind.TransactOpts, tokenId *big.Int) (*types.Transaction, error) {
-	return _Soul.contract.Transact(opts, "claimBid", tokenId)
-}
-
-// ClaimBid is a paid mutator transaction binding the contract method 0x21113057.
-//
-// Solidity: function claimBid(uint256 tokenId) returns()
-func (_Soul *SoulSession) ClaimBid(tokenId *big.Int) (*types.Transaction, error) {
-	return _Soul.Contract.ClaimBid(&_Soul.TransactOpts, tokenId)
-}
-
-// ClaimBid is a paid mutator transaction binding the contract method 0x21113057.
-//
-// Solidity: function claimBid(uint256 tokenId) returns()
-func (_Soul *SoulTransactorSession) ClaimBid(tokenId *big.Int) (*types.Transaction, error) {
-	return _Soul.Contract.ClaimBid(&_Soul.TransactOpts, tokenId)
-}
-
 // CreateAuction is a paid mutator transaction binding the contract method 0xd5563f31.
 //
 // Solidity: function createAuction(uint256 tokenId) returns()
@@ -1442,23 +1777,44 @@ func (_Soul *SoulTransactorSession) CreateAuction(tokenId *big.Int) (*types.Tran
 
 // CreateBid is a paid mutator transaction binding the contract method 0xb7751c71.
 //
-// Solidity: function createBid(uint256 tokenId, uint256 amount) payable returns()
+// Solidity: function createBid(uint256 tokenId, uint256 amount) returns()
 func (_Soul *SoulTransactor) CreateBid(opts *bind.TransactOpts, tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
 	return _Soul.contract.Transact(opts, "createBid", tokenId, amount)
 }
 
 // CreateBid is a paid mutator transaction binding the contract method 0xb7751c71.
 //
-// Solidity: function createBid(uint256 tokenId, uint256 amount) payable returns()
+// Solidity: function createBid(uint256 tokenId, uint256 amount) returns()
 func (_Soul *SoulSession) CreateBid(tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
 	return _Soul.Contract.CreateBid(&_Soul.TransactOpts, tokenId, amount)
 }
 
 // CreateBid is a paid mutator transaction binding the contract method 0xb7751c71.
 //
-// Solidity: function createBid(uint256 tokenId, uint256 amount) payable returns()
+// Solidity: function createBid(uint256 tokenId, uint256 amount) returns()
 func (_Soul *SoulTransactorSession) CreateBid(tokenId *big.Int, amount *big.Int) (*types.Transaction, error) {
 	return _Soul.Contract.CreateBid(&_Soul.TransactOpts, tokenId, amount)
+}
+
+// Deposit is a paid mutator transaction binding the contract method 0xb6b55f25.
+//
+// Solidity: function deposit(uint256 amount) payable returns()
+func (_Soul *SoulTransactor) Deposit(opts *bind.TransactOpts, amount *big.Int) (*types.Transaction, error) {
+	return _Soul.contract.Transact(opts, "deposit", amount)
+}
+
+// Deposit is a paid mutator transaction binding the contract method 0xb6b55f25.
+//
+// Solidity: function deposit(uint256 amount) payable returns()
+func (_Soul *SoulSession) Deposit(amount *big.Int) (*types.Transaction, error) {
+	return _Soul.Contract.Deposit(&_Soul.TransactOpts, amount)
+}
+
+// Deposit is a paid mutator transaction binding the contract method 0xb6b55f25.
+//
+// Solidity: function deposit(uint256 amount) payable returns()
+func (_Soul *SoulTransactorSession) Deposit(amount *big.Int) (*types.Transaction, error) {
+	return _Soul.Contract.Deposit(&_Soul.TransactOpts, amount)
 }
 
 // Initialize is a paid mutator transaction binding the contract method 0x94f5a66e.
@@ -1484,21 +1840,21 @@ func (_Soul *SoulTransactorSession) Initialize(name string, symbol string, admin
 
 // Mint is a paid mutator transaction binding the contract method 0x94d008ef.
 //
-// Solidity: function mint(address to, uint256 totalGM, bytes signature) payable returns(uint256 tokenId)
+// Solidity: function mint(address to, uint256 totalGM, bytes signature) returns(uint256 tokenId)
 func (_Soul *SoulTransactor) Mint(opts *bind.TransactOpts, to common.Address, totalGM *big.Int, signature []byte) (*types.Transaction, error) {
 	return _Soul.contract.Transact(opts, "mint", to, totalGM, signature)
 }
 
 // Mint is a paid mutator transaction binding the contract method 0x94d008ef.
 //
-// Solidity: function mint(address to, uint256 totalGM, bytes signature) payable returns(uint256 tokenId)
+// Solidity: function mint(address to, uint256 totalGM, bytes signature) returns(uint256 tokenId)
 func (_Soul *SoulSession) Mint(to common.Address, totalGM *big.Int, signature []byte) (*types.Transaction, error) {
 	return _Soul.Contract.Mint(&_Soul.TransactOpts, to, totalGM, signature)
 }
 
 // Mint is a paid mutator transaction binding the contract method 0x94d008ef.
 //
-// Solidity: function mint(address to, uint256 totalGM, bytes signature) payable returns(uint256 tokenId)
+// Solidity: function mint(address to, uint256 totalGM, bytes signature) returns(uint256 tokenId)
 func (_Soul *SoulTransactorSession) Mint(to common.Address, totalGM *big.Int, signature []byte) (*types.Transaction, error) {
 	return _Soul.Contract.Mint(&_Soul.TransactOpts, to, totalGM, signature)
 }
@@ -1587,6 +1943,27 @@ func (_Soul *SoulTransactorSession) SetApprovalForAll(operator common.Address, a
 	return _Soul.Contract.SetApprovalForAll(&_Soul.TransactOpts, operator, approved)
 }
 
+// SetName is a paid mutator transaction binding the contract method 0xfe55932a.
+//
+// Solidity: function setName(uint256 tokenId, string name) returns()
+func (_Soul *SoulTransactor) SetName(opts *bind.TransactOpts, tokenId *big.Int, name string) (*types.Transaction, error) {
+	return _Soul.contract.Transact(opts, "setName", tokenId, name)
+}
+
+// SetName is a paid mutator transaction binding the contract method 0xfe55932a.
+//
+// Solidity: function setName(uint256 tokenId, string name) returns()
+func (_Soul *SoulSession) SetName(tokenId *big.Int, name string) (*types.Transaction, error) {
+	return _Soul.Contract.SetName(&_Soul.TransactOpts, tokenId, name)
+}
+
+// SetName is a paid mutator transaction binding the contract method 0xfe55932a.
+//
+// Solidity: function setName(uint256 tokenId, string name) returns()
+func (_Soul *SoulTransactorSession) SetName(tokenId *big.Int, name string) (*types.Transaction, error) {
+	return _Soul.Contract.SetName(&_Soul.TransactOpts, tokenId, name)
+}
+
 // SettleAuction is a paid mutator transaction binding the contract method 0x2e993611.
 //
 // Solidity: function settleAuction(uint256 tokenId) returns()
@@ -1648,6 +2025,48 @@ func (_Soul *SoulSession) TransferOwnership(newOwner common.Address) (*types.Tra
 // Solidity: function transferOwnership(address newOwner) returns()
 func (_Soul *SoulTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
 	return _Soul.Contract.TransferOwnership(&_Soul.TransactOpts, newOwner)
+}
+
+// UnlockFeature is a paid mutator transaction binding the contract method 0x43b2ce19.
+//
+// Solidity: function unlockFeature(uint256 tokenId, string featureName) returns()
+func (_Soul *SoulTransactor) UnlockFeature(opts *bind.TransactOpts, tokenId *big.Int, featureName string) (*types.Transaction, error) {
+	return _Soul.contract.Transact(opts, "unlockFeature", tokenId, featureName)
+}
+
+// UnlockFeature is a paid mutator transaction binding the contract method 0x43b2ce19.
+//
+// Solidity: function unlockFeature(uint256 tokenId, string featureName) returns()
+func (_Soul *SoulSession) UnlockFeature(tokenId *big.Int, featureName string) (*types.Transaction, error) {
+	return _Soul.Contract.UnlockFeature(&_Soul.TransactOpts, tokenId, featureName)
+}
+
+// UnlockFeature is a paid mutator transaction binding the contract method 0x43b2ce19.
+//
+// Solidity: function unlockFeature(uint256 tokenId, string featureName) returns()
+func (_Soul *SoulTransactorSession) UnlockFeature(tokenId *big.Int, featureName string) (*types.Transaction, error) {
+	return _Soul.Contract.UnlockFeature(&_Soul.TransactOpts, tokenId, featureName)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0x51cff8d9.
+//
+// Solidity: function withdraw(address erc20Addr) returns()
+func (_Soul *SoulTransactor) Withdraw(opts *bind.TransactOpts, erc20Addr common.Address) (*types.Transaction, error) {
+	return _Soul.contract.Transact(opts, "withdraw", erc20Addr)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0x51cff8d9.
+//
+// Solidity: function withdraw(address erc20Addr) returns()
+func (_Soul *SoulSession) Withdraw(erc20Addr common.Address) (*types.Transaction, error) {
+	return _Soul.Contract.Withdraw(&_Soul.TransactOpts, erc20Addr)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0x51cff8d9.
+//
+// Solidity: function withdraw(address erc20Addr) returns()
+func (_Soul *SoulTransactorSession) Withdraw(erc20Addr common.Address) (*types.Transaction, error) {
+	return _Soul.Contract.Withdraw(&_Soul.TransactOpts, erc20Addr)
 }
 
 // SoulApprovalIterator is returned from FilterApproval and is used to iterate over the raw logs and unpacked data for Approval events raised by the Soul contract.
@@ -2039,12 +2458,13 @@ type SoulAuctionBid struct {
 	Sender   common.Address
 	Value    *big.Int
 	Extended bool
+	Auction  AuctionHouseAuction
 	Raw      types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionBid is a free log retrieval operation binding the contract event 0x1159164c56f277e6fc99c11731bd380e0347deb969b75523398734c252706ea3.
+// FilterAuctionBid is a free log retrieval operation binding the contract event 0xfd09e259e5c48be16f7dd63468e19266c684a9f3dce3b31881dbc1f909fc0d7c.
 //
-// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended)
+// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) FilterAuctionBid(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionBidIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -2059,9 +2479,9 @@ func (_Soul *SoulFilterer) FilterAuctionBid(opts *bind.FilterOpts, tokenId []*bi
 	return &SoulAuctionBidIterator{contract: _Soul.contract, event: "AuctionBid", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionBid is a free log subscription operation binding the contract event 0x1159164c56f277e6fc99c11731bd380e0347deb969b75523398734c252706ea3.
+// WatchAuctionBid is a free log subscription operation binding the contract event 0xfd09e259e5c48be16f7dd63468e19266c684a9f3dce3b31881dbc1f909fc0d7c.
 //
-// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended)
+// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) WatchAuctionBid(opts *bind.WatchOpts, sink chan<- *SoulAuctionBid, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -2101,9 +2521,9 @@ func (_Soul *SoulFilterer) WatchAuctionBid(opts *bind.WatchOpts, sink chan<- *So
 	}), nil
 }
 
-// ParseAuctionBid is a log parse operation binding the contract event 0x1159164c56f277e6fc99c11731bd380e0347deb969b75523398734c252706ea3.
+// ParseAuctionBid is a log parse operation binding the contract event 0xfd09e259e5c48be16f7dd63468e19266c684a9f3dce3b31881dbc1f909fc0d7c.
 //
-// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended)
+// Solidity: event AuctionBid(uint256 indexed tokenId, address sender, uint256 value, bool extended, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) ParseAuctionBid(log types.Log) (*SoulAuctionBid, error) {
 	event := new(SoulAuctionBid)
 	if err := _Soul.contract.UnpackLog(event, "AuctionBid", log); err != nil {
@@ -2182,15 +2602,16 @@ func (it *SoulAuctionClaimBidIterator) Close() error {
 
 // SoulAuctionClaimBid represents a AuctionClaimBid event raised by the Soul contract.
 type SoulAuctionClaimBid struct {
-	TokenId *big.Int
-	Sender  common.Address
-	Value   *big.Int
-	Raw     types.Log // Blockchain specific contextual infos
+	TokenId   *big.Int
+	Sender    common.Address
+	Value     *big.Int
+	AuctionId [32]byte
+	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionClaimBid is a free log retrieval operation binding the contract event 0x63ad079d900b92497dd34dccc37cb42c76aff5798f6084bd35af77d8cb5473fe.
+// FilterAuctionClaimBid is a free log retrieval operation binding the contract event 0x3efeb5ca9b10c05ba2df4bcac38445e4a4e8a996887f004e5036d254c14a9864.
 //
-// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value)
+// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value, bytes32 auctionId)
 func (_Soul *SoulFilterer) FilterAuctionClaimBid(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionClaimBidIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -2205,9 +2626,9 @@ func (_Soul *SoulFilterer) FilterAuctionClaimBid(opts *bind.FilterOpts, tokenId 
 	return &SoulAuctionClaimBidIterator{contract: _Soul.contract, event: "AuctionClaimBid", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionClaimBid is a free log subscription operation binding the contract event 0x63ad079d900b92497dd34dccc37cb42c76aff5798f6084bd35af77d8cb5473fe.
+// WatchAuctionClaimBid is a free log subscription operation binding the contract event 0x3efeb5ca9b10c05ba2df4bcac38445e4a4e8a996887f004e5036d254c14a9864.
 //
-// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value)
+// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value, bytes32 auctionId)
 func (_Soul *SoulFilterer) WatchAuctionClaimBid(opts *bind.WatchOpts, sink chan<- *SoulAuctionClaimBid, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -2247,9 +2668,9 @@ func (_Soul *SoulFilterer) WatchAuctionClaimBid(opts *bind.WatchOpts, sink chan<
 	}), nil
 }
 
-// ParseAuctionClaimBid is a log parse operation binding the contract event 0x63ad079d900b92497dd34dccc37cb42c76aff5798f6084bd35af77d8cb5473fe.
+// ParseAuctionClaimBid is a log parse operation binding the contract event 0x3efeb5ca9b10c05ba2df4bcac38445e4a4e8a996887f004e5036d254c14a9864.
 //
-// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value)
+// Solidity: event AuctionClaimBid(uint256 indexed tokenId, address sender, uint256 value, bytes32 auctionId)
 func (_Soul *SoulFilterer) ParseAuctionClaimBid(log types.Log) (*SoulAuctionClaimBid, error) {
 	event := new(SoulAuctionClaimBid)
 	if err := _Soul.contract.UnpackLog(event, "AuctionClaimBid", log); err != nil {
@@ -2475,12 +2896,15 @@ type SoulAuctionCreated struct {
 	TokenId   *big.Int
 	StartTime *big.Int
 	EndTime   *big.Int
+	Sender    common.Address
+	AuctionId [32]byte
+	Auction   AuctionHouseAuction
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionCreated is a free log retrieval operation binding the contract event 0xd6eddd1118d71820909c1197aa966dbc15ed6f508554252169cc3d5ccac756ca.
+// FilterAuctionCreated is a free log retrieval operation binding the contract event 0xb404e07dbfe9071da655c32567071b2ee4e88867784a1b39f01a8457787e504f.
 //
-// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime)
+// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime, address sender, bytes32 auctionId, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) FilterAuctionCreated(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionCreatedIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -2495,9 +2919,9 @@ func (_Soul *SoulFilterer) FilterAuctionCreated(opts *bind.FilterOpts, tokenId [
 	return &SoulAuctionCreatedIterator{contract: _Soul.contract, event: "AuctionCreated", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionCreated is a free log subscription operation binding the contract event 0xd6eddd1118d71820909c1197aa966dbc15ed6f508554252169cc3d5ccac756ca.
+// WatchAuctionCreated is a free log subscription operation binding the contract event 0xb404e07dbfe9071da655c32567071b2ee4e88867784a1b39f01a8457787e504f.
 //
-// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime)
+// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime, address sender, bytes32 auctionId, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) WatchAuctionCreated(opts *bind.WatchOpts, sink chan<- *SoulAuctionCreated, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -2537,9 +2961,9 @@ func (_Soul *SoulFilterer) WatchAuctionCreated(opts *bind.WatchOpts, sink chan<-
 	}), nil
 }
 
-// ParseAuctionCreated is a log parse operation binding the contract event 0xd6eddd1118d71820909c1197aa966dbc15ed6f508554252169cc3d5ccac756ca.
+// ParseAuctionCreated is a log parse operation binding the contract event 0xb404e07dbfe9071da655c32567071b2ee4e88867784a1b39f01a8457787e504f.
 //
-// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime)
+// Solidity: event AuctionCreated(uint256 indexed tokenId, uint256 startTime, uint256 endTime, address sender, bytes32 auctionId, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) ParseAuctionCreated(log types.Log) (*SoulAuctionCreated, error) {
 	event := new(SoulAuctionCreated)
 	if err := _Soul.contract.UnpackLog(event, "AuctionCreated", log); err != nil {
@@ -2620,12 +3044,13 @@ func (it *SoulAuctionExtendedIterator) Close() error {
 type SoulAuctionExtended struct {
 	TokenId *big.Int
 	EndTime *big.Int
+	Auction AuctionHouseAuction
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionExtended is a free log retrieval operation binding the contract event 0x6e912a3a9105bdd2af817ba5adc14e6c127c1035b5b648faa29ca0d58ab8ff4e.
+// FilterAuctionExtended is a free log retrieval operation binding the contract event 0x4c1666cb87ed4fd7706cb19b1e3160612601aca7235c307fe64a11bc8db0f41f.
 //
-// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime)
+// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) FilterAuctionExtended(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionExtendedIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -2640,9 +3065,9 @@ func (_Soul *SoulFilterer) FilterAuctionExtended(opts *bind.FilterOpts, tokenId 
 	return &SoulAuctionExtendedIterator{contract: _Soul.contract, event: "AuctionExtended", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionExtended is a free log subscription operation binding the contract event 0x6e912a3a9105bdd2af817ba5adc14e6c127c1035b5b648faa29ca0d58ab8ff4e.
+// WatchAuctionExtended is a free log subscription operation binding the contract event 0x4c1666cb87ed4fd7706cb19b1e3160612601aca7235c307fe64a11bc8db0f41f.
 //
-// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime)
+// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) WatchAuctionExtended(opts *bind.WatchOpts, sink chan<- *SoulAuctionExtended, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -2682,9 +3107,9 @@ func (_Soul *SoulFilterer) WatchAuctionExtended(opts *bind.WatchOpts, sink chan<
 	}), nil
 }
 
-// ParseAuctionExtended is a log parse operation binding the contract event 0x6e912a3a9105bdd2af817ba5adc14e6c127c1035b5b648faa29ca0d58ab8ff4e.
+// ParseAuctionExtended is a log parse operation binding the contract event 0x4c1666cb87ed4fd7706cb19b1e3160612601aca7235c307fe64a11bc8db0f41f.
 //
-// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime)
+// Solidity: event AuctionExtended(uint256 indexed tokenId, uint256 endTime, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) ParseAuctionExtended(log types.Log) (*SoulAuctionExtended, error) {
 	event := new(SoulAuctionExtended)
 	if err := _Soul.contract.UnpackLog(event, "AuctionExtended", log); err != nil {
@@ -3034,12 +3459,13 @@ type SoulAuctionSettled struct {
 	TokenId *big.Int
 	Winner  common.Address
 	Amount  *big.Int
+	Auction AuctionHouseAuction
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterAuctionSettled is a free log retrieval operation binding the contract event 0xc9f72b276a388619c6d185d146697036241880c36654b1a3ffdad07c24038d99.
+// FilterAuctionSettled is a free log retrieval operation binding the contract event 0x727cff623966c8adc61ac68940e8c898c04ff7ced5d69d9735d51f0589daf532.
 //
-// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount)
+// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) FilterAuctionSettled(opts *bind.FilterOpts, tokenId []*big.Int) (*SoulAuctionSettledIterator, error) {
 
 	var tokenIdRule []interface{}
@@ -3054,9 +3480,9 @@ func (_Soul *SoulFilterer) FilterAuctionSettled(opts *bind.FilterOpts, tokenId [
 	return &SoulAuctionSettledIterator{contract: _Soul.contract, event: "AuctionSettled", logs: logs, sub: sub}, nil
 }
 
-// WatchAuctionSettled is a free log subscription operation binding the contract event 0xc9f72b276a388619c6d185d146697036241880c36654b1a3ffdad07c24038d99.
+// WatchAuctionSettled is a free log subscription operation binding the contract event 0x727cff623966c8adc61ac68940e8c898c04ff7ced5d69d9735d51f0589daf532.
 //
-// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount)
+// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) WatchAuctionSettled(opts *bind.WatchOpts, sink chan<- *SoulAuctionSettled, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
@@ -3096,9 +3522,9 @@ func (_Soul *SoulFilterer) WatchAuctionSettled(opts *bind.WatchOpts, sink chan<-
 	}), nil
 }
 
-// ParseAuctionSettled is a log parse operation binding the contract event 0xc9f72b276a388619c6d185d146697036241880c36654b1a3ffdad07c24038d99.
+// ParseAuctionSettled is a log parse operation binding the contract event 0x727cff623966c8adc61ac68940e8c898c04ff7ced5d69d9735d51f0589daf532.
 //
-// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount)
+// Solidity: event AuctionSettled(uint256 indexed tokenId, address winner, uint256 amount, (uint256,address,uint256,uint256,uint256,address,bool,uint256,uint256,uint256,bytes32) auction)
 func (_Soul *SoulFilterer) ParseAuctionSettled(log types.Log) (*SoulAuctionSettled, error) {
 	event := new(SoulAuctionSettled)
 	if err := _Soul.contract.UnpackLog(event, "AuctionSettled", log); err != nil {
@@ -3236,169 +3662,6 @@ func (_Soul *SoulFilterer) WatchAuctionTimeBufferUpdated(opts *bind.WatchOpts, s
 func (_Soul *SoulFilterer) ParseAuctionTimeBufferUpdated(log types.Log) (*SoulAuctionTimeBufferUpdated, error) {
 	event := new(SoulAuctionTimeBufferUpdated)
 	if err := _Soul.contract.UnpackLog(event, "AuctionTimeBufferUpdated", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// SoulClaimIterator is returned from FilterClaim and is used to iterate over the raw logs and unpacked data for Claim events raised by the Soul contract.
-type SoulClaimIterator struct {
-	Event *SoulClaim // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *SoulClaimIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(SoulClaim)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(SoulClaim)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *SoulClaimIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *SoulClaimIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// SoulClaim represents a Claim event raised by the Soul contract.
-type SoulClaim struct {
-	Reserver    common.Address
-	TokenId     *big.Int
-	Owner       common.Address
-	BlockNumber *big.Int
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterClaim is a free log retrieval operation binding the contract event 0xad03f837a9207e368d73ec028e1f54428184da8cfea258cc116da2225f3ac5eb.
-//
-// Solidity: event Claim(address indexed reserver, uint256 indexed tokenId, address indexed owner, uint256 blockNumber)
-func (_Soul *SoulFilterer) FilterClaim(opts *bind.FilterOpts, reserver []common.Address, tokenId []*big.Int, owner []common.Address) (*SoulClaimIterator, error) {
-
-	var reserverRule []interface{}
-	for _, reserverItem := range reserver {
-		reserverRule = append(reserverRule, reserverItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var ownerRule []interface{}
-	for _, ownerItem := range owner {
-		ownerRule = append(ownerRule, ownerItem)
-	}
-
-	logs, sub, err := _Soul.contract.FilterLogs(opts, "Claim", reserverRule, tokenIdRule, ownerRule)
-	if err != nil {
-		return nil, err
-	}
-	return &SoulClaimIterator{contract: _Soul.contract, event: "Claim", logs: logs, sub: sub}, nil
-}
-
-// WatchClaim is a free log subscription operation binding the contract event 0xad03f837a9207e368d73ec028e1f54428184da8cfea258cc116da2225f3ac5eb.
-//
-// Solidity: event Claim(address indexed reserver, uint256 indexed tokenId, address indexed owner, uint256 blockNumber)
-func (_Soul *SoulFilterer) WatchClaim(opts *bind.WatchOpts, sink chan<- *SoulClaim, reserver []common.Address, tokenId []*big.Int, owner []common.Address) (event.Subscription, error) {
-
-	var reserverRule []interface{}
-	for _, reserverItem := range reserver {
-		reserverRule = append(reserverRule, reserverItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var ownerRule []interface{}
-	for _, ownerItem := range owner {
-		ownerRule = append(ownerRule, ownerItem)
-	}
-
-	logs, sub, err := _Soul.contract.WatchLogs(opts, "Claim", reserverRule, tokenIdRule, ownerRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(SoulClaim)
-				if err := _Soul.contract.UnpackLog(event, "Claim", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseClaim is a log parse operation binding the contract event 0xad03f837a9207e368d73ec028e1f54428184da8cfea258cc116da2225f3ac5eb.
-//
-// Solidity: event Claim(address indexed reserver, uint256 indexed tokenId, address indexed owner, uint256 blockNumber)
-func (_Soul *SoulFilterer) ParseClaim(log types.Log) (*SoulClaim, error) {
-	event := new(SoulClaim)
-	if err := _Soul.contract.UnpackLog(event, "Claim", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -3820,169 +4083,6 @@ func (_Soul *SoulFilterer) WatchPaused(opts *bind.WatchOpts, sink chan<- *SoulPa
 func (_Soul *SoulFilterer) ParsePaused(log types.Log) (*SoulPaused, error) {
 	event := new(SoulPaused)
 	if err := _Soul.contract.UnpackLog(event, "Paused", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// SoulReserveIterator is returned from FilterReserve and is used to iterate over the raw logs and unpacked data for Reserve events raised by the Soul contract.
-type SoulReserveIterator struct {
-	Event *SoulReserve // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *SoulReserveIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(SoulReserve)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(SoulReserve)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *SoulReserveIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *SoulReserveIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// SoulReserve represents a Reserve event raised by the Soul contract.
-type SoulReserve struct {
-	Reserver    common.Address
-	TokenId     *big.Int
-	Owner       common.Address
-	BlockNumber *big.Int
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterReserve is a free log retrieval operation binding the contract event 0x6f8d4fbb9604038077481649590dd5ddb6c97e7236b4b644b44084733d5f8560.
-//
-// Solidity: event Reserve(address indexed reserver, uint256 indexed tokenId, address indexed owner, uint256 blockNumber)
-func (_Soul *SoulFilterer) FilterReserve(opts *bind.FilterOpts, reserver []common.Address, tokenId []*big.Int, owner []common.Address) (*SoulReserveIterator, error) {
-
-	var reserverRule []interface{}
-	for _, reserverItem := range reserver {
-		reserverRule = append(reserverRule, reserverItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var ownerRule []interface{}
-	for _, ownerItem := range owner {
-		ownerRule = append(ownerRule, ownerItem)
-	}
-
-	logs, sub, err := _Soul.contract.FilterLogs(opts, "Reserve", reserverRule, tokenIdRule, ownerRule)
-	if err != nil {
-		return nil, err
-	}
-	return &SoulReserveIterator{contract: _Soul.contract, event: "Reserve", logs: logs, sub: sub}, nil
-}
-
-// WatchReserve is a free log subscription operation binding the contract event 0x6f8d4fbb9604038077481649590dd5ddb6c97e7236b4b644b44084733d5f8560.
-//
-// Solidity: event Reserve(address indexed reserver, uint256 indexed tokenId, address indexed owner, uint256 blockNumber)
-func (_Soul *SoulFilterer) WatchReserve(opts *bind.WatchOpts, sink chan<- *SoulReserve, reserver []common.Address, tokenId []*big.Int, owner []common.Address) (event.Subscription, error) {
-
-	var reserverRule []interface{}
-	for _, reserverItem := range reserver {
-		reserverRule = append(reserverRule, reserverItem)
-	}
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var ownerRule []interface{}
-	for _, ownerItem := range owner {
-		ownerRule = append(ownerRule, ownerItem)
-	}
-
-	logs, sub, err := _Soul.contract.WatchLogs(opts, "Reserve", reserverRule, tokenIdRule, ownerRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(SoulReserve)
-				if err := _Soul.contract.UnpackLog(event, "Reserve", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseReserve is a log parse operation binding the contract event 0x6f8d4fbb9604038077481649590dd5ddb6c97e7236b4b644b44084733d5f8560.
-//
-// Solidity: event Reserve(address indexed reserver, uint256 indexed tokenId, address indexed owner, uint256 blockNumber)
-func (_Soul *SoulFilterer) ParseReserve(log types.Log) (*SoulReserve, error) {
-	event := new(SoulReserve)
-	if err := _Soul.contract.UnpackLog(event, "Reserve", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
