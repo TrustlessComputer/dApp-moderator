@@ -430,6 +430,29 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			},
 		},
 		bson.D{
+			{"$addFields",
+				bson.D{
+					{"price",
+						bson.D{
+							{"$divide",
+								bson.A{
+									"$price",
+									bson.D{
+										{"$pow",
+											bson.A{
+												10,
+												18,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		bson.D{
 			{"$lookup",
 				bson.D{
 					{"from", "bns"},

@@ -458,14 +458,9 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 						max = 999999999
 					}
 
-					minBig := helpers.ConvertAmount(min)
-					maxBig := helpers.ConvertAmount(max)
-
-					minF, _ := minBig.Float64()
-					maxF, _ := maxBig.Float64()
 					f.Price = &entity.Rarity{
-						Min: minF,
-						Max: maxF,
+						Min: min,
+						Max: max,
 					}
 				}
 			}
