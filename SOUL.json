@@ -75,6 +75,69 @@
         "internalType": "bool",
         "name": "extended",
         "type": "bool"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "erc20Token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address payable",
+            "name": "bidder",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "settled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeBuffer",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reservePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBidIncrementPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "auctionId",
+            "type": "bytes32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct AuctionHouse.Auction",
+        "name": "auction",
+        "type": "tuple"
       }
     ],
     "name": "AuctionBid",
@@ -100,6 +163,12 @@
         "internalType": "uint256",
         "name": "value",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "auctionId",
+        "type": "bytes32"
       }
     ],
     "name": "AuctionClaimBid",
@@ -138,6 +207,81 @@
         "internalType": "uint256",
         "name": "endTime",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "auctionId",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "erc20Token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address payable",
+            "name": "bidder",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "settled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeBuffer",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reservePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBidIncrementPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "auctionId",
+            "type": "bytes32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct AuctionHouse.Auction",
+        "name": "auction",
+        "type": "tuple"
       }
     ],
     "name": "AuctionCreated",
@@ -157,6 +301,69 @@
         "internalType": "uint256",
         "name": "endTime",
         "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "erc20Token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address payable",
+            "name": "bidder",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "settled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeBuffer",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reservePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBidIncrementPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "auctionId",
+            "type": "bytes32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct AuctionHouse.Auction",
+        "name": "auction",
+        "type": "tuple"
       }
     ],
     "name": "AuctionExtended",
@@ -208,6 +415,69 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "erc20Token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address payable",
+            "name": "bidder",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "settled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeBuffer",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reservePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBidIncrementPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "auctionId",
+            "type": "bytes32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct AuctionHouse.Auction",
+        "name": "auction",
+        "type": "tuple"
       }
     ],
     "name": "AuctionSettled",
@@ -224,37 +494,6 @@
       }
     ],
     "name": "AuctionTimeBufferUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "reserver",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "blockNumber",
-        "type": "uint256"
-      }
-    ],
-    "name": "Claim",
     "type": "event"
   },
   {
@@ -300,37 +539,6 @@
       }
     ],
     "name": "Paused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "reserver",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "blockNumber",
-        "type": "uint256"
-      }
-    ],
-    "name": "Reserve",
     "type": "event"
   },
   {
@@ -443,6 +651,80 @@
         "internalType": "uint256",
         "name": "minBidIncrementPercentage",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "auctionId",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "_auctionsList",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "erc20Token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "endTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address payable",
+        "name": "bidder",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "settled",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timeBuffer",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reservePrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minBidIncrementPercentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "auctionId",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -469,17 +751,123 @@
         "type": "uint256"
       },
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
       }
     ],
-    "name": "_bidders",
+    "name": "_bidderAuctions",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "_bidderAuctionsList",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "_biddingBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "_coreTeamTreasury",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "_features",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -544,6 +932,25 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "_names",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -661,29 +1068,19 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "to",
+        "name": "walletAddress",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "n",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signatures",
-        "type": "bytes"
       }
     ],
-    "name": "batchMint",
+    "name": "biddable",
     "outputs": [
       {
-        "internalType": "uint256[]",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256[]"
+        "type": "bool"
       }
     ],
-    "stateMutability": "payable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -692,9 +1089,19 @@
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "featureName",
+        "type": "string"
       }
     ],
-    "name": "biddable",
+    "name": "canUnlockFeature",
     "outputs": [
       {
         "internalType": "bool",
@@ -804,19 +1211,6 @@
         "type": "uint256"
       }
     ],
-    "name": "claimBid",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
     "name": "createAuction",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -836,6 +1230,19 @@
       }
     ],
     "name": "createBid",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "deposit",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -878,6 +1285,29 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getSettingFeatures",
+    "outputs": [
+      {
+        "internalType": "string[10]",
+        "name": "features",
+        "type": "string[10]"
+      },
+      {
+        "internalType": "uint16[10]",
+        "name": "balances",
+        "type": "uint16[10]"
+      },
+      {
+        "internalType": "uint16[10]",
+        "name": "holdTimes",
+        "type": "uint16[10]"
       }
     ],
     "stateMutability": "view",
@@ -981,7 +1411,7 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -995,6 +1425,40 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "onERC721Received",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1166,6 +1630,24 @@
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "setName",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       }
     ],
     "name": "settleAuction",
@@ -1306,6 +1788,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "featureName",
+        "type": "string"
+      }
+    ],
+    "name": "unlockFeature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "seed",
         "type": "bytes32"
@@ -1338,6 +1838,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "erc20Addr",
+        "type": "address"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
