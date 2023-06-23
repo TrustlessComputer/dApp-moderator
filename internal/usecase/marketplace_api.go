@@ -216,6 +216,14 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 		resp.BnsData = bnsData
 	}
 
+	if strings.ToLower(contractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+		if name, err := u.SoulNFTName(tokenID); err == nil {
+			resp.Name = name
+		} else {
+			resp.Name = ""
+		}
+	}
+
 	return resp, nil
 }
 
