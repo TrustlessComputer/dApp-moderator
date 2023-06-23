@@ -29,6 +29,17 @@ func NewTcNetwork() (*TcNetwork, error) {
 	}, nil
 }
 
+func NewTcPrivateAutoNetwork() (*TcNetwork, error) {
+	ethereumClient, err := ethclient.Dial(os.Getenv("TC_AUTO_ENDPOINT"))
+	if err != nil {
+		return nil, err
+	}
+
+	return &TcNetwork{
+		client: ethereumClient,
+	}, nil
+}
+
 func (a *TcNetwork) GetBlockNumber() (*big.Int, error) {
 	header, err := a.client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
