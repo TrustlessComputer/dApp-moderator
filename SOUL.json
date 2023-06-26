@@ -572,6 +572,37 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "blockNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "featureName",
+        "type": "string"
+      }
+    ],
+    "name": "UnlockFeature",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "account",
         "type": "address"
       }
@@ -1295,19 +1326,19 @@
     "name": "getSettingFeatures",
     "outputs": [
       {
-        "internalType": "string[10]",
+        "internalType": "string[11]",
         "name": "features",
-        "type": "string[10]"
+        "type": "string[11]"
       },
       {
-        "internalType": "uint16[10]",
+        "internalType": "uint256[11]",
         "name": "balances",
-        "type": "uint16[10]"
+        "type": "uint256[11]"
       },
       {
-        "internalType": "uint16[10]",
+        "internalType": "uint256[11]",
         "name": "holdTimes",
-        "type": "uint16[10]"
+        "type": "uint256[11]"
       }
     ],
     "stateMutability": "view",
