@@ -1,6 +1,7 @@
 package response
 
 import (
+	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"time"
 )
@@ -21,9 +22,11 @@ type AuctionListBidResponse struct {
 }
 
 type AuctionListBidResponseItem struct {
-	Amount string    `json:"amount"`
-	Sender string    `json:"sender"`
-	Avatar string    `json:"avatar"`
-	Name   string    `json:"name"`
-	Time   time.Time `json:"time"`
+	Amount      string    `json:"amount"`
+	Sender      string    `json:"sender"`
+	OwnerAvatar string    `json:"owner_avatar"`
+	OwnerName   string    `json:"owner_name"`
+	Time        time.Time `json:"time"`
+
+	*nft_explorer.MkpNftsResp `json:",inline,omitempty" bson:",inline"`
 }

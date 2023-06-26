@@ -335,15 +335,21 @@ paths:
       summary: Get Redis
       tags:
       - Admin
-  /auctions:
+  /auction/detail/{contractAddress}/{tokenID}:
     get:
       consumes:
       - application/json
       description: auctionDetail
       parameters:
+      - description: contract address
+        in: path
+        name: contractAddress
+        required: true
+        type: string
       - description: token_id
-        in: query
-        name: token_id
+        in: path
+        name: tokenID
+        required: true
         type: string
       produces:
       - application/json
@@ -353,6 +359,38 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: auctionDetail
+      tags:
+      - Auction
+  /auction/list-bid:
+    get:
+      consumes:
+      - application/json
+      description: listBid
+      parameters:
+      - description: DB Auction ID
+        in: query
+        name: dbAuctionID
+        type: string
+      - description: Owner
+        in: query
+        name: owner
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: listBid
       tags:
       - Auction
   /auth/nonce:
