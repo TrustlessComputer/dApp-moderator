@@ -286,6 +286,25 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		activity.AuctionID = utils.ToPtr(new(big.Int).SetBytes(event.AuctionId[:]).String())
 
 		return activity, event, nil
+	case entity.SoulUnlockFeature:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseUnlockFeature(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionClaimBid", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.BlockNumber = event.BlockNumber.Uint64()
+		activity.UserAAddress = strings.ToLower(event.User.String())
+		return activity, event, nil
 	}
 
 	return nil, nil, errors.New(fmt.Sprintf("Cannot detect event log - %d - txHash: %s, topics %s ", eventType, chainLog.TxHash, chainLog.Topics[0].String()))
@@ -984,5 +1003,20 @@ func (u *Usecase) HandleAuctionClaim(data interface{}, chainLog types.Log) error
 		return err
 	}
 
+	return nil
+}
+
+func (u *Usecase) HandleUnlockFeature(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulUnlockFeature)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+
+	err := u.SoulNftImageHistoriesCrontab([]string{strings.ToLower(eventData.TokenId.String())})
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.Error(err), zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
 	return nil
 }
