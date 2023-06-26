@@ -163,6 +163,8 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 		entity.AuctionBidSummary `bson:",inline"`
 		BnsData                  []*entity.Bns      `bson:"bns_data,omitempty"`
 		BnsDefault               *entity.BNSDefault `bson:"bns_default"`
+		Auction                  *entity.Auction    `bson:"auction"`
+		Rarity                   float64            `bson:"rarity"`
 	}
 
 	pipelines := bson.A{}
@@ -209,6 +211,47 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 				"preserveNullAndEmptyArrays": true,
 			},
 		},
+		bson.M{"$lookup": bson.M{
+			"from":         "auction",
+			"localField":   "db_auction_id",
+			"foreignField": "_id",
+			"as":           "auction",
+		}},
+		bson.M{
+			"$unwind": bson.M{
+				"path":                       "$auction",
+				"preserveNullAndEmptyArrays": true,
+			},
+		},
+		bson.M{"$lookup": bson.D{
+			{"from", "nfts_attributes_percent_view"},
+			{"localField", "token_id"},
+			{"foreignField", "token_id"},
+			{"let", bson.D{{"contract", "$collection_address"}}},
+			{"pipeline",
+				bson.A{
+					bson.D{
+						{"$match",
+							bson.D{
+								{"$expr",
+									bson.D{
+										{"$eq",
+											bson.A{
+												"$collection_address",
+												"$$contract",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			{"as", "percent_attributes"},
+		}},
+		bson.M{"$addFields": bson.M{"rarity": bson.M{"$avg": "$percent_attributes.percent"}}},
+		bson.M{"$project": bson.M{"percent_attributes": 0}},
 	)
 
 	total, err := u.Repo.CountTotalFromPipeline(utils.COLLECTION_AUCTION_BID_SUMMARY, pipelines)
@@ -258,6 +301,7 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 			BidderAvatar: avatar,
 			BidderName:   name,
 			Time:         *updatedAt,
+			Rarity:       item.Rarity,
 		}
 		if nftResp, err := u.GetMkplaceNft(context.TODO(), item.CollectionAddress, item.TokenID); err == nil {
 			responseItem.MkpNftsResp = nftResp
