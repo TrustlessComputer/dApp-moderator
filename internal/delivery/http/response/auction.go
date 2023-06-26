@@ -22,11 +22,11 @@ type AuctionListBidResponse struct {
 }
 
 type AuctionListBidResponseItem struct {
-	Amount      string    `json:"amount"`
-	Sender      string    `json:"sender"`
-	OwnerAvatar string    `json:"owner_avatar"`
-	OwnerName   string    `json:"owner_name"`
-	Time        time.Time `json:"time"`
+	Amount       string    `json:"amount"`
+	Sender       string    `json:"sender"`
+	BidderAvatar string    `json:"bidder_avatar"`
+	BidderName   string    `json:"bidder_name"`
+	Time         time.Time `json:"time"`
 
 	*nft_explorer.MkpNftsResp `json:",inline,omitempty" bson:",inline"`
 }

@@ -253,11 +253,11 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 			updatedAt = utils.ToPtr(time.Now())
 		}
 		responseItem := &response.AuctionListBidResponseItem{
-			Amount:      item.TotalAmount,
-			Sender:      item.Sender,
-			OwnerAvatar: avatar,
-			OwnerName:   name,
-			Time:        *updatedAt,
+			Amount:       item.TotalAmount,
+			Sender:       item.Sender,
+			BidderAvatar: avatar,
+			BidderName:   name,
+			Time:         *updatedAt,
 		}
 		if nftResp, err := u.GetMkplaceNft(context.TODO(), item.CollectionAddress, item.TokenID); err == nil {
 			responseItem.MkpNftsResp = nftResp
