@@ -206,6 +206,94 @@
                 }
             }
         },
+        "/auction/detail/{contractAddress}/{tokenID}": {
+            "get": {
+                "description": "auctionDetail",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auction"
+                ],
+                "summary": "auctionDetail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract address",
+                        "name": "contractAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token_id",
+                        "name": "tokenID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auction/list-bid": {
+            "get": {
+                "description": "listBid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auction"
+                ],
+                "summary": "listBid",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DB Auction ID",
+                        "name": "dbAuctionID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Owner",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/nonce": {
             "post": {
                 "description": "Generate a message for user's wallet",
@@ -408,6 +496,82 @@
                         "description": "path",
                         "name": "path",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bns-service/default/{wallet_address}": {
+            "get": {
+                "description": "bnsDefault",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-service"
+                ],
+                "summary": "bnsDefault",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "wallet_address",
+                        "name": "wallet_address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "updateBnsDefault",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BNS-service"
+                ],
+                "summary": "updateBnsDefault",
+                "parameters": [
+                    {
+                        "description": "body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateBNSDefaultRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "user wallet address",
+                        "name": "wallet_address",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3219,6 +3383,14 @@
             "type": "object",
             "properties": {
                 "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.UpdateBNSDefaultRequest": {
+            "type": "object",
+            "properties": {
+                "token_id": {
                     "type": "string"
                 }
             }

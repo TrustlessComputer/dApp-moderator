@@ -10,6 +10,7 @@ import (
 	"dapp-moderator/utils/logger"
 	"errors"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -136,17 +137,26 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 	}, nil
 }
 
-func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.PaginationReq) (*response.AuctionListBidResponse, error) {
-	objectID, err := primitive.ObjectIDFromHex(dbAuctionID)
-	if err != nil {
-		logger.AtLog.Logger.Error("Usecase.AuctionListBid", zap.Error(err))
-		return nil, err
+func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response.AuctionListBidResponse, error) {
+	filterStage := bson.M{}
+	if filterReq.DBAuctionID != nil && *filterReq.DBAuctionID != "" {
+		objectID, err := primitive.ObjectIDFromHex(*filterReq.DBAuctionID)
+		if err != nil {
+			logger.AtLog.Logger.Error("Usecase.AuctionListBid", zap.Error(err))
+			return nil, err
+		}
+
+		var auctionEntity = &entity.Auction{}
+		if err = u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{"_id": objectID}, auctionEntity); err != nil {
+			logger.AtLog.Logger.Error("Usecase.AuctionListBid", zap.Error(err))
+			return nil, err
+		}
+
+		filterStage["chain_auction_id"] = auctionEntity.AuctionID
 	}
 
-	var auctionEntity = &entity.Auction{}
-	if err = u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{"_id": objectID}, auctionEntity); err != nil {
-		logger.AtLog.Logger.Error("Usecase.AuctionListBid", zap.Error(err))
-		return nil, err
+	if filterReq.Sender != nil && *filterReq.Sender != "" {
+		filterStage["sender"] = strings.ToLower(*filterReq.Sender)
 	}
 
 	type AuctionBidSummary struct {
@@ -155,10 +165,14 @@ func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.Paginat
 		BnsDefault               *entity.BNSDefault `bson:"bns_default"`
 	}
 
-	pipelines := bson.A{
-		bson.M{"$match": bson.M{
-			"chain_auction_id": auctionEntity.AuctionID,
-		}},
+	pipelines := bson.A{}
+	if len(filterStage) > 0 {
+		pipelines = append(pipelines, bson.M{
+			"$match": filterStage,
+		})
+	}
+
+	pipelines = append(pipelines,
 		bson.M{"$lookup": bson.M{
 			"from":         "bns",
 			"localField":   "sender",
@@ -195,14 +209,14 @@ func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.Paginat
 				"preserveNullAndEmptyArrays": true,
 			},
 		},
-	}
+	)
 
 	total, err := u.Repo.CountTotalFromPipeline(utils.COLLECTION_AUCTION_BID_SUMMARY, pipelines)
 	if err != nil {
 		return nil, err
 	}
 
-	limit, offset := pagination.GetOffsetAndLimit()
+	limit, offset := filterReq.PaginationReq.GetOffsetAndLimit()
 	pipelines = append(pipelines, bson.D{{"$sort", bson.M{"updated_at": -1}}})
 	pipelines = append(pipelines, bson.D{{"$skip", offset}})
 	pipelines = append(pipelines, bson.D{{"$limit", limit}})
@@ -239,11 +253,14 @@ func (u *Usecase) AuctionListBid(dbAuctionID string, pagination *request.Paginat
 			updatedAt = utils.ToPtr(time.Now())
 		}
 		responseItem := &response.AuctionListBidResponseItem{
-			Avatar: avatar,
-			Name:   name,
-			Amount: item.TotalAmount,
-			Sender: item.Sender,
-			Time:   *updatedAt,
+			Amount:      item.TotalAmount,
+			Sender:      item.Sender,
+			OwnerAvatar: avatar,
+			OwnerName:   name,
+			Time:        *updatedAt,
+		}
+		if nftResp, err := u.GetMkplaceNft(context.TODO(), item.CollectionAddress, item.TokenID); err == nil {
+			responseItem.MkpNftsResp = nftResp
 		}
 
 		result.Items = append(result.Items, responseItem)
