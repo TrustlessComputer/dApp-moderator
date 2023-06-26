@@ -30,5 +30,5 @@ type AuctionListBidResponseItem struct {
 
 	*nft_explorer.MkpNftsResp `json:",inline,omitempty" bson:",inline"`
 	Auction                   *entity.Auction `json:"auction,omitempty"`
-	Rarity                    float64         `json:"rarity"`
+	Ranking                   *int            `json:"ranking,omitempty"`
 }
