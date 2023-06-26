@@ -164,7 +164,7 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 		BnsData                  []*entity.Bns      `bson:"bns_data,omitempty"`
 		BnsDefault               *entity.BNSDefault `bson:"bns_default"`
 		Auction                  *entity.Auction    `bson:"auction"`
-		Rarity                   float64            `bson:"rarity"`
+		Ranking                  *int               `bson:"ranking"`
 	}
 
 	pipelines := bson.A{}
@@ -211,48 +211,44 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 				"preserveNullAndEmptyArrays": true,
 			},
 		},
-		bson.M{"$lookup": bson.M{
-			"from":         "auction",
-			"localField":   "db_auction_id",
-			"foreignField": "_id",
-			"as":           "auction",
-		}},
-		bson.M{
-			"$unwind": bson.M{
-				"path":                       "$auction",
-				"preserveNullAndEmptyArrays": true,
-			},
-		},
-		bson.M{"$lookup": bson.D{
-			{"from", "nfts_attributes_percent_view"},
-			{"localField", "token_id"},
-			{"foreignField", "token_id"},
-			{"let", bson.D{{"contract", "$collection_address"}}},
-			{"pipeline",
-				bson.A{
-					bson.D{
-						{"$match",
-							bson.D{
-								{"$expr",
-									bson.D{
-										{"$eq",
-											bson.A{
-												"$collection_address",
-												"$$contract",
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+	)
+
+	if filterReq.Sender != nil && *filterReq.Sender != "" {
+		pipelines = append(pipelines,
+			bson.M{"$lookup": bson.M{
+				"from":         "auction",
+				"localField":   "db_auction_id",
+				"foreignField": "_id",
+				"as":           "auction",
+			}},
+			bson.M{
+				"$unwind": bson.M{
+					"path":                       "$auction",
+					"preserveNullAndEmptyArrays": true,
 				},
 			},
-			{"as", "percent_attributes"},
-		}},
-		bson.M{"$addFields": bson.M{"rarity": bson.M{"$avg": "$percent_attributes.percent"}}},
-		bson.M{"$project": bson.M{"percent_attributes": 0}},
-	)
+			bson.M{"$lookup": bson.M{
+				"from":         "auction_bid_summary",
+				"localField":   "db_auction_id",
+				"foreignField": "db_auction_id",
+				"pipeline": bson.A{
+					bson.M{"$addFields": bson.M{"amount_number": bson.M{"$toDouble": "$total_amount"}}},
+					bson.M{"$setWindowFields": bson.M{
+						"partitionBy": "$sender",
+						"sortBy":      bson.M{"amount_number": -1},
+						"output":      bson.M{"ranking": bson.M{"$rank": bson.D{}}},
+					}},
+					bson.M{"$match": bson.M{"sender": strings.ToLower(*filterReq.Sender)}},
+				},
+				"as": "user_auctions",
+			},
+			},
+			bson.M{"$unwind": bson.M{
+				"path":                       "$user_auctions",
+				"preserveNullAndEmptyArrays": true,
+			}},
+			bson.M{"$addFields": bson.M{"ranking": "$user_auctions.ranking"}})
+	}
 
 	total, err := u.Repo.CountTotalFromPipeline(utils.COLLECTION_AUCTION_BID_SUMMARY, pipelines)
 	if err != nil {
@@ -280,8 +276,7 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 	}
 
 	for _, item := range resp {
-		avatar := ""
-		name := ""
+		name, avatar := "", ""
 		if item.BnsDefault != nil && item.BnsDefault.BNSDefaultData != nil {
 			avatar = item.BnsDefault.BNSDefaultData.PfpData.GCSUrl
 			name = item.BnsDefault.BNSDefaultData.Name
@@ -301,10 +296,14 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 			BidderAvatar: avatar,
 			BidderName:   name,
 			Time:         *updatedAt,
-			Rarity:       item.Rarity,
+			Auction:      item.Auction,
+			Ranking:      item.Ranking,
 		}
-		if nftResp, err := u.GetMkplaceNft(context.TODO(), item.CollectionAddress, item.TokenID); err == nil {
-			responseItem.MkpNftsResp = nftResp
+
+		if filterReq.Sender != nil && *filterReq.Sender != "" {
+			if nftResp, err := u.GetMkplaceNft(context.TODO(), item.CollectionAddress, item.TokenID); err == nil {
+				responseItem.MkpNftsResp = nftResp
+			}
 		}
 
 		result.Items = append(result.Items, responseItem)
