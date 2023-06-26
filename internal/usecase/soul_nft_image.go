@@ -311,15 +311,17 @@ func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan 
 			return
 		}
 
-		for i := 1; i <= 4; i++ {
+		for i := 0; i <= 4; i++ {
 			//TODO - replace via random number here
-			capKey := fmt.Sprintf("capture%d", i)
-			replaced := fmt.Sprintf("%s=!1", capKey)
-			replaceTo := fmt.Sprintf("%s=true", capKey)
-
+			html1 := *html
 			randomArray := make(map[string]string)
-			randomArray[replaced] = replaceTo
-			html1 := strings.ReplaceAll(*html, replaced, replaceTo)
+			if i != 0 {
+				capKey := fmt.Sprintf("capture%d", i)
+				replaced := fmt.Sprintf("%s=!1", capKey)
+				replaceTo := fmt.Sprintf("%s=true", capKey)
+				randomArray[replaced] = replaceTo
+				html1 = strings.ReplaceAll(html1, replaced, replaceTo)
+			}
 
 			encoded := helpers.Base64Encode(html1)
 			fileName := fmt.Sprintf("%v_%v_%v.html", nft.ContractAddress, nft.TokenID, time.Now().UTC().Unix())
