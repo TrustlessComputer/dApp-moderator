@@ -3,6 +3,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/delivery/http/request"
 	"dapp-moderator/internal/entity"
@@ -115,6 +116,11 @@ func (u *Usecase) SoulCrontab() error {
 		}
 
 		err = u.Repo.InsertAuction(insertData)
+
+		//Trigger to auto-tc-node
+		if insertData.IsAuction {
+			u.TriggerCreateAuction(insertData)
+		}
 	}
 	return nil
 }
@@ -152,16 +158,16 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 	}
 
 	//TODO - soul was not created in production
-	//tokenID, isSet := new(big.Int).SetString(nft.TokenID, 10)
-	//if isSet == false {
-	//	err = errors.New("Cannot parse tokenID")
-	//	return
-	//}
-	//
-	//isAvailable, err = soulInstance.Available(nil, tokenID)
-	//if err != nil {
-	//	return
-	//}
+	tokenID, isSet := new(big.Int).SetString(nft.TokenID, 10)
+	if isSet == false {
+		err = errors.New("Cannot parse tokenID")
+		return
+	}
+
+	isAvailable, err = soulInstance.Available(nil, tokenID)
+	if err != nil {
+		return
+	}
 }
 
 func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) ([]*nft_explorer.SoulNft, error) {
@@ -500,29 +506,12 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 		return "", errors.New("animation url is empty")
 	}
 	if strings.Contains(tokenUri.AnimationUrl, "base64") {
-		tokenUri.AnimationUrl = strings.Replace(tokenUri.AnimationUrl, "data:text/html;base64,", "", -1)
 
-		byteArray, err := helpers.Base64Decode(tokenUri.AnimationUrl)
+		html, err := u.ReplaceSoulHtml(tokenUri.AnimationUrl)
 		if err != nil {
 			return "", err
 		}
-
-		replaceTo1 := ""
-		replaceTo3 := ""
-
-		if os.Getenv("SOUL_CHAIN_ID") == "22213" { //production
-			replaceTo1 = `"https://tc-node.trustless.computer"`
-			replaceTo3 = `isFakeData = true`
-		} else {
-			replaceTo1 = `"https://tc-node-manual.regtest.trustless.computer"`
-			replaceTo3 = `isFakeData = true`
-		}
-
-		html := bytes.NewBuffer(byteArray).String()
-		html = strings.ReplaceAll(html, "Web3.givenProvider", replaceTo1)
-		html = strings.ReplaceAll(html, "isFakeData=!1", replaceTo3)
-
-		encoded := helpers.Base64Encode(html)
+		encoded := helpers.Base64Encode(*html)
 		fileName := fmt.Sprintf("%v_%v_%v.html", nftEntity.ContractAddress, nftEntity.TokenID, time.Now().UTC().Unix())
 		resp, err := u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
 		if err != nil {
@@ -536,6 +525,32 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 	return tokenUri.AnimationUrl, nil
 }
 
+func (u *Usecase) ReplaceSoulHtml(input string) (*string, error) {
+	input = strings.Replace(input, "data:text/html;base64,", "", -1)
+
+	byteArray, err := helpers.Base64Decode(input)
+	if err != nil {
+		return nil, err
+	}
+
+	replaceTo1 := ""
+	replaceTo3 := ""
+
+	if os.Getenv("SOUL_CHAIN_ID") == "22213" { //production
+		replaceTo1 = `"https://tc-node.trustless.computer"`
+		replaceTo3 = `isFakeData = true`
+	} else {
+		replaceTo1 = `"https://tc-node-manual.regtest.trustless.computer"`
+		replaceTo3 = `isFakeData = true`
+	}
+
+	html := bytes.NewBuffer(byteArray).String()
+	html = strings.ReplaceAll(html, "Web3.givenProvider", replaceTo1)
+	html = strings.ReplaceAll(html, "isFakeData=!1", replaceTo3)
+	html = strings.ReplaceAll(html, "isCapture=!1", "isCapture=true")
+	return &html, nil
+}
+
 func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tokenID string) (*entity.NftAuctionsAvailable, error) {
 
 	data, err := u.Repo.FindAuction(contractAddress, tokenID)
@@ -544,6 +559,84 @@ func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tok
 	}
 
 	return data, nil
+}
+
+func (u *Usecase) TriggerCreateAuction(insertData *entity.NftAuctionsAvailable) error {
+	key := fmt.Sprintf("TriggerCreateAuction - contract: %s, tokenID: %s", insertData.ContractAddress, insertData.TokenID)
+	ctx := context.Background()
+	tokenIDBigInt, _ := new(big.Int).SetString(insertData.TokenID, 10)
+	client := u.TCPrivateAutoNode.GetClient()
+	soulInstancePrivateNode, err := soul.NewSoul(common.HexToAddress(os.Getenv("SOUL_CONTRACT")), client)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	//TODO - check if token is having an open auction - skip
+	checkAuction, err := soulInstancePrivateNode.Auctions(nil, tokenIDBigInt)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	currentBlock, err := client.BlockNumber(ctx)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	endTime := checkAuction.EndTime.Uint64() //blockNUmber
+	if endTime >= currentBlock {
+		err = errors.New(fmt.Sprintf("Auction for %s is happening", insertData.TokenID))
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	privateKeyStr := os.Getenv("SOUL_SIGNATURE_PRIVATE_KEY")
+	privateKey, err := crypto.HexToECDSA(privateKeyStr)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+	publicKey := privateKey.Public()
+	publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+
+	nonce, err := client.PendingNonceAt(ctx, fromAddress)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	chainID, _ := new(big.Int).SetString(os.Getenv("SOUL_CHAIN_ID"), 10)
+	transactionBindOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	transactionBindOpts.Nonce = big.NewInt(int64(nonce))
+	tx, err := soulInstancePrivateNode.CreateAuction(transactionBindOpts, tokenIDBigInt)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	triggeredAuction := &entity.NftTriggeredAuctions{
+		TokenID:         insertData.TokenID,
+		TokenIDInt:      int64(insertData.TokenIDInt),
+		ContractAddress: strings.ToLower(insertData.ContractAddress),
+		TxHash:          tx.Hash().String(),
+	}
+
+	_, err = u.Repo.InsertOne(triggeredAuction)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	logger.AtLog.Logger.Info(key, zap.Any("triggeredAuction", triggeredAuction))
+	return nil
 }
 
 func (u *Usecase) SoulNFTName(tokenId string, contracts ...*soul.Soul) (string, error) {
