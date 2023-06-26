@@ -217,7 +217,7 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 	}
 
 	limit, offset := filterReq.PaginationReq.GetOffsetAndLimit()
-	pipelines = append(pipelines, bson.D{{"$sort", bson.M{"updated_at": -1}}})
+	pipelines = append(pipelines, bson.D{{"$sort", bson.M{"updated_at": -1, "_id": -1}}})
 	pipelines = append(pipelines, bson.D{{"$skip", offset}})
 	pipelines = append(pipelines, bson.D{{"$limit", limit}})
 	cursor, err := u.Repo.DB.Collection(utils.COLLECTION_AUCTION_BID_SUMMARY).Aggregate(context.TODO(), pipelines)
