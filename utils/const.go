@@ -134,14 +134,16 @@ const (
 	KEY_LISTING_CONTRACT           string = "collection_contract"
 	KEY_BTC_WALLET_INFO            string = "btc_wallet_info"
 
-	COLLECTION_COLLECTIONS                string = "collections"           //ERC721, a collection has many nfts
-	COLLECTION_NFTS                       string = "nfts"                  //ERC721
-	COLLECTION_SOUL_IMAGE_HISTORIES       string = "soul_image_histories"  //ERC721
-	COLLECTION_NFT_AUCTIONS               string = "nft_auction_available" //ERC721
-	COLLECTION_BNS                        string = "bns"                   //ERC721
-	COLLECTION_BNS_DEFAULT                string = "bns_default"           //ERC721
-	VIEW_BNS                              string = "bns_view"              //ERC721
-	COLLECTION_NFT_HISTORIES              string = "nft_histories"         //ERC721 - histories
+	COLLECTION_COLLECTIONS                string = "collections"            //ERC721, a collection has many nfts
+	COLLECTION_NFTS                       string = "nfts"                   //ERC721
+	COLLECTION_SOUL_IMAGE_HISTORIES       string = "soul_image_histories"   //ERC721
+	COLLECTION_SOUL_IMAGES                string = "soul_images"            //ERC721
+	COLLECTION_NFT_AUCTIONS               string = "nft_auction_available"  //ERC721
+	COLLECTION_NFT_TRIGGERED_AUCTIONS     string = "nft_triggered_auctions" //ERC721
+	COLLECTION_BNS                        string = "bns"                    //ERC721
+	COLLECTION_BNS_DEFAULT                string = "bns_default"            //ERC721
+	VIEW_BNS                              string = "bns_view"               //ERC721
+	COLLECTION_NFT_HISTORIES              string = "nft_histories"          //ERC721 - histories
 	COLLECTION_ALLOW_LIST                 string = "allow_list"
 	COLLECTION_INSERTED_ALLOW_LIST        string = "inserted_allow_list"
 	COLLECTION_FAUCETS                    string = "faucets"

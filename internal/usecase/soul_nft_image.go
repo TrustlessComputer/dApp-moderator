@@ -10,12 +10,15 @@ import (
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -27,6 +30,21 @@ type CaptureSoulImageChan struct {
 	Image            *string
 	AnimationFileUrl *string
 	Traits           *[]entity.NftAttr
+	ReplacedTraits   *map[string]string
+}
+
+type ReplaceHtmlWithTraits struct {
+	URL            string
+	CapturedImage  string
+	Traits         *[]entity.NftAttr
+	ReplacedTraits *map[string]string
+}
+
+type CaptureSoulImagesChan struct {
+	Nft               entity.Nfts
+	Err               error
+	Image             *string
+	AnimationFileUrls *[]*ReplaceHtmlWithTraits
 }
 
 type CaptureSoulOwnerChan struct {
@@ -61,15 +79,15 @@ func (u *Usecase) SoulNftImageCrontab() error {
 		var wg2 sync.WaitGroup
 		var wg3 sync.WaitGroup
 		inputWorker1Chan := make(chan entity.Nfts, len(nfts))
-		outputFromWorker1Chan := make(chan CaptureSoulImageChan, len(nfts))
-		outputFromWorker2Chan := make(chan CaptureSoulImageChan, len(nfts))
+		outputFromWorker1Chan := make(chan CaptureSoulImagesChan, len(nfts))
+		outputFromWorker2Chan := make(chan CaptureSoulImagesChan, len(nfts))
 
 		for i := 0; i < len(nfts); i++ {
-			go u.GetSoulNftAnimationURLWorker(&wg1, inputWorker1Chan, outputFromWorker1Chan)
+			go u.GetSoulNftAnimationURLWorkerNew(&wg1, inputWorker1Chan, outputFromWorker1Chan)
 		}
 
 		for i := 0; i < len(nfts); i++ {
-			go u.CaptureSoulNftImageWorker(&wg2, outputFromWorker1Chan, outputFromWorker2Chan)
+			go u.CaptureSoulNftImagesWorker(&wg2, outputFromWorker1Chan, outputFromWorker2Chan)
 		}
 
 		for _, nft := range nfts {
@@ -80,8 +98,32 @@ func (u *Usecase) SoulNftImageCrontab() error {
 
 		for i := 0; i < len(nfts); i++ {
 			out := <-outputFromWorker2Chan
+
+			for _, soulImage := range *out.AnimationFileUrls {
+				wg3.Add(1)
+				go u.CreateSoulNftImages(&wg3, CaptureSoulImageChan{
+					Err:              out.Err,
+					Nft:              out.Nft,
+					Image:            &soulImage.CapturedImage,
+					AnimationFileUrl: &soulImage.URL,
+					Traits:           soulImage.Traits,
+					ReplacedTraits:   soulImage.ReplacedTraits,
+				})
+			}
+
+			//TODO - logic will be applied here
 			wg3.Add(1)
-			go u.UpdateSoulNftImageWorker(&wg3, out)
+			output := *out.AnimationFileUrls
+			image := output[0].CapturedImage
+			animationURL := output[0].URL
+			traits := output[0].Traits
+			go u.UpdateSoulNftImageWorker(&wg3, CaptureSoulImageChan{
+				Err:              out.Err,
+				Nft:              out.Nft,
+				Image:            &image,
+				AnimationFileUrl: &animationURL,
+				Traits:           traits,
+			})
 		}
 
 		wg1.Wait()
@@ -173,8 +215,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab() error {
 			out := <-outputFromWorker2Chan
 			out1 := <-outputFromWorker3Chan
 
-			wg3.Add(2)
-			go u.UpdateSoulNftImageWorker(&wg3, out)
+			wg3.Add(1)
 
 			go u.UpdateSoulNftImageImageHistoriesWorker(&wg3, resp, out, out1)
 
@@ -214,6 +255,92 @@ func (u *Usecase) GetSoulNftAnimationURLWorker(wg *sync.WaitGroup, inputChan cha
 
 	animationFileUrl, err := u.GetAnimationFileUrl(ctx, &nft)
 	animationFileUrlP = &animationFileUrl
+}
+
+func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan chan entity.Nfts, outputChan chan CaptureSoulImagesChan) {
+
+	defer wg.Done()
+	nft := <-inputChan
+	var err error
+	animationFileUrlP := new([]*ReplaceHtmlWithTraits)
+
+	defer func() {
+
+		if err == nil {
+			logger.AtLog.Logger.Info(fmt.Sprintf("GetSoulNftAnimationURLWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("animationFileUrlP", animationFileUrlP))
+		} else {
+			logger.AtLog.Logger.Error(fmt.Sprintf("GetSoulNftAnimationURLWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Error(err))
+		}
+
+		outputChan <- CaptureSoulImagesChan{
+			Err:               err,
+			Nft:               nft,
+			AnimationFileUrls: animationFileUrlP,
+		}
+	}()
+
+	contractS, err := generative_nft_contract.NewGenerativeNftContract(common.HexToAddress(nft.ContractAddress),
+		u.TCPublicNode.GetClient())
+
+	if err != nil {
+		return
+	}
+
+	tokenIdInt, _ := strconv.Atoi(nft.TokenID)
+	tokenBigInt := big.NewInt(int64(tokenIdInt))
+
+	tokenUriData, err := contractS.TokenURI(&bind.CallOpts{Context: context.Background()}, tokenBigInt)
+	if err != nil {
+		return
+	}
+
+	tokenUri := entity.TokenUri{}
+	if err := json.Unmarshal([]byte(tokenUriData), &tokenUri); err != nil {
+		return
+	}
+	if tokenUri.AnimationUrl == "" {
+		err = errors.New("animation url is empty")
+		return
+	}
+
+	imageUrls := []*ReplaceHtmlWithTraits{}
+	if strings.Contains(tokenUri.AnimationUrl, "base64") {
+
+		html, err := u.ReplaceSoulHtml(tokenUri.AnimationUrl)
+		if err != nil {
+			return
+		}
+
+		for i := 1; i <= 4; i++ {
+			//TODO - replace via random number here
+			capKey := fmt.Sprintf("capture%d", i)
+			replaced := fmt.Sprintf("%s=!1", capKey)
+			replaceTo := fmt.Sprintf("%s=true", capKey)
+
+			randomArray := make(map[string]string)
+			randomArray[replaced] = replaceTo
+			html1 := strings.ReplaceAll(*html, replaced, replaceTo)
+
+			encoded := helpers.Base64Encode(html1)
+			fileName := fmt.Sprintf("%v_%v_%v.html", nft.ContractAddress, nft.TokenID, time.Now().UTC().Unix())
+			resp, err := u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
+			if err != nil {
+				return
+			}
+
+			item := &ReplaceHtmlWithTraits{}
+			htmlFileLink := fmt.Sprintf("https://storage.googleapis.com%v", resp.Path)
+
+			item.URL = htmlFileLink
+			item.ReplacedTraits = &randomArray
+			imageUrls = append(imageUrls, item)
+		}
+
+		animationFileUrlP = &imageUrls
+		return
+	}
+
+	return
 }
 
 func (u *Usecase) GetSoulNftOwnerWorker(wg *sync.WaitGroup, inputChan chan entity.Nfts, erc20Contract *erc20.Erc20, nftContract *generative_nft_contract.GenerativeNftContract, outputChan chan CaptureSoulOwnerChan) {
@@ -483,4 +610,82 @@ func (u *Usecase) UpdateSoulNftImageImageHistoriesWorker(wg *sync.WaitGroup, bit
 		zap.Any("image", image),
 		zap.Any("histories", obj),
 	)
+}
+
+func (u *Usecase) CaptureSoulNftImagesWorker(wg *sync.WaitGroup, inputChan chan CaptureSoulImagesChan, outputChan chan CaptureSoulImagesChan) {
+	defer wg.Done()
+	inChan := <-inputChan
+	newImagePathP := new(string)
+	traitP := new([]entity.NftAttr)
+	var err error
+	nft := inChan.Nft
+
+	defer func() {
+
+		if err == nil {
+			logger.AtLog.Logger.Info(fmt.Sprintf("CaptureSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("newImagePathP", newImagePathP), zap.Any("traitP", traitP))
+		} else {
+			logger.AtLog.Logger.Error(fmt.Sprintf("CaptureSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Error(err))
+		}
+
+		inChan.Image = newImagePathP
+		inChan.Err = err
+		outputChan <- inChan
+	}()
+
+	if inChan.Err != nil {
+		err = inChan.Err
+		return
+	}
+
+	for _, item := range *inChan.AnimationFileUrls {
+		newImagePath, traits, err := u.ParseHtmlImage(item.URL)
+		if err != nil {
+			return
+		}
+
+		traitObjs := []entity.NftAttr{}
+		for key, value := range traits {
+			t := entity.NftAttr{}
+			t.TraitType = key
+			t.Value = value
+			traitObjs = append(traitObjs, t)
+		}
+
+		item.Traits = &traitObjs
+		item.CapturedImage = newImagePath
+	}
+}
+
+func (u *Usecase) CreateSoulNftImages(wg *sync.WaitGroup, inputChan CaptureSoulImageChan) {
+	defer wg.Done()
+	var err error
+	nft := entity.Nfts{}
+
+	defer func() {
+		if err == nil {
+			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID))
+		} else {
+			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Error(err))
+		}
+
+	}()
+
+	if inputChan.Err != nil {
+		err = inputChan.Err
+		return
+	}
+
+	nft = inputChan.Nft
+	soulImage := &entity.SoulImages{
+		ContractAddress:    strings.ToLower(nft.ContractAddress),
+		TokenID:            strings.ToLower(nft.TokenID),
+		TokenIDInt:         nft.TokenIDInt,
+		Image:              inputChan.Image,
+		AnimationURL:       inputChan.AnimationFileUrl,
+		ReplacedAttributes: inputChan.ReplacedTraits,
+	}
+
+	_, err = u.Repo.InsertOne(soulImage)
+
 }
