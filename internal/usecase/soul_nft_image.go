@@ -140,7 +140,6 @@ func (u *Usecase) SoulNftImageCrontab() error {
 				Traits:           traits,
 			}
 
-			logger.AtLog.Logger.Info("Debug", zap.Any("updatedData", updatedData), zap.Any("output", output))
 			go u.UpdateSoulNftImageWorker(&wg3, updatedData)
 		}
 
@@ -322,8 +321,17 @@ func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan 
 		return
 	}
 
-	animationHtmlOriginal = &tokenUri.AnimationUrl
+	originalHtml := tokenUri.AnimationUrl
 	imageUrls := []*ReplaceHtmlWithTraits{}
+	originalHtml = strings.Replace(originalHtml, "data:text/html;base64,", "", -1)
+	originalFileName := fmt.Sprintf("original_%v_%v_%v.html", nft.ContractAddress, nft.TokenID, time.Now().UTC().Unix())
+	originalResp, err := u.Storage.UploadBaseToBucket(originalHtml, fmt.Sprintf("capture_animation_file/%v", originalFileName))
+	if err != nil {
+		return
+	}
+	htmlFileLink := fmt.Sprintf("https://storage.googleapis.com%v", originalResp.Path)
+	animationHtmlOriginal = &htmlFileLink
+
 	if strings.Contains(tokenUri.AnimationUrl, "base64") {
 
 		html, err := u.ReplaceSoulHtml(tokenUri.AnimationUrl)
