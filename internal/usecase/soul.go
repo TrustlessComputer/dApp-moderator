@@ -562,6 +562,84 @@ func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tok
 	return data, nil
 }
 
+func (u *Usecase) TriggerCreateAuction(insertData *entity.NftAuctionsAvailable) error {
+	key := fmt.Sprintf("TriggerCreateAuction - contract: %s, tokenID: %s", insertData.ContractAddress, insertData.TokenID)
+	ctx := context.Background()
+	tokenIDBigInt, _ := new(big.Int).SetString(insertData.TokenID, 10)
+	client := u.TCPrivateAutoNode.GetClient()
+	soulInstancePrivateNode, err := soul.NewSoul(common.HexToAddress(os.Getenv("SOUL_CONTRACT")), client)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	//TODO - check if token is having an open auction - skip
+	checkAuction, err := soulInstancePrivateNode.Auctions(nil, tokenIDBigInt)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	currentBlock, err := client.BlockNumber(ctx)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	endTime := checkAuction.EndTime.Uint64() //blockNUmber
+	if endTime >= currentBlock {
+		err = errors.New(fmt.Sprintf("Auction for %s is happening", insertData.TokenID))
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	privateKeyStr := os.Getenv("SOUL_SIGNATURE_PRIVATE_KEY")
+	privateKey, err := crypto.HexToECDSA(privateKeyStr)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+	publicKey := privateKey.Public()
+	publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+
+	nonce, err := client.PendingNonceAt(ctx, fromAddress)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	chainID, _ := new(big.Int).SetString(os.Getenv("SOUL_CHAIN_ID"), 10)
+	transactionBindOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	transactionBindOpts.Nonce = big.NewInt(int64(nonce))
+	tx, err := soulInstancePrivateNode.CreateAuction(transactionBindOpts, tokenIDBigInt)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	triggeredAuction := &entity.NftTriggeredAuctions{
+		TokenID:         insertData.TokenID,
+		TokenIDInt:      int64(insertData.TokenIDInt),
+		ContractAddress: strings.ToLower(insertData.ContractAddress),
+		TxHash:          tx.Hash().String(),
+	}
+
+	_, err = u.Repo.InsertOne(triggeredAuction)
+	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.Error(err))
+		return err
+	}
+
+	logger.AtLog.Logger.Info(key, zap.Any("triggeredAuction", triggeredAuction))
+	return nil
+}
+
 func (u *Usecase) SoulNFTName(tokenId string, contracts ...*soul.Soul) (string, error) {
 	var (
 		soulContract *soul.Soul
