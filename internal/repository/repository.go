@@ -262,5 +262,5 @@ func (r *Repository) CountTotalFromPipeline(collectionName string, pipelines bso
 		}
 	}
 
-	return 0, errors.New("can not get total")
+	return 0, nil
 }
