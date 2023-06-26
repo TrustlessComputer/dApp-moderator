@@ -19,9 +19,10 @@ import (
 // @Tags Auction
 // @Accept  json
 // @Produce  json
-// @Param token_id query string false "token_id"
+// @Param contractAddress path string true "contract address"
+// @Param tokenID path string true "token_id"
 // @Success 200 {object} response.JsonResponse{}
-// @Router /auctions [GET]
+// @Router /auction/detail/{contractAddress}/{tokenID} [GET]
 func (h *httpDelivery) auctionDetail(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
@@ -36,6 +37,17 @@ func (h *httpDelivery) auctionDetail(w http.ResponseWriter, r *http.Request) {
 	).ServeHTTP(w, r)
 }
 
+// @Summary listBid
+// @Description listBid
+// @Tags Auction
+// @Accept  json
+// @Produce  json
+// @Param dbAuctionID query string false "DB Auction ID"
+// @Param owner query string false "Owner"
+// @Param limit query int false "limit"
+// @Param page query int false "page"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /auction/list-bid [GET]
 func (h *httpDelivery) listBid(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 		iPagination := ctx.Value(utils.PAGINATION)
@@ -46,10 +58,16 @@ func (h *httpDelivery) listBid(w http.ResponseWriter, r *http.Request) {
 			return nil, err
 		}
 
-		dbAuction := vars["dbAuctionID"]
-		if dbAuction == "" {
-			return nil, errors.New("missing required info")
+		filterRequest := &request.FilterAuctionBid{
+			PaginationReq: pagination,
 		}
-		return h.Usecase.AuctionListBid(dbAuction, &pagination)
+		if dbAuctionID := r.URL.Query().Get("dbAuctionID"); dbAuctionID != "" {
+			filterRequest.DBAuctionID = &dbAuctionID
+		}
+		if owner := r.URL.Query().Get("owner"); owner != "" {
+			filterRequest.Sender = &owner
+		}
+
+		return h.Usecase.AuctionListBid(filterRequest)
 	}).ServeHTTP(w, r)
 }
