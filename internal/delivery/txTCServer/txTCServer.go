@@ -79,6 +79,7 @@ func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, erro
 	mkpEvents["AUCTION_BID_EVENT"] = strings.ToLower(os.Getenv("AUCTION_BID_EVENT"))
 	mkpEvents["AUCTION_SETTLE_EVENT"] = strings.ToLower(os.Getenv("AUCTION_SETTLE_EVENT"))
 	mkpEvents["AUCTION_CLAIM_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CLAIM_EVENT"))
+	mkpEvents["SOUL_UNLOCK_FEATURE_EVENT"] = strings.ToLower(os.Getenv("SOUL_UNLOCK_FEATURE_EVENT"))
 
 	m := &MarketPlace{
 		Contract: os.Getenv("MARKETPLACE_CONTRACT"),
@@ -150,22 +151,14 @@ func (c *txTCServer) StartServer() {
 	//function is being developed
 	tasks["checkSoulOwnerCrontab"] = c.checkSoulOwnerCrontab
 	tasks["captureSoulImageCrontab"] = c.captureSoulImageCrontab
+	tasks["resolveTxTransaction"] = c.resolveTxTransaction
 
 	//function have been done in develop
-	if os.Getenv("ENV") == "production" ||
-		os.Getenv("ENV") == "develop" {
-
+	if os.Getenv("ENV") == "production" {
 		tasks["checkTxHashChunks"] = c.checkTxHashChunks
-		tasks["resolveTxTransaction"] = c.resolveTxTransaction
 		tasks["fetchToken"] = c.fetchToken
 		tasks["UpdateCollectionItems"] = c.Usecase.UpdateCollectionItems
 		tasks["UpdateCollectionThumbnails"] = c.Usecase.UpdateCollectionThumbnails
-	}
-
-	if os.Getenv("ENV") == "local" {
-		// Override task local here
-		tasks = make(map[string]func(ctx context.Context) error)
-		tasks["resolveTxTransaction"] = c.resolveTxTransaction
 	}
 
 	var wg sync.WaitGroup

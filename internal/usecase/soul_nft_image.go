@@ -136,8 +136,8 @@ func (u *Usecase) SoulNftImageCrontab() error {
 	return nil
 }
 
-func (u *Usecase) SoulNftImageHistoriesCrontab() error {
-
+func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
+	logger.AtLog.Logger.Info("SoulNftImageHistoriesCrontab", zap.Any("specialNfts", specialNfts))
 	gmAddress := os.Getenv("SOUL_GM_ADDRESS")
 	url := fmt.Sprintf("https://www.fprotocol.io/api/swap/token/report?address=%s", gmAddress)
 	rate, _, _, err := helpers.JsonRequest(url, "GET", map[string]string{}, nil)
@@ -169,7 +169,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab() error {
 		offset := (page - 1) * limit
 
 		addr := os.Getenv("SOUL_CONTRACT")
-		nfts, err := u.Repo.NftCapturedImageHistories(addr, offset, limit)
+		nfts, err := u.Repo.NftCapturedImageHistories(addr, offset, limit, specialNfts)
 		if err != nil {
 			logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Error(err))
 		}
@@ -311,15 +311,17 @@ func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan 
 			return
 		}
 
-		for i := 1; i <= 4; i++ {
+		for i := 0; i <= 4; i++ {
 			//TODO - replace via random number here
-			capKey := fmt.Sprintf("capture%d", i)
-			replaced := fmt.Sprintf("%s=!1", capKey)
-			replaceTo := fmt.Sprintf("%s=true", capKey)
-
+			html1 := *html
 			randomArray := make(map[string]string)
-			randomArray[replaced] = replaceTo
-			html1 := strings.ReplaceAll(*html, replaced, replaceTo)
+			if i != 0 {
+				capKey := fmt.Sprintf("capture%d", i)
+				replaced := fmt.Sprintf("%s=!1", capKey)
+				replaceTo := fmt.Sprintf("%s=true", capKey)
+				randomArray[replaced] = replaceTo
+				html1 = strings.ReplaceAll(html1, replaced, replaceTo)
+			}
 
 			encoded := helpers.Base64Encode(html1)
 			fileName := fmt.Sprintf("%v_%v_%v.html", nft.ContractAddress, nft.TokenID, time.Now().UTC().Unix())
