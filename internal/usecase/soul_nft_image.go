@@ -137,7 +137,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 }
 
 func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
-
+	logger.AtLog.Logger.Info("SoulNftImageHistoriesCrontab", zap.Any("specialNfts", specialNfts))
 	gmAddress := os.Getenv("SOUL_GM_ADDRESS")
 	url := fmt.Sprintf("https://www.fprotocol.io/api/swap/token/report?address=%s", gmAddress)
 	rate, _, _, err := helpers.JsonRequest(url, "GET", map[string]string{}, nil)
