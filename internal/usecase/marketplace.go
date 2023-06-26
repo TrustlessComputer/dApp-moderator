@@ -1012,7 +1012,7 @@ func (u *Usecase) HandleUnlockFeature(data interface{}, chainLog types.Log) erro
 		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
 		return errors.New("event data is not correct")
 	}
-
+	logger.AtLog.Logger.Info("HandleUnlockFeature", zap.Any("eventData", eventData), zap.Any("chainLog", chainLog))
 	err := u.SoulNftImageHistoriesCrontab([]string{strings.ToLower(eventData.TokenId.String())})
 	if err != nil {
 		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.Error(err), zap.String("tokenID", eventData.TokenId.String()))
