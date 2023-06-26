@@ -461,14 +461,9 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 						max = 999999999
 					}
 
-					minBig := helpers.ConvertAmount(min)
-					maxBig := helpers.ConvertAmount(max)
-
-					minF, _ := minBig.Float64()
-					maxF, _ := maxBig.Float64()
 					f.Price = &entity.Rarity{
-						Min: minF,
-						Max: maxF,
+						Min: min,
+						Max: max,
 					}
 				}
 			}
@@ -505,7 +500,7 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				}
 			}
 
-			data, err := h.Usecase.FilterMkplaceNfts(ctx, f)
+			data, err := h.Usecase.FilterMkplaceNftNew(ctx, f)
 			if err != nil {
 				logger.AtLog.Logger.Error("can not get nfts", zap.Error(err))
 				return nil, err
