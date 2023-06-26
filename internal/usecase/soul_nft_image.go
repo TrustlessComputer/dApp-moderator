@@ -136,7 +136,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 	return nil
 }
 
-func (u *Usecase) SoulNftImageHistoriesCrontab() error {
+func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 
 	gmAddress := os.Getenv("SOUL_GM_ADDRESS")
 	url := fmt.Sprintf("https://www.fprotocol.io/api/swap/token/report?address=%s", gmAddress)
@@ -169,7 +169,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab() error {
 		offset := (page - 1) * limit
 
 		addr := os.Getenv("SOUL_CONTRACT")
-		nfts, err := u.Repo.NftCapturedImageHistories(addr, offset, limit)
+		nfts, err := u.Repo.NftCapturedImageHistories(addr, offset, limit, specialNfts)
 		if err != nil {
 			logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Error(err))
 		}
