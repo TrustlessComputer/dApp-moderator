@@ -677,7 +677,8 @@ const docTemplate = `{
                         "type": "string",
                         "description": "wallet_address",
                         "name": "wallet_address",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "integer",
@@ -751,6 +752,249 @@ const docTemplate = `{
                         "type": "string",
                         "description": "token_id",
                         "name": "token_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dao/proposals": {
+            "get": {
+                "description": "Get Proposals",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DAO - Proposal"
+                ],
+                "summary": "Get Proposals",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "proposer",
+                        "name": "proposer",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "proposal_id",
+                        "name": "proposal_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "separated by comma",
+                        "name": "states",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field: default volume",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort default: -1 desc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create Proposals",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DAO - Proposal"
+                ],
+                "summary": "Create Proposals",
+                "parameters": [
+                    {
+                        "description": "requestBody",
+                        "name": "requestBody",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/entity.ProposalDetail"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dao/proposals/{id}/{proposal_id}": {
+            "put": {
+                "description": "Get Proposal's proposalID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DAO - Proposal"
+                ],
+                "summary": "Update  Proposal's proposalID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "proposal_id",
+                        "name": "proposal_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dao/proposals/{proposal_id}": {
+            "get": {
+                "description": "Get Proposal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DAO - Proposal"
+                ],
+                "summary": "Get Proposal",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "proposal_id",
+                        "name": "proposal_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dao/proposals/{proposal_id}/votes": {
+            "get": {
+                "description": "Get Proposal's votes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DAO - Proposal"
+                ],
+                "summary": "Get Proposal's votes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "contract_address",
+                        "name": "contract_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "voter",
+                        "name": "voter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by field: default volume",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort default: -1 desc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "proposal_id",
+                        "name": "proposal_id",
                         "in": "path",
                         "required": true
                     }
@@ -2674,6 +2918,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/time": {
+            "get": {
+                "description": "Get server's time (UTC)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Common"
+                ],
+                "summary": "Get server's time (UTC)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.JsonResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/token-explorer/token/{address}": {
             "get": {
                 "description": "Update token",
@@ -3389,6 +3656,48 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "entity.ProposalDetail": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "contract_address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_draft": {
+                    "type": "boolean"
+                },
+                "proposal_id": {
+                    "description": "proposalID from chain",
+                    "type": "string"
+                },
+                "receiver_address": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "token_type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "request.CaptureSoulTokenReq": {
             "type": "object",
             "required": [
