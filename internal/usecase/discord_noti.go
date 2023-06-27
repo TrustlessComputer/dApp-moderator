@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"os"
 	"strings"
 	"time"
@@ -207,7 +208,7 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 	return notify, nil
 }
 
-func (u *Usecase) NewAuctionSettledNotify(auction *entity.Auction) (*entity.DiscordNotification, error) {
+func (u *Usecase) NewAuctionSettledNotify(auction *entity.Auction, winnerAmount *big.Int) (*entity.DiscordNotification, error) {
 	nft, err := u.Repo.GetNft(auction.CollectionAddress, auction.TokenID)
 	if err != nil {
 		return nil, err
@@ -232,7 +233,7 @@ func (u *Usecase) NewAuctionSettledNotify(auction *entity.Auction) (*entity.Disc
 						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**Amount:** \n%.5f", helpers.GetValue(auction.TotalAmount, 18)),
+						Value:  fmt.Sprintf("**Amount:** \n%.5f", helpers.GetValue(winnerAmount.String(), 18)),
 						Inline: true,
 					},
 				},
