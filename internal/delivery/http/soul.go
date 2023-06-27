@@ -9,12 +9,14 @@ import (
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
+	"fmt"
 	"math/big"
 	"net/http"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -235,6 +237,51 @@ func (h *httpDelivery) SoulCaptureImage(w http.ResponseWriter, r *http.Request) 
 			}
 
 			return nft, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
+// @Summary Get server's time (UTC)
+// @Description Get server's time (UTC)
+// @Tags Common
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} response.JsonResponse{}
+// @Router /time [GET]
+func (h *httpDelivery) serverTime(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			type resp struct {
+				Time          *time.Time `json:"time"`
+				FormattedTime string     `json:"formatted_time"`
+			}
+			now := time.Now().UTC()
+			//layout := time.RFC3339
+
+			format := func(input int) string {
+				if input < 10 {
+					return fmt.Sprintf("0%d", input)
+				}
+				return fmt.Sprintf("%d", input)
+			}
+
+			m := now.Month()
+			mInt := int(m)
+			layout := fmt.Sprintf("%d-%s-%s %s:%s:%s",
+				now.Year(),
+				format(mInt),
+				format(now.Day()),
+				format(now.Hour()),
+				format(now.Minute()),
+				format(now.Second()))
+
+			data := resp{
+				Time:          &now,
+				FormattedTime: layout,
+			}
+
+			return data, nil
 		},
 	).ServeHTTP(w, r)
 }
