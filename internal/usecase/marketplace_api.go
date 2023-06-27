@@ -27,6 +27,10 @@ func (u *Usecase) FilterTokenActivities(ctx context.Context, filter entity.Filte
 	return u.Repo.FilterTokenActivites(filter)
 }
 
+func (u *Usecase) FilterTokenSoulHistories(ctx context.Context, filter entity.FilterTokenActivities) ([]*entity.SoulTokenHistoriesFiltered, error) {
+	return u.Repo.FilterSoulHistories(filter)
+}
+
 func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
 	resp := []*entity.MkpNftsResp{}
 	f := bson.D{}

@@ -5,6 +5,27 @@ import (
 	"time"
 )
 
+type SoulTokenHistoriesFiltered struct {
+	BaseEntity   `bson:",inline" json:"base_entity"`
+	Type         TokenActivityType `bson:"type" json:"type"`
+	Title        string            `bson:"title" json:"title"`
+	UserAAddress string            `bson:"user_a_address" json:"user_a_address"`
+	UserBAddress string            `bson:"user_b_address" json:"user_b_address"`
+	AmountStr    float64           `bson:"amount" json:"amount"`
+	Erc20Address string            `bson:"erc_20_address" json:"erc_20_address"`
+	Time         *time.Time        `bson:"time" json:"time"`
+	//InscriptionID      string            `bson:"inscription_id" json:"inscription_id"`
+	TokenID            string `bson:"token_id" json:"token_id"`
+	Thumbnail          string `bson:"thumbnail" json:"thumbnail"`
+	CollectionContract string `bson:"collection_contract" json:"collection_contract"`
+	BlockNumber        uint64 `bson:"block_number" json:"block_number"`
+	TxHash             string `json:"tx_hash" bson:"tx_hash"`
+	LogIndex           uint   `json:"log_index" bson:"log_index"`
+	ImageCapture       string `json:"image_capture" bson:"image_capture"`
+	FeatureName        string `json:"feature_name" bson:"feature_name"`
+	Balance            string `json:"balance" bson:"balance"`
+}
+
 type SoulImageHistories struct {
 	BaseEntity `bson:",inline"`
 
