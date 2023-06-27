@@ -788,3 +788,46 @@ func (h *httpDelivery) mkplaceNftOwnerCollection(w http.ResponseWriter, r *http.
 		},
 	).ServeHTTP(w, r)
 }
+
+// UserCredits godoc
+// @Summary Get token's histories
+// @Description Get token's histories
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address path string true "contract_address"
+// @Param token_id path string true "token_id"
+// @Param status query bool false "0: open, 1: cancel, 2: done, default all"
+// @Param sort_by query string false "sort by field"
+// @Param sort query int false "1: ASC, -1: DESC"
+// @Param limit query int false "limit default 10"
+// @Param page query int false "page start with 1"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/contract/{contract_address}/token/{token_id}/soul_histories [GET]
+func (h *httpDelivery) getSoulHistories(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+			tokenID := vars["token_id"]
+			contractAddresss := vars["contract_address"]
+
+			f := entity.FilterTokenActivities{
+				BaseFilters: entity.BaseFilters{
+					Limit:  int64(*p.Limit),
+					Offset: int64(*p.Offset),
+					//SortBy: *p.SortBy,
+					//Sort:   entity.SortType(*p.Sort),
+				},
+				TokenID:         &tokenID,
+				ContractAddress: &contractAddresss,
+			}
+
+			resp, err := h.Usecase.FilterTokenSoulHistories(ctx, f)
+			if err != nil {
+				return nil, err
+			}
+			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
