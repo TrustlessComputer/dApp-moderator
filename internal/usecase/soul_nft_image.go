@@ -764,12 +764,6 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 		return err
 	}
 
-	erc20Contract, err := erc20.NewErc20(common.HexToAddress(gmAddress), u.TCPublicNode.GetClient())
-	if err != nil {
-		logger.AtLog.Logger.Error("SoulNftImageHistoriesCrontab", zap.Error(err))
-		return err
-	}
-
 	addr := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
 	tokenID := event.TokenId.String()
 	nft, err := u.Repo.GetNft(addr, tokenID)
@@ -777,15 +771,37 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 		return err
 	}
 
-	//animationFileUrl, err := u.GetAnimationFileUrl(context.Background(), nft)
-
-	newImagePath, _, err := u.ParseHtmlImage(nft.AnimationFileUrl)
+	contractS, err := generative_nft_contract.NewGenerativeNftContract(common.HexToAddress(nft.ContractAddress), u.TCPublicNode.GetClient())
 	if err != nil {
 		return err
 	}
 
-	//TODO -
-	balance, err := erc20Contract.BalanceOf(nil, event.User)
+	tokenIdInt, _ := strconv.Atoi(tokenID)
+	tokenBigInt := big.NewInt(int64(tokenIdInt))
+	tokenUriData, err := contractS.TokenURI(&bind.CallOpts{Context: context.Background()}, tokenBigInt)
+	if err != nil {
+		return err
+	}
+
+	tokenUri := entity.TokenUri{}
+	if err := json.Unmarshal([]byte(tokenUriData), &tokenUri); err != nil {
+		return err
+	}
+	if tokenUri.AnimationUrl == "" {
+		return errors.New("animation url is empty")
+	}
+
+	html, err := u.ReplaceSoulHistoryHtml(tokenUri.AnimationUrl)
+	if err != nil {
+		return err
+	}
+
+	newImagePath, err := u.UploadSoulHtmlToGCS(*html, "soul_history", nft.ContractAddress, nft.TokenID)
+	if err != nil {
+		return err
+	}
+
+	capturedImage, _, err := u.ParseHtmlImage(*newImagePath)
 	if err != nil {
 		return err
 	}
@@ -795,11 +811,11 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 		ContractAddress:  strings.ToLower(nft.ContractAddress),
 		TokenID:          nft.TokenID,
 		TokenIDInt:       nft.TokenIDInt,
-		ImageCapture:     newImagePath,
+		ImageCapture:     capturedImage,
 		ImageCaptureAt:   &now,
 		ImageCaptureDate: fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day()),
 		Erc20Address:     strings.ToLower(os.Getenv("SOUL_GM_ADDRESS")),
-		Erc20Amount:      balance.String(),
+		Erc20Amount:      event.BalanceGM.String(),
 		BlockNumber:      event.BlockNumber.Uint64(),
 		Owner:            strings.ToLower(event.User.String()),
 		Event:            entity.SoulUnlockFeature,
