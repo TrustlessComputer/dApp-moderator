@@ -801,6 +801,7 @@ func (u *Usecase) HandleAuctionCreated(data interface{}, chainLog types.Log) err
 		StartTimeBlock:    eventData.StartTime.String(),
 		EndTimeBlock:      eventData.EndTime.String(),
 		Status:            entity.AuctionStatusInProgress,
+		BlockNumber:       fmt.Sprintf("%v", chainLog.BlockNumber),
 	}
 
 	_, err := u.Repo.InsertOne(auctionEntity)
@@ -824,12 +825,19 @@ func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
 	chainAuctionID := new(big.Int).SetBytes(eventData.Auction.AuctionId[:]).String()
 	// async here => so retry to have data auctionEntity
 	auctionEntity := &entity.Auction{}
+	count := 0
 	for {
+		count++
 		err := u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{
 			"auction_id": chainAuctionID,
 		}, auctionEntity)
 		if err == nil {
 			break
+		} else {
+			if count == 30 {
+				logger.AtLog.Logger.Error("maximum retry Find an auction entity")
+				return err
+			}
 		}
 
 		time.Sleep(3 * time.Second)
@@ -931,6 +939,7 @@ func (u *Usecase) validateAuctionBid(auctionBidEvent *soul_contract.SoulAuctionB
 		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
 		Amount:            auctionBidEvent.Value.String(),
 		Sender:            strings.ToLower(auctionBidEvent.Sender.Hex()),
+		BlockNumber:       fmt.Sprintf("%v", chainLog.BlockNumber),
 	}, nil
 }
 
