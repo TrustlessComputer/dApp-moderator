@@ -23,6 +23,9 @@ const (
 	EventNewName         DiscordEvent = "new_name"
 	EventListForSale     DiscordEvent = "list_for_sale"
 	EventPurchaseListing DiscordEvent = "purchase_listing"
+	EventAuctionCreated  DiscordEvent = "auction_created"
+	EventBidCreated      DiscordEvent = "bid_created"
+	EventAuctionSettled  DiscordEvent = "auction_settled"
 
 	ImageFromInscriptionID DiscordImageSourceType = 1
 	ThumbNailPosition      DiscordImagePosition   = 1
