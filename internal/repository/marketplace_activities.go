@@ -136,9 +136,60 @@ func (r Repository) FilterSoulHistories(filter entity.FilterTokenActivities) ([]
 			},
 		},
 		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "nfts"},
+					{"localField", "inscription_id"},
+					{"foreignField", "token_id"},
+					{"let", bson.D{{"collection_address", "$collection_contract"}}},
+					{"pipeline",
+						bson.A{
+							bson.D{
+								{"$match",
+									bson.D{
+										{"$expr",
+											bson.D{
+												{"$eq",
+													bson.A{
+														"$collection_address",
+														"$$collection_address",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					{"as", "nfts"},
+				},
+			},
+		},
+		bson.D{
+			{"$unwind",
+				bson.D{
+					{"path", "$nfts"},
+					{"preserveNullAndEmptyArrays", true},
+				},
+			},
+		},
+		bson.D{
 			{"$addFields",
 				bson.D{
+					{"minted_at", bson.D{{"$toInt", "$nfts.block_number"}}},
+					{"hold_time",
+						bson.D{
+							{"$subtract",
+								bson.A{
+									"$block_number",
+									"$nfts.block_number_int",
+								},
+							},
+						},
+					},
 					{"image_capture", "$soul_image_histories.image_capture"},
+					{"owner", "$user_a_address"},
 					{"thumbnail", "$soul_image_histories.image_capture"},
 					{"feature_name", "$soul_image_histories.feature_name"},
 					{"balance", "$soul_image_histories.erc_20_amount"},

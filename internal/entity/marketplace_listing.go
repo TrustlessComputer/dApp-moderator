@@ -121,8 +121,12 @@ type MkpNftsResp struct {
 	Size             int64                      `json:"size" bson:"size"`
 	BnsData          []*Bns                     `json:"bns_data,omitempty" bson:"bns_data"`
 	BnsDefault       []*BNSDefault              `json:"bns_default,omitempty" bson:"bns_default"`
+	Auction          *SoulAuction               `json:"auction,omitempty" bson:"auction"`
 
 	*MkpNftsAuctionDataResp `json:",inline,omitempty" bson:",inline,omitempty"`
+}
+
+type SoulAuction struct {
 }
 
 type MkpNftsAuctionDataResp struct {
