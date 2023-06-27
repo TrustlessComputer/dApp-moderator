@@ -696,7 +696,7 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 
 			//Only soul is allowed
 			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
-				u.NewMintTokenNotify(tmp)
+				u.NewSoulTokenMintedNotify(tmp)
 			}
 
 			if tmp.ContractAddress == bnsAddress {
