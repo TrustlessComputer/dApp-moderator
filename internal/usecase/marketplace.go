@@ -814,6 +814,12 @@ func (u *Usecase) HandleAuctionCreated(data interface{}, chainLog types.Log) err
 		return err
 	}
 
+	//TODO  - discord noti here
+	_, err = u.NewAuctionCreatedNotify(auctionEntity)
+	if err != nil {
+		logger.AtLog.Logger.Error("useCase.HandleAuctionCreated-InsertOne", zap.Error(err))
+	}
+
 	return nil
 }
 
@@ -911,6 +917,10 @@ func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
 		return err
 	}
 
+	_, err = u.NewBidCreatedNotify(auctionBid)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionBid - UpdateOne", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+	}
 	return nil
 }
 
@@ -976,6 +986,11 @@ func (u *Usecase) HandleAuctionSettle(data interface{}, chainLog types.Log) erro
 	if err != nil {
 		logger.AtLog.Logger.Error("HandleAuctionSettle - UpdateOne", zap.String("auctionObjectID", auction.ID.Hex()), zap.Error(err))
 		return err
+	}
+
+	_, err = u.NewAuctionSettledNotify(auction, eventData.Amount)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - UpdateOne", zap.String("auctionObjectID", auction.ID.Hex()), zap.Error(err))
 	}
 
 	return nil
