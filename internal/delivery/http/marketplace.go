@@ -9,6 +9,7 @@ import (
 	soul_contract "dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/http"
 	"os"
@@ -17,7 +18,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
 
@@ -516,7 +516,7 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			}
 			for index, i := range data.Items {
 				if i.Name == "" {
-					if bnsAddress == ca {
+					if bnsAddress == ca && ca != soulAddress {
 						key := helpers.BnsTokenNameKey(i.TokenID)
 						existed, _ := h.Usecase.Cache.Exists(key)
 						if existed != nil && *existed == true {

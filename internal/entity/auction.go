@@ -47,6 +47,9 @@ type AuctionBid struct { // auctionBid History
 	Amount            string             `json:"amount" bson:"amount"`
 	Sender            string             `json:"sender" bson:"sender"`
 	BlockNumber       string             `json:"block_number" bson:"block_number"`
+	BlockNumberInt    uint64             `json:"block_number_int" bson:"block_number_int"`
+	TxHash            string             `json:"tx_hash" bson:"tx_hash"`
+	LogIndex          uint               `json:"log_index" bson:"log_index"`
 }
 
 func (AuctionBid) CollectionName() string {
@@ -61,6 +64,9 @@ type AuctionBidSummary struct { // summary total amount per auction per user
 	CollectionAddress string             `json:"collection_address" bson:"collection_address"`
 	TotalAmount       string             `json:"total_amount" bson:"total_amount"`
 	Sender            string             `json:"sender" bson:"sender"`
+	BlockNumberInt    uint64             `json:"block_number_int" bson:"block_number_int"`
+	TxHash            string             `json:"tx_hash" bson:"tx_hash"`
+	LogIndex          uint               `json:"log_index" bson:"log_index"`
 }
 
 func (AuctionBidSummary) CollectionName() string {

@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"os"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -303,7 +304,82 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 				},
 			},
 		},
-		bson.D{
+	}
+
+	//Only for soul
+	if filter.ContractAddress != nil {
+		if strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+			f1 = append(f1, bson.D{
+				{"$lookup",
+					bson.D{
+						{"from", "nft_auction_available"},
+						{"localField", "token_id"},
+						{"foreignField", "token_id"},
+						{"pipeline",
+							bson.A{
+								bson.D{{"$match", bson.D{{"collection_address", strings.ToLower(*filter.ContractAddress)}}}},
+							},
+						},
+						{"as", "nft_auction_available"},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$unwind",
+					bson.D{
+						{"path", "$nft_auction_available"},
+						{"preserveNullAndEmptyArrays", true},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$lookup",
+					bson.D{
+						{"from", "auction"},
+						{"localField", "token_id"},
+						{"foreignField", "token_id"},
+						{"pipeline",
+							bson.A{
+								bson.D{
+									{"$match",
+										bson.D{
+											{"collection_address", strings.ToLower(*filter.ContractAddress)},
+											{"status", entity.AuctionStatusInProgress},
+										},
+									},
+								},
+							},
+						},
+						{"as", "auction"},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$unwind",
+					bson.D{
+						{"path", "$auction"},
+						{"preserveNullAndEmptyArrays", true},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$addFields",
+					bson.D{
+						{"is_available_auction", "$nft_auction_available.is_auction"},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$sort",
+					bson.D{
+						{"token_id_int", entity.SORT_DESC},
+					},
+				},
+			})
+		}
+	} else {
+		//used for marketplace
+		f1 = append(f1, bson.D{
 			{"$lookup",
 				bson.D{
 					{"from", "marketplace_listings"},
@@ -326,8 +402,8 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					{"as", "listing_for_sales"},
 				},
 			},
-		},
-		bson.D{
+		})
+		f1 = append(f1, bson.D{
 			{"$lookup",
 				bson.D{
 					{"from", "marketplace_offers"},
@@ -350,17 +426,17 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					{"as", "make_offers"},
 				},
 			},
-		},
-		bson.D{{"$addFields", bson.D{{"price_erc20", "$listing_for_sales"}}}},
-		bson.D{
+		})
+		f1 = append(f1, bson.D{{"$addFields", bson.D{{"price_erc20", "$listing_for_sales"}}}})
+		f1 = append(f1, bson.D{
 			{"$unwind",
 				bson.D{
 					{"path", "$price_erc20"},
 					{"preserveNullAndEmptyArrays", true},
 				},
 			},
-		},
-		bson.D{
+		})
+		f1 = append(f1, bson.D{
 			{"$addFields",
 				bson.D{
 					{"buyable",
@@ -428,8 +504,8 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					{"erc20", "$price_erc20.erc_20_token"},
 				},
 			},
-		},
-		bson.D{
+		})
+		f1 = append(f1, bson.D{
 			{"$addFields",
 				bson.D{
 					{"price",
@@ -451,8 +527,8 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					},
 				},
 			},
-		},
-		bson.D{
+		})
+		f1 = append(f1, bson.D{
 			{"$lookup",
 				bson.D{
 					{"from", "bns"},
@@ -467,34 +543,33 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					{"as", "bns_data"},
 				},
 			},
-		},
-	}
-
-	f1 = append(f1, bson.D{
-		{"$lookup",
-			bson.D{
-				{"from", "bns_default"},
-				{"localField", "owner"},
-				{"foreignField", "resolver"},
-				{"pipeline",
-					bson.A{
-						bson.D{{"$skip", 0}},
-						bson.D{{"$limit", 1}},
+		})
+		f1 = append(f1, bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "bns_default"},
+					{"localField", "owner"},
+					{"foreignField", "resolver"},
+					{"pipeline",
+						bson.A{
+							bson.D{{"$skip", 0}},
+							bson.D{{"$limit", 1}},
+						},
 					},
+					{"as", "bns_default"},
 				},
-				{"as", "bns_default"},
 			},
-		},
-	})
-	f1 = append(f1, bson.D{
-		{"$sort",
-			bson.D{
-				{"buyable", -1},
-				{"price", 1},
-				{filter.SortBy, filter.Sort},
+		})
+		f1 = append(f1, bson.D{
+			{"$sort",
+				bson.D{
+					{"buyable", -1},
+					{"price", 1},
+					{filter.SortBy, filter.Sort},
+				},
 			},
-		},
-	})
+		})
+	}
 
 	matchPrice := bson.D{}
 	if filter.IsBuyable != nil {
