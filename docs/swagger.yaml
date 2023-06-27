@@ -1211,6 +1211,52 @@ paths:
       summary: Get token's activities
       tags:
       - MarketPlace
+  /marketplace/contract/{contract_address}/token/{token_id}/soul_histories:
+    get:
+      consumes:
+      - application/json
+      description: Get token's histories
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get token's histories
+      tags:
+      - MarketPlace
   /marketplace/listing/{contract_address}/token/{token_id}:
     get:
       consumes:
