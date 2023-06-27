@@ -794,20 +794,36 @@ func (u *Usecase) UpdateCollectionThumbnails(ctx context.Context) error {
 }
 
 func (u *Usecase) UpdateNftOwner(ctx context.Context, contractAddress string, tokenID string, newOwner string) (*entity.Nfts, error) {
+	key := fmt.Sprintf("UpdateNftOwner - %s - %s - %s", contractAddress, tokenID, newOwner)
 	contractAddress = strings.ToLower(contractAddress)
 	tokenID = strings.ToLower(tokenID)
 	newOwner = strings.ToLower(newOwner)
 	nft, err := u.Repo.GetNft(contractAddress, tokenID)
 	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.String("contractAddress", contractAddress),
+			zap.String("tokenID", tokenID),
+			zap.String("newOwner", newOwner),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
 	if strings.ToLower(nft.Owner) == strings.ToLower(newOwner) {
-		return nil, errors.New(fmt.Sprintf("Token is belong to %s", newOwner))
+		err = errors.New(fmt.Sprintf("Token is belong to %s", newOwner))
+		logger.AtLog.Logger.Error(key, zap.String("contractAddress", contractAddress),
+			zap.String("tokenID", tokenID),
+			zap.String("newOwner", newOwner),
+			zap.Error(err),
+		)
 	}
 
 	_, err = u.Repo.UpdateNftOwner(contractAddress, tokenID, newOwner)
 	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.String("contractAddress", contractAddress),
+			zap.String("tokenID", tokenID),
+			zap.String("newOwner", newOwner),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 	nft.Owner = newOwner
