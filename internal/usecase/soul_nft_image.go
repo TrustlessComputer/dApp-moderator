@@ -764,12 +764,6 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 		return err
 	}
 
-	erc20Contract, err := erc20.NewErc20(common.HexToAddress(gmAddress), u.TCPublicNode.GetClient())
-	if err != nil {
-		logger.AtLog.Logger.Error("SoulNftImageHistoriesCrontab", zap.Error(err))
-		return err
-	}
-
 	addr := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
 	tokenID := event.TokenId.String()
 	nft, err := u.Repo.GetNft(addr, tokenID)
@@ -812,12 +806,6 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 		return err
 	}
 
-	//TODO - snapshot balance of from event
-	balance, err := erc20Contract.BalanceOf(nil, event.User)
-	if err != nil {
-		return err
-	}
-
 	now := time.Now().UTC()
 	obj := &entity.SoulImageHistories{
 		ContractAddress:  strings.ToLower(nft.ContractAddress),
@@ -827,7 +815,7 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 		ImageCaptureAt:   &now,
 		ImageCaptureDate: fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day()),
 		Erc20Address:     strings.ToLower(os.Getenv("SOUL_GM_ADDRESS")),
-		Erc20Amount:      balance.String(),
+		Erc20Amount:      event.BalanceGM.String(),
 		BlockNumber:      event.BlockNumber.Uint64(),
 		Owner:            strings.ToLower(event.User.String()),
 		Event:            entity.SoulUnlockFeature,
