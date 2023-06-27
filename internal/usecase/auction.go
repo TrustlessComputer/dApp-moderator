@@ -233,21 +233,16 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 				"foreignField": "db_auction_id",
 				"pipeline": bson.A{
 					bson.M{"$addFields": bson.M{"amount_number": bson.M{"$toDouble": "$total_amount"}}},
-					bson.M{"$setWindowFields": bson.M{
-						"partitionBy": "$sender",
-						"sortBy":      bson.M{"amount_number": -1},
-						"output":      bson.M{"ranking": bson.M{"$rank": bson.D{}}},
-					}},
-					bson.M{"$match": bson.M{"sender": strings.ToLower(*filterReq.Sender)}},
+					bson.M{"$sort": bson.M{"amount_number": -1}},
 				},
 				"as": "user_auctions",
-			},
-			},
-			bson.M{"$unwind": bson.M{
-				"path":                       "$user_auctions",
-				"preserveNullAndEmptyArrays": true,
 			}},
-			bson.M{"$addFields": bson.M{"ranking": "$user_auctions.ranking"}})
+			bson.M{"$addFields": bson.M{"ranking": bson.M{"$add": bson.A{
+				bson.M{"$indexOfArray": bson.A{"$user_auctions.sender", strings.ToLower(*filterReq.Sender)}},
+				1,
+			}}}},
+			bson.M{"$project": bson.M{"user_auctions": 0}},
+		)
 	}
 
 	total, err := u.Repo.CountTotalFromPipeline(utils.COLLECTION_AUCTION_BID_SUMMARY, pipelines)
@@ -256,7 +251,15 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 	}
 
 	limit, offset := filterReq.PaginationReq.GetOffsetAndLimit()
-	pipelines = append(pipelines, bson.D{{"$sort", bson.M{"updated_at": -1, "_id": -1}}})
+	sortBy := "updated_at"
+	sort := -1
+	if filterReq.SortBy != nil && *filterReq.SortBy != "" {
+		sortBy = *filterReq.SortBy
+	}
+	if filterReq.Sort != nil && *filterReq.Sort != 0 {
+		sort = *filterReq.Sort
+	}
+	pipelines = append(pipelines, bson.D{{"$sort", bson.M{sortBy: sort, "_id": -1}}})
 	pipelines = append(pipelines, bson.D{{"$skip", offset}})
 	pipelines = append(pipelines, bson.D{{"$limit", limit}})
 	cursor, err := u.Repo.DB.Collection(utils.COLLECTION_AUCTION_BID_SUMMARY).Aggregate(context.TODO(), pipelines)
