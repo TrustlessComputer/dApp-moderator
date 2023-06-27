@@ -881,6 +881,9 @@ func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
 			CollectionAddress: auctionBid.CollectionAddress,
 			TotalAmount:       eventData.Value.String(),
 			Sender:            auctionBid.Sender,
+			BlockNumberInt:    chainLog.BlockNumber,
+			TxHash:            strings.ToLower(chainLog.TxHash.String()),
+			LogIndex:          chainLog.Index,
 		}); err != nil {
 			logger.AtLog.Logger.Error("HandleAuctionBid - InsertOne - AuctionBidSummary", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
 		}
@@ -954,6 +957,9 @@ func (u *Usecase) validateAuctionBid(auctionBidEvent *soul_contract.SoulAuctionB
 		Amount:            auctionBidEvent.Value.String(),
 		Sender:            strings.ToLower(auctionBidEvent.Sender.Hex()),
 		BlockNumber:       fmt.Sprintf("%v", chainLog.BlockNumber),
+		BlockNumberInt:    chainLog.BlockNumber,
+		TxHash:            strings.ToLower(chainLog.TxHash.String()),
+		LogIndex:          chainLog.Index,
 	}, nil
 }
 
