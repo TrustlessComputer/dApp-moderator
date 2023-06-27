@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/utils/contracts/erc20"
 	"dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/generative_nft_contract"
+	"dapp-moderator/utils/googlecloud"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"encoding/json"
@@ -324,14 +325,12 @@ func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan 
 
 	originalHtml := tokenUri.AnimationUrl
 	imageUrls := []*ReplaceHtmlWithTraits{}
-	originalHtml = strings.Replace(originalHtml, "data:text/html;base64,", "", -1)
-	originalFileName := fmt.Sprintf("original_%v_%v_%v.html", nft.ContractAddress, nft.TokenID, time.Now().UTC().Unix())
-	originalResp, err := u.Storage.UploadBaseToBucket(originalHtml, fmt.Sprintf("capture_animation_file/%v", originalFileName))
+
+	htmlFileLink, err := u.UploadSoulHtmlToGCS(originalHtml, "original_html", nft.ContractAddress, nft.TokenID)
 	if err != nil {
 		return
 	}
-	htmlFileLink := fmt.Sprintf("https://storage.googleapis.com%v", originalResp.Path)
-	animationHtmlOriginal = &htmlFileLink
+	animationHtmlOriginal = htmlFileLink
 
 	if strings.Contains(tokenUri.AnimationUrl, "base64") {
 
@@ -352,17 +351,13 @@ func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan 
 				html1 = strings.ReplaceAll(html1, replaced, replaceTo)
 			}
 
-			encoded := helpers.Base64Encode(html1)
-			fileName := fmt.Sprintf("%v_%v_%v.html", nft.ContractAddress, nft.TokenID, time.Now().UTC().Unix())
-			resp, err := u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
+			htmlFileLink, err := u.UploadSoulHtmlToGCS(html1, "", nft.ContractAddress, nft.TokenID)
 			if err != nil {
 				return
 			}
 
 			item := &ReplaceHtmlWithTraits{}
-			htmlFileLink := fmt.Sprintf("https://storage.googleapis.com%v", resp.Path)
-
-			item.URL = htmlFileLink
+			item.URL = *htmlFileLink
 			item.ReplacedTraits = &randomArray
 			imageUrls = append(imageUrls, item)
 		}
@@ -372,6 +367,32 @@ func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan 
 	}
 
 	return
+}
+
+func (u *Usecase) UploadSoulHtmlToGCS(html string, namePrefix string, contractAddress string, tokenID string) (*string, error) {
+	if namePrefix == "" {
+		namePrefix = "image"
+	}
+	var err error
+	resp := &googlecloud.GcsUploadedObject{}
+	fileName := fmt.Sprintf("%s_%v_%v_%v.html", namePrefix, contractAddress, tokenID, time.Now().UTC().Unix())
+
+	if strings.Contains(html, "data:text/html;base64,") {
+		originalHtml := strings.Replace(html, "data:text/html;base64,", "", -1)
+		resp, err = u.Storage.UploadBaseToBucket(originalHtml, fmt.Sprintf("capture_animation_file/%v", fileName))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		encoded := helpers.Base64Encode(html)
+		resp, err = u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	htmlFileLink := fmt.Sprintf("%s/%v", os.Getenv("GCS_DOMAIN"), resp.Name)
+	return &htmlFileLink, nil
 }
 
 func (u *Usecase) GetSoulNftOwnerWorker(wg *sync.WaitGroup, inputChan chan entity.Nfts, erc20Contract *erc20.Erc20, nftContract *generative_nft_contract.GenerativeNftContract, outputChan chan CaptureSoulOwnerChan) {
@@ -763,6 +784,7 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 		return err
 	}
 
+	//TODO -
 	balance, err := erc20Contract.BalanceOf(nil, event.User)
 	if err != nil {
 		return err
