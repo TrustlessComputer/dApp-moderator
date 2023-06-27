@@ -302,7 +302,7 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		}
 
 		activity.Time = &tm
-		activity.Amount = event.BalanceGM.Int64()
+		activity.AmountStr = event.BalanceGM.String()
 		activity.InscriptionID = strings.ToLower(event.TokenId.String())
 		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
 		activity.BlockNumber = event.BlockNumber.Uint64()
