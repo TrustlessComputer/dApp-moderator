@@ -204,11 +204,13 @@ func (h *httpDelivery) RegisterV1Routes() {
 	marketplace.HandleFunc("/collections/{contract_address}/nft-owners", h.mkplaceNftOwnerCollection).Methods("GET")
 	marketplace.HandleFunc("/nfts", h.mkplaceNfts).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/nfts/{token_id}", h.mkplaceNftDetail).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}/nfts/{token_id}", h.mkplaceNftDetail).Methods("GET")
 	marketplace.HandleFunc("/listing/{contract_address}/token/{token_id}", h.getListingViaGenAddressTokenID).Methods("GET")
 	marketplace.HandleFunc("/offers/{contract_address}/token/{token_id}", h.getOfferViaGenAddressTokenID).Methods("GET")
 	marketplace.HandleFunc("/wallet/{wallet_address}/listing", h.getListingOfAProfile).Methods("GET")
 	marketplace.HandleFunc("/wallet/{wallet_address}/offer", h.getOffersOfAProfile).Methods("GET")
 	marketplace.HandleFunc("/contract/{contract_address}/token/{token_id}/activities", h.getTokenActivities).Methods("GET")
+	marketplace.HandleFunc("/contract/{contract_address}/token/{token_id}/soul_histories", h.getSoulHistories).Methods("GET")
 
 	soul := api.PathPrefix("/soul").Subrouter()
 	soul.HandleFunc("/signature", h.SoulCreateSignature).Methods("POST")

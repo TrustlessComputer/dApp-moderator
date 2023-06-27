@@ -78,3 +78,107 @@ func (r Repository) PurchaseMKPActivity(offeringID string) (*entity.MarketplaceT
 
 	return mkpListing, nil
 }
+
+func (r Repository) FilterSoulHistories(filter entity.FilterTokenActivities) ([]*entity.SoulTokenHistoriesFiltered, error) {
+	match := bson.D{}
+
+	if filter.ContractAddress != nil && *filter.ContractAddress != "" {
+		match = append(match, bson.E{"collection_contract", strings.ToLower(*filter.ContractAddress)})
+	}
+	if filter.TokenID != nil && *filter.TokenID != "" {
+		match = append(match, bson.E{"inscription_id", strings.ToLower(*filter.TokenID)})
+	}
+
+	match = append(match, bson.E{"type", bson.D{{"$in", []entity.TokenActivityType{entity.SoulUnlockFeature}}}})
+
+	mkpListing := []*entity.SoulTokenHistoriesFiltered{}
+	f := bson.A{
+		bson.D{
+			{"$match", match},
+		},
+		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "soul_image_histories"},
+					{"localField", "tx_hash"},
+					{"foreignField", "tx_hash"},
+					{"let", bson.D{{"log_index", "$log_index"}}},
+					{"pipeline",
+						bson.A{
+							bson.D{
+								{"$match",
+									bson.D{
+										{"$expr",
+											bson.D{
+												{"$eq",
+													bson.A{
+														"$log_index",
+														"$$log_index",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					{"as", "soul_image_histories"},
+				},
+			},
+		},
+		bson.D{
+			{"$unwind",
+				bson.D{
+					{"path", "$soul_image_histories"},
+					{"preserveNullAndEmptyArrays", true},
+				},
+			},
+		},
+		bson.D{
+			{"$addFields",
+				bson.D{
+					{"image_capture", "$soul_image_histories.image_capture"},
+					{"thumbnail", "$soul_image_histories.image_capture"},
+					{"feature_name", "$soul_image_histories.feature_name"},
+					{"balance", "$soul_image_histories.erc_20_amount"},
+					{"erc_20_address", "$soul_image_histories.erc_20_address"},
+					{"token_id", "$inscription_id"},
+					{"amount",
+						bson.D{
+							{"$divide",
+								bson.A{
+									bson.D{{"$toDouble", "$soul_image_histories.erc_20_amount"}},
+									bson.D{
+										{"$pow",
+											bson.A{
+												10,
+												18,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		bson.D{{"$project", bson.D{{"soul_image_histories", 0}}}},
+		bson.D{{"$sort", bson.D{{"block_number", -1}, {"log_index", 1}}}},
+		bson.D{{"$skip", filter.Offset}},
+		bson.D{{"$limit", filter.Limit}},
+	}
+
+	cursor, err := r.DB.Collection(entity.MarketplaceTokenActivity{}.CollectionName()).Aggregate(context.TODO(), f, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor.All((context.TODO()), &mkpListing)
+	if err != nil {
+		return nil, err
+	}
+
+	return mkpListing, nil
+}
