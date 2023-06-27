@@ -17,19 +17,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
-	"os"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
+	"math/big"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 type CheckGMBalanceOutputChan struct {
@@ -304,7 +302,7 @@ func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) 
 
 func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*structure.CreateSignatureResp, error) {
 	//return error
-	return nil, errors.New("Cannot create signature")
+	//return nil, errors.New("Cannot create signature")
 
 	soulChainID := os.Getenv("SOUL_CHAIN_ID")
 	chainID, _ := new(big.Int).SetString(soulChainID, 10)
@@ -511,15 +509,13 @@ func (u *Usecase) GetAnimationFileUrl(ctx context.Context, nftEntity *entity.Nft
 		if err != nil {
 			return "", err
 		}
-		encoded := helpers.Base64Encode(*html)
-		fileName := fmt.Sprintf("%v_%v_%v.html", nftEntity.ContractAddress, nftEntity.TokenID, time.Now().UTC().Unix())
-		resp, err := u.Storage.UploadBaseToBucket(encoded, fmt.Sprintf("capture_animation_file/%v", fileName))
+
+		htmlLink, err := u.UploadSoulHtmlToGCS(*html, "", nftEntity.ContractAddress, nftEntity.TokenID)
 		if err != nil {
 			return "", err
 		}
 
-		htmlFileLink := fmt.Sprintf("https://storage.googleapis.com%v", resp.Path)
-		return htmlFileLink, nil
+		return *htmlLink, nil
 	}
 
 	return tokenUri.AnimationUrl, nil

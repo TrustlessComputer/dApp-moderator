@@ -6,7 +6,7 @@ import (
 )
 
 type SoulTokenHistoriesFiltered struct {
-	BaseEntity   `bson:",inline" json:"base_entity"`
+	BaseEntity   `bson:",inline" json:"-"`
 	Type         TokenActivityType `bson:"type" json:"type"`
 	Title        string            `bson:"title" json:"title"`
 	UserAAddress string            `bson:"user_a_address" json:"user_a_address"`
