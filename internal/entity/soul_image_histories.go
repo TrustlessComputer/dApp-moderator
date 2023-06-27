@@ -8,17 +8,18 @@ import (
 type SoulTokenHistoriesFiltered struct {
 	BaseEntity   `bson:",inline" json:"-"`
 	Type         TokenActivityType `bson:"type" json:"type"`
-	Title        string            `bson:"title" json:"title"`
-	UserAAddress string            `bson:"user_a_address" json:"user_a_address"`
-	UserBAddress string            `bson:"user_b_address" json:"user_b_address"`
+	Title        string            `bson:"title" json:"-"`
+	Owner        string            `bson:"owner" json:"owner"`
 	AmountStr    float64           `bson:"amount" json:"amount"`
 	Erc20Address string            `bson:"erc_20_address" json:"erc_20_address"`
 	Time         *time.Time        `bson:"time" json:"time"`
 	//InscriptionID      string            `bson:"inscription_id" json:"inscription_id"`
-	TokenID            string `bson:"token_id" json:"token_id"`
-	Thumbnail          string `bson:"thumbnail" json:"thumbnail"`
+	TokenID string `bson:"token_id" json:"token_id"`
+	//Thumbnail          string `bson:"thumbnail" json:"thumbnail"`
 	CollectionContract string `bson:"collection_contract" json:"collection_contract"`
 	BlockNumber        uint64 `bson:"block_number" json:"block_number"`
+	MintedAt           uint64 `bson:"minted_at" json:"minted_at"`
+	HoldTime           uint64 `bson:"hold_time" json:"hold_time"`
 	TxHash             string `json:"tx_hash" bson:"tx_hash"`
 	LogIndex           uint   `json:"log_index" bson:"log_index"`
 	ImageCapture       string `json:"image_capture" bson:"image_capture"`
