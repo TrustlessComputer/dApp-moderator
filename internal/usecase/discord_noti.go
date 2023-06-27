@@ -315,7 +315,7 @@ func (u *Usecase) NewBidCreatedNotify(auctionBid *entity.AuctionBid) (*entity.Di
 
 func (u *Usecase) NewSoulTokenMintedNotify(nfts *entity.Nfts) (*entity.DiscordNotification, error) {
 	message := discordclient.Message{
-		Content:   fmt.Sprintf("**MINT**"),
+		Content:   fmt.Sprintf("**NEW MINT**"),
 		Username:  "Satoshi 27",
 		AvatarUrl: "",
 		Embeds: []discordclient.Embed{
