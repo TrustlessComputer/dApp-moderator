@@ -26,6 +26,7 @@ type Auction struct {
 	AuctionID         string `json:"auction_id" bson:"auction_id"`
 	StartTimeBlock    string `json:"start_time_block" bson:"start_time_block"`
 	EndTimeBlock      string `json:"end_time_block" bson:"end_time_block"`
+	BlockNumber       string `json:"block_number" bson:"block_number"`
 
 	Status      AuctionStatus `json:"status" bson:"status"`
 	TotalAmount string        `json:"total_amount" bson:"total_amount"`
@@ -34,7 +35,7 @@ type Auction struct {
 }
 
 func (Auction) CollectionName() string {
-	return "auction"
+	return utils.COLLECTION_AUCTION
 }
 
 type AuctionBid struct { // auctionBid History
@@ -45,6 +46,7 @@ type AuctionBid struct { // auctionBid History
 	CollectionAddress string             `json:"collection_address" bson:"collection_address"`
 	Amount            string             `json:"amount" bson:"amount"`
 	Sender            string             `json:"sender" bson:"sender"`
+	BlockNumber       string             `json:"block_number" bson:"block_number"`
 }
 
 func (AuctionBid) CollectionName() string {
