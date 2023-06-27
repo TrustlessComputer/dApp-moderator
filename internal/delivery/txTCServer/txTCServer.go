@@ -188,7 +188,6 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 		return err
 	}
 
-	lastProcessedBlock = 84751
 	fromBlock := lastProcessedBlock + 1
 	if fromBlock > chainBlock.Int64() {
 		return err
