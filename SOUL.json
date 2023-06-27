@@ -592,6 +592,12 @@
         "internalType": "string",
         "name": "featureName",
         "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "balanceGM",
+        "type": "uint256"
       }
     ],
     "name": "UnlockFeature",
@@ -870,6 +876,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_dao",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1178,6 +1197,19 @@
       }
     ],
     "name": "changeBrc20Token",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newAddr",
+        "type": "address"
+      }
+    ],
+    "name": "changeDao",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
