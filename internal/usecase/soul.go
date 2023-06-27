@@ -544,6 +544,32 @@ func (u *Usecase) ReplaceSoulHtml(input string) (*string, error) {
 	return &html, nil
 }
 
+func (u *Usecase) ReplaceSoulHistoryHtml(input string) (*string, error) {
+	input = strings.Replace(input, "data:text/html;base64,", "", -1)
+
+	byteArray, err := helpers.Base64Decode(input)
+	if err != nil {
+		return nil, err
+	}
+
+	replaceTo1 := ""
+	replaceTo3 := ""
+
+	if os.Getenv("SOUL_CHAIN_ID") == "22213" { //production
+		replaceTo1 = `"https://tc-node.trustless.computer"`
+		replaceTo3 = `isFakeData = true`
+	} else {
+		replaceTo1 = `"https://tc-node-manual.regtest.trustless.computer"`
+		replaceTo3 = `isFakeData = true`
+	}
+
+	html := bytes.NewBuffer(byteArray).String()
+	html = strings.ReplaceAll(html, "Web3.givenProvider", replaceTo1)
+	html = strings.ReplaceAll(html, "isFakeData=!1", replaceTo3)
+	//html = strings.ReplaceAll(html, "isCapture=!1", "isCapture=true")
+	return &html, nil
+}
+
 func (u *Usecase) SoulNftDetail(ctx context.Context, contractAddress string, tokenID string) (*entity.NftAuctionsAvailable, error) {
 
 	data, err := u.Repo.FindAuction(contractAddress, tokenID)
