@@ -313,6 +313,52 @@ func (u *Usecase) NewBidCreatedNotify(auctionBid *entity.AuctionBid) (*entity.Di
 	return notify, nil
 }
 
+func (u *Usecase) NewSoulTokenMintedNotify(nfts *entity.Nfts) (*entity.DiscordNotification, error) {
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**MINT**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Owner:** \n%s", utils.ShortenBlockAddress(nfts.Owner)),
+						Inline: true,
+					},
+					//{
+					//	Value:  fmt.Sprintf("**Type:** \n%s", nfts.ContentType),
+					//	Inline: true,
+					//},
+				},
+			},
+		},
+	}
+	if nfts.Image != "" {
+		if strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
+			message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+		} else {
+			message.Embeds[0].Image.Url = nfts.Image
+		}
+
+	}
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventSoulTokenMinted,
+	}
+
+	notify.Message.Embeds[0].Image.Url = nfts.ImageCapture
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Soul #%s", nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("%s/souls/%s", os.Getenv("SOUL_DOMAIN"), nfts.TokenID)
+
+	err := u.CreateDiscordNotify(notify)
+	if err != nil {
+		return nil, err
+	}
+
+	return notify, nil
+}
+
 // it's disabled by order
 func (u *Usecase) NewMintTokenNotify(nfts *entity.Nfts) error {
 	message := discordclient.Message{
@@ -356,7 +402,11 @@ func (u *Usecase) NewMintTokenNotify(nfts *entity.Nfts) error {
 	notify.Message.Embeds[0].Title = fmt.Sprintf("Smart Inscription #%s", nfts.TokenID)
 	notify.Message.Embeds[0].Url = fmt.Sprintf("https://smartinscription.xyz/%s", nfts.TokenID)
 
-	return u.CreateDiscordNotify(notify)
+	notify.Webhook = "https://discord.com/api/webhooks/1077867046869667920/X-8MFaKE7BuC9hC55zixBHE_uSn9W7mIVTpZkdxjzMXv_nY3CPrDZrK7Uko911G6Zask"
+
+	u.DiscordClient.SendMessage(context.TODO(), notify.Webhook, notify.Message)
+	return nil
+	//return u.CreateDiscordNotify(notify)
 }
 
 func (u *Usecase) JobSendDiscord() error {
