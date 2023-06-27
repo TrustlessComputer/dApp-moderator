@@ -432,7 +432,8 @@ func (u *Usecase) TransferToken(eventData interface{}, chainLog types.Log) error
 
 	go u.UpdateUploadedFile(eventData, chainLog)
 
-	if strings.ToLower(os.Getenv("ENV")) == strings.ToLower("production") {
+	if strings.ToLower(os.Getenv("ENV")) == strings.ToLower("production") ||
+		strings.ToLower(os.Getenv("ENV")) == strings.ToLower("develop") {
 
 		updated, err := u.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
 		if err != nil {
