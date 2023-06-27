@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/erc20"
+	"dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/generative_nft_contract"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
@@ -610,6 +611,7 @@ func (u *Usecase) UpdateSoulNftImageImageHistoriesWorker(wg *sync.WaitGroup, bit
 		Erc20Amount:      erc20Amount,
 		BlockNumber:      bn,
 		Owner:            strings.ToLower(owner),
+		Event:            entity.SoulUnlockFeature,
 	}
 
 	if len(bitcoindex.Data) >= 1 {
@@ -718,4 +720,100 @@ func (u *Usecase) CreateSoulNftImages(wg *sync.WaitGroup, inputChan CaptureSoulI
 
 	_, err = u.Repo.InsertOne(soulImage)
 
+}
+
+func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash string, logIndex int) error {
+	logger.AtLog.Logger.Info("SoulNftUnlockFeature",
+		zap.String("user", event.User.String()),
+		zap.Uint64("blockNumber", event.BlockNumber.Uint64()),
+		zap.Uint64("tokenID", event.TokenId.Uint64()),
+		zap.String("featureName", event.FeatureName),
+	)
+
+	gmAddress := os.Getenv("SOUL_GM_ADDRESS")
+	url := fmt.Sprintf("https://www.fprotocol.io/api/swap/token/report?address=%s", gmAddress)
+	rate, _, _, err := helpers.JsonRequest(url, "GET", map[string]string{}, nil)
+	if err != nil {
+		return err
+	}
+
+	bitcoinDex := &structure.ReportErc20{}
+	err = json.Unmarshal(rate, bitcoinDex)
+	if err != nil {
+		return err
+	}
+
+	erc20Contract, err := erc20.NewErc20(common.HexToAddress(gmAddress), u.TCPublicNode.GetClient())
+	if err != nil {
+		logger.AtLog.Logger.Error("SoulNftImageHistoriesCrontab", zap.Error(err))
+		return err
+	}
+
+	addr := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
+	tokenID := event.TokenId.String()
+	nft, err := u.Repo.GetNft(addr, tokenID)
+	if err != nil {
+		return err
+	}
+
+	//animationFileUrl, err := u.GetAnimationFileUrl(context.Background(), nft)
+
+	newImagePath, _, err := u.ParseHtmlImage(nft.AnimationFileUrl)
+	if err != nil {
+		return err
+	}
+
+	balance, err := erc20Contract.BalanceOf(nil, event.User)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now().UTC()
+	obj := &entity.SoulImageHistories{
+		ContractAddress:  strings.ToLower(nft.ContractAddress),
+		TokenID:          nft.TokenID,
+		TokenIDInt:       nft.TokenIDInt,
+		ImageCapture:     newImagePath,
+		ImageCaptureAt:   &now,
+		ImageCaptureDate: fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day()),
+		Erc20Address:     strings.ToLower(os.Getenv("SOUL_GM_ADDRESS")),
+		Erc20Amount:      balance.String(),
+		BlockNumber:      event.BlockNumber.Uint64(),
+		Owner:            strings.ToLower(event.User.String()),
+		Event:            entity.SoulUnlockFeature,
+		FeatureName:      event.FeatureName,
+		TxHash:           strings.ToLower(txHash),
+		LogIndex:         logIndex,
+	}
+
+	if len(bitcoinDex.Data) >= 1 {
+		price := bitcoinDex.Data[0]
+		obj.BitcoinDexWETHPrice = price.Price
+		obj.BitcoinDexWBTCPrice = price.BtcPrice
+		obj.BitcoinDexUSDTPrice = price.UsdPrice
+	} else {
+		obj.BitcoinDexWETHPrice = "0"
+		obj.BitcoinDexWBTCPrice = "0"
+		obj.BitcoinDexUSDTPrice = "0"
+	}
+
+	err = u.Repo.InsertSoulImageHistory(obj)
+	if err != nil {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
+			zap.String("tokenID", nft.TokenID),
+			zap.String("contractAddress", nft.ContractAddress),
+			zap.Any("image", nft.AnimationFileUrl),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
+		zap.String("tokenID", nft.TokenID),
+		zap.String("contractAddress", nft.ContractAddress),
+		zap.Any("image", nft.AnimationFileUrl),
+		zap.Any("histories", obj),
+	)
+
+	return nil
 }

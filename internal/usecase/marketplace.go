@@ -260,6 +260,8 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		}
 
 		activity.Time = &tm
+		activity.UserAAddress = strings.ToLower(event.Winner.String())
+		activity.Amount = event.Amount.Int64()
 		activity.InscriptionID = strings.ToLower(event.TokenId.String())
 		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
 		activity.AuctionID = utils.ToPtr(new(big.Int).SetBytes(event.Auction.AuctionId[:]).String())
@@ -435,13 +437,13 @@ func (u *Usecase) TransferToken(eventData interface{}, chainLog types.Log) error
 	if strings.ToLower(os.Getenv("ENV")) == strings.ToLower("production") ||
 		strings.ToLower(os.Getenv("ENV")) == strings.ToLower("develop") {
 
-		updated, err := u.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
+		_, err := u.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
 		if err != nil {
 			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber), zap.Error(err))
 			return err
 		}
 
-		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Any("updated", updated), zap.Uint64("blockNumber", chainLog.BlockNumber))
+		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber))
 	} else {
 		logger.AtLog.Logger.Info(fmt.Sprintf("[Testing] UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber))
 	}
@@ -1023,7 +1025,7 @@ func (u *Usecase) HandleUnlockFeature(data interface{}, chainLog types.Log) erro
 		return errors.New("event data is not correct")
 	}
 	logger.AtLog.Logger.Info("HandleUnlockFeature", zap.Any("eventData", eventData), zap.Any("chainLog", chainLog))
-	err := u.SoulNftImageHistoriesCrontab([]string{strings.ToLower(eventData.TokenId.String())})
+	err := u.SoulNftUnlockFeature(eventData, chainLog.TxHash.String(), int(chainLog.Index))
 	if err != nil {
 		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.Error(err), zap.String("tokenID", eventData.TokenId.String()))
 		return errors.New("event data is not correct")
