@@ -988,7 +988,7 @@ func (u *Usecase) HandleAuctionSettle(data interface{}, chainLog types.Log) erro
 		return err
 	}
 
-	_, err = u.NewAuctionSettledNotify(auction)
+	_, err = u.NewAuctionSettledNotify(auction, eventData.Amount)
 	if err != nil {
 		logger.AtLog.Logger.Error("HandleAuctionSettle - UpdateOne", zap.String("auctionObjectID", auction.ID.Hex()), zap.Error(err))
 	}
