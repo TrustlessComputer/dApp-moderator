@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/generative_project_contract"
+	soul_contract "dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"errors"
@@ -677,6 +678,22 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 	nft, err := u.Repo.GetNft(tmp.ContractAddress, tmp.TokenID)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
+
+			//Name for soul contract
+			soulAddress := os.Getenv("SOUL_CONTRACT")
+			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(soulAddress) {
+				soulContract, err := soul_contract.NewSoul(common.HexToAddress(soulAddress), u.TCPublicNode.GetClient())
+				if err != nil {
+					logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				} else {
+					name, err := u.SoulNFTName(tmp.TokenID, soulContract)
+					if err != nil {
+						logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+					} else {
+						tmp.Name = name
+					}
+				}
+			}
 
 			_, err = u.Repo.InsertOne(tmp)
 			if err != nil {

@@ -27,6 +27,8 @@ type AuctionListBidResponseItem struct {
 	BidderAvatar string    `json:"bidder_avatar"`
 	BidderName   string    `json:"bidder_name"`
 	Time         time.Time `json:"time"`
+	TxHash       string    `json:"tx_hash"`
+	BlockNumber  uint64    `json:"block_number_int"`
 
 	*nft_explorer.MkpNftsResp `json:",inline,omitempty" bson:",inline"`
 	Auction                   *entity.Auction `json:"auction,omitempty"`
