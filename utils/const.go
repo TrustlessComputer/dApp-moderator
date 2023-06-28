@@ -181,6 +181,7 @@ const (
 
 	VIEW_SWAP_IDO_LIST_VIEW                        string = "swap_ido_list_view"
 	VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES           string = "marketplace_nft_with_attributes_view"
+	VIEW_SOUL_NFT_WITH_ATTRIBUTES                  string = "soul_nfts_with_aution_data_rarity_view"
 	VIEW_SWAP_LIQUIDITY_REPORT_SLACK               string = "swap_liquidity_report_view"
 	VIEW_SWAP_REPORT_SLACK                         string = "swap_token_report_slack_view"
 	VIEW_SWAP_REPORT_FINAL                         string = "swap_token_report_final_view"
