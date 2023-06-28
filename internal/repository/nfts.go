@@ -376,201 +376,200 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					},
 				},
 			})
+		} else {
+			//used for marketplace
+			f1 = append(f1, bson.D{
+				{"$lookup",
+					bson.D{
+						{"from", "marketplace_listings"},
+						{"localField", "token_id"},
+						{"foreignField", "token_id"},
+						{"pipeline",
+							bson.A{
+								bson.D{
+									{"$match",
+										bson.D{
+											{"collection_contract", strings.ToLower(*filter.ContractAddress)},
+											{"status", 0},
+										},
+									},
+								},
+								bson.D{{"$skip", 0}},
+								bson.D{{"$limit", 1}},
+							},
+						},
+						{"as", "listing_for_sales"},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$lookup",
+					bson.D{
+						{"from", "marketplace_offers"},
+						{"localField", "token_id"},
+						{"foreignField", "token_id"},
+						{"pipeline",
+							bson.A{
+								bson.D{
+									{"$match",
+										bson.D{
+											{"collection_contract", strings.ToLower(*filter.ContractAddress)},
+											{"status", 0},
+										},
+									},
+								},
+								bson.D{{"$skip", 0}},
+								bson.D{{"$limit", 100}},
+							},
+						},
+						{"as", "make_offers"},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{{"$addFields", bson.D{{"price_erc20", "$listing_for_sales"}}}})
+			f1 = append(f1, bson.D{
+				{"$unwind",
+					bson.D{
+						{"path", "$price_erc20"},
+						{"preserveNullAndEmptyArrays", true},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$addFields",
+					bson.D{
+						{"buyable",
+							bson.D{
+								{"$cond",
+									bson.A{
+										bson.D{
+											{"$or",
+												bson.A{
+													bson.D{
+														{"$eq",
+															bson.A{
+																bson.D{
+																	{"$ifNull",
+																		bson.A{
+																			"$price_erc20",
+																			0,
+																		},
+																	},
+																},
+																0,
+															},
+														},
+													},
+												},
+											},
+										},
+										false,
+										true,
+									},
+								},
+							},
+						},
+						{"price",
+							bson.D{
+								{"$cond",
+									bson.A{
+										bson.D{
+											{"$or",
+												bson.A{
+													bson.D{
+														{"$eq",
+															bson.A{
+																bson.D{
+																	{"$ifNull",
+																		bson.A{
+																			"$price_erc20",
+																			0,
+																		},
+																	},
+																},
+																0,
+															},
+														},
+													},
+												},
+											},
+										},
+										0,
+										bson.D{{"$toDouble", "$price_erc20.price"}},
+									},
+								},
+							},
+						},
+						{"erc20", "$price_erc20.erc_20_token"},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$addFields",
+					bson.D{
+						{"price",
+							bson.D{
+								{"$divide",
+									bson.A{
+										"$price",
+										bson.D{
+											{"$pow",
+												bson.A{
+													10,
+													18,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$lookup",
+					bson.D{
+						{"from", "bns"},
+						{"localField", "owner"},
+						{"foreignField", "resolver"},
+						{"pipeline",
+							bson.A{
+								bson.D{{"$skip", 0}},
+								bson.D{{"$limit", 1}},
+							},
+						},
+						{"as", "bns_data"},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$lookup",
+					bson.D{
+						{"from", "bns_default"},
+						{"localField", "owner"},
+						{"foreignField", "resolver"},
+						{"pipeline",
+							bson.A{
+								bson.D{{"$skip", 0}},
+								bson.D{{"$limit", 1}},
+							},
+						},
+						{"as", "bns_default"},
+					},
+				},
+			})
+			f1 = append(f1, bson.D{
+				{"$sort",
+					bson.D{
+						{"buyable", -1},
+						{"price", 1},
+						{filter.SortBy, filter.Sort},
+					},
+				},
+			})
 		}
-	} else {
-		//used for marketplace
-		f1 = append(f1, bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "marketplace_listings"},
-					{"localField", "token_id"},
-					{"foreignField", "token_id"},
-					{"pipeline",
-						bson.A{
-							bson.D{
-								{"$match",
-									bson.D{
-										{"collection_contract", strings.ToLower(*filter.ContractAddress)},
-										{"status", 0},
-									},
-								},
-							},
-							bson.D{{"$skip", 0}},
-							bson.D{{"$limit", 1}},
-						},
-					},
-					{"as", "listing_for_sales"},
-				},
-			},
-		})
-		f1 = append(f1, bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "marketplace_offers"},
-					{"localField", "token_id"},
-					{"foreignField", "token_id"},
-					{"pipeline",
-						bson.A{
-							bson.D{
-								{"$match",
-									bson.D{
-										{"collection_contract", strings.ToLower(*filter.ContractAddress)},
-										{"status", 0},
-									},
-								},
-							},
-							bson.D{{"$skip", 0}},
-							bson.D{{"$limit", 100}},
-						},
-					},
-					{"as", "make_offers"},
-				},
-			},
-		})
-		f1 = append(f1, bson.D{{"$addFields", bson.D{{"price_erc20", "$listing_for_sales"}}}})
-		f1 = append(f1, bson.D{
-			{"$unwind",
-				bson.D{
-					{"path", "$price_erc20"},
-					{"preserveNullAndEmptyArrays", true},
-				},
-			},
-		})
-		f1 = append(f1, bson.D{
-			{"$addFields",
-				bson.D{
-					{"buyable",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$or",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															bson.D{
-																{"$ifNull",
-																	bson.A{
-																		"$price_erc20",
-																		0,
-																	},
-																},
-															},
-															0,
-														},
-													},
-												},
-											},
-										},
-									},
-									false,
-									true,
-								},
-							},
-						},
-					},
-					{"price",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$or",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															bson.D{
-																{"$ifNull",
-																	bson.A{
-																		"$price_erc20",
-																		0,
-																	},
-																},
-															},
-															0,
-														},
-													},
-												},
-											},
-										},
-									},
-									0,
-									bson.D{{"$toDouble", "$price_erc20.price"}},
-								},
-							},
-						},
-					},
-					{"erc20", "$price_erc20.erc_20_token"},
-				},
-			},
-		})
-		f1 = append(f1, bson.D{
-			{"$addFields",
-				bson.D{
-					{"price",
-						bson.D{
-							{"$divide",
-								bson.A{
-									"$price",
-									bson.D{
-										{"$pow",
-											bson.A{
-												10,
-												18,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		})
-		f1 = append(f1, bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "bns"},
-					{"localField", "owner"},
-					{"foreignField", "resolver"},
-					{"pipeline",
-						bson.A{
-							bson.D{{"$skip", 0}},
-							bson.D{{"$limit", 1}},
-						},
-					},
-					{"as", "bns_data"},
-				},
-			},
-		})
-		f1 = append(f1, bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "bns_default"},
-					{"localField", "owner"},
-					{"foreignField", "resolver"},
-					{"pipeline",
-						bson.A{
-							bson.D{{"$skip", 0}},
-							bson.D{{"$limit", 1}},
-						},
-					},
-					{"as", "bns_default"},
-				},
-			},
-		})
-		f1 = append(f1, bson.D{
-			{"$sort",
-				bson.D{
-					{"buyable", -1},
-					{"price", 1},
-					{filter.SortBy, filter.Sort},
-				},
-			},
-		})
 	}
-
 	matchPrice := bson.D{}
 	if filter.IsBuyable != nil {
 		matchPrice = append(matchPrice, bson.E{"buyable", *filter.IsBuyable})
