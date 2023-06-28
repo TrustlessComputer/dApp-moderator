@@ -348,7 +348,7 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 			return nil, errors.New("Not enough GM")
 		}
 	} else {
-		gm = float64(1.5)
+		gm = float64(500)
 	}
 
 	gmAmount := helpers.ConvertAmount(gm)
