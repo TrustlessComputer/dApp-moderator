@@ -11,7 +11,6 @@ import (
 	"errors"
 	"math/big"
 	"strings"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -295,16 +294,16 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 				name = item.BnsData[0].Name
 			}
 		}
-		updatedAt := item.UpdatedAt
-		if updatedAt == nil {
-			updatedAt = utils.ToPtr(time.Now())
+		updatedAt := item.TxTime
+		if updatedAt.IsZero() && item.CreatedAt != nil {
+			updatedAt = *item.CreatedAt
 		}
 		responseItem := &response.AuctionListBidResponseItem{
 			Amount:       item.TotalAmount,
 			Sender:       item.Sender,
 			BidderAvatar: avatar,
 			BidderName:   name,
-			Time:         *updatedAt,
+			Time:         updatedAt,
 			Auction:      item.Auction,
 			Ranking:      item.Ranking,
 			TxHash:       item.AuctionBidSummary.TxHash,
