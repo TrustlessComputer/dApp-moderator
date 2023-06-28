@@ -306,72 +306,16 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		},
 	}
 
+	collection := utils.COLLECTION_NFTS
 	//Only for soul
 	if filter.ContractAddress != nil {
 		if strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
-			f1 = append(f1, bson.D{
-				{"$lookup",
-					bson.D{
-						{"from", "nft_auction_available"},
-						{"localField", "token_id"},
-						{"foreignField", "token_id"},
-						{"pipeline",
-							bson.A{
-								bson.D{{"$match", bson.D{{"collection_address", strings.ToLower(*filter.ContractAddress)}}}},
-							},
-						},
-						{"as", "nft_auction_available"},
-					},
-				},
-			})
-			f1 = append(f1, bson.D{
-				{"$unwind",
-					bson.D{
-						{"path", "$nft_auction_available"},
-						{"preserveNullAndEmptyArrays", true},
-					},
-				},
-			})
-			f1 = append(f1, bson.D{
-				{"$lookup",
-					bson.D{
-						{"from", "auction"},
-						{"localField", "token_id"},
-						{"foreignField", "token_id"},
-						{"pipeline",
-							bson.A{
-								bson.D{
-									{"$match",
-										bson.D{
-											{"collection_address", strings.ToLower(*filter.ContractAddress)},
-											{"status", entity.AuctionStatusInProgress},
-										},
-									},
-								},
-							},
-						},
-						{"as", "auction"},
-					},
-				},
-			})
-			f1 = append(f1, bson.D{
-				{"$unwind",
-					bson.D{
-						{"path", "$auction"},
-						{"preserveNullAndEmptyArrays", true},
-					},
-				},
-			})
-			f1 = append(f1, bson.D{
-				{"$addFields",
-					bson.D{
-						{"is_available_auction", "$nft_auction_available.is_auction"},
-					},
-				},
-			})
+			collection = utils.VIEW_SOUL_NFT_WITH_ATTRIBUTES
+
 			f1 = append(f1, bson.D{
 				{"$sort",
 					bson.D{
+						{filter.SortBy, filter.Sort},
 						{"token_id_int", entity.SORT_DESC},
 					},
 				},
@@ -629,7 +573,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 	}
 
 	pResp := []entity.MkpNftsPagination{}
-	cursor, err := r.DB.Collection(utils.COLLECTION_NFTS).Aggregate(context.TODO(), fAll)
+	cursor, err := r.DB.Collection(collection).Aggregate(context.TODO(), fAll)
 	if err != nil {
 		return nil, err
 	}
