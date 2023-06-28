@@ -806,6 +806,14 @@ func (u *Usecase) HandleAuctionCreated(data interface{}, chainLog types.Log) err
 		EndTimeBlock:      eventData.EndTime.String(),
 		Status:            entity.AuctionStatusInProgress,
 		BlockNumber:       fmt.Sprintf("%v", chainLog.BlockNumber),
+		BlockNumberInt:    chainLog.BlockNumber,
+		TxHash:            strings.ToLower(chainLog.TxHash.Hex()),
+	}
+
+	if blockTime, err := u.TCPublicNode.GetBlockTimeByNumber(
+		*(new(big.Int).SetUint64(chainLog.BlockNumber)),
+	); err == nil {
+		auctionEntity.TxTime = *blockTime
 	}
 
 	_, err := u.Repo.InsertOne(auctionEntity)
@@ -881,8 +889,9 @@ func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
 			CollectionAddress: auctionBid.CollectionAddress,
 			TotalAmount:       eventData.Value.String(),
 			Sender:            auctionBid.Sender,
-			BlockNumberInt:    chainLog.BlockNumber,
-			TxHash:            strings.ToLower(chainLog.TxHash.String()),
+			BlockNumberInt:    auctionBid.BlockNumberInt,
+			TxHash:            auctionBid.TxHash,
+			TxTime:            auctionBid.TxTime,
 			LogIndex:          chainLog.Index,
 		}); err != nil {
 			logger.AtLog.Logger.Error("HandleAuctionBid - InsertOne - AuctionBidSummary", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
@@ -894,8 +903,12 @@ func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
 			{"chain_auction_id", chainAuctionID},
 			{"sender", auctionBid.Sender},
 		}, bson.M{"$set": bson.M{
-			"total_amount": newAmount.String(),
-			"updated_at":   now,
+			"total_amount":     newAmount.String(),
+			"tx_time":          auctionBid.TxTime,
+			"tx_hash":          auctionBid.TxHash,
+			"block_number_int": auctionBid.BlockNumberInt,
+			"log_index":        chainLog.Index,
+			"updated_at":       now,
 		}}); err != nil {
 			logger.AtLog.Logger.Error("HandleAuctionBid - UpdateOne - AuctionBidSummary", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
 		}
@@ -949,7 +962,7 @@ func (u *Usecase) validateAuctionBid(auctionBidEvent *soul_contract.SoulAuctionB
 		}
 	}
 
-	return &entity.AuctionBid{
+	auctionBid := &entity.AuctionBid{
 		DBAuctionID:       auction.ID,
 		ChainAuctionID:    auction.AuctionID,
 		TokenID:           strings.ToLower(auctionBidEvent.TokenId.String()),
@@ -960,7 +973,14 @@ func (u *Usecase) validateAuctionBid(auctionBidEvent *soul_contract.SoulAuctionB
 		BlockNumberInt:    chainLog.BlockNumber,
 		TxHash:            strings.ToLower(chainLog.TxHash.String()),
 		LogIndex:          chainLog.Index,
-	}, nil
+	}
+	if blockTime, err := u.TCPublicNode.GetBlockTimeByNumber(
+		*(new(big.Int).SetUint64(chainLog.BlockNumber)),
+	); err == nil {
+		auctionBid.TxTime = *blockTime
+	}
+
+	return auctionBid, nil
 }
 
 func (u *Usecase) HandleAuctionSettle(data interface{}, chainLog types.Log) error {
