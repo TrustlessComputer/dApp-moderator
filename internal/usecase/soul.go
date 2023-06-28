@@ -348,13 +348,27 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 			return nil, errors.New("Not enough GM")
 		}
 	} else {
-		gm = float64(500)
+		gmConf := os.Getenv("SOUL_TESTING_GM")
+		if gmConf != "" {
+			gm, err = strconv.ParseFloat(gmConf, 10)
+			if err != nil {
+				gm = float64(500)
+			}
+		} else {
+			gm = float64(500)
+		}
 	}
 
 	gmAmount := helpers.ConvertAmount(gm)
-	//deposit GM - generative
-	totalGM, _ := gmAmount.Int64()
-	g := big.NewInt(totalGM)
+
+	f, _ := gmAmount.Float64()
+	f1 := fmt.Sprintf("%f", f)
+	f1 = strings.Split(f1, ".")[0]
+	g, isParse := new(big.Int).SetString(f1, 10)
+	if !isParse {
+		return nil, errors.New("Error while parse GM amount")
+	}
+
 	messageHash, signature, err := u.PnftReferralPaymentSignMessage(contractAddr, *chainID, signerMint, userWalletAddress, gmTokenAddress, *g)
 	if err != nil {
 		return nil, err
