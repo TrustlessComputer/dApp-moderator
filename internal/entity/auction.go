@@ -28,6 +28,7 @@ type Auction struct {
 	StartTimeBlock    string    `json:"start_time_block" bson:"start_time_block"`
 	EndTimeBlock      string    `json:"end_time_block" bson:"end_time_block"`
 	BlockNumber       string    `json:"block_number" bson:"block_number"`
+	BlockNumberInt    uint64    `json:"block_number_int" bson:"block_number_int"`
 	TxHash            string    `json:"tx_hash" bson:"tx_hash"`
 	TxTime            time.Time `json:"tx_time" bson:"tx_time"`
 
