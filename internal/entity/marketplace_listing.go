@@ -121,9 +121,17 @@ type MkpNftsResp struct {
 	Size                    int64                      `json:"size" bson:"size"`
 	BnsData                 []*Bns                     `json:"bns_data,omitempty" bson:"bns_data"`
 	BnsDefault              []*BNSDefault              `json:"bns_default,omitempty" bson:"bns_default"`
-	Auction                 *SoulAuction               `json:"auction,omitempty" bson:"auction"`
-	IsAvailableAuction      bool                       `json:"is_available_auction" bson:"is_available_auction"`
 	*MkpNftsAuctionDataResp `json:",inline,omitempty" bson:",inline,omitempty"`
+	*NftFilteredAuction     `json:",inline,omitempty" bson:",inline,omitempty"`
+}
+
+type NftFilteredAuction struct {
+	IsAvailableForAuction bool   `bson:"is_available_for_auction" json:"is_available_for_auction"`
+	IsLiveAuction         bool   `bson:"is_live_auction" json:"is_live_auction"`
+	StartBlock            string `bson:"start_time_block" json:"start_block"`
+	EndBlock              string `bson:"end_time_block" json:"end_block"`
+	AuctionID             string `bson:"auction_id" json:"auction_id"`
+	DbAuctionID           string `bson:"db_auction_id" json:"db_auction_id"`
 }
 
 type SoulAuction struct {
@@ -137,13 +145,7 @@ type SoulAuction struct {
 }
 
 type MkpNftsAuctionDataResp struct {
-	DbAuctionId           string  `json:"db_auction_id" bson:"db_auction_id"`
-	StartTimeBlock        string  `json:"start_time_block" bson:"start_time_block"`
-	EndTimeBlock          string  `json:"end_time_block" bson:"end_time_block"`
-	AuctionId             string  `json:"auction_id" bson:"auction_id"`
-	IsAvailableForAuction bool    `json:"is_available_for_auction" bson:"is_available_for_auction"`
-	IsLiveAuction         bool    `json:"is_live_auction" bson:"is_live_auction"`
-	Rarity                float64 `json:"rarity" bson:"rarity"`
+	Rarity float64 `json:"rarity" bson:"rarity"`
 }
 
 type MkpNftsPagination struct {
