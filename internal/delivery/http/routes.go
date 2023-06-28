@@ -62,6 +62,12 @@ func (h *httpDelivery) RegisterV1Routes() {
 	bnsServicesAuth.Use(h.MiddleWare.ValidateAccessToken)
 	bnsServicesAuth.HandleFunc("/default/{wallet_address}", h.updateBnsDefault).Methods("PUT")
 
+	//auction
+	auctionRoutesPublic := api.PathPrefix("/auction").Subrouter()
+	//auctionRoutesPublic.Use(h.MiddleWare.ValidateAccessToken)
+	auctionRoutesPublic.HandleFunc("/detail/{contractAddress}/{tokenID}", h.auctionDetail).Methods("GET")
+	auctionRoutesPublic.HandleFunc("/list-bid", h.listBid).Methods("GET")
+
 	// token explorer
 	tokenRoutes := api.PathPrefix("/token-explorer").Subrouter()
 	tokenRoutes.HandleFunc("/tokens", h.getTokens).Methods("GET")
@@ -198,17 +204,29 @@ func (h *httpDelivery) RegisterV1Routes() {
 	marketplace.HandleFunc("/collections/{contract_address}/nft-owners", h.mkplaceNftOwnerCollection).Methods("GET")
 	marketplace.HandleFunc("/nfts", h.mkplaceNfts).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/nfts/{token_id}", h.mkplaceNftDetail).Methods("GET")
+	marketplace.HandleFunc("/collections/{contract_address}/nfts/{token_id}", h.mkplaceNftDetail).Methods("GET")
 	marketplace.HandleFunc("/listing/{contract_address}/token/{token_id}", h.getListingViaGenAddressTokenID).Methods("GET")
 	marketplace.HandleFunc("/offers/{contract_address}/token/{token_id}", h.getOfferViaGenAddressTokenID).Methods("GET")
 	marketplace.HandleFunc("/wallet/{wallet_address}/listing", h.getListingOfAProfile).Methods("GET")
 	marketplace.HandleFunc("/wallet/{wallet_address}/offer", h.getOffersOfAProfile).Methods("GET")
 	marketplace.HandleFunc("/contract/{contract_address}/token/{token_id}/activities", h.getTokenActivities).Methods("GET")
+	marketplace.HandleFunc("/contract/{contract_address}/token/{token_id}/soul_histories", h.getSoulHistories).Methods("GET")
 
 	soul := api.PathPrefix("/soul").Subrouter()
 	soul.HandleFunc("/signature", h.SoulCreateSignature).Methods("POST")
 	soul.HandleFunc("/capture", h.SoulCaptureImage).Methods("POST")
 	soul.HandleFunc("/nfts", h.soulNfts).Methods("GET")
 	soul.HandleFunc("/nfts/{token_id}", h.soulNft).Methods("GET")
+
+	api.HandleFunc("/time", h.serverTime).Methods("GET")
+
+	//dao
+	dao := api.PathPrefix("/dao").Subrouter()
+	dao.HandleFunc("/proposals", h.proposals).Methods("GET")
+	dao.HandleFunc("/proposals", h.createDraftProposals).Methods("POST")
+	dao.HandleFunc("/proposals/{proposal_id}", h.getProposal).Methods("GET")
+	dao.HandleFunc("/proposals/{proposal_id}/votes", h.getProposalVotes).Methods("GET")
+	dao.HandleFunc("/proposals/{id}/{proposal_id}", h.mapOffAndOnChainProposal).Methods("PUT")
 
 }
 

@@ -129,7 +129,7 @@ func (r *Repository) FindTokenSumary(ctx context.Context, contract string) (*ent
 	if err != nil {
 		return token, err
 	}
-
+	
 	if swapPairH != nil {
 		token.Price = swapPairH.Price
 	}
@@ -160,7 +160,7 @@ func (r *Repository) FindTokenSumary(ctx context.Context, contract string) (*ent
 
 }
 
-func (r *Repository) FindTokePrice(ctx context.Context, contract string, chartType string, limit int) ([]*entity.ChartDataResp, error) {
+func (r *Repository) FindTokePrice(ctx context.Context, contract string, chartType string) ([]*entity.ChartDataResp, error) {
 	var tokens []*entity.ChartDataResp
 
 	// pagination
@@ -177,17 +177,9 @@ func (r *Repository) FindTokePrice(ctx context.Context, contract string, chartTy
 		{"token0", contract},
 		{"token1", token1},
 	}).Decode(&swapPair)
-	f := bson.D{
+	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).Find(ctx, bson.D{
 		{"contract_address", swapPair.Pair},
-	}
-	if limit > 0 {
-		tm := time.Now()
-		tm =tm.AddDate(0, 0, -limit)
-		f = append(f, bson.E{"timestamp", bson.M{"$gt": tm}})
-	}
-
-	cursor, err := r.DB.Collection(utils.COLLECTION_SWAP_HISTORIES).Find(ctx, f,
-		options)
+	}, options)
 	if err != nil {
 		return nil, err
 	}
@@ -295,8 +287,7 @@ func FindTime(t time.Time, chartType string) time.Time {
 	year, month, day := t.Date()
 	hr, min, _ := t.Clock()
 	if chartType == "minute" {
-		perFiveteen := min / 15 * 15
-		return time.Date(year, month, day, hr, perFiveteen, 0, 0, t.Location())
+		return time.Date(year, month, day, hr, min, 0, 0, t.Location())
 	}
 	if chartType == "hour" {
 		return time.Date(year, month, day, hr, 0, 0, 0, t.Location())

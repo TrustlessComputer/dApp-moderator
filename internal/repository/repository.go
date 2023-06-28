@@ -6,6 +6,7 @@ import (
 	"dapp-moderator/utils/global"
 	"dapp-moderator/utils/helpers"
 	"errors"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -48,6 +49,32 @@ func (r *Repository) InsertOne(data entity.IEntity) (*mongo.InsertOneResult, err
 	}
 
 	return inserted, nil
+}
+
+func (r *Repository) InsertOneWithContext(ctx context.Context, data entity.IEntity) (*mongo.InsertOneResult, error) {
+	data.SetID()
+	data.SetCreatedAt()
+	insertedData, err := helpers.ToDoc(data)
+	if err != nil {
+		return nil, err
+	}
+
+	collectionName := data.CollectionName()
+	inserted, err := r.DB.Collection(collectionName).InsertOne(ctx, *insertedData)
+	if err != nil {
+		return nil, err
+	}
+
+	return inserted, nil
+}
+
+func (r *Repository) WithTransaction(ctx context.Context, callback func(sessCtx mongo.SessionContext) (interface{}, error), opts ...*options.TransactionOptions) (interface{}, error) {
+	session, err := r.DB.Client().StartSession()
+	defer session.EndSession(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return session.WithTransaction(ctx, callback, opts...)
 }
 
 func (r *Repository) InsertMany(data []entity.IEntity) (*mongo.InsertManyResult, error) {
@@ -157,6 +184,19 @@ func (r *Repository) FindOne(collectionName string, filter bson.D) (*mongo.Singl
 	return sr, nil
 }
 
+func (r *Repository) FindOneWithResult(collectionName string, filter bson.M, result interface{}, opts ...*options.FindOneOptions) error {
+	sr := r.DB.Collection(collectionName).FindOne(context.TODO(), filter, opts...)
+	if sr.Err() != nil {
+		return sr.Err()
+	}
+
+	if err := sr.Decode(result); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Repository) Find(collectionName string, filter bson.D, limit int64, offset int64, result interface{}, sort bson.D) error {
 	opts := &options.FindOptions{}
 	opts.Limit = &limit
@@ -201,4 +241,26 @@ func (r *Repository) AllItems(collectionName string, filter bson.D) (int64, erro
 	}
 
 	return count, nil
+}
+
+// Count before add sort and skip
+func (r *Repository) CountTotalFromPipeline(collectionName string, pipelines bson.A) (int32, error) {
+	var countPipeline = bson.A(make([]interface{}, len(pipelines), len(pipelines)))
+	copy(countPipeline, pipelines) // để ko change trên pipeline truyền vào
+	countPipeline = append(countPipeline, bson.M{"$count": "total"})
+	totalCur, err := r.DB.Collection(collectionName).Aggregate(context.TODO(), countPipeline)
+	if err != nil {
+		return 0, err
+	}
+	var totalResult []bson.M
+	if err := totalCur.All(context.TODO(), &totalResult); err != nil {
+		return 0, err
+	}
+	if len(totalResult) > 0 {
+		if _val, ok := totalResult[0]["total"].(int32); ok {
+			return _val, nil
+		}
+	}
+
+	return 0, nil
 }

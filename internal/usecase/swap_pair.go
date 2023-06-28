@@ -249,13 +249,13 @@ func (u *Usecase) FindTokenSumary(ctx context.Context, contractAddress string) (
 	return reports, nil
 }
 
-func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, chartType string, limit int) (interface{}, error) {
+func (u *Usecase) FindTokensPrice(ctx context.Context, contractAddress string, chartType string) (interface{}, error) {
 	isBtc := false
 	if strings.EqualFold(contractAddress, "0xfB83c18569fB43f1ABCbae09Baf7090bFFc8CBBD") {
 		isBtc = true
 		contractAddress = "0x3ED8040D47133AB8A73Dc41d365578D6e7643E54"
 	}
-	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType, limit)
+	reports, err := u.Repo.FindTokePrice(ctx, contractAddress, chartType)
 	if err != nil {
 		return reports, nil
 	}

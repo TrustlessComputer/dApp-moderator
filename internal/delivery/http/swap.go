@@ -201,9 +201,7 @@ func (h *httpDelivery) getTokensPrice(w http.ResponseWriter, r *http.Request) {
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			contractAddress := req.Query(r, "contract_address", "")
 			chartType := req.Query(r, "chart_type", "")
-			limitPrams := req.Query(r, "limit", "0")
-			limit, _ := strconv.Atoi(limitPrams)
-			data, err := h.Usecase.FindTokensPrice(ctx, contractAddress,chartType, limit)
+			data, err := h.Usecase.FindTokensPrice(ctx, contractAddress, chartType)
 			if err != nil {
 				logger.AtLog.Logger.Error("FindTokensPrice", zap.Error(err))
 				return nil, err
@@ -230,6 +228,7 @@ func (h *httpDelivery) getTokenSummary(w http.ResponseWriter, r *http.Request) {
 		},
 	).ServeHTTP(w, r)
 }
+
 
 func (h *httpDelivery) jobGetBtcPrice(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(
@@ -338,6 +337,20 @@ func (h *httpDelivery) jobUpdateDataToken(w http.ResponseWriter, r *http.Request
 		},
 	).ServeHTTP(w, r)
 }
+
+// func (h *httpDelivery) jobUpdateDataSwapToken(w http.ResponseWriter, r *http.Request) {
+// 	response.NewRESTHandlerTemplate(
+// 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+// 			err := h.Usecase.UpdateDataSwapToken(ctx)
+// 			if err != nil {
+// 				logger.AtLog.Logger.Error("jobUpdateDataSwapToken", zap.Error(err))
+// 				return false, err
+// 			}
+
+// 			return true, nil
+// 		},
+// 	).ServeHTTP(w, r)
+// }
 
 func (h *httpDelivery) jobUpdateTotalSupply(w http.ResponseWriter, r *http.Request) {
 	response.NewRESTHandlerTemplate(

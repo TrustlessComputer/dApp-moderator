@@ -10,6 +10,10 @@ make run-server
 ```
 
 ```
+ abigen --pkg soul --abi  ./SOUL.json --out ./utils/contracts/soul/soul.go
+```
+
+```
  abigen --pkg generative_project_contract --abi  ./artifacts/contracts/nfts/GenerativeProject.sol/GenerativeProject.json --out /Users/autonomous/go/src/rendering-hub/utils/contracts/generative_project_contract/GenerativeProject.go
 ```
 

@@ -29,7 +29,7 @@ type NftAuctionsAvailable struct {
 	ContractAddress string `json:"collection_address" bson:"collection_address"`
 	TokenID         string `json:"token_id" bson:"token_id"`
 	TokenIDInt      int64  `json:"token_id_int" bson:"token_id_int"` //use it for sort
-	IsAuction       bool   `bson:"is_auction" json:"is_auction"`
+	IsAuction       bool   `bson:"is_auction" json:"is_auction"`     // Is available for auction
 }
 
 func (u NftAuctionsAvailable) CollectionName() string {
