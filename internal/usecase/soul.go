@@ -592,21 +592,14 @@ func (u *Usecase) TriggerCreateAuction(insertData *entity.NftAuctionsAvailable) 
 	}
 
 	//TODO - check if token is having an open auction - skip
-	checkAuction, err := soulInstancePrivateNode.Auctions(nil, tokenIDBigInt)
+	isAvailable, err := soulInstancePrivateNode.Available(nil, tokenIDBigInt)
 	if err != nil {
 		logger.AtLog.Logger.Error(key, zap.Error(err))
 		return err
 	}
 
-	currentBlock, err := client.BlockNumber(ctx)
-	if err != nil {
-		logger.AtLog.Logger.Error(key, zap.Error(err))
-		return err
-	}
-
-	endTime := checkAuction.EndTime.Uint64() //blockNUmber
-	if endTime >= currentBlock {
-		err = errors.New(fmt.Sprintf("Auction for %s is happening", insertData.TokenID))
+	if !isAvailable {
+		err = errors.New(fmt.Sprintf("Auction cannot be started - tokenID %s", insertData.TokenID))
 		logger.AtLog.Logger.Error(key, zap.Error(err))
 		return err
 	}
