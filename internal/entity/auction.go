@@ -2,6 +2,7 @@ package entity
 
 import (
 	"dapp-moderator/utils"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -20,13 +21,16 @@ func (v AuctionStatus) Ordinal() int {
 
 type Auction struct {
 	BaseEntity        `bson:",inline"`
-	CollectionAddress string `json:"collection_address" bson:"collection_address"`
-	TokenID           string `json:"token_id" bson:"token_id"`
-	TokenIDInt        uint64 `json:"token_id_int" bson:"token_id_int"`
-	AuctionID         string `json:"auction_id" bson:"auction_id"`
-	StartTimeBlock    string `json:"start_time_block" bson:"start_time_block"`
-	EndTimeBlock      string `json:"end_time_block" bson:"end_time_block"`
-	BlockNumber       string `json:"block_number" bson:"block_number"`
+	CollectionAddress string    `json:"collection_address" bson:"collection_address"`
+	TokenID           string    `json:"token_id" bson:"token_id"`
+	TokenIDInt        uint64    `json:"token_id_int" bson:"token_id_int"`
+	AuctionID         string    `json:"auction_id" bson:"auction_id"`
+	StartTimeBlock    string    `json:"start_time_block" bson:"start_time_block"`
+	EndTimeBlock      string    `json:"end_time_block" bson:"end_time_block"`
+	BlockNumber       string    `json:"block_number" bson:"block_number"`
+	BlockNumberInt    uint64    `json:"block_number_int" bson:"block_number_int"`
+	TxHash            string    `json:"tx_hash" bson:"tx_hash"`
+	TxTime            time.Time `json:"tx_time" bson:"tx_time"`
 
 	Status      AuctionStatus `json:"status" bson:"status"`
 	TotalAmount string        `json:"total_amount" bson:"total_amount"`
@@ -49,6 +53,7 @@ type AuctionBid struct { // auctionBid History
 	BlockNumber       string             `json:"block_number" bson:"block_number"`
 	BlockNumberInt    uint64             `json:"block_number_int" bson:"block_number_int"`
 	TxHash            string             `json:"tx_hash" bson:"tx_hash"`
+	TxTime            time.Time          `json:"tx_time" bson:"tx_time"`
 	LogIndex          uint               `json:"log_index" bson:"log_index"`
 }
 
@@ -66,6 +71,7 @@ type AuctionBidSummary struct { // summary total amount per auction per user
 	Sender            string             `json:"sender" bson:"sender"`
 	BlockNumberInt    uint64             `json:"block_number_int" bson:"block_number_int"`
 	TxHash            string             `json:"tx_hash" bson:"tx_hash"`
+	TxTime            time.Time          `json:"tx_time" bson:"tx_time"`
 	LogIndex          uint               `json:"log_index" bson:"log_index"`
 }
 
