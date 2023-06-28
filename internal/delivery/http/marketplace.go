@@ -6,10 +6,8 @@ import (
 	"dapp-moderator/internal/delivery/http/response"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
-	soul_contract "dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/http"
 	"os"
@@ -507,14 +505,8 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			}
 			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 			soulAddress := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
-			var soulContract interface{}
-			if ca == soulAddress {
-				soulContract, err = soul_contract.NewSoul(common.HexToAddress(soulAddress), h.Usecase.TCPublicNode.GetClient())
-				if err != nil {
-					logger.AtLog.Logger.Error("can not init soulContract", zap.Error(err))
-				}
-			}
-			for index, i := range data.Items {
+
+			for _, i := range data.Items {
 				if i.Name == "" {
 					if bnsAddress == ca && ca != soulAddress {
 						key := helpers.BnsTokenNameKey(i.TokenID)
@@ -542,16 +534,8 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 						}
 					}
 				}
-				if ca == soulAddress {
-					if _val, ok := soulContract.(*soul_contract.Soul); ok {
-						if name, err := h.Usecase.SoulNFTName(i.TokenID, _val); err == nil {
-							data.Items[index].Name = name
-						} else {
-							data.Items[index].Name = ""
-						}
-					}
-				}
 			}
+
 			if err != nil {
 				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination", iPagination), zap.Error(err))
 				return nil, err
