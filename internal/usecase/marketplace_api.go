@@ -202,6 +202,7 @@ func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterN
 
 func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tokenID string) (*nft_explorer.MkpNftsResp, error) {
 	resp := &nft_explorer.MkpNftsResp{}
+	resp1 := &nft_explorer.MkpNftsResp{}
 	f := bson.D{
 		bson.E{"collection_address", strings.ToLower(contractAddress)},
 		bson.E{"token_id", tokenID},
@@ -217,6 +218,28 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 		return nil, err
 	}
 
+	//TODO - fix attributes quickly, improve performance soon
+	cursor1, err := u.Repo.FindOne(utils.COLLECTION_NFTS, f)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor1.Decode(resp1)
+	if err != nil {
+		return nil, err
+	}
+
+	attributes := []nft_explorer.MkpNftAttr{}
+	for _, attr1 := range resp1.Attributes {
+		for _, attr := range resp.Attributes {
+			if attr1.Value == attr.Value && attr1.TraitType == attr.TraitType {
+				attributes = append(attributes, attr)
+			}
+
+		}
+	}
+
+	//TODO - END fix attributes quickly, improve performance soon
 	bnsData, err := u.Repo.FilterBNS(entity.FilterBns{
 		BaseFilters: entity.BaseFilters{
 			SortBy: "_id",
@@ -236,6 +259,7 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 		}
 	}
 
+	resp.Attributes = attributes
 	return resp, nil
 }
 
