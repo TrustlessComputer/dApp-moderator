@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/big"
 	"os"
+	"time"
 
 	"dapp-moderator/utils/logger"
 
@@ -73,6 +74,15 @@ func (a *TcNetwork) GetBlockByNumber(blockNumber big.Int) (*types.Block, error) 
 		return nil, err
 	}
 	return block, nil
+}
+
+func (a *TcNetwork) GetBlockTimeByNumber(blockNumber big.Int) (*time.Time, error) {
+	block, err := a.client.BlockByNumber(context.Background(), &blockNumber)
+	if err != nil {
+		return nil, err
+	}
+	blockTime := time.Unix(int64(block.Time()), 0)
+	return &blockTime, nil
 }
 
 func (a *TcNetwork) TransactionByHash(hash common.Hash) (*types.Transaction, bool, error) {
