@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -50,13 +51,13 @@ func NewMiddleware(uc usecase.Usecase, g *global.Global) *middleware {
 
 func (m *middleware) LoggingMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		//defer func() {
-		//	if err := recover(); err != nil {
-		//		w.WriteHeader(http.StatusInternalServerError)
-		//		logger.AtLog.Logger.Error("err", zap.Any("err", err), zap.Any("trace", debug.Stack()))
-		//
-		//	}
-		//}()
+		defer func() {
+			if err := recover(); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logger.AtLog.Logger.Error("err", zap.Any("err", err), zap.Any("trace", debug.Stack()))
+
+			}
+		}()
 
 		start := time.Now()
 		wrapped := wrapResponseWriter(w)
