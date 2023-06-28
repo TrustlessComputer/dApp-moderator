@@ -165,6 +165,8 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 		BnsDefault               *entity.BNSDefault `bson:"bns_default"`
 		Auction                  *entity.Auction    `bson:"auction"`
 		Ranking                  *int               `bson:"ranking"`
+		TxHash                   string             `json:"tx_hash"`
+		BlockNumber              uint               `json:"block_number_int"`
 	}
 
 	pipelines := bson.A{}
@@ -251,15 +253,19 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 	}
 
 	limit, offset := filterReq.PaginationReq.GetOffsetAndLimit()
-	sortBy := "updated_at"
-	sort := -1
-	if filterReq.SortBy != nil && *filterReq.SortBy != "" {
-		sortBy = *filterReq.SortBy
-	}
-	if filterReq.Sort != nil && *filterReq.Sort != 0 {
-		sort = *filterReq.Sort
-	}
-	pipelines = append(pipelines, bson.D{{"$sort", bson.M{sortBy: sort, "_id": -1}}})
+	//sortBy := "updated_at"
+	//sort := -1
+	//if filterReq.SortBy != nil && *filterReq.SortBy != "" {
+	//	sortBy = *filterReq.SortBy
+	//}
+	//if filterReq.Sort != nil && *filterReq.Sort != 0 {
+	//	sort = *filterReq.Sort
+	//}
+	pipelines = append(pipelines,
+		bson.M{"$sort": bson.D{
+			{"block_number_int", entity.SORT_DESC},
+			{"log_index", entity.SORT_ASC},
+		}})
 	pipelines = append(pipelines, bson.D{{"$skip", offset}})
 	pipelines = append(pipelines, bson.D{{"$limit", limit}})
 	cursor, err := u.Repo.DB.Collection(utils.COLLECTION_AUCTION_BID_SUMMARY).Aggregate(context.TODO(), pipelines)
@@ -301,6 +307,8 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 			Time:         *updatedAt,
 			Auction:      item.Auction,
 			Ranking:      item.Ranking,
+			TxHash:       item.AuctionBidSummary.TxHash,
+			BlockNumber:  item.AuctionBidSummary.BlockNumberInt,
 		}
 
 		if filterReq.Sender != nil && *filterReq.Sender != "" {
