@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"os"
 	"strings"
 	"time"
@@ -157,6 +158,207 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 	return u.CreateDiscordNotify(notify)
 }
 
+// SOUL notifications
+func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.DiscordNotification, error) {
+	nft, err := u.Repo.GetNft(auction.CollectionAddress, auction.TokenID)
+	if err != nil {
+		return nil, err
+	}
+
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**Create Adopt**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Start Block:** \n%s", auction.StartTimeBlock),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**End Block:** \n%s", auction.EndTimeBlock),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+
+	if nft.ImageCapture != "" {
+		message.Embeds[0].Image.Url = nft.ImageCapture
+	}
+
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventAuctionCreated,
+	}
+
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Soul #%s", nft.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("%s/souls/%s", os.Getenv("SOUL_DOMAIN"), nft.TokenID)
+
+	if os.Getenv("ENV") == "production" {
+		err = u.CreateDiscordNotify(notify)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return notify, nil
+}
+
+func (u *Usecase) NewAuctionSettledNotify(auction *entity.Auction, winnerAmount *big.Int) (*entity.DiscordNotification, error) {
+	nft, err := u.Repo.GetNft(auction.CollectionAddress, auction.TokenID)
+	if err != nil {
+		return nil, err
+	}
+
+	wn := ""
+	if auction.Winner == nil {
+		return nil, errors.New("Auction doesn't have winner")
+	}
+
+	wn = *auction.Winner
+
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**Settle**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Winner:** \n%s", utils.ShortenBlockAddress(wn)),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Amount:** \n%.5f", helpers.GetValue(winnerAmount.String(), 18)),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+
+	if nft.ImageCapture != "" {
+		message.Embeds[0].Image.Url = nft.ImageCapture
+	}
+
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventAuctionSettled,
+	}
+
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Soul #%s", nft.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("%s/souls/%s", os.Getenv("SOUL_DOMAIN"), nft.TokenID)
+
+	if os.Getenv("ENV") == "production" {
+		err = u.CreateDiscordNotify(notify)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return notify, nil
+}
+
+func (u *Usecase) NewBidCreatedNotify(auctionBid *entity.AuctionBid) (*entity.DiscordNotification, error) {
+	nft, err := u.Repo.GetNft(auctionBid.CollectionAddress, auctionBid.TokenID)
+	if err != nil {
+		return nil, err
+	}
+
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**Create Bid**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Sender:** \n%s", utils.ShortenBlockAddress(auctionBid.Sender)),
+						Inline: true,
+					},
+					{
+						Value:  fmt.Sprintf("**Amount:** \n%.5f GM", helpers.GetValue(auctionBid.Amount, 18)),
+						Inline: true,
+					},
+				},
+			},
+		},
+	}
+
+	if nft.ImageCapture != "" {
+		message.Embeds[0].Image.Url = nft.ImageCapture
+	}
+
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventBidCreated,
+	}
+
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Soul #%s", nft.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("%s/souls/%s", os.Getenv("SOUL_DOMAIN"), nft.TokenID)
+
+	if os.Getenv("ENV") == "production" {
+		err = u.CreateDiscordNotify(notify)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return notify, nil
+}
+
+func (u *Usecase) NewSoulTokenMintedNotify(nfts *entity.Nfts) (*entity.DiscordNotification, error) {
+	message := discordclient.Message{
+		Content:   fmt.Sprintf("**NEW MINT**"),
+		Username:  "Satoshi 27",
+		AvatarUrl: "",
+		Embeds: []discordclient.Embed{
+			{
+				Fields: []discordclient.Field{
+					{
+						Value:  fmt.Sprintf("**Owner:** \n%s", utils.ShortenBlockAddress(nfts.Owner)),
+						Inline: true,
+					},
+					//{
+					//	Value:  fmt.Sprintf("**Type:** \n%s", nfts.ContentType),
+					//	Inline: true,
+					//},
+				},
+			},
+		},
+	}
+	if nfts.Image != "" {
+		if strings.HasPrefix(nfts.Image, "/dapp/api/nft-explorer/collections/") {
+			message.Embeds[0].Image.Url = "https://dapp.trustless.computer" + nfts.Image
+		} else {
+			message.Embeds[0].Image.Url = nfts.Image
+		}
+
+	}
+	notify := &entity.DiscordNotification{
+		Message: message,
+		Status:  entity.PENDING,
+		Event:   entity.EventSoulTokenMinted,
+	}
+
+	notify.Message.Embeds[0].Image.Url = nfts.ImageCapture
+	notify.Message.Embeds[0].Title = fmt.Sprintf("Soul #%s", nfts.TokenID)
+	notify.Message.Embeds[0].Url = fmt.Sprintf("%s/souls/%s", os.Getenv("SOUL_DOMAIN"), nfts.TokenID)
+
+	err := u.CreateDiscordNotify(notify)
+	if err != nil {
+		return nil, err
+	}
+
+	return notify, nil
+}
+
 // it's disabled by order
 func (u *Usecase) NewMintTokenNotify(nfts *entity.Nfts) error {
 	message := discordclient.Message{
@@ -200,7 +402,11 @@ func (u *Usecase) NewMintTokenNotify(nfts *entity.Nfts) error {
 	notify.Message.Embeds[0].Title = fmt.Sprintf("Smart Inscription #%s", nfts.TokenID)
 	notify.Message.Embeds[0].Url = fmt.Sprintf("https://smartinscription.xyz/%s", nfts.TokenID)
 
-	return u.CreateDiscordNotify(notify)
+	notify.Webhook = "https://discord.com/api/webhooks/1077867046869667920/X-8MFaKE7BuC9hC55zixBHE_uSn9W7mIVTpZkdxjzMXv_nY3CPrDZrK7Uko911G6Zask"
+
+	u.DiscordClient.SendMessage(context.TODO(), notify.Webhook, notify.Message)
+	return nil
+	//return u.CreateDiscordNotify(notify)
 }
 
 func (u *Usecase) JobSendDiscord() error {

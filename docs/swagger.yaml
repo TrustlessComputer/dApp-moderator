@@ -1,5 +1,33 @@
 basePath: /dapp-moderator/v1
 definitions:
+  entity.ProposalDetail:
+    properties:
+      amount:
+        type: string
+      contract_address:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_draft:
+        type: boolean
+      proposal_id:
+        description: proposalID from chain
+        type: string
+      receiver_address:
+        type: string
+      title:
+        type: string
+      token_type:
+        type: string
+      updated_at:
+        type: string
+    type: object
   request.CaptureSoulTokenReq:
     properties:
       contract_address:
@@ -46,6 +74,11 @@ definitions:
   request.CreateSignatureRequest:
     properties:
       wallet_address:
+        type: string
+    type: object
+  request.UpdateBNSDefaultRequest:
+    properties:
+      token_id:
         type: string
     type: object
   request.UpdateTokenReq:
@@ -302,6 +335,64 @@ paths:
       summary: Get Redis
       tags:
       - Admin
+  /auction/detail/{contractAddress}/{tokenID}:
+    get:
+      consumes:
+      - application/json
+      description: auctionDetail
+      parameters:
+      - description: contract address
+        in: path
+        name: contractAddress
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: tokenID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: auctionDetail
+      tags:
+      - Auction
+  /auction/list-bid:
+    get:
+      consumes:
+      - application/json
+      description: listBid
+      parameters:
+      - description: DB Auction ID
+        in: query
+        name: dbAuctionID
+        type: string
+      - description: Owner
+        in: query
+        name: owner
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: listBid
+      tags:
+      - Auction
   /auth/nonce:
     post:
       consumes:
@@ -442,6 +533,55 @@ paths:
       summary: Get file info
       tags:
       - BFS-service
+  /bns-service/default/{wallet_address}:
+    get:
+      consumes:
+      - application/json
+      description: bnsDefault
+      parameters:
+      - description: wallet_address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: bnsDefault
+      tags:
+      - BNS-service
+    put:
+      consumes:
+      - application/json
+      description: updateBnsDefault
+      parameters:
+      - description: body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateBNSDefaultRequest'
+      - description: user wallet address
+        in: path
+        name: wallet_address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: updateBnsDefault
+      tags:
+      - BNS-service
   /bns-service/names:
     get:
       consumes:
@@ -536,6 +676,7 @@ paths:
       - description: wallet_address
         in: path
         name: wallet_address
+        required: true
         type: string
       - description: limit
         in: query
@@ -555,6 +696,166 @@ paths:
       summary: Get name of a wallet-address
       tags:
       - BNS-service
+  /dao/proposals:
+    get:
+      consumes:
+      - application/json
+      description: Get Proposals
+      parameters:
+      - description: proposer
+        in: query
+        name: proposer
+        type: string
+      - description: proposal_id
+        in: query
+        name: proposal_id
+        type: string
+      - description: contract_address
+        in: query
+        name: contract_address
+        type: string
+      - description: separated by comma
+        in: query
+        name: states
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: 'sort by field: default volume'
+        in: query
+        name: sort_by
+        type: string
+      - description: 'sort default: -1 desc'
+        in: query
+        name: sort
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Proposals
+      tags:
+      - DAO - Proposal
+    post:
+      consumes:
+      - application/json
+      description: Create Proposals
+      parameters:
+      - description: requestBody
+        in: body
+        name: requestBody
+        schema:
+          $ref: '#/definitions/entity.ProposalDetail'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Create Proposals
+      tags:
+      - DAO - Proposal
+  /dao/proposals/{id}/{proposal_id}:
+    put:
+      consumes:
+      - application/json
+      description: Get Proposal's proposalID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: proposal_id
+        in: path
+        name: proposal_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Update  Proposal's proposalID
+      tags:
+      - DAO - Proposal
+  /dao/proposals/{proposal_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get Proposal
+      parameters:
+      - description: proposal_id
+        in: path
+        name: proposal_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Proposal
+      tags:
+      - DAO - Proposal
+  /dao/proposals/{proposal_id}/votes:
+    get:
+      consumes:
+      - application/json
+      description: Get Proposal's votes
+      parameters:
+      - description: contract_address
+        in: query
+        name: contract_address
+        type: string
+      - description: voter
+        in: query
+        name: voter
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: 'sort by field: default volume'
+        in: query
+        name: sort_by
+        type: string
+      - description: 'sort default: -1 desc'
+        in: query
+        name: sort
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: proposal_id
+        in: path
+        name: proposal_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get Proposal's votes
+      tags:
+      - DAO - Proposal
   /dapp-info/create:
     get:
       consumes:
@@ -908,6 +1209,52 @@ paths:
           schema:
             $ref: '#/definitions/response.JsonResponse'
       summary: Get token's activities
+      tags:
+      - MarketPlace
+  /marketplace/contract/{contract_address}/token/{token_id}/soul_histories:
+    get:
+      consumes:
+      - application/json
+      description: Get token's histories
+      parameters:
+      - description: contract_address
+        in: path
+        name: contract_address
+        required: true
+        type: string
+      - description: token_id
+        in: path
+        name: token_id
+        required: true
+        type: string
+      - description: '0: open, 1: cancel, 2: done, default all'
+        in: query
+        name: status
+        type: boolean
+      - description: sort by field
+        in: query
+        name: sort_by
+        type: string
+      - description: '1: ASC, -1: DESC'
+        in: query
+        name: sort
+        type: integer
+      - description: limit default 10
+        in: query
+        name: limit
+        type: integer
+      - description: page start with 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get token's histories
       tags:
       - MarketPlace
   /marketplace/listing/{contract_address}/token/{token_id}:
@@ -1765,6 +2112,21 @@ paths:
       summary: Create signature
       tags:
       - Soul
+  /time:
+    get:
+      consumes:
+      - application/json
+      description: Get server's time (UTC)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.JsonResponse'
+      summary: Get server's time (UTC)
+      tags:
+      - Common
   /token-explorer/token/{address}:
     get:
       consumes:

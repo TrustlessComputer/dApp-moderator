@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/internal/usecase/structure"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/generative_project_contract"
+	soul_contract "dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
 	"errors"
@@ -678,6 +679,22 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 
+			//Name for soul contract
+			soulAddress := os.Getenv("SOUL_CONTRACT")
+			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(soulAddress) {
+				soulContract, err := soul_contract.NewSoul(common.HexToAddress(soulAddress), u.TCPublicNode.GetClient())
+				if err != nil {
+					logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+				} else {
+					name, err := u.SoulNFTName(tmp.TokenID, soulContract)
+					if err != nil {
+						logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+					} else {
+						tmp.Name = name
+					}
+				}
+			}
+
 			_, err = u.Repo.InsertOne(tmp)
 			if err != nil {
 				logger.AtLog.Logger.Error(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
@@ -693,6 +710,11 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 			//		//u.NewMintTokenNotify(tmp)
 			//	}
 			//}
+
+			//Only soul is allowed
+			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+				u.NewSoulTokenMintedNotify(tmp)
+			}
 
 			if tmp.ContractAddress == bnsAddress {
 				go func() {
@@ -794,20 +816,36 @@ func (u *Usecase) UpdateCollectionThumbnails(ctx context.Context) error {
 }
 
 func (u *Usecase) UpdateNftOwner(ctx context.Context, contractAddress string, tokenID string, newOwner string) (*entity.Nfts, error) {
+	key := fmt.Sprintf("UpdateNftOwner - %s - %s - %s", contractAddress, tokenID, newOwner)
 	contractAddress = strings.ToLower(contractAddress)
 	tokenID = strings.ToLower(tokenID)
 	newOwner = strings.ToLower(newOwner)
 	nft, err := u.Repo.GetNft(contractAddress, tokenID)
 	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.String("contractAddress", contractAddress),
+			zap.String("tokenID", tokenID),
+			zap.String("newOwner", newOwner),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
 	if strings.ToLower(nft.Owner) == strings.ToLower(newOwner) {
-		return nil, errors.New(fmt.Sprintf("Token is belong to %s", newOwner))
+		err = errors.New(fmt.Sprintf("Token is belong to %s", newOwner))
+		logger.AtLog.Logger.Error(key, zap.String("contractAddress", contractAddress),
+			zap.String("tokenID", tokenID),
+			zap.String("newOwner", newOwner),
+			zap.Error(err),
+		)
 	}
 
 	_, err = u.Repo.UpdateNftOwner(contractAddress, tokenID, newOwner)
 	if err != nil {
+		logger.AtLog.Logger.Error(key, zap.String("contractAddress", contractAddress),
+			zap.String("tokenID", tokenID),
+			zap.String("newOwner", newOwner),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 	nft.Owner = newOwner

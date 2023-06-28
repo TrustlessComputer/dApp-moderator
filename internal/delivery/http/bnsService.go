@@ -109,7 +109,7 @@ func (h *httpDelivery) bnsNameAvailable(w http.ResponseWriter, r *http.Request) 
 // @Tags BNS-service
 // @Accept  json
 // @Produce  json
-// @Param wallet_address path string false "wallet_address"
+// @Param wallet_address path string true "wallet_address"
 // @Param limit query int false "limit"
 // @Param page query int false "page"
 // @Success 200 {object} response.JsonResponse{}
@@ -166,7 +166,7 @@ func (h *httpDelivery) bnsDefault(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param request body request.UpdateBNSDefaultRequest true "body"
-// @Param wallet_address path string true "user wallet address
+// @Param wallet_address path string true "user wallet address"
 // @Success 200 {object} response.JsonResponse{}
 // @Router /bns-service/default/{wallet_address} [PUT]
 func (h *httpDelivery) updateBnsDefault(w http.ResponseWriter, r *http.Request) {

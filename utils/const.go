@@ -134,20 +134,27 @@ const (
 	KEY_LISTING_CONTRACT           string = "collection_contract"
 	KEY_BTC_WALLET_INFO            string = "btc_wallet_info"
 
-	COLLECTION_COLLECTIONS                string = "collections"           //ERC721, a collection has many nfts
-	COLLECTION_NFTS                       string = "nfts"                  //ERC721
-	COLLECTION_SOUL_IMAGE_HISTORIES       string = "soul_image_histories"  //ERC721
-	COLLECTION_NFT_AUCTIONS               string = "nft_auction_available" //ERC721
-	COLLECTION_BNS                        string = "bns"                   //ERC721
-	COLLECTION_BNS_DEFAULT                string = "bns_default"           //ERC721
-	VIEW_BNS                              string = "bns_view"              //ERC721
-	COLLECTION_NFT_HISTORIES              string = "nft_histories"         //ERC721 - histories
+	COLLECTION_COLLECTIONS                string = "collections"            //ERC721, a collection has many nfts
+	COLLECTION_NFTS                       string = "nfts"                   //ERC721
+	COLLECTION_SOUL_IMAGE_HISTORIES       string = "soul_image_histories"   //ERC721
+	COLLECTION_SOUL_IMAGES                string = "soul_images"            //ERC721
+	COLLECTION_NFT_AUCTIONS               string = "nft_auction_available"  //ERC721
+	COLLECTION_NFT_TRIGGERED_AUCTIONS     string = "nft_triggered_auctions" //ERC721
+	COLLECTION_BNS                        string = "bns"                    //ERC721
+	COLLECTION_BNS_DEFAULT                string = "bns_default"            //ERC721
+	VIEW_BNS                              string = "bns_view"               //ERC721
+	COLLECTION_NFT_HISTORIES              string = "nft_histories"          //ERC721 - histories
 	COLLECTION_ALLOW_LIST                 string = "allow_list"
 	COLLECTION_INSERTED_ALLOW_LIST        string = "inserted_allow_list"
 	COLLECTION_FAUCETS                    string = "faucets"
 	COLLECTION_MARKETPLACE_LISTING        string = "marketplace_listings"
 	COLLECTION_MARKETPLACE_OFFER          string = "marketplace_offers"
 	COLLECTION_MARKETPLACE_TOKEN_ACTIVITY string = "marketplace_token_activities"
+	COLLECTION_AUCTION                    string = "auction"
+	COLLECTION_AUCTION_BID                string = "auction_bid"
+	COLLECTION_AUCTION_BID_SUMMARY        string = "auction_bid_summary"
+	COLLECTION_AUCTION_CLAIM              string = "auction_claim"
+	VIEW_NFT_WITH_AUCTION_DATA                   = "nfts_with_auction_data_view"
 
 	COLLECTION_TOKEN_URI            string = "token_uris"
 	COLLECTION_TOKENS               string = "tokens"
@@ -172,6 +179,7 @@ const (
 	COLLECTION_SWAP_USER_GM_PAID           string = "swap_user_gm_paid"
 	COLLECTION_SWAP_BLACKLIST_TOKENS       string = "swap_blacklist_tokens"
 
+	VIEW_SWAP_IDO_LIST_VIEW                        string = "swap_ido_list_view"
 	VIEW_MARKETPLACE_NFT_WITH_ATTRIBUTES           string = "marketplace_nft_with_attributes_view"
 	VIEW_SWAP_LIQUIDITY_REPORT_SLACK               string = "swap_liquidity_report_view"
 	VIEW_SWAP_REPORT_SLACK                         string = "swap_token_report_slack_view"
@@ -192,6 +200,12 @@ const (
 	COLLECTION_MARKETPLACE_AGGREGATED_COLLECTIONS  string = "marketplace_aggregated_collections"
 	VIEW_NFTS_WITH_SIZE                            string = "nft_with_size_view"
 	TRANSACTIONS                                   string = "transactions"
+
+	COLLECTION_DAO_PROPOSAL           string = "proposals"
+	COLLECTION_DAO_PROPOSAL_CONTRACTS string = "proposal_dao_contracts"
+	COLLECTION_DAO_PROPOSAL_DETAIL    string = "proposal_detail"
+	COLLECTION_DAO_PROPOSAL_VOTES     string = "proposal_votes"
+	COLLECTION_DAO_PROPOSAL_RAW       string = "proposal_raw"
 
 	REDIS_KEY_LOCK_TX_CONSUMER_CONSUMER_BLOCK string = "lock-tx-consumer-update-last-processed-block"
 	EVM_NULL_ADDRESS                          string = "0x0000000000000000000000000000000000000000"

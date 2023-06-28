@@ -75,6 +75,12 @@ func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, erro
 	mkpEvents["MARKETPLACE_BNS_REGISTERED"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_REGISTERED"))
 	mkpEvents["MARKETPLACE_BNS_SET_FPF"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_SET_FPF"))
 
+	mkpEvents["AUCTION_CREATED_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CREATED_EVENT"))
+	mkpEvents["AUCTION_BID_EVENT"] = strings.ToLower(os.Getenv("AUCTION_BID_EVENT"))
+	mkpEvents["AUCTION_SETTLE_EVENT"] = strings.ToLower(os.Getenv("AUCTION_SETTLE_EVENT"))
+	mkpEvents["AUCTION_CLAIM_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CLAIM_EVENT"))
+	mkpEvents["SOUL_UNLOCK_FEATURE_EVENT"] = strings.ToLower(os.Getenv("SOUL_UNLOCK_FEATURE_EVENT"))
+
 	m := &MarketPlace{
 		Contract: os.Getenv("MARKETPLACE_CONTRACT"),
 		Events:   mkpEvents,
@@ -145,11 +151,11 @@ func (c *txTCServer) StartServer() {
 	//function is being developed
 	tasks["checkSoulOwnerCrontab"] = c.checkSoulOwnerCrontab
 	tasks["captureSoulImageCrontab"] = c.captureSoulImageCrontab
+	tasks["resolveTxTransaction"] = c.resolveTxTransaction
 
 	//function have been done in develop
 	if os.Getenv("ENV") == "production" {
 		tasks["checkTxHashChunks"] = c.checkTxHashChunks
-		tasks["resolveTxTransaction"] = c.resolveTxTransaction
 		tasks["fetchToken"] = c.fetchToken
 		tasks["UpdateCollectionItems"] = c.Usecase.UpdateCollectionItems
 		tasks["UpdateCollectionThumbnails"] = c.Usecase.UpdateCollectionThumbnails
@@ -195,11 +201,16 @@ func (c *txTCServer) resolveTxTransaction(ctx context.Context) error {
 	logger.AtLog.Logger.Info("resolveTransaction", zap.Int64("fromBlock", fromBlock), zap.Int64("toBlock", toBlock), zap.Int64("chainBlock", chainBlock.Int64()))
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	go c.TokenEvents(&wg, ctx, int64(fromBlock), int64(toBlock))
 
 	go c.processTxTransaction(&wg, ctx, int32(fromBlock), int32(toBlock))
+
+	go func() {
+		defer wg.Done()
+		c.Usecase.UpdateAuctionStatus(ctx)
+	}()
 
 	wg.Wait()
 

@@ -8,7 +8,6 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/logger"
-	"go.uber.org/zap"
 	"math/big"
 	"net/http"
 	"os"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // UserCredits godoc
@@ -498,10 +499,16 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			}
 
 			data, err := h.Usecase.FilterMkplaceNftNew(ctx, f)
+			if err != nil {
+				logger.AtLog.Logger.Error("can not get nfts", zap.Error(err))
+				return nil, err
+			}
 			bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
+			soulAddress := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
+
 			for _, i := range data.Items {
 				if i.Name == "" {
-					if bnsAddress == ca {
+					if bnsAddress == ca && ca != soulAddress {
 						key := helpers.BnsTokenNameKey(i.TokenID)
 						existed, _ := h.Usecase.Cache.Exists(key)
 						if existed != nil && *existed == true {
@@ -515,7 +522,6 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 								i.Name = bnsName.Name
 								h.Usecase.Cache.SetStringData(key, i.Name)
 							}
-
 						}
 					} else {
 						tokenIdBigInt, _ := new(big.Int).SetString(i.TokenID, 10)
@@ -529,6 +535,7 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 					}
 				}
 			}
+
 			if err != nil {
 				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination", iPagination), zap.Error(err))
 				return nil, err
@@ -762,6 +769,49 @@ func (h *httpDelivery) mkplaceNftOwnerCollection(w http.ResponseWriter, r *http.
 			}
 			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data.Items)))
 			return data, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+// UserCredits godoc
+// @Summary Get token's histories
+// @Description Get token's histories
+// @Tags MarketPlace
+// @Accept  json
+// @Produce  json
+// @Param contract_address path string true "contract_address"
+// @Param token_id path string true "token_id"
+// @Param status query bool false "0: open, 1: cancel, 2: done, default all"
+// @Param sort_by query string false "sort by field"
+// @Param sort query int false "1: ASC, -1: DESC"
+// @Param limit query int false "limit default 10"
+// @Param page query int false "page start with 1"
+// @Success 200 {object} response.JsonResponse{}
+// @Router /marketplace/contract/{contract_address}/token/{token_id}/soul_histories [GET]
+func (h *httpDelivery) getSoulHistories(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			iPagination := ctx.Value(utils.PAGINATION)
+			p := iPagination.(request.PaginationReq)
+			tokenID := vars["token_id"]
+			contractAddresss := vars["contract_address"]
+
+			f := entity.FilterTokenActivities{
+				BaseFilters: entity.BaseFilters{
+					Limit:  int64(*p.Limit),
+					Offset: int64(*p.Offset),
+					//SortBy: *p.SortBy,
+					//Sort:   entity.SortType(*p.Sort),
+				},
+				TokenID:         &tokenID,
+				ContractAddress: &contractAddresss,
+			}
+
+			resp, err := h.Usecase.FilterTokenSoulHistories(ctx, f)
+			if err != nil {
+				return nil, err
+			}
+			return resp, nil
 		},
 	).ServeHTTP(w, r)
 }

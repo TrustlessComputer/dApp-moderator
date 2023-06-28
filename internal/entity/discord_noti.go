@@ -24,6 +24,12 @@ const (
 	EventListForSale     DiscordEvent = "list_for_sale"
 	EventPurchaseListing DiscordEvent = "purchase_listing"
 
+	//SOUL
+	EventAuctionCreated  DiscordEvent = "soul_auction_created"
+	EventBidCreated      DiscordEvent = "soul_bid_created"
+	EventAuctionSettled  DiscordEvent = "soul_auction_settled"
+	EventSoulTokenMinted DiscordEvent = "soul_token_minted"
+
 	ImageFromInscriptionID DiscordImageSourceType = 1
 	ThumbNailPosition      DiscordImagePosition   = 1
 	FullImagePosition      DiscordImagePosition   = 2

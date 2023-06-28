@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/contracts/bns"
 	"dapp-moderator/utils/contracts/generative_marketplace_lib"
+	soul_contract "dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/generative_nft_contract"
 	"dapp-moderator/utils/logger"
 	"encoding/base64"
@@ -203,6 +204,110 @@ func (u *Usecase) ParseMkplaceData(chainLog types.Log, eventType entity.TokenAct
 		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
 		//activity.OfferingID = strings.ToLower(fmt.Sprintf("%x", event.OfferingId))
 		return activity, event, nil
+	case entity.AuctionCreatedActivity:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseAuctionCreated(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionCreated", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.UserAAddress = strings.ToLower(event.Sender.Hex())
+		activity.AuctionID = utils.ToPtr(new(big.Int).SetBytes(event.AuctionId[:]).String())
+
+		return activity, event, nil
+	case entity.AuctionBidActivity:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseAuctionBid(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionCreated", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.UserAAddress = strings.ToLower(event.Sender.Hex())
+		activity.Amount = event.Value.Int64()
+		activity.AmountStr = event.Value.String()
+		activity.AuctionID = utils.ToPtr(new(big.Int).SetBytes(event.Auction.AuctionId[:]).String())
+
+		return activity, event, nil
+	case entity.AuctionSettledActivity:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseAuctionSettled(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionSettled", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.UserAAddress = strings.ToLower(event.Winner.String())
+		activity.Amount = event.Amount.Int64()
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.AuctionID = utils.ToPtr(new(big.Int).SetBytes(event.Auction.AuctionId[:]).String())
+
+		return activity, event, nil
+	case entity.AuctionClaimActivity:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseAuctionClaimBid(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionClaimBid", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.AmountStr = event.Value.String()
+		activity.UserAAddress = strings.ToLower(event.Sender.String())
+		activity.AuctionID = utils.ToPtr(new(big.Int).SetBytes(event.AuctionId[:]).String())
+
+		return activity, event, nil
+	case entity.SoulUnlockFeature:
+		soulContract, err := soul_contract.NewSoul(chainLog.Address, u.TCPublicNode.GetClient())
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.NewSoulContract", zap.Error(err))
+			return nil, nil, err
+		}
+
+		event, err := soulContract.ParseUnlockFeature(chainLog)
+		if err != nil {
+			logger.AtLog.Logger.Error("soul_contract.ParseAuctionClaimBid", zap.Error(err))
+			return nil, nil, err
+		}
+
+		activity.Time = &tm
+		activity.AmountStr = event.BalanceGM.String()
+		activity.InscriptionID = strings.ToLower(event.TokenId.String())
+		activity.CollectionContract = strings.ToLower(chainLog.Address.Hex())
+		activity.BlockNumber = event.BlockNumber.Uint64()
+		activity.UserAAddress = strings.ToLower(event.User.String())
+		return activity, event, nil
 	}
 
 	return nil, nil, errors.New(fmt.Sprintf("Cannot detect event log - %d - txHash: %s, topics %s ", eventType, chainLog.TxHash, chainLog.Topics[0].String()))
@@ -330,15 +435,16 @@ func (u *Usecase) TransferToken(eventData interface{}, chainLog types.Log) error
 
 	go u.UpdateUploadedFile(eventData, chainLog)
 
-	if strings.ToLower(os.Getenv("ENV")) == strings.ToLower("production") {
+	if strings.ToLower(os.Getenv("ENV")) == strings.ToLower("production") ||
+		strings.ToLower(os.Getenv("ENV")) == strings.ToLower("develop") {
 
-		updated, err := u.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
+		_, err := u.UpdateNftOwner(context.Background(), contract, tokenIDStr, to)
 		if err != nil {
 			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber), zap.Error(err))
 			return err
 		}
 
-		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Any("updated", updated), zap.Uint64("blockNumber", chainLog.BlockNumber))
+		logger.AtLog.Logger.Info(fmt.Sprintf("UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber))
 	} else {
 		logger.AtLog.Logger.Info(fmt.Sprintf("[Testing] UpdateNftOwner %s - %s ", contract, tokenIDStr), zap.String("from", from), zap.String("to", to), zap.Uint64("blockNumber", chainLog.BlockNumber))
 	}
@@ -569,7 +675,7 @@ func (u *Usecase) MarketplaceBNSCreated(eventData interface{}, chainLog types.Lo
 	event := eventData.(*bns.BnsNameRegistered)
 	tokenID := event.Id.String()
 	contractAddress := chainLog.Address.Hex()
-	logger.AtLog.Logger.Error(fmt.Sprintf("MarketplaceBNSCreated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("contract_address", contractAddress))
+	logger.AtLog.Logger.Info(fmt.Sprintf("MarketplaceBNSCreated - bns: %s", tokenID), zap.String("tokenID", tokenID), zap.String("contract_address", contractAddress))
 
 	inputChan := make(chan entity.Nfts, 1)
 	outputChan := make(chan structure.BnsRespChan, 1)
@@ -677,5 +783,274 @@ func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) erro
 		return err
 	}
 
+	return nil
+}
+
+func (u *Usecase) HandleAuctionCreated(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulAuctionCreated)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleAuctionCreated - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+	logger.AtLog.Logger.Info("HandleAuctionCreated", zap.String("tokenID", eventData.TokenId.String()),
+		zap.String("contract", chainLog.Address.Hex()), zap.Uint64("startTime", eventData.StartTime.Uint64()),
+		zap.Uint64("endTime", eventData.EndTime.Uint64()))
+
+	tokenIDInt, _ := strconv.Atoi(eventData.TokenId.String())
+	auctionEntity := &entity.Auction{
+		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
+		TokenID:           strings.ToLower(eventData.TokenId.String()),
+		TokenIDInt:        uint64(tokenIDInt),
+		AuctionID:         new(big.Int).SetBytes(eventData.AuctionId[:]).String(),
+		StartTimeBlock:    eventData.StartTime.String(),
+		EndTimeBlock:      eventData.EndTime.String(),
+		Status:            entity.AuctionStatusInProgress,
+		BlockNumber:       fmt.Sprintf("%v", chainLog.BlockNumber),
+	}
+
+	_, err := u.Repo.InsertOne(auctionEntity)
+	if err != nil {
+		logger.AtLog.Logger.Error("useCase.HandleAuctionCreated-InsertOne", zap.Error(err))
+		return err
+	}
+
+	//TODO  - discord noti here
+	_, err = u.NewAuctionCreatedNotify(auctionEntity)
+	if err != nil {
+		logger.AtLog.Logger.Error("useCase.HandleAuctionCreated-InsertOne", zap.Error(err))
+	}
+
+	return nil
+}
+
+func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulAuctionBid)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleAuctionBid - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+	logger.AtLog.Logger.Info("HandleAuctionBid", zap.String("tokenID", eventData.TokenId.String()),
+		zap.Any("eventData", eventData), zap.String("contract", chainLog.Address.Hex()))
+
+	chainAuctionID := new(big.Int).SetBytes(eventData.Auction.AuctionId[:]).String()
+	// async here => so retry to have data auctionEntity
+	auctionEntity := &entity.Auction{}
+	count := 0
+	for {
+		count++
+		err := u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION, bson.M{
+			"auction_id": chainAuctionID,
+		}, auctionEntity)
+		if err == nil {
+			break
+		} else {
+			if count == 30 {
+				logger.AtLog.Logger.Error("maximum retry Find an auction entity")
+				return err
+			}
+		}
+
+		time.Sleep(3 * time.Second)
+	}
+
+	auctionBid, err := u.validateAuctionBid(eventData, auctionEntity, chainLog)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionBid - validateAuctionBid", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+
+	if _, err = u.Repo.InsertOne(auctionBid); err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionBid - InsertOne", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+
+	// Handle auction_bid_summary
+	now := time.Now()
+	auctionBidSummary := &entity.AuctionBidSummary{}
+	if err := u.Repo.FindOneWithResult(utils.COLLECTION_AUCTION_BID_SUMMARY, bson.M{
+		"chain_auction_id": chainAuctionID,
+		"sender":           auctionBid.Sender,
+	}, auctionBidSummary); err != nil {
+		if _, err := u.Repo.InsertOne(&entity.AuctionBidSummary{
+			BaseEntity: entity.BaseEntity{
+				UpdatedAt: &now,
+			},
+			DBAuctionID:       auctionEntity.ID,
+			ChainAuctionID:    chainAuctionID,
+			TokenID:           auctionBid.TokenID,
+			CollectionAddress: auctionBid.CollectionAddress,
+			TotalAmount:       eventData.Value.String(),
+			Sender:            auctionBid.Sender,
+			BlockNumberInt:    chainLog.BlockNumber,
+			TxHash:            strings.ToLower(chainLog.TxHash.String()),
+			LogIndex:          chainLog.Index,
+		}); err != nil {
+			logger.AtLog.Logger.Error("HandleAuctionBid - InsertOne - AuctionBidSummary", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		}
+	} else {
+		currentAmount, _ := new(big.Int).SetString(auctionBidSummary.TotalAmount, 10)
+		newAmount := new(big.Int).Add(currentAmount, eventData.Value)
+		if _, err := u.Repo.UpdateOne(utils.COLLECTION_AUCTION_BID_SUMMARY, bson.D{
+			{"chain_auction_id", chainAuctionID},
+			{"sender", auctionBid.Sender},
+		}, bson.M{"$set": bson.M{
+			"total_amount": newAmount.String(),
+			"updated_at":   now,
+		}}); err != nil {
+			logger.AtLog.Logger.Error("HandleAuctionBid - UpdateOne - AuctionBidSummary", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		}
+	}
+
+	// Update total amount of auction
+	if auctionEntity.TotalAmount == "" {
+		auctionEntity.TotalAmount = "0"
+	}
+	totalAmount, ok := new(big.Int).SetString(auctionEntity.TotalAmount, 10)
+	if ok {
+		totalAmount = new(big.Int).Add(totalAmount, eventData.Value)
+	} else {
+		totalAmount, _ = new(big.Int).SetString("0", 10)
+	}
+	if _, err := u.Repo.UpdateOne(utils.COLLECTION_AUCTION, bson.D{
+		{"auction_id", chainAuctionID},
+	}, bson.M{"$set": bson.M{
+		"total_amount": totalAmount.String(),
+	}}); err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionBid - UpdateOne", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+
+	_, err = u.NewBidCreatedNotify(auctionBid)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionBid - UpdateOne", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+	}
+	return nil
+}
+
+func (u *Usecase) validateAuctionBid(auctionBidEvent *soul_contract.SoulAuctionBid, auction *entity.Auction, chainLog types.Log) (*entity.AuctionBid, error) {
+	if os.Getenv("ENV") != "local" {
+		chainLatestBlock, err := u.TCPublicNode.GetBlockNumber()
+		if err != nil {
+			logger.AtLog.Logger.Error("validateAuctionBid - GetBlockNumber", zap.Error(err))
+			return nil, err
+		}
+		startTime, ok := new(big.Int).SetString(auction.StartTimeBlock, 10)
+		if !ok {
+			return nil, errors.New("invalid parse auction start time")
+		}
+		endTime, ok := new(big.Int).SetString(auction.EndTimeBlock, 10)
+		if !ok {
+			return nil, errors.New("invalid parse auction end time")
+		}
+
+		if !(startTime.Cmp(chainLatestBlock) <= 1 && chainLatestBlock.Cmp(endTime) <= 1) {
+			logger.AtLog.Logger.Error("validateAuctionBid - auction is not in progress", zap.Any("auction", auctionBidEvent.Auction))
+			return nil, errors.New("auction is not in progress")
+		}
+	}
+
+	return &entity.AuctionBid{
+		DBAuctionID:       auction.ID,
+		ChainAuctionID:    auction.AuctionID,
+		TokenID:           strings.ToLower(auctionBidEvent.TokenId.String()),
+		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
+		Amount:            auctionBidEvent.Value.String(),
+		Sender:            strings.ToLower(auctionBidEvent.Sender.Hex()),
+		BlockNumber:       fmt.Sprintf("%v", chainLog.BlockNumber),
+		BlockNumberInt:    chainLog.BlockNumber,
+		TxHash:            strings.ToLower(chainLog.TxHash.String()),
+		LogIndex:          chainLog.Index,
+	}, nil
+}
+
+func (u *Usecase) HandleAuctionSettle(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulAuctionSettled)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleAuctionBid - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+
+	logger.AtLog.Logger.Info("HandleAuctionSettle", zap.String("tokenID", eventData.TokenId.String()),
+		zap.Any("eventData", eventData), zap.String("contract", chainLog.Address.Hex()))
+
+	chainAuctionID := new(big.Int).SetBytes(eventData.Auction.AuctionId[:]).String()
+	auction, err := u.Repo.FindAuctionByChainAuctionID(context.TODO(), chainAuctionID)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - FindAuctionByChainAuctionID", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+
+	updateAuction := &bson.M{
+		"status":       entity.AuctionStatusSettled.Ordinal(),
+		"winner":       utils.ToPtr(strings.ToLower(eventData.Winner.Hex())),
+		"total_amount": eventData.Amount.String(),
+	}
+
+	_, err = u.Repo.UpdateOne(utils.COLLECTION_AUCTION, bson.D{{"_id", auction.ID}}, bson.M{
+		"$set": updateAuction,
+	})
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - UpdateOne", zap.String("auctionObjectID", auction.ID.Hex()), zap.Error(err))
+		return err
+	}
+
+	_, err = u.NewAuctionSettledNotify(auction, eventData.Amount)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - UpdateOne", zap.String("auctionObjectID", auction.ID.Hex()), zap.Error(err))
+	}
+
+	return nil
+}
+
+func (u *Usecase) HandleAuctionClaim(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulAuctionClaimBid)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleAuctionClaim - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+
+	logger.AtLog.Logger.Info("HandleAuctionClaim", zap.String("tokenID", eventData.TokenId.String()),
+		zap.Any("eventData", eventData), zap.String("contract", chainLog.Address.Hex()))
+
+	chainAuctionID := new(big.Int).SetBytes(eventData.AuctionId[:]).String()
+	auction, err := u.Repo.FindAuctionByChainAuctionID(context.TODO(), chainAuctionID)
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - FindAuctionByChainAuctionID", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+	if auction.Status == entity.AuctionStatusInProgress {
+		logger.AtLog.Logger.Error("HandleAuctionSettle - auctionInProgress - Cannot claim", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("auctionInProgress - Cannot claim")
+	}
+
+	auctionClaim := &entity.AuctionClaim{
+		DBAuctionID:       auction.ID,
+		ChainAuctionID:    chainAuctionID,
+		TokenID:           strings.ToLower(eventData.TokenId.String()),
+		CollectionAddress: strings.ToLower(chainLog.Address.Hex()),
+		Claimer:           strings.ToLower(eventData.Sender.Hex()),
+		Amount:            eventData.Value.String(),
+	}
+
+	if _, err := u.Repo.InsertOne(auctionClaim); err != nil {
+		logger.AtLog.Logger.Error("HandleAuctionClaim - InsertOne", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (u *Usecase) HandleUnlockFeature(data interface{}, chainLog types.Log) error {
+	eventData, ok := data.(*soul_contract.SoulUnlockFeature)
+	if !ok {
+		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
+	logger.AtLog.Logger.Info("HandleUnlockFeature", zap.Any("eventData", eventData), zap.Any("chainLog", chainLog))
+	err := u.SoulNftUnlockFeature(eventData, chainLog.TxHash.String(), int(chainLog.Index))
+	if err != nil {
+		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.Error(err), zap.String("tokenID", eventData.TokenId.String()))
+		return errors.New("event data is not correct")
+	}
 	return nil
 }
