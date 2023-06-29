@@ -1065,14 +1065,24 @@ func (u *Usecase) HandleAuctionClaim(data interface{}, chainLog types.Log) error
 func (u *Usecase) HandleUnlockFeature(data interface{}, chainLog types.Log) error {
 	eventData, ok := data.(*soul_contract.SoulUnlockFeature)
 	if !ok {
-		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
-		return errors.New("event data is not correct")
+
+		err := errors.New("event data is not correct")
+		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed",
+			zap.String("tokenID", eventData.TokenId.String()),
+			zap.Error(err))
+		return err
 	}
-	logger.AtLog.Logger.Info("HandleUnlockFeature", zap.Any("eventData", eventData), zap.Any("chainLog", chainLog))
+	logger.AtLog.Logger.Info(fmt.Sprintf("HandleUnlockFeature - %s", eventData.TokenId.String()),
+		zap.String("featureName", eventData.FeatureName),
+		zap.String("tokenID", eventData.TokenId.String()))
+
 	err := u.SoulNftUnlockFeature(eventData, chainLog.TxHash.String(), int(chainLog.Index))
 	if err != nil {
-		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.Error(err), zap.String("tokenID", eventData.TokenId.String()))
-		return errors.New("event data is not correct")
+		err := errors.New("event data is not correct")
+		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.Error(err),
+			zap.String("tokenID", eventData.TokenId.String()),
+			zap.Error(err))
+		return err
 	}
 	return nil
 }

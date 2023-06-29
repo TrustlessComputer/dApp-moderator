@@ -142,7 +142,7 @@ func (c *txSoulServer) getRedisKey(postfix *string) string {
 
 func (c *txSoulServer) Task(wg *sync.WaitGroup, taskName string, processFunc func(ctx context.Context) error) {
 	defer wg.Done()
-	logger.AtLog.Logger.Info(fmt.Sprintf("Task: %s is running", taskName), zap.String("taskName", taskName))
+
 	err := processFunc(context.Background())
 	if err != nil {
 		logger.AtLog.Logger.Error(fmt.Sprintf("Task: %s is running", taskName), zap.String("taskName", taskName), zap.Error(err))
@@ -191,13 +191,6 @@ func (c *txSoulServer) resolveTxTransaction(ctx context.Context) error {
 		fromBlock = toBlock
 	}
 
-	logger.AtLog.Logger.Info("txSoulServer - resolveTransaction",
-		zap.Int64("fromBlock", fromBlock),
-		zap.Int64("toBlock", toBlock),
-		zap.Int64("chainBlock",
-			chainBlock.Int64()),
-	)
-
 	//Logs - start
 	//logs are only heard by our collection addresses
 	logs, err := c.Blockchain.GetEventLogs(*big.NewInt(fromBlock), *big.NewInt(toBlock), c.ListenedContracts())
@@ -212,7 +205,7 @@ func (c *txSoulServer) resolveTxTransaction(ctx context.Context) error {
 		return err
 	}
 
-	logger.AtLog.Logger.Info("resolveTransaction",
+	logger.AtLog.Logger.Info("txSoulServer - resolveTransaction",
 		zap.Int64("fromBlock", fromBlock),
 		zap.Int64("toBlock", toBlock),
 		zap.Int("logs", len(logs)))

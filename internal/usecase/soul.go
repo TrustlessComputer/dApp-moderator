@@ -104,8 +104,6 @@ func (u *Usecase) SoulCrontab() error {
 			isAuction = true
 		}
 
-		logger.AtLog.Logger.Info(fmt.Sprintf("SoulCrontab - %s - %s", out.Nft.ContractAddress, out.Nft.TokenID), zap.String("contract_address", collection.Contract), zap.String("token_id", out.Nft.TokenID), zap.String("owner", out.Nft.Owner), zap.String("balance", fmt.Sprintf("%d", out.Balance.Int64())))
-
 		insertData := &entity.NftAuctionsAvailable{
 			TokenID:         out.Nft.TokenID,
 			TokenIDInt:      int64(tokenIDInt),
@@ -143,7 +141,12 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		if err != nil {
 			logger.AtLog.Logger.Error(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID), zap.String("tokenID", nft.TokenID), zap.Error(err), zap.Any("outData", outData))
 		} else {
-			logger.AtLog.Logger.Info(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID), zap.String("tokenID", nft.TokenID), zap.Any("outData", outData))
+			//logger.AtLog.Logger.Info(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID),
+			//	zap.String("tokenID", nft.TokenID),
+			//	zap.Any("owner", nft.Owner),
+			//	zap.Any("is_available_for_auction", outData.IsAvailable),
+			//	zap.Any("balance", outData.Balance),
+			//)
 		}
 
 		output <- outData
