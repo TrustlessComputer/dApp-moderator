@@ -305,22 +305,90 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			},
 		},
 	}
+	fsort := bson.D{}
 
 	collection := utils.COLLECTION_NFTS
 	//Only for soul
 	if filter.ContractAddress != nil {
-		if strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+		contractAddress := *filter.ContractAddress
+		if strings.ToLower(contractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
 			collection = utils.VIEW_SOUL_NFT_WITH_ATTRIBUTES
 
-			f1 = append(f1, bson.D{
+			fsort = bson.D{
 				{"$sort",
 					bson.D{
 						{filter.SortBy, filter.Sort},
 						{"token_id_int", entity.SORT_DESC},
 					},
 				},
-			})
+			}
 		} else {
+			addFields := bson.D{
+				{"buyable",
+					bson.D{
+						{"$cond",
+							bson.A{
+								bson.D{
+									{"$or",
+										bson.A{
+											bson.D{
+												{"$eq",
+													bson.A{
+														bson.D{
+															{"$ifNull",
+																bson.A{
+																	"$price_erc20",
+																	0,
+																},
+															},
+														},
+														0,
+													},
+												},
+											},
+										},
+									},
+								},
+								false,
+								true,
+							},
+						},
+					},
+				},
+				{"price",
+					bson.D{
+						{"$cond",
+							bson.A{
+								bson.D{
+									{"$or",
+										bson.A{
+											bson.D{
+												{"$eq",
+													bson.A{
+														bson.D{
+															{"$ifNull",
+																bson.A{
+																	"$price_erc20",
+																	0,
+																},
+															},
+														},
+														0,
+													},
+												},
+											},
+										},
+									},
+								},
+								0,
+								bson.D{{"$toDouble", "$price_erc20.price"}},
+							},
+						},
+					},
+				},
+				{"erc20", "$price_erc20.erc_20_token"},
+			}
+
 			//used for marketplace
 			f1 = append(f1, bson.D{
 				{"$lookup",
@@ -380,73 +448,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 				},
 			})
 			f1 = append(f1, bson.D{
-				{"$addFields",
-					bson.D{
-						{"buyable",
-							bson.D{
-								{"$cond",
-									bson.A{
-										bson.D{
-											{"$or",
-												bson.A{
-													bson.D{
-														{"$eq",
-															bson.A{
-																bson.D{
-																	{"$ifNull",
-																		bson.A{
-																			"$price_erc20",
-																			0,
-																		},
-																	},
-																},
-																0,
-															},
-														},
-													},
-												},
-											},
-										},
-										false,
-										true,
-									},
-								},
-							},
-						},
-						{"price",
-							bson.D{
-								{"$cond",
-									bson.A{
-										bson.D{
-											{"$or",
-												bson.A{
-													bson.D{
-														{"$eq",
-															bson.A{
-																bson.D{
-																	{"$ifNull",
-																		bson.A{
-																			"$price_erc20",
-																			0,
-																		},
-																	},
-																},
-																0,
-															},
-														},
-													},
-												},
-											},
-										},
-										0,
-										bson.D{{"$toDouble", "$price_erc20.price"}},
-									},
-								},
-							},
-						},
-						{"erc20", "$price_erc20.erc_20_token"},
-					},
-				},
+				{"$addFields", addFields},
 			})
 			f1 = append(f1, bson.D{
 				{"$addFields",
@@ -503,7 +505,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					},
 				},
 			})
-			f1 = append(f1, bson.D{
+			fsort = bson.D{
 				{"$sort",
 					bson.D{
 						{"buyable", -1},
@@ -511,7 +513,128 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 						{filter.SortBy, filter.Sort},
 					},
 				},
-			})
+			}
+
+			switch contractAddress {
+			case strings.ToLower(os.Getenv("BNS_ADDRESS")):
+				f1 = append(f1, bson.D{
+					{"$lookup",
+						bson.D{
+							{"from", "bns"},
+							{"localField", "token_id"},
+							{"foreignField", "token_id"},
+							{"pipeline",
+								bson.A{
+									bson.D{
+										{"$match",
+											bson.D{
+												{"collection_address", strings.ToLower(*filter.ContractAddress)},
+											},
+										},
+									},
+									bson.D{{"$skip", 0}},
+									bson.D{{"$limit", 1}},
+								},
+							},
+							{"as", "bns"},
+						},
+					},
+				})
+				f1 = append(f1, bson.D{
+					{"$unwind",
+						bson.D{
+							{"path", "$bns"},
+							{"preserveNullAndEmptyArrays", true},
+						},
+					},
+				})
+
+				fieldName := bson.E{"name", "$bns.name"}
+				addFields = append(addFields, fieldName)
+
+				f1 = append(f1, bson.D{{
+					"$addFields", addFields,
+				}})
+				break
+			default:
+				fieldName := bson.E{"name",
+					bson.D{
+						{"$cond",
+							bson.D{
+								{"if",
+									bson.D{
+										{"$eq",
+											bson.A{
+												"$name",
+												"",
+											},
+										},
+									},
+								},
+								{"then",
+									bson.D{
+										{"$cond",
+											bson.D{
+												{"if",
+													bson.D{
+														{"$gt",
+															bson.A{
+																"$token_id_int",
+																1000000,
+															},
+														},
+													},
+												},
+												{"then",
+													bson.D{
+														{"$concat",
+															bson.A{
+																"$collection.name",
+																" #",
+																bson.D{
+																	{"$toString",
+																		bson.D{
+																			{"$mod",
+																				bson.A{
+																					"$token_id_int",
+																					1000000,
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												{"else",
+													bson.D{
+														{"$concat",
+															bson.A{
+																"$collection.name",
+																" #",
+																"$token_id",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+								{"else", "$name"},
+							},
+						},
+					},
+				}
+				addFields = append(addFields, fieldName)
+
+				f1 = append(f1, bson.D{{
+					"$addFields", addFields,
+				}})
+				break
+			}
+
 		}
 	}
 	matchPrice := bson.D{}
@@ -544,6 +667,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		},
 	})
 
+	fPagination = append(fPagination, fsort)
 	fPagination = append(fPagination, bson.D{{"$skip", filter.Offset}})
 	fPagination = append(fPagination, bson.D{{"$limit", filter.Limit}})
 

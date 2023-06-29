@@ -456,3 +456,23 @@ func ParseUintToUnixTime(number uint64) *time.Time {
 	t := time.Unix(int64(number), 0)
 	return &t
 }
+
+func CreateFile(fileName string, data interface{}) error {
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(bytes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
