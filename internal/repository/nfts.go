@@ -5,7 +5,6 @@ import (
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
-	"dapp-moderator/utils/helpers"
 	"os"
 	"strings"
 
@@ -718,9 +717,6 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		bson.D{{"$addFields", bson.D{{"total_item", "$count.all"}}}},
 		bson.D{{"$project", bson.D{{"count", 0}}}},
 	}
-
-	helpers.CreateFile("fPagination.bson", fPagination)
-	helpers.CreateFile("fCount.bson", fCount)
 
 	pResp := []entity.MkpNftsPagination{}
 	cursor, err := r.DB.Collection(collection).Aggregate(context.TODO(), fAll)
