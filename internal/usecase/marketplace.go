@@ -833,6 +833,7 @@ func (u *Usecase) HandleAuctionCreated(data interface{}, chainLog types.Log) err
 
 func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
 	eventData, ok := data.(*soul_contract.SoulAuctionBid)
+
 	if !ok {
 		logger.AtLog.Logger.Error("HandleAuctionBid - assert eventData failed", zap.String("tokenID", eventData.TokenId.String()))
 		return errors.New("event data is not correct")
@@ -937,6 +938,7 @@ func (u *Usecase) HandleAuctionBid(data interface{}, chainLog types.Log) error {
 	if err != nil {
 		logger.AtLog.Logger.Error("HandleAuctionBid - UpdateOne", zap.String("tokenID", eventData.TokenId.String()), zap.Error(err))
 	}
+
 	return nil
 }
 
