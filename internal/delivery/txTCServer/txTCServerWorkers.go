@@ -135,22 +135,25 @@ func (c *txTCServer) Worker(inputDataChan chan types.Log, result chan *eventLog)
 		pFunction = c.Usecase.MarketplacePFPUpdated
 		eventType = entity.BNSPfpUpdated
 		break
-	case c.MarketPlace.Events["AUCTION_CREATED_EVENT"]:
-		pFunction = c.Usecase.HandleAuctionCreated
-		eventType = entity.AuctionCreatedActivity
-		break
-	case c.MarketPlace.Events["AUCTION_BID_EVENT"]:
-		pFunction = c.Usecase.HandleAuctionBid
-		eventType = entity.AuctionBidActivity
-		break
-	case c.MarketPlace.Events["AUCTION_SETTLE_EVENT"]:
-		pFunction = c.Usecase.HandleAuctionSettle
-		eventType = entity.AuctionSettledActivity
-		break
-	case c.MarketPlace.Events["AUCTION_CLAIM_EVENT"]:
-		pFunction = c.Usecase.HandleAuctionClaim
-		eventType = entity.AuctionClaimActivity
-		break
+
+	//Move to Soul-tx-server
+	//case c.MarketPlace.Events["AUCTION_CREATED_EVENT"]:
+	//	pFunction = c.Usecase.HandleAuctionCreated
+	//	eventType = entity.AuctionCreatedActivity
+	//	break
+	//case c.MarketPlace.Events["AUCTION_BID_EVENT"]:
+	//	pFunction = c.Usecase.HandleAuctionBid
+	//	eventType = entity.AuctionBidActivity
+	//	break
+	//case c.MarketPlace.Events["AUCTION_SETTLE_EVENT"]:
+	//	pFunction = c.Usecase.HandleAuctionSettle
+	//	eventType = entity.AuctionSettledActivity
+	//	break
+	//case c.MarketPlace.Events["AUCTION_CLAIM_EVENT"]:
+	//	pFunction = c.Usecase.HandleAuctionClaim
+	//	eventType = entity.AuctionClaimActivity
+	//	break
+
 	case c.MarketPlace.Events["SOUL_UNLOCK_FEATURE_EVENT"]:
 		pFunction = c.Usecase.HandleUnlockFeature
 		eventType = entity.SoulUnlockFeature

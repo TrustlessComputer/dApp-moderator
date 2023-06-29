@@ -75,10 +75,11 @@ func NewTxTCServer(global *global.Global, uc usecase.Usecase) (*txTCServer, erro
 	mkpEvents["MARKETPLACE_BNS_REGISTERED"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_REGISTERED"))
 	mkpEvents["MARKETPLACE_BNS_SET_FPF"] = strings.ToLower(os.Getenv("MARKETPLACE_BNS_SET_FPF"))
 
-	mkpEvents["AUCTION_CREATED_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CREATED_EVENT"))
-	mkpEvents["AUCTION_BID_EVENT"] = strings.ToLower(os.Getenv("AUCTION_BID_EVENT"))
-	mkpEvents["AUCTION_SETTLE_EVENT"] = strings.ToLower(os.Getenv("AUCTION_SETTLE_EVENT"))
-	mkpEvents["AUCTION_CLAIM_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CLAIM_EVENT"))
+	//MOVE to tx Soul Server
+	//mkpEvents["AUCTION_CREATED_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CREATED_EVENT"))
+	//mkpEvents["AUCTION_BID_EVENT"] = strings.ToLower(os.Getenv("AUCTION_BID_EVENT"))
+	//mkpEvents["AUCTION_SETTLE_EVENT"] = strings.ToLower(os.Getenv("AUCTION_SETTLE_EVENT"))
+	//mkpEvents["AUCTION_CLAIM_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CLAIM_EVENT"))
 	mkpEvents["SOUL_UNLOCK_FEATURE_EVENT"] = strings.ToLower(os.Getenv("SOUL_UNLOCK_FEATURE_EVENT"))
 
 	m := &MarketPlace{
