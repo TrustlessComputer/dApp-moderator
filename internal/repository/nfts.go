@@ -540,6 +540,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 									},
 									bson.D{{"$skip", 0}},
 									bson.D{{"$limit", 1}},
+									bson.D{{"$project", bson.D{{"name", 1}}}},
 								},
 							},
 							{"as", "bns"},
