@@ -306,6 +306,9 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		},
 	}
 	fsort := bson.D{}
+	fBNS := bson.D{}
+	fBNSDefault := bson.D{}
+	fName := bson.A{}
 
 	collection := utils.COLLECTION_NFTS
 	//Only for soul
@@ -473,7 +476,9 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					},
 				},
 			})
-			f1 = append(f1, bson.D{
+
+			//lookup BNS
+			fBNS = bson.D{
 				{"$lookup",
 					bson.D{
 						{"from", "bns"},
@@ -488,23 +493,24 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 						{"as", "bns_data"},
 					},
 				},
-			})
-			f1 = append(f1, bson.D{
-				{"$lookup",
-					bson.D{
-						{"from", "bns_default"},
-						{"localField", "owner"},
-						{"foreignField", "resolver"},
-						{"pipeline",
-							bson.A{
-								bson.D{{"$skip", 0}},
-								bson.D{{"$limit", 1}},
-							},
+			}
+
+			//lookup bns default
+			fBNSDefault = bson.D{{"$lookup",
+				bson.D{
+					{"from", "bns_default"},
+					{"localField", "owner"},
+					{"foreignField", "resolver"},
+					{"pipeline",
+						bson.A{
+							bson.D{{"$skip", 0}},
+							bson.D{{"$limit", 1}},
 						},
-						{"as", "bns_default"},
 					},
+					{"as", "bns_default"},
 				},
-			})
+			}}
+
 			fsort = bson.D{
 				{"$sort",
 					bson.D{
@@ -517,7 +523,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 
 			switch contractAddress {
 			case strings.ToLower(os.Getenv("BNS_ADDRESS")):
-				f1 = append(f1, bson.D{
+				fName = append(fName, bson.D{
 					{"$lookup",
 						bson.D{
 							{"from", "bns"},
@@ -540,7 +546,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 						},
 					},
 				})
-				f1 = append(f1, bson.D{
+				fName = append(fName, bson.D{
 					{"$unwind",
 						bson.D{
 							{"path", "$bns"},
@@ -552,7 +558,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 				fieldName := bson.E{"name", "$bns.name"}
 				addFields = append(addFields, fieldName)
 
-				f1 = append(f1, bson.D{{
+				fName = append(fName, bson.D{{
 					"$addFields", addFields,
 				}})
 				break
@@ -629,7 +635,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 				}
 				addFields = append(addFields, fieldName)
 
-				f1 = append(f1, bson.D{{
+				fName = append(fName, bson.D{{
 					"$addFields", addFields,
 				}})
 				break
@@ -671,6 +677,20 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 	fPagination = append(fPagination, bson.D{{"$skip", filter.Offset}})
 	fPagination = append(fPagination, bson.D{{"$limit", filter.Limit}})
 
+	//move them after limit and skip for performance
+	if len(fBNS) > 0 {
+		fPagination = append(fPagination, fBNS)
+	}
+
+	if len(fBNSDefault) > 0 {
+		fPagination = append(fPagination, fBNSDefault)
+	}
+
+	if len(fName) > 0 {
+		fPagination = append(fPagination, fName...)
+	}
+	//end
+
 	fAll := bson.A{
 		bson.D{
 			{"$facet",
@@ -695,7 +715,6 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		bson.D{{"$addFields", bson.D{{"total_item", "$count.all"}}}},
 		bson.D{{"$project", bson.D{{"count", 0}}}},
 	}
-
 	pResp := []entity.MkpNftsPagination{}
 	cursor, err := r.DB.Collection(collection).Aggregate(context.TODO(), fAll)
 	if err != nil {
