@@ -256,15 +256,18 @@ func startServer() {
 	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
 	signal.Notify(c, os.Interrupt)
 
+	now := time.Now().UTC()
+	key := fmt.Sprintf("%d-%d-%d %d:%d:%d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
+
 	// Run our server in a goroutine so that it doesn't block.
 	for name, server := range servers {
 		if server.Enabled {
 			if server.Server != nil {
 				go server.Server.StartServer()
 			}
-			logger.AtLog().Logger.Info(fmt.Sprintf("%s is enabled", name))
+			logger.AtLog().Logger.Info(fmt.Sprintf("[%s] - %s is enabled", key, name))
 		} else {
-			logger.AtLog().Logger.Info(fmt.Sprintf("%s is disabled", name))
+			logger.AtLog().Logger.Info(fmt.Sprintf("[%s] - %s is disabled", key, name))
 		}
 	}
 
