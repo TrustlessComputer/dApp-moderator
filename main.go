@@ -188,6 +188,12 @@ func startServer() {
 		proposalStartBool = true //alway start this server, if config is missing
 	}
 
+	soulStart := os.Getenv("SOUL_CONSUMER_START")
+	soulStartBool, err := strconv.ParseBool(soulStart)
+	if err != nil {
+		soulStartBool = true //alway start this server, if config is missing
+	}
+
 	trendingStart := os.Getenv("TRENDING_SERVER_START")
 	trendingStartBool, err := strconv.ParseBool(trendingStart)
 	if err != nil {
@@ -210,6 +216,12 @@ func startServer() {
 	servers["proposal-consumer"] = delivery.AddedServer{
 		Server:  proposalServer,
 		Enabled: proposalStartBool,
+	}
+
+	soulServer, _ := txTCServer.NewTxSoulServer(&g, *uc)
+	servers["soul-consumer"] = delivery.AddedServer{
+		Server:  soulServer,
+		Enabled: soulStartBool,
 	}
 
 	servers["job-discord"] = delivery.AddedServer{
