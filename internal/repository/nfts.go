@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"dapp-moderator/utils/helpers"
 	"os"
 	"strings"
 
@@ -285,26 +286,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		f = append(f, bson.D{{"$match", match}})
 	}
 
-	f1 := bson.A{
-		bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "collections"},
-					{"localField", "collection_address"},
-					{"foreignField", "contract"},
-					{"as", "collection"},
-				},
-			},
-		},
-		bson.D{
-			{"$unwind",
-				bson.D{
-					{"path", "$collection"},
-					{"preserveNullAndEmptyArrays", true},
-				},
-			},
-		},
-	}
+	f1 := bson.A{}
 	fsort := bson.D{}
 	fBNS := bson.D{}
 	fBNSDefault := bson.D{}
@@ -417,30 +399,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					},
 				},
 			})
-			f1 = append(f1, bson.D{
-				{"$lookup",
-					bson.D{
-						{"from", "marketplace_offers"},
-						{"localField", "token_id"},
-						{"foreignField", "token_id"},
-						{"pipeline",
-							bson.A{
-								bson.D{
-									{"$match",
-										bson.D{
-											{"collection_contract", strings.ToLower(*filter.ContractAddress)},
-											{"status", 0},
-										},
-									},
-								},
-								bson.D{{"$skip", 0}},
-								bson.D{{"$limit", 100}},
-							},
-						},
-						{"as", "make_offers"},
-					},
-				},
-			})
+
 			f1 = append(f1, bson.D{{"$addFields", bson.D{{"price_erc20", "$listing_for_sales"}}}})
 			f1 = append(f1, bson.D{
 				{"$unwind",
@@ -679,6 +638,49 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 	fPagination = append(fPagination, bson.D{{"$limit", filter.Limit}})
 
 	//move them after limit and skip for performance
+	fPagination = append(fPagination, bson.D{
+		{"$lookup",
+			bson.D{
+				{"from", "collections"},
+				{"localField", "collection_address"},
+				{"foreignField", "contract"},
+				{"as", "collection"},
+			},
+		},
+	})
+	fPagination = append(fPagination, bson.D{
+		{"$unwind",
+			bson.D{
+				{"path", "$collection"},
+				{"preserveNullAndEmptyArrays", true},
+			},
+		},
+	})
+	fPagination = append(fPagination, bson.D{
+		{"$lookup",
+			bson.D{
+				{"from", "marketplace_offers"},
+				{"localField", "token_id"},
+				{"foreignField", "token_id"},
+				{"pipeline",
+					bson.A{
+						bson.D{
+							{"$match",
+								bson.D{
+									{"collection_contract", strings.ToLower(*filter.ContractAddress)},
+									{"status", 0},
+								},
+							},
+						},
+						bson.D{{"$skip", 0}},
+						bson.D{{"$limit", 100}},
+					},
+				},
+				{"as", "make_offers"},
+			},
+		},
+	})
+
 	if len(fBNS) > 0 {
 		fPagination = append(fPagination, fBNS)
 	}
@@ -716,6 +718,10 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		bson.D{{"$addFields", bson.D{{"total_item", "$count.all"}}}},
 		bson.D{{"$project", bson.D{{"count", 0}}}},
 	}
+
+	helpers.CreateFile("fPagination.bson", fPagination)
+	helpers.CreateFile("fCount.bson", fCount)
+
 	pResp := []entity.MkpNftsPagination{}
 	cursor, err := r.DB.Collection(collection).Aggregate(context.TODO(), fAll)
 	if err != nil {
