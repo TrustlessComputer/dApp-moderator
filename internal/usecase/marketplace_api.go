@@ -148,7 +148,7 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 		sort = int(filter.Sort)
 	}
 
-	sortDocument := bson.D{
+	s := bson.D{
 		{"buyable", -1},
 		{"price", 1},
 		{sortBy, sort},
@@ -161,10 +161,10 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 
 	queryFromView := utils.VIEW_NEW_MARKETPLACE_NFTS
 	if filter.ContractAddress != nil && strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
-		queryFromView = utils.COLLECTION_NFTS
+		queryFromView = utils.VIEW_SOUL_MARKETPLACE_NFTS_AUCTION_RARITY
 	}
 
-	err := u.Repo.FindWithProjections(queryFromView, f, filter.Limit, filter.Offset, &resp, sortDocument, projections)
+	err := u.Repo.FindWithProjections(queryFromView, f, filter.Limit, filter.Offset, &resp, s, projections)
 	if err != nil {
 		return nil, err
 	}
