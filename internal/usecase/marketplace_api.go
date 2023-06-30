@@ -242,6 +242,34 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 		}
 	}
 
+	if strings.ToLower(contractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+		attributes := resp.Attributes
+		attrSorted := make(map[string]nft_explorer.MkpNftAttr)
+		attrSorted[strings.ToLower("Color Palette")] = nft_explorer.MkpNftAttr{}
+		attrSorted[strings.ToLower("Sea Level")] = nft_explorer.MkpNftAttr{}
+		attrSorted[strings.ToLower("Neighborhood")] = nft_explorer.MkpNftAttr{}
+		attrSorted[strings.ToLower("Soul Form")] = nft_explorer.MkpNftAttr{}
+		attrSorted[strings.ToLower("Decoration")] = nft_explorer.MkpNftAttr{}
+		attrSorted[strings.ToLower("Special Object")] = nft_explorer.MkpNftAttr{}
+		attrSorted[strings.ToLower("Rendering Rate")] = nft_explorer.MkpNftAttr{}
+		attrSorted[strings.ToLower("Activity In")] = nft_explorer.MkpNftAttr{}
+
+		for _, attribute := range attributes {
+			attrSorted[strings.ToLower(attribute.TraitType)] = attribute
+		}
+
+		respAttr := []nft_explorer.MkpNftAttr{}
+		respAttr = append(respAttr, attrSorted[strings.ToLower("Color Palette")])
+		respAttr = append(respAttr, attrSorted[strings.ToLower("Sea Level")])
+		respAttr = append(respAttr, attrSorted[strings.ToLower("Neighborhood")])
+		respAttr = append(respAttr, attrSorted[strings.ToLower("Soul Form")])
+		respAttr = append(respAttr, attrSorted[strings.ToLower("Decoration")])
+		respAttr = append(respAttr, attrSorted[strings.ToLower("Special Object")])
+		respAttr = append(respAttr, attrSorted[strings.ToLower("Rendering Rate")])
+		respAttr = append(respAttr, attrSorted[strings.ToLower("Activity In")])
+
+		resp.Attributes = respAttr
+	}
 	return resp, nil
 }
 
