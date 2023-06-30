@@ -126,13 +126,46 @@ func (u *Usecase) AuctionDetail(contractAddr, tokenID string) (*response.Auction
 		availableToFE = true
 	}
 
+	highestBidder := strings.ToLower(resp.Bidder.Hex())
+	var bnsDefault = &entity.BNSDefault{}
+	var name, avatar string
+	if err := u.Repo.FindOneWithResult(utils.COLLECTION_BNS_DEFAULT, bson.M{
+		"resolver": highestBidder,
+	}, bnsDefault); err == nil {
+		var bns = &entity.Bns{}
+		if err := u.Repo.FindOneWithResult(utils.COLLECTION_BNS, bson.M{"_id": bnsDefault.BNSDefaultID}, bns); err == nil {
+			name = bns.Name
+			if bns.PfpData != nil {
+				avatar = bns.PfpData.GCSUrl
+			}
+		}
+	} else {
+		if bns, err := u.Repo.FilterBNS(entity.FilterBns{
+			BaseFilters: entity.BaseFilters{
+				SortBy: "_id",
+				Sort:   entity.SORT_ASC,
+				Limit:  1,
+				Page:   1,
+			},
+			Resolver: utils.ToPtr(highestBidder),
+		}); err == nil && len(bns) > 0 {
+			name = bns[0].Name
+			if bns[0].PfpData != nil {
+				avatar = bns[0].PfpData.GCSUrl
+			}
+		}
+	}
+
 	return &response.AuctionDetailResponse{
-		Available:      availableToFE,
-		AuctionStatus:  status,
-		HighestBid:     resp.Amount.String(),
-		EndTime:        resp.EndTime.String(),
-		DBAuctionID:    auctionEntity.ID.Hex(),
-		ChainAuctionID: new(big.Int).SetBytes(resp.AuctionId[:]).String(),
+		Available:           availableToFE,
+		AuctionStatus:       status,
+		HighestBid:          resp.Amount.String(),
+		EndTime:             resp.EndTime.String(),
+		DBAuctionID:         auctionEntity.ID.Hex(),
+		HighestBidder:       highestBidder,
+		HighestBidderName:   name,
+		HighestBidderAvatar: avatar,
+		ChainAuctionID:      new(big.Int).SetBytes(resp.AuctionId[:]).String(),
 	}, nil
 }
 
