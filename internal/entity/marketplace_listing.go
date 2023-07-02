@@ -65,6 +65,8 @@ type FilterNfts struct {
 	Price     *Rarity
 	IsBigFile *bool
 	IsBuyable *bool
+
+	IsOrphan *int
 }
 
 type Rarity struct {
@@ -132,16 +134,6 @@ type NftFilteredAuction struct {
 	EndBlock              string `bson:"end_time_block" json:"end_block"`
 	AuctionID             string `bson:"auction_id" json:"auction_id"`
 	DbAuctionID           string `bson:"db_auction_id" json:"db_auction_id"`
-}
-
-type SoulAuction struct {
-	CollectionAddress string `json:"collection_address" bson:"collection_address"`
-	TokenID           string `json:"token_id" bson:"token_id"`
-	TokenIDInt        uint64 `json:"token_id_int" bson:"token_id_int"`
-	AuctionID         string `json:"auction_id" bson:"auction_id"`
-	StartTimeBlock    string `json:"start_time_block" bson:"start_time_block"`
-	EndTimeBlock      string `json:"end_time_block" bson:"end_time_block"`
-	BlockNumber       string `json:"block_number" bson:"block_number"`
 }
 
 type MkpNftsAuctionDataResp struct {
