@@ -419,6 +419,12 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			if owner != "" {
 				f.Owner = &owner
 			}
+			isOrPhan := strings.ToLower(r.URL.Query().Get("is_orphan"))
+			if isOrPhan != "" {
+				if isOrhanVal, err := strconv.Atoi(isOrPhan); err == nil {
+					f.IsOrphan = &isOrhanVal
+				}
+			}
 
 			rarity := strings.ToLower(r.URL.Query().Get("rarity"))
 			if rarity != "" {
@@ -497,12 +503,7 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 
 			data, err := h.Usecase.FilterMkplaceNftNew(ctx, f)
 			if err != nil {
-				logger.AtLog.Logger.Error("can not get nfts", zap.Error(err))
-				return nil, err
-			}
-
-			if err != nil {
-				logger.AtLog.Logger.Error("Nfts", zap.Any("iPagination", iPagination), zap.Error(err))
+				logger.AtLog.Logger.Error("can not get nfts", zap.Any("iPagination", iPagination), zap.Error(err))
 				return nil, err
 			}
 
