@@ -227,6 +227,303 @@ func (r *Repository) GetNftsWithoutSize(collectionAddress string, skip int, limi
 	return groupedNfts, nil
 }
 
+func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bson.A {
+	pipeline := bson.A{bson.M{"$lookup": bson.D{
+		{"from", "nft_auction_available"},
+		{"localField", "token_id"},
+		{"foreignField", "token_id"},
+		{"let", bson.D{{"contract_address", "$collection_address"}}},
+		{"pipeline",
+			bson.A{
+				bson.D{
+					{"$match",
+						bson.D{
+							{"$expr",
+								bson.D{
+									{"$eq",
+										bson.A{
+											"$contract",
+											"$$contract_address",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{"as", "nft_auction_available"},
+	}},
+		bson.M{"$unwind": bson.D{
+			{"path", "$nft_auction_available"},
+			{"preserveNullAndEmptyArrays", true},
+		}},
+		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "auction"},
+					{"localField", "token_id"},
+					{"foreignField", "token_id"},
+					{"let", bson.D{{"contract_address", "$collection_address"}}},
+					{"pipeline",
+						bson.A{
+							bson.D{
+								{"$match",
+									bson.D{
+										{"$expr",
+											bson.D{
+												{"$eq",
+													bson.A{
+														"$collection_address",
+														"$$contract_address",
+													},
+												},
+											},
+										},
+										{"status", 1}, // 1 token ở 1 contract tại 1 thời điểm chỉ có 1 auction diễn ra
+									},
+								},
+							},
+						},
+					},
+					{"as", "auction"},
+				},
+			},
+		},
+		bson.D{
+			{"$unwind",
+				bson.D{
+					{"path", "$auction"},
+					{"preserveNullAndEmptyArrays", true},
+				},
+			},
+		},
+		bson.D{
+			{"$addFields",
+				bson.D{
+					{"db_auction_id",
+						bson.D{
+							{"$cond",
+								bson.A{
+									bson.D{
+										{"$or",
+											bson.A{
+												bson.D{
+													{"$eq",
+														bson.A{
+															bson.D{
+																{"$ifNull",
+																	bson.A{
+																		"$auction",
+																		0,
+																	},
+																},
+															},
+															0,
+														},
+													},
+												},
+											},
+										},
+									},
+									"",
+									"$auction._id",
+								},
+							},
+						},
+					},
+					{"start_time_block",
+						bson.D{
+							{"$cond",
+								bson.A{
+									bson.D{
+										{"$or",
+											bson.A{
+												bson.D{
+													{"$eq",
+														bson.A{
+															bson.D{
+																{"$ifNull",
+																	bson.A{
+																		"$auction",
+																		0,
+																	},
+																},
+															},
+															0,
+														},
+													},
+												},
+											},
+										},
+									},
+									"",
+									"$auction.start_time_block",
+								},
+							},
+						},
+					},
+					{"end_time_block",
+						bson.D{
+							{"$cond",
+								bson.A{
+									bson.D{
+										{"$or",
+											bson.A{
+												bson.D{
+													{"$eq",
+														bson.A{
+															bson.D{
+																{"$ifNull",
+																	bson.A{
+																		"$auction",
+																		0,
+																	},
+																},
+															},
+															0,
+														},
+													},
+												},
+											},
+										},
+									},
+									"",
+									"$auction.end_time_block",
+								},
+							},
+						},
+					},
+					{"auction_id",
+						bson.D{
+							{"$cond",
+								bson.A{
+									bson.D{
+										{"$or",
+											bson.A{
+												bson.D{
+													{"$eq",
+														bson.A{
+															bson.D{
+																{"$ifNull",
+																	bson.A{
+																		"$auction",
+																		0,
+																	},
+																},
+															},
+															0,
+														},
+													},
+												},
+											},
+										},
+									},
+									"",
+									"$auction.auction_id",
+								},
+							},
+						},
+					},
+					{"is_available_for_auction", "$nft_auction_available.is_auction"},
+					{"is_live_auction",
+						bson.D{
+							{"$cond",
+								bson.A{
+									bson.D{
+										{"$or",
+											bson.A{
+												bson.D{
+													{"$eq",
+														bson.A{
+															bson.D{
+																{"$ifNull",
+																	bson.A{
+																		"$auction",
+																		0,
+																	},
+																},
+															},
+															0,
+														},
+													},
+												},
+											},
+										},
+									},
+									false,
+									true,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		bson.D{
+			{"$project",
+				bson.D{
+					{"auction", 0},
+					{"nft_auction_available", 0},
+				},
+			},
+		},
+		bson.D{
+			{"$lookup",
+				bson.D{
+					{"from", "nfts_attributes_percent_view"},
+					{"localField", "token_id"},
+					{"foreignField", "token_id"},
+					{"let", bson.D{{"contract", "$collection_address"}}},
+					{"pipeline",
+						bson.A{
+							bson.D{
+								{"$match",
+									bson.D{
+										{"$expr",
+											bson.D{
+												{"$eq",
+													bson.A{
+														"$collection_address",
+														"$$contract",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					{"as", "percent_attributes"},
+				},
+			},
+		},
+		bson.D{
+			{"$addFields",
+				bson.D{
+					{"attributes", "$percent_attributes"},
+					{"rarity", bson.D{{"$avg", "$percent_attributes.percent"}}},
+				},
+			},
+		},
+		bson.D{{"$project", bson.D{{"percent_attributes", 0}}}},
+	}
+
+	if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
+		pipeline = append(pipeline, bson.D{
+			{"$match", bson.D{{"$or", bson.A{bson.M{
+				"is_available_for_auction": true,
+			}, bson.M{
+				"is_live_auction": true,
+			}}}}},
+		})
+	}
+
+	return pipeline
+}
+
 func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
 
 	f := bson.A{}
@@ -289,23 +586,22 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 	fsort := bson.D{}
 	fBNS := bson.D{}
 	fBNSDefault := bson.D{}
+	fMarketPlaceOffer := bson.D{}
 	fName := bson.A{}
 
 	collection := utils.COLLECTION_NFTS
-	//Only for soul
+	// Only for soul
 	if filter.ContractAddress != nil {
-		contractAddress := *filter.ContractAddress
-		if strings.ToLower(contractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
-			collection = utils.VIEW_SOUL_NFT_WITH_ATTRIBUTES
-
-			fsort = bson.D{
-				{"$sort",
-					bson.D{
-						{filter.SortBy, filter.Sort},
-						{"token_id_int", entity.SORT_DESC},
-					},
-				},
+		contractAddress := strings.ToLower(*filter.ContractAddress)
+		if contractAddress == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+			sortDoc := bson.D{
+				{filter.SortBy, filter.Sort},
 			}
+			if filter.SortBy != "token_id_int" {
+				sortDoc = append(sortDoc, bson.E{"token_id_int", entity.SORT_DESC})
+			}
+			fsort = bson.D{{"$sort", sortDoc}}
+			f = append(f, r.getPipelineForAuctionRequest(&filter)...)
 		} else {
 			addFields := bson.D{
 				{"buyable",
@@ -374,6 +670,28 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			}
 
 			//used for marketplace
+			fMarketPlaceOffer = append(fMarketPlaceOffer, bson.E{"$lookup",
+				bson.D{
+					{"from", "marketplace_offers"},
+					{"localField", "token_id"},
+					{"foreignField", "token_id"},
+					{"pipeline",
+						bson.A{
+							bson.D{
+								{"$match",
+									bson.D{
+										{"collection_contract", strings.ToLower(*filter.ContractAddress)},
+										{"status", 0},
+									},
+								},
+							},
+							bson.D{{"$skip", 0}},
+							bson.D{{"$limit", 100}},
+						},
+					},
+					{"as", "make_offers"},
+				},
+			})
 			f1 = append(f1, bson.D{
 				{"$lookup",
 					bson.D{
@@ -434,41 +752,6 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					},
 				},
 			})
-
-			//lookup BNS
-			fBNS = bson.D{
-				{"$lookup",
-					bson.D{
-						{"from", "bns"},
-						{"localField", "owner"},
-						{"foreignField", "resolver"},
-						{"pipeline",
-							bson.A{
-								bson.D{{"$skip", 0}},
-								bson.D{{"$limit", 1}},
-							},
-						},
-						{"as", "bns_data"},
-					},
-				},
-			}
-
-			//lookup bns default
-			fBNSDefault = bson.D{{"$lookup",
-				bson.D{
-					{"from", "bns_default"},
-					{"localField", "owner"},
-					{"foreignField", "resolver"},
-					{"pipeline",
-						bson.A{
-							bson.D{{"$skip", 0}},
-							bson.D{{"$limit", 1}},
-						},
-					},
-					{"as", "bns_default"},
-				},
-			}}
-
 			fsort = bson.D{
 				{"$sort",
 					bson.D{
@@ -492,7 +775,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 									bson.D{
 										{"$match",
 											bson.D{
-												{"collection_address", strings.ToLower(*filter.ContractAddress)},
+												{"collection_address", contractAddress},
 											},
 										},
 									},
@@ -503,67 +786,63 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 							},
 							{"as", "bns"},
 						},
-					},
-				})
-				fName = append(fName, bson.D{
-					{"$unwind",
-						bson.D{
-							{"path", "$bns"},
-							{"preserveNullAndEmptyArrays", true},
+					}},
+					bson.D{
+						{"$unwind",
+							bson.D{
+								{"path", "$bns"},
+								{"preserveNullAndEmptyArrays", true},
+							},
 						},
 					},
-				})
+				)
 
-				fieldName := bson.E{"name", "$bns.name"}
-				addFields = append(addFields, fieldName)
-
+				fieldName := bson.M{"name": "$bns.name"}
 				fName = append(fName, bson.D{{
-					"$addFields", addFields,
+					"$addFields", fieldName,
 				}})
 				break
 			default:
-				fieldName := bson.E{"name",
-					bson.D{
-						{"$cond",
-							bson.D{
-								{"if",
-									bson.D{
-										{"$eq",
-											bson.A{
-												"$name",
-												"",
-											},
+				fieldName := bson.M{"name": bson.D{
+					{"$cond",
+						bson.D{
+							{"if",
+								bson.D{
+									{"$eq",
+										bson.A{
+											"$name",
+											"",
 										},
 									},
 								},
-								{"then",
-									bson.D{
-										{"$cond",
-											bson.D{
-												{"if",
-													bson.D{
-														{"$gt",
-															bson.A{
-																"$token_id_int",
-																1000000,
-															},
+							},
+							{"then",
+								bson.D{
+									{"$cond",
+										bson.D{
+											{"if",
+												bson.D{
+													{"$gt",
+														bson.A{
+															"$token_id_int",
+															1000000,
 														},
 													},
 												},
-												{"then",
-													bson.D{
-														{"$concat",
-															bson.A{
-																"$collection.name",
-																" #",
-																bson.D{
-																	{"$toString",
-																		bson.D{
-																			{"$mod",
-																				bson.A{
-																					"$token_id_int",
-																					1000000,
-																				},
+											},
+											{"then",
+												bson.D{
+													{"$concat",
+														bson.A{
+															"$collection.name",
+															" #",
+															bson.D{
+																{"$toString",
+																	bson.D{
+																		{"$mod",
+																			bson.A{
+																				"$token_id_int",
+																				1000000,
 																			},
 																		},
 																	},
@@ -572,14 +851,14 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 														},
 													},
 												},
-												{"else",
-													bson.D{
-														{"$concat",
-															bson.A{
-																"$collection.name",
-																" #",
-																"$token_id",
-															},
+											},
+											{"else",
+												bson.D{
+													{"$concat",
+														bson.A{
+															"$collection.name",
+															" #",
+															"$token_id",
 														},
 													},
 												},
@@ -587,21 +866,19 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 										},
 									},
 								},
-								{"else", "$name"},
 							},
+							{"else", "$name"},
 						},
 					},
-				}
-				addFields = append(addFields, fieldName)
-
+				}}
 				fName = append(fName, bson.D{{
-					"$addFields", addFields,
+					"$addFields", fieldName,
 				}})
 				break
 			}
-
 		}
 	}
+
 	matchPrice := bson.D{}
 	if filter.IsBuyable != nil {
 		matchPrice = append(matchPrice, bson.E{"buyable", *filter.IsBuyable})
@@ -655,30 +932,54 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			},
 		},
 	})
-	fPagination = append(fPagination, bson.D{
+
+	//lookup BNS
+	fBNS = bson.D{
 		{"$lookup",
 			bson.D{
-				{"from", "marketplace_offers"},
-				{"localField", "token_id"},
-				{"foreignField", "token_id"},
+				{"from", "bns"},
+				{"localField", "owner"},
+				{"foreignField", "resolver"},
 				{"pipeline",
 					bson.A{
-						bson.D{
-							{"$match",
-								bson.D{
-									{"collection_contract", strings.ToLower(*filter.ContractAddress)},
-									{"status", 0},
-								},
-							},
-						},
 						bson.D{{"$skip", 0}},
-						bson.D{{"$limit", 100}},
+						bson.D{{"$limit", 1}},
 					},
 				},
-				{"as", "make_offers"},
+				{"as", "bns_data"},
 			},
 		},
-	})
+	}
+
+	//lookup bns default
+	fBNSDefault = bson.D{{"$lookup",
+		bson.D{
+			{"from", "bns_default"},
+			{"localField", "owner"},
+			{"foreignField", "resolver"},
+			{"pipeline",
+				bson.A{
+					bson.D{{"$skip", 0}},
+					bson.D{{"$limit", 1}},
+					bson.M{"$lookup": bson.M{
+						"from":         "bns",
+						"localField":   "bns_default_id",
+						"foreignField": "_id",
+						"as":           "bns_default_data",
+					}},
+					bson.M{"$unwind": bson.M{
+						"path":                       "$bns_default_data",
+						"preserveNullAndEmptyArrays": true,
+					}},
+				},
+			},
+			{"as", "bns_default"},
+		},
+	}}
+
+	if len(fMarketPlaceOffer) > 0 {
+		fPagination = append(fPagination, fMarketPlaceOffer)
+	}
 
 	if len(fBNS) > 0 {
 		fPagination = append(fPagination, fBNS)
@@ -686,6 +987,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 
 	if len(fBNSDefault) > 0 {
 		fPagination = append(fPagination, fBNSDefault)
+		fPagination = append(fPagination, bson.M{"$addFields": bson.M{"bns_data": bson.M{"$concatArrays": bson.A{"$bns_default.bns_default_data", "$bns_data"}}}})
 	}
 
 	if len(fName) > 0 {
@@ -718,12 +1020,13 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		bson.D{{"$project", bson.D{{"count", 0}}}},
 	}
 
-	pResp := []entity.MkpNftsPagination{}
 	cursor, err := r.DB.Collection(collection).Aggregate(context.TODO(), fAll)
 	if err != nil {
 		return nil, err
 	}
-	err = cursor.All((context.TODO()), &pResp)
+
+	pResp := []*entity.MkpNftsPagination{}
+	err = cursor.All(context.TODO(), &pResp)
 	if err != nil {
 		return nil, err
 	}
@@ -732,5 +1035,5 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		return nil, errors.New("Cannot get nfts")
 	}
 
-	return &pResp[0], nil
+	return pResp[0], nil
 }
