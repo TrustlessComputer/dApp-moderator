@@ -26,6 +26,9 @@ func (r *Repository) parseSwapUserGmBalanceFilter(filter entity.SwapUserGmBalanc
 	if filter.Address != "" {
 		andCond = append(andCond, bson.M{"user_address": strings.ToLower(filter.Address)})
 	}
+	if filter.ListAddress != nil && len(filter.ListAddress) > 0 {
+		andCond = append(andCond, bson.M{"user_address": bson.M{"$in": filter.ListAddress}})
+	}
 
 	if len(andCond) == 0 {
 		return bson.M{}
