@@ -69,3 +69,15 @@ func (r *Repository) UpdateSwapUserGmBalance(ctx context.Context, pair *entity.S
 	}
 	return nil
 }
+
+func (r *Repository) UpdateSwapUserGmBalanceWithAddress(ctx context.Context, oldAddress string, pair *entity.SwapUserGmBalance) error {
+	collectionName := pair.CollectionName()
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"user_address": oldAddress}, bson.M{"$set": pair})
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
