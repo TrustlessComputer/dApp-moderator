@@ -410,9 +410,10 @@ func (u *Usecase) GmPaymentGenerateSignature(ctx context.Context) (interface{}, 
 
 	resp := entity.SwapUserGmClaimSignature{}
 	for _, userBalance := range userBalances {
+		oldAddress := userBalance.UserAddress
+		newUserAddress := mapAddress[userBalance.UserAddress]
 		mgAmount, _ := big.NewFloat(0).SetString(userBalance.Balance.String())
 		chainId, _ := new(big.Int).SetString(config.GmPaymentChainId, 10)
-		newUserAddress := mapAddress[userBalance.UserAddress]
 		adminSign, err := u.BlockChainApi.GmPaymentSignMessage(
 			config.GmPaymentContractAddr,
 			config.GmPaymentAdminAddr,
@@ -433,7 +434,7 @@ func (u *Usecase) GmPaymentGenerateSignature(ctx context.Context) (interface{}, 
 		userBalance.UserAddress = newUserAddress
 		userBalance.BalanceSign = helpers.EtherToWei(mgAmount).String()
 		userBalance.Signature = adminSign
-		err = u.Repo.UpdateSwapUserGmBalance(ctx, userBalance)
+		err = u.Repo.UpdateSwapUserGmBalanceWithAddress(ctx, oldAddress, userBalance)
 		if err != nil {
 			logger.AtLog.Logger.Error("GmPaymentClaim", zap.Error(err))
 			return nil, err
