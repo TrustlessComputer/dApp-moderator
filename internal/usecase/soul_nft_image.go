@@ -744,23 +744,29 @@ func (u *Usecase) CreateSoulNftImages(wg *sync.WaitGroup, inputChan CaptureSoulI
 }
 
 func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash string, logIndex int) error {
-	logger.AtLog.Logger.Info("SoulNftUnlockFeature",
-		zap.String("user", event.User.String()),
-		zap.Uint64("blockNumber", event.BlockNumber.Uint64()),
-		zap.Uint64("tokenID", event.TokenId.Uint64()),
-		zap.String("featureName", event.FeatureName),
-	)
+	key := fmt.Sprintf("SoulNftUnlockFeature - %s", txHash)
+	logFields := []zap.Field{}
+	logFields = append(logFields, zap.String("user", event.User.String()))
+	logFields = append(logFields, zap.Uint64("blockNumber", event.BlockNumber.Uint64()))
+	logFields = append(logFields, zap.Uint64("tokenID", event.TokenId.Uint64()))
+	logFields = append(logFields, zap.String("featureName", event.FeatureName))
+	logger.AtLog.Logger.Info(key, logFields...)
 
 	gmAddress := os.Getenv("SOUL_GM_ADDRESS")
 	url := fmt.Sprintf("https://www.fprotocol.io/api/swap/token/report?address=%s", gmAddress)
 	rate, _, _, err := helpers.JsonRequest(url, "GET", map[string]string{}, nil)
 	if err != nil {
+
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
 
 	bitcoinDex := &structure.ReportErc20{}
 	err = json.Unmarshal(rate, bitcoinDex)
 	if err != nil {
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
 
@@ -768,11 +774,15 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 	tokenID := event.TokenId.String()
 	nft, err := u.Repo.GetNft(addr, tokenID)
 	if err != nil {
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
 
 	contractS, err := generative_nft_contract.NewGenerativeNftContract(common.HexToAddress(nft.ContractAddress), u.TCPublicNode.GetClient())
 	if err != nil {
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
 
@@ -780,6 +790,8 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 	tokenBigInt := big.NewInt(int64(tokenIdInt))
 	tokenUriData, err := contractS.TokenURI(&bind.CallOpts{Context: context.Background()}, tokenBigInt)
 	if err != nil {
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
 
@@ -788,21 +800,30 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 		return err
 	}
 	if tokenUri.AnimationUrl == "" {
-		return errors.New("animation url is empty")
+		err = errors.New("animation url is empty")
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
+		return err
 	}
 
 	html, err := u.ReplaceSoulHistoryHtml(tokenUri.AnimationUrl)
 	if err != nil {
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
 
 	newImagePath, err := u.UploadSoulHtmlToGCS(*html, "soul_history", nft.ContractAddress, nft.TokenID)
 	if err != nil {
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
 
 	capturedImage, _, err := u.ParseHtmlImage(*newImagePath)
 	if err != nil {
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
 
@@ -837,21 +858,9 @@ func (u *Usecase) SoulNftUnlockFeature(event *soul.SoulUnlockFeature, txHash str
 
 	err = u.Repo.InsertSoulImageHistory(obj)
 	if err != nil {
-		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
-			zap.String("tokenID", nft.TokenID),
-			zap.String("contractAddress", nft.ContractAddress),
-			zap.Any("image", nft.AnimationFileUrl),
-			zap.Error(err),
-		)
+		logFields = append(logFields, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logFields...)
 		return err
 	}
-
-	logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
-		zap.String("tokenID", nft.TokenID),
-		zap.String("contractAddress", nft.ContractAddress),
-		zap.Any("image", nft.AnimationFileUrl),
-		zap.Any("histories", obj),
-	)
-
 	return nil
 }

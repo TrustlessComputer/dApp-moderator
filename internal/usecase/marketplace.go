@@ -532,7 +532,11 @@ func (u *Usecase) MarketplaceCollections(ctx context.Context, filter request.Col
 		sort = *filter.Sort
 	}
 
-	s := bson.D{{sortBy, sort}, {"index", -1}}
+	s := bson.D{
+		{"priority", entity.SORT_DESC},
+		{sortBy, sort},
+		{"index", entity.SORT_DESC},
+	}
 	err := u.Repo.Find(utils.VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
@@ -731,13 +735,9 @@ func (u *Usecase) MarketplacePFPUpdated(eventData interface{}, chainLog types.Lo
 }
 
 func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) error {
-	bnsRow, err := u.Repo.FindOne(utils.COLLECTION_BNS, bson.D{{"token_id", tokenID}})
-	if err != nil {
-		logger.AtLog.Logger.Error("UploadBnsPFPToGCS.FindOne got error", zap.String("tokenID", tokenID), zap.Error(err))
-		return err
-	}
-	var bnsEntity = &entity.Bns{}
-	if err := bnsRow.Decode(bnsEntity); err != nil {
+	bnsEntity := &entity.Bns{}
+	if err := u.Repo.FindOneWithResult(utils.COLLECTION_BNS, bson.M{"token_id": tokenID}, bnsEntity); err != nil {
+		logger.AtLog.Logger.Error("UploadBnsPFPToGCS.FindOneWithResult got error", zap.String("tokenID", tokenID), zap.Error(err))
 		return err
 	}
 
@@ -751,12 +751,12 @@ func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) erro
 		return err
 	}
 
-	tokenIdInt, err := strconv.Atoi(bnsEntity.TokenID)
-	if err != nil {
-		logger.AtLog.Logger.Error(fmt.Sprintf("UploadBnsPFPToGCS - bns: %s", tokenID), zap.Error(err))
+	tokenId, ok := new(big.Int).SetString(bnsEntity.TokenID, 10)
+	if !ok {
+		logger.AtLog.Logger.Error(fmt.Sprintf("UploadBnsPFPToGCS - SetString token_id: %s", tokenID), zap.Error(err))
 		return err
 	}
-	tokenId := big.NewInt(int64(tokenIdInt))
+
 	bytes, err := bnsS.GetPfp(&bind.CallOpts{Context: context.Background()}, tokenId)
 	if err != nil {
 		logger.AtLog.Logger.Error(fmt.Sprintf("UploadBnsPFPToGCS - getPfp from contract with token_id: %s", tokenID), zap.Error(err))
@@ -764,7 +764,9 @@ func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) erro
 	}
 
 	arr := strings.Split(bnsEntity.Pfp, "/")
-	fileName := fmt.Sprintf("%s_%s", tokenID, arr[len(arr)-1])
+	now := time.Now().UTC()
+	bnsPfpDir := "bns_pfp"
+	fileName := fmt.Sprintf("%v/%v_%v_%v", bnsPfpDir, now.Unix(), tokenID, arr[len(arr)-1])
 	base64Str := base64.StdEncoding.EncodeToString(bytes)
 
 	object, err := u.Storage.UploadBaseToBucket(base64Str, fileName)
@@ -775,7 +777,7 @@ func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) erro
 
 	logger.AtLog.Logger.Info("upload pfp to gcs success", zap.Any("response", object))
 	_, err = u.Repo.UpdateBnsPfpData(tokenID, &entity.BnsPfpData{
-		GCSUrl:   fmt.Sprintf("%v/%v/%v", u.Config.Gcs.Endpoint, u.Config.Gcs.Bucket, fileName),
+		GCSUrl:   fmt.Sprintf("%v/%v", os.Getenv("GCS_DOMAIN"), fileName),
 		Filename: fileName,
 	})
 	if err != nil {
@@ -1076,13 +1078,6 @@ func (u *Usecase) HandleUnlockFeature(data interface{}, chainLog types.Log) erro
 		zap.String("featureName", eventData.FeatureName),
 		zap.String("tokenID", eventData.TokenId.String()))
 
-	err := u.SoulNftUnlockFeature(eventData, chainLog.TxHash.String(), int(chainLog.Index))
-	if err != nil {
-		err := errors.New("event data is not correct")
-		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.Error(err),
-			zap.String("tokenID", eventData.TokenId.String()),
-			zap.Error(err))
-		return err
-	}
+	go u.SoulNftUnlockFeature(eventData, chainLog.TxHash.String(), int(chainLog.Index))
 	return nil
 }
