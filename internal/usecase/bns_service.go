@@ -93,8 +93,10 @@ func (u *Usecase) BnsDefault(ctx context.Context, resolver string) (*entity.Bns,
 		{"_id", -1},
 	})
 	if err != nil || len(bnsEntities) == 0 {
-		logger.AtLog.Logger.Error("BNSDefault but dont have any bns items", zap.String("resolver", resolver))
-		return nil, errors.New("BNSDefault but dont have any bns items")
+		logger.AtLog.Logger.Error("User empty BNS", zap.String("resolver", resolver))
+		return &entity.Bns{
+			Name: resolver,
+		}, nil
 	}
 
 	// Ưu tiên lấy bns nào mà có pfp_data, ko thì lấy cái đầu tiên
