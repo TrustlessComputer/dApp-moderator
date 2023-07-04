@@ -5,13 +5,12 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils/logger"
 	"fmt"
+	"github.com/ethereum/go-ethereum/core/types"
+	"go.uber.org/zap"
 	"math/big"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/ethereum/go-ethereum/core/types"
-	"go.uber.org/zap"
 )
 
 type eventLog struct {
@@ -136,28 +135,24 @@ func (c *txTCServer) Worker(inputDataChan chan types.Log, result chan *eventLog)
 		eventType = entity.BNSPfpUpdated
 		break
 
-	//Move to Soul-tx-server
-	//case c.MarketPlace.Events["AUCTION_CREATED_EVENT"]:
-	//	pFunction = c.Usecase.HandleAuctionCreated
-	//	eventType = entity.AuctionCreatedActivity
-	//	break
-	//case c.MarketPlace.Events["AUCTION_BID_EVENT"]:
-	//	pFunction = c.Usecase.HandleAuctionBid
-	//	eventType = entity.AuctionBidActivity
-	//	break
-	//case c.MarketPlace.Events["AUCTION_SETTLE_EVENT"]:
-	//	pFunction = c.Usecase.HandleAuctionSettle
-	//	eventType = entity.AuctionSettledActivity
-	//	break
-	//case c.MarketPlace.Events["AUCTION_CLAIM_EVENT"]:
-	//	pFunction = c.Usecase.HandleAuctionClaim
-	//	eventType = entity.AuctionClaimActivity
-	//	break
+		//Move to Soul-tx-server
+		//case c.MarketPlace.Events["AUCTION_CREATED_EVENT"]:
+		//	pFunction = c.Usecase.HandleAuctionCreated
+		//	eventType = entity.AuctionCreatedActivity
+		//	break
+		//case c.MarketPlace.Events["AUCTION_BID_EVENT"]:
+		//	pFunction = c.Usecase.HandleAuctionBid
+		//	eventType = entity.AuctionBidActivity
+		//	break
+		//case c.MarketPlace.Events["AUCTION_SETTLE_EVENT"]:
+		//	pFunction = c.Usecase.HandleAuctionSettle
+		//	eventType = entity.AuctionSettledActivity
+		//	break
+		//case c.MarketPlace.Events["AUCTION_CLAIM_EVENT"]:
+		//	pFunction = c.Usecase.HandleAuctionClaim
+		//	eventType = entity.AuctionClaimActivity
+		//	break
 
-	case c.MarketPlace.Events["SOUL_UNLOCK_FEATURE_EVENT"]:
-		pFunction = c.Usecase.HandleUnlockFeature
-		eventType = entity.SoulUnlockFeature
-		break
 	}
 
 	activity, eventData, err = c.Usecase.ParseMkplaceData(log, eventType)
