@@ -26,6 +26,9 @@ func (r *Repository) parseSwapUserGmBalanceFilter(filter entity.SwapUserGmBalanc
 	if filter.Address != "" {
 		andCond = append(andCond, bson.M{"user_address": strings.ToLower(filter.Address)})
 	}
+	if filter.ListAddress != nil && len(filter.ListAddress) > 0 {
+		andCond = append(andCond, bson.M{"user_address": bson.M{"$in": filter.ListAddress}})
+	}
 
 	if len(andCond) == 0 {
 		return bson.M{}
@@ -58,6 +61,18 @@ func (r *Repository) FindListUserGmBalance(ctx context.Context, filter entity.Sw
 func (r *Repository) UpdateSwapUserGmBalance(ctx context.Context, pair *entity.SwapUserGmBalance) error {
 	collectionName := pair.CollectionName()
 	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"user_address": pair.UserAddress}, bson.M{"$set": pair})
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *Repository) UpdateSwapUserGmBalanceWithAddress(ctx context.Context, oldAddress string, pair *entity.SwapUserGmBalance) error {
+	collectionName := pair.CollectionName()
+	result, err := r.DB.Collection(collectionName).UpdateOne(ctx, bson.M{"user_address": oldAddress}, bson.M{"$set": pair})
 	if err != nil {
 		return err
 	}
