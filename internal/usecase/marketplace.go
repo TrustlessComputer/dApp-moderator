@@ -1078,13 +1078,6 @@ func (u *Usecase) HandleUnlockFeature(data interface{}, chainLog types.Log) erro
 		zap.String("featureName", eventData.FeatureName),
 		zap.String("tokenID", eventData.TokenId.String()))
 
-	err := u.SoulNftUnlockFeature(eventData, chainLog.TxHash.String(), int(chainLog.Index))
-	if err != nil {
-		err := errors.New("event data is not correct")
-		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed", zap.Error(err),
-			zap.String("tokenID", eventData.TokenId.String()),
-			zap.Error(err))
-		return err
-	}
+	go u.SoulNftUnlockFeature(eventData, chainLog.TxHash.String(), int(chainLog.Index))
 	return nil
 }
