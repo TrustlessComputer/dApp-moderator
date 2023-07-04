@@ -532,7 +532,11 @@ func (u *Usecase) MarketplaceCollections(ctx context.Context, filter request.Col
 		sort = *filter.Sort
 	}
 
-	s := bson.D{{sortBy, sort}, {"index", -1}}
+	s := bson.D{
+		{"priority", entity.SORT_DESC},
+		{sortBy, sort},
+		{"index", entity.SORT_DESC},
+	}
 	err := u.Repo.Find(utils.VIEW_MARKETPLACE_AGGREGATED_COLLECTIONS, f, int64(*filter.Limit), int64(*filter.Offset), &res, s)
 	if err != nil {
 		return nil, err
