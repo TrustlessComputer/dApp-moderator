@@ -777,7 +777,7 @@ func (u *Usecase) UploadBnsPFPToGCS(contractAddress string, tokenID string) erro
 
 	logger.AtLog.Logger.Info("upload pfp to gcs success", zap.Any("response", object))
 	_, err = u.Repo.UpdateBnsPfpData(tokenID, &entity.BnsPfpData{
-		GCSUrl:   fmt.Sprintf("%v/%v/%v", os.Getenv("GCS_DOMAIN"), bnsPfpDir, fileName),
+		GCSUrl:   fmt.Sprintf("%v/%v", os.Getenv("GCS_DOMAIN"), fileName),
 		Filename: fileName,
 	})
 	if err != nil {
