@@ -134,6 +134,7 @@ type NftFilteredAuction struct {
 	EndBlock              string `bson:"end_time_block" json:"end_block"`
 	AuctionID             string `bson:"auction_id" json:"auction_id"`
 	DbAuctionID           string `bson:"db_auction_id" json:"db_auction_id"`
+	AuctionStatus         int    `bson:"auction_status" json:"auction_status"`
 }
 
 type MkpNftsAuctionDataResp struct {
