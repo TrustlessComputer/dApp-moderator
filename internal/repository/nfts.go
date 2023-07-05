@@ -629,8 +629,15 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 	if filter.ContractAddress != nil {
 		contractAddress := strings.ToLower(*filter.ContractAddress)
 		if contractAddress == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
-			sortDoc := bson.D{
-				{filter.SortBy, filter.Sort},
+			sortDoc := bson.D{}
+			if filter.SortBy == "orphanage" {
+				sortDoc = append(sortDoc,
+					bson.E{"is_available_for_auction", filter.Sort},
+					bson.E{"is_live_auction", filter.Sort},
+					bson.E{"auction_status", 1},
+				)
+			} else {
+				sortDoc = append(sortDoc, bson.E{filter.SortBy, filter.Sort})
 			}
 			if filter.SortBy != "token_id_int" {
 				sortDoc = append(sortDoc, bson.E{"token_id_int", entity.SORT_DESC})
