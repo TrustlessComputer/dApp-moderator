@@ -5,6 +5,7 @@ import (
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	soul_contract "dapp-moderator/utils/contracts/soul"
 	"dapp-moderator/utils/helpers"
 	"fmt"
 	"math/big"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -197,6 +199,19 @@ func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterN
 	if err != nil {
 		return nil, err
 	}
+
+	// Nếu contract là SOUL thì lấy name tu chain, mặc dù ban đầu có update vô rồi nhưng van co thể user change name
+	if filter.ContractAddress != nil && strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+		if soulContract, err := soul_contract.NewSoul(common.HexToAddress(*filter.ContractAddress), u.TCPublicNode.GetClient()); err == nil {
+			for i, item := range resp.Items {
+				resp.Items[i].Name = ""
+				if name, err := u.SoulNFTName(item.TokenID, soulContract); err == nil {
+					resp.Items[i].Name = name
+				}
+			}
+		}
+	}
+
 	return resp, nil
 }
 
