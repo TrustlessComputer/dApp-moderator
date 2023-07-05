@@ -1065,19 +1065,28 @@ func (u *Usecase) HandleAuctionClaim(data interface{}, chainLog types.Log) error
 }
 
 func (u *Usecase) HandleUnlockFeature(data interface{}, chainLog types.Log) error {
+	key := fmt.Sprintf(fmt.Sprintf("HandleUnlockFeature - %s", chainLog.TxHash.String()))
+	logs := []zap.Field{}
+	logs = append(logs, zap.String("txHash", chainLog.TxHash.String()))
+	logs = append(logs, zap.String("contract", chainLog.Address.String()))
+	logs = append(logs, zap.Uint64("blockNumber", chainLog.BlockNumber))
+
 	eventData, ok := data.(*soul_contract.SoulUnlockFeature)
 	if !ok {
-
 		err := errors.New("event data is not correct")
-		logger.AtLog.Logger.Error("HandleUnlockFeature - assert eventData failed",
-			zap.String("tokenID", eventData.TokenId.String()),
-			zap.Error(err))
+		logs = append(logs, zap.Error(err))
+		logger.AtLog.Logger.Error(key, logs...)
 		return err
 	}
-	logger.AtLog.Logger.Info(fmt.Sprintf("HandleUnlockFeature - %s", eventData.TokenId.String()),
-		zap.String("featureName", eventData.FeatureName),
-		zap.String("tokenID", eventData.TokenId.String()))
 
+	logs = append(logs, zap.Uint64("tokenID", eventData.TokenId.Uint64()))
+	logs = append(logs, zap.String("featureName", eventData.FeatureName))
+	logs = append(logs, zap.String("user", eventData.User.String()))
+	logs = append(logs, zap.String("balanceGM", eventData.BalanceGM.String()))
+
+	logger.AtLog.Logger.Info(key, logs...)
+
+	//TODO - move to another process
 	go u.SoulNftUnlockFeature(eventData, chainLog.TxHash.String(), int(chainLog.Index))
 	return nil
 }
