@@ -281,10 +281,13 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 												},
 											},
 										},
-										{"status", 1}, // 1 token ở 1 contract tại 1 thời điểm chỉ có 1 auction diễn ra
+										{"status", bson.M{"$in": bson.A{1, 2}}}, // 1 token ở 1 contract tại 1 thời điểm chỉ có 1 auction diễn ra
 									},
 								},
 							},
+							bson.M{"$sort": bson.M{"created_at": -1}},
+							bson.M{"$skip": 0},
+							bson.M{"$limit": 1},
 						},
 					},
 					{"as", "auction"},
@@ -426,6 +429,37 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 							},
 						},
 					},
+					{"auction_status",
+						bson.D{
+							{"$cond",
+								bson.A{
+									bson.D{
+										{"$or",
+											bson.A{
+												bson.D{
+													{"$eq",
+														bson.A{
+															bson.D{
+																{"$ifNull",
+																	bson.A{
+																		"$auction",
+																		0,
+																	},
+																},
+															},
+															0,
+														},
+													},
+												},
+											},
+										},
+									},
+									-1,
+									"$auction.status",
+								},
+							},
+						},
+					},
 					{"is_available_for_auction", "$nft_auction_available.is_auction"},
 					{"is_live_auction",
 						bson.D{
@@ -513,11 +547,12 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 
 	if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
 		pipeline = append(pipeline, bson.D{
-			{"$match", bson.D{{"$or", bson.A{bson.M{
-				"is_available_for_auction": true,
-			}, bson.M{
-				"is_live_auction": true,
-			}}}}},
+			{"$match", bson.D{{"$or", bson.A{
+				bson.M{
+					"is_available_for_auction": true,
+				}, bson.M{
+					"is_live_auction": true,
+				}}}}},
 		})
 	}
 
