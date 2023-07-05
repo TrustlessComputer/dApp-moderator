@@ -147,6 +147,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 	jobRoutes.HandleFunc("/update-pair", h.jobUpdateDataSwapPair).Methods("GET")
 	jobRoutes.HandleFunc("/update-token", h.jobUpdateDataToken).Methods("GET")
 	jobRoutes.HandleFunc("/claim-test-mainnet", h.gmPaymentClaimTestMainnet).Methods("GET")
+	jobRoutes.HandleFunc("/generate-gm-sign", h.generateAdminSign).Methods("GET")
 
 	swapTokensRoutes := swapRoutes.PathPrefix("/token").Subrouter()
 	swapTokensRoutes.HandleFunc("/list", h.getTokensInPool).Methods("GET")
@@ -203,7 +204,6 @@ func (h *httpDelivery) RegisterV1Routes() {
 	marketplace.HandleFunc("/collections/{contract_address}/nfts", h.mkplaceNftsOfACollection).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/nft-owners", h.mkplaceNftOwnerCollection).Methods("GET")
 	marketplace.HandleFunc("/nfts", h.mkplaceNfts).Methods("GET")
-	marketplace.HandleFunc("/collections/{contract_address}/nfts/{token_id}", h.mkplaceNftDetail).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/nfts/{token_id}", h.mkplaceNftDetail).Methods("GET")
 	marketplace.HandleFunc("/listing/{contract_address}/token/{token_id}", h.getListingViaGenAddressTokenID).Methods("GET")
 	marketplace.HandleFunc("/offers/{contract_address}/token/{token_id}", h.getOfferViaGenAddressTokenID).Methods("GET")

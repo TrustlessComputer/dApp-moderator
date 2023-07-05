@@ -27,7 +27,8 @@ func (t *SwapUserGmBalance) CollectionName() string {
 
 type SwapUserGmBalanceFilter struct {
 	BaseFilters
-	Address string
+	Address     string
+	ListAddress []string
 }
 
 func (t *SwapUserGmBalanceFilter) FromPagination(pag request.PaginationReq) {

@@ -52,6 +52,7 @@ type MarketplaceCollections struct {
 
 	FloorPriceBTC float64 `json:"btc_floor_price" bson:"btc_floor_price"` //BTC
 	VolumeBTC     float64 `json:"btc_volume" bson:"btc_volume"`           //BTC
+	Priority      int     `json:"priority" bson:"priority"`
 }
 
 func (u MarketplaceCollectionAggregation) CollectionName() string {

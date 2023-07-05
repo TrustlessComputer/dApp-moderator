@@ -81,6 +81,7 @@ func NewTxSoulServer(global *global.Global, uc usecase.Usecase) (*txSoulServer, 
 	mkpEvents["AUCTION_BID_EVENT"] = strings.ToLower(os.Getenv("AUCTION_BID_EVENT"))
 	mkpEvents["AUCTION_SETTLE_EVENT"] = strings.ToLower(os.Getenv("AUCTION_SETTLE_EVENT"))
 	mkpEvents["AUCTION_CLAIM_EVENT"] = strings.ToLower(os.Getenv("AUCTION_CLAIM_EVENT"))
+	mkpEvents["SOUL_UNLOCK_FEATURE_EVENT"] = strings.ToLower(os.Getenv("SOUL_UNLOCK_FEATURE_EVENT"))
 
 	//Move to mkplace event - to prevent block
 	//mkpEvents["SOUL_UNLOCK_FEATURE_EVENT"] = strings.ToLower(os.Getenv("SOUL_UNLOCK_FEATURE_EVENT"))
@@ -283,11 +284,10 @@ func (c *txSoulServer) Worker(wg *sync.WaitGroup, inputDataChan chan types.Log, 
 		eventType = entity.AuctionClaimActivity
 		break
 
-		//move to mkplace to prevent blocking
-		//case c.Soul.Events["SOUL_UNLOCK_FEATURE_EVENT"]:
-		//	pFunction = c.Usecase.HandleUnlockFeature
-		//	eventType = entity.SoulUnlockFeature
-		//	break
+	case c.Soul.Events["SOUL_UNLOCK_FEATURE_EVENT"]:
+		pFunction = c.Usecase.HandleUnlockFeature
+		eventType = entity.SoulUnlockFeature
+		break
 	}
 
 	activity, eventData, err = c.Usecase.ParseMkplaceData(log, eventType)
