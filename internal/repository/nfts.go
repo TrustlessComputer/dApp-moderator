@@ -554,6 +554,15 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 					"is_live_auction": true,
 				}}}}},
 		})
+	} else {
+		pipeline = append(pipeline, bson.D{
+			{"$match", bson.D{{"$and", bson.A{
+				bson.M{
+					"is_available_for_auction": false,
+				}, bson.M{
+					"is_live_auction": false,
+				}}}}},
+		})
 	}
 
 	return pipeline
