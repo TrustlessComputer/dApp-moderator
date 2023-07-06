@@ -304,6 +304,7 @@ func (u *Usecase) FilterSoulNfts(ctx context.Context, filter entity.FilterNfts) 
 }
 
 func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*structure.CreateSignatureResp, error) {
+
 	soulChainID := os.Getenv("SOUL_CHAIN_ID")
 	chainID, _ := new(big.Int).SetString(soulChainID, 10)
 	contractAddr := strings.ToLower(os.Getenv("SOUL_CONTRACT"))
@@ -311,14 +312,40 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 	userWalletAddress := strings.ToLower(requestData.WalletAddress)
 	gmTokenAddress := strings.ToLower(os.Getenv("SOUL_GM_ADDRESS"))
 	var err error
+	minted := new(big.Int)
 	gm := float64(0)
+	resp := &structure.CreateSignatureResp{}
+
+	key := fmt.Sprintf("CreateSignature - %s", requestData.WalletAddress)
+	defer func() {
+		logs := []zap.Field{
+			zap.String("soulChainID", soulChainID),
+			zap.String("contractAddress", contractAddr),
+			zap.String("signerMint", signerMint),
+			zap.String("userWalletAddress", userWalletAddress),
+			zap.String("gmTokenAddress", gmTokenAddress),
+			zap.Any("resp", resp),
+			zap.Any("gm", gm),
+		}
+
+		if minted != nil {
+			zap.String("minted", minted.String())
+		}
+
+		if err != nil {
+			logs = append(logs, zap.Error(err))
+			logger.AtLog.Logger.Error(key, logs...)
+		} else {
+			logger.AtLog.Logger.Info(key, logs...)
+		}
+	}()
 
 	soulInstance, err := soul.NewSoul(common.HexToAddress(contractAddr), u.TCPublicNode.GetClient())
 	if err != nil {
 		return nil, err
 	}
 
-	minted, err := soulInstance.Minted(nil, common.HexToAddress(userWalletAddress))
+	minted, err = soulInstance.Minted(nil, common.HexToAddress(userWalletAddress))
 	if err != nil {
 		return nil, err
 	}
@@ -377,11 +404,13 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 		return nil, err
 	}
 
-	resp := &structure.CreateSignatureResp{
+	resp1 := structure.CreateSignatureResp{
 		GM:          g.String(),
 		Signature:   signature,
 		MessageHash: messageHash,
 	}
+
+	resp = &resp1
 	return resp, nil
 }
 
