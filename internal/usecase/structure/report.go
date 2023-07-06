@@ -67,3 +67,19 @@ type ReportErc20 struct {
 	} `json:"data"`
 	Error error `json:"error"`
 }
+
+type FProtocol struct {
+	Result *FProtocolResult `json:"result"`
+	Data   interface{}      `json:"data"`
+	Error  interface{}      `json:"error"`
+}
+
+type FProtocolResult struct {
+	ID         int         `json:"ID"`
+	CreatedAt  time.Time   `json:"CreatedAt"`
+	UpdatedAt  time.Time   `json:"UpdatedAt"`
+	DeletedAt  interface{} `json:"DeletedAt"`
+	Address    string      `json:"Address"`
+	GmReceive  float64     `json:"GmReceive"`
+	IsContract bool        `json:"IsContract"`
+}
