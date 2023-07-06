@@ -660,7 +660,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			sortDoc := bson.D{}
 
 			//force current user nft always on top
-			//sortDoc = append(sortDoc, bson.E{"priority", entity.SORT_DESC})
+			sortDoc = append(sortDoc, bson.E{"priority", entity.SORT_DESC})
 
 			if filter.SortBy == "orphanage" {
 				//sortDoc = append(sortDoc,

@@ -11,13 +11,13 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"math/big"
 	"os"
 	"strconv"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.uber.org/zap"
 )
 
 func (u *Usecase) FilterMKListing(ctx context.Context, filter entity.FilterMarketplaceListings) ([]entity.MarketplaceListings, error) {
@@ -207,40 +207,31 @@ func (u *Usecase) Hash(s interface{}) ([]byte, error) {
 func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
 	var (
 		resp *entity.MkpNftsPagination
-		err  error
+		//err  error
 	)
 	var redisKey string
-	if key, err := u.Hash(&filter); err == nil {
+	key, err := u.Hash(&filter)
+
+	go func() {
+		resp, err11 := u.Repo.FilterMKPNfts(filter)
+		if err11 != nil {
+			return
+		}
+
+		if redisKey != "" {
+			if err11 = u.Cache.SetDataWithExpireTime(redisKey, resp, 7*60); err11 != nil {
+				logger.AtLog.Logger.Error("Set redis error: %v", zap.Error(err11))
+			}
+		}
+	}()
+
+	if err == nil {
 		redisKey = fmt.Sprintf("%v_%v", "SOUL_NFTS", string(key))
 		data, err := u.Cache.GetData(redisKey)
 		if err == nil && data != nil {
 			if err := json.Unmarshal([]byte(*data), &resp); err == nil {
 				return resp, nil
 			}
-		}
-	}
-
-	resp, err = u.Repo.FilterMKPNfts(filter)
-	if err != nil {
-		return nil, err
-	}
-
-	//// Nếu contract là SOUL thì lấy name tu chain, mặc dù ban đầu có update vô rồi nhưng van co thể user change name
-	/// existed in nft_explorer.go:682
-	//if filter.ContractAddress != nil && strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
-	//	if soulContract, err := soul_contract.NewSoul(common.HexToAddress(*filter.ContractAddress), u.TCPublicNode.GetClient()); err == nil {
-	//		for i, item := range resp.Items {
-	//			resp.Items[i].Name = ""
-	//			if name, err := u.SoulNFTName(item.TokenID, soulContract); err == nil {
-	//				resp.Items[i].Name = name
-	//			}
-	//		}
-	//	}
-	//}
-
-	if redisKey != "" {
-		if err = u.Cache.SetDataWithExpireTime(redisKey, resp, 7*60); err != nil {
-			logger.AtLog.Logger.Error("Set redis error: %v", zap.Error(err))
 		}
 	}
 
