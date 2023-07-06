@@ -659,14 +659,15 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			sortDoc := bson.D{}
 
 			//force current user nft always on top
-			sortDoc = append(sortDoc, bson.E{"priority", entity.SORT_DESC})
+			//sortDoc = append(sortDoc, bson.E{"priority", entity.SORT_DESC})
 
 			if filter.SortBy == "orphanage" {
-				sortDoc = append(sortDoc,
-					bson.E{"is_available_for_auction", filter.Sort},
-					bson.E{"is_live_auction", filter.Sort},
-					bson.E{"auction_status", 1},
-				)
+				//sortDoc = append(sortDoc,
+				//	bson.E{"is_available_for_auction", filter.Sort},
+				//	bson.E{"is_live_auction", filter.Sort},
+				//	bson.E{"auction_status", 1},
+				//)
+				sortDoc = append(sortDoc, bson.E{filter.SortBy, filter.Sort})
 			} else {
 				sortDoc = append(sortDoc, bson.E{filter.SortBy, filter.Sort})
 			}
@@ -676,33 +677,33 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 
 			f = append(f, r.getPipelineForAuctionRequest(&filter)...)
 
-			if filter.CurrentUser != nil && *filter.CurrentUser != "" {
-				f = append(f, bson.D{
-					{"$addFields",
-						bson.D{
-							{"priority",
-								bson.D{
-									{"$cond",
-										bson.A{
-											bson.D{
-												{"$eq",
-													bson.A{
-														"$owner",
-														strings.ToLower(*filter.CurrentUser),
-													},
-												},
-											},
-											1,
-											0,
-										},
-									},
-								},
-							},
-						},
-					},
-				})
-
-			}
+			//if filter.CurrentUser != nil && *filter.CurrentUser != "" {
+			//	f = append(f, bson.D{
+			//		{"$addFields",
+			//			bson.D{
+			//				{"priority",
+			//					bson.D{
+			//						{"$cond",
+			//							bson.A{
+			//								bson.D{
+			//									{"$eq",
+			//										bson.A{
+			//											"$owner",
+			//											strings.ToLower(*filter.CurrentUser),
+			//										},
+			//									},
+			//								},
+			//								1,
+			//								0,
+			//							},
+			//						},
+			//					},
+			//				},
+			//			},
+			//		},
+			//	})
+			//
+			//}
 
 			fsort = bson.D{{"$sort", sortDoc}}
 		} else {
