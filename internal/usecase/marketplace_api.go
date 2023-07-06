@@ -1,11 +1,15 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
+	"dapp-moderator/utils/logger"
+	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"os"
@@ -13,6 +17,7 @@ import (
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.uber.org/zap"
 )
 
 func (u *Usecase) FilterMKListing(ctx context.Context, filter entity.FilterMarketplaceListings) ([]entity.MarketplaceListings, error) {
@@ -192,8 +197,30 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	return respData, nil
 }
 
+func (u *Usecase) Hash(s interface{}) ([]byte, error) {
+	var b bytes.Buffer
+	if err := gob.NewEncoder(&b).Encode(s); err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
+}
 func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
-	resp, err := u.Repo.FilterMKPNfts(filter)
+	var (
+		resp *entity.MkpNftsPagination
+		err  error
+	)
+	var redisKey string
+	if key, err := u.Hash(&filter); err == nil {
+		redisKey = fmt.Sprintf("%v_%v", "SOUL_NFTS", string(key))
+		data, err := u.Cache.GetData(redisKey)
+		if err == nil && data != nil {
+			if err := json.Unmarshal([]byte(*data), &resp); err == nil {
+				return resp, nil
+			}
+		}
+	}
+
+	resp, err = u.Repo.FilterMKPNfts(filter)
 	if err != nil {
 		return nil, err
 	}
@@ -210,6 +237,12 @@ func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterN
 	//		}
 	//	}
 	//}
+
+	if redisKey != "" {
+		if err = u.Cache.SetDataWithExpireTime(redisKey, resp, 7*60); err != nil {
+			logger.AtLog.Logger.Error("Set redis error: %v", zap.Error(err))
+		}
+	}
 
 	return resp, nil
 }
