@@ -246,344 +246,345 @@ func (r *Repository) GetNftsWithoutSize(collectionAddress string, skip int, limi
 }
 
 func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bson.A {
-	pipeline := bson.A{bson.M{"$lookup": bson.D{
-		{"from", "nft_auction_available"},
-		{"localField", "token_id"},
-		{"foreignField", "token_id"},
-		{"let", bson.D{{"contract_address", "$collection_address"}}},
-		{"pipeline",
-			bson.A{
-				bson.D{
-					{"$match",
-						bson.D{
-							{"$expr",
-								bson.D{
-									{"$eq",
-										bson.A{
-											"$contract",
-											strings.ToLower(*filter.ContractAddress),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{"as", "nft_auction_available"},
-	}},
-		bson.M{"$unwind": bson.D{
-			{"path", "$nft_auction_available"},
-			{"preserveNullAndEmptyArrays", true},
-		}},
-		bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "auction"},
-					{"localField", "token_id"},
-					{"foreignField", "token_id"},
-					{"let", bson.D{{"contract_address", "$collection_address"}}},
-					{"pipeline",
-						bson.A{
-							bson.D{
-								{"$match",
-									bson.D{
-										{"$expr",
-											bson.D{
-												{"$eq",
-													bson.A{
-														"$collection_address",
-														strings.ToLower(*filter.ContractAddress),
-													},
-												},
-											},
-										},
-										{"status", bson.M{"$in": bson.A{1, 2}}}, // 1 token ở 1 contract tại 1 thời điểm chỉ có 1 auction diễn ra
-									},
-								},
-							},
-							bson.M{"$sort": bson.M{"created_at": -1}},
-							bson.M{"$skip": 0},
-							bson.M{"$limit": 1},
-						},
-					},
-					{"as", "auction"},
-				},
-			},
-		},
-		bson.D{
-			{"$unwind",
-				bson.D{
-					{"path", "$auction"},
-					{"preserveNullAndEmptyArrays", true},
-				},
-			},
-		},
-		bson.D{
-			{"$addFields",
-				bson.D{
-					{"db_auction_id",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$or",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															bson.D{
-																{"$ifNull",
-																	bson.A{
-																		"$auction",
-																		0,
-																	},
-																},
-															},
-															0,
-														},
-													},
-												},
-											},
-										},
-									},
-									"",
-									"$auction._id",
-								},
-							},
-						},
-					},
-					{"start_time_block",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$or",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															bson.D{
-																{"$ifNull",
-																	bson.A{
-																		"$auction",
-																		0,
-																	},
-																},
-															},
-															0,
-														},
-													},
-												},
-											},
-										},
-									},
-									"",
-									"$auction.start_time_block",
-								},
-							},
-						},
-					},
-					{"end_time_block",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$or",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															bson.D{
-																{"$ifNull",
-																	bson.A{
-																		"$auction",
-																		0,
-																	},
-																},
-															},
-															0,
-														},
-													},
-												},
-											},
-										},
-									},
-									"",
-									"$auction.end_time_block",
-								},
-							},
-						},
-					},
-					{"auction_id",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$or",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															bson.D{
-																{"$ifNull",
-																	bson.A{
-																		"$auction",
-																		0,
-																	},
-																},
-															},
-															0,
-														},
-													},
-												},
-											},
-										},
-									},
-									"",
-									"$auction.auction_id",
-								},
-							},
-						},
-					},
-					{"auction_status",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$or",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															bson.D{
-																{"$ifNull",
-																	bson.A{
-																		"$auction",
-																		0,
-																	},
-																},
-															},
-															0,
-														},
-													},
-												},
-											},
-										},
-									},
-									-1,
-									"$auction.status",
-								},
-							},
-						},
-					},
-					{"is_available_for_auction", "$nft_auction_available.is_auction"},
-					{"is_live_auction",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$or",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															bson.D{
-																{"$ifNull",
-																	bson.A{
-																		"$auction",
-																		0,
-																	},
-																},
-															},
-															0,
-														},
-													},
-												},
-											},
-										},
-									},
-									false,
-									true,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$project",
-				bson.D{
-					{"auction", 0},
-					{"nft_auction_available", 0},
-				},
-			},
-		},
-		bson.D{
-			{"$lookup",
-				bson.D{
-					{"from", "nfts_attributes_percent_view"},
-					{"localField", "token_id"},
-					{"foreignField", "token_id"},
-					{"let", bson.D{{"contract", "$collection_address"}}},
-					{"pipeline",
-						bson.A{
-							bson.D{
-								{"$match",
-									bson.D{
-										{"$expr",
-											bson.D{
-												{"$eq",
-													bson.A{
-														"$collection_address",
-														strings.ToLower(*filter.ContractAddress),
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-					{"as", "percent_attributes"},
-				},
-			},
-		},
-		bson.D{
-			{"$addFields",
-				bson.D{
-					{"attributes", "$percent_attributes"},
-					{"rarity", bson.D{{"$avg", "$percent_attributes.percent"}}},
-				},
-			},
-		},
-		bson.D{{"$project", bson.D{{"percent_attributes", 0}}}},
-	}
+	//pipeline := bson.A{
+	//	bson.M{"$lookup": bson.D{
+	//	{"from", "nft_auction_available"},
+	//	{"localField", "token_id"},
+	//	{"foreignField", "token_id"},
+	//	{"let", bson.D{{"contract_address", "$collection_address"}}},
+	//	{"pipeline",
+	//		bson.A{
+	//			bson.D{
+	//				{"$match",
+	//					bson.D{
+	//						{"$expr",
+	//							bson.D{
+	//								{"$eq",
+	//									bson.A{
+	//										"$contract",
+	//										strings.ToLower(*filter.ContractAddress),
+	//									},
+	//								},
+	//							},
+	//						},
+	//					},
+	//				},
+	//			},
+	//		},
+	//	},
+	//	{"as", "nft_auction_available"},
+	//}},
+	//	bson.M{"$unwind": bson.D{
+	//		{"path", "$nft_auction_available"},
+	//		{"preserveNullAndEmptyArrays", true},
+	//	}},
+	//	bson.D{
+	//		{"$lookup",
+	//			bson.D{
+	//				{"from", "auction"},
+	//				{"localField", "token_id"},
+	//				{"foreignField", "token_id"},
+	//				{"let", bson.D{{"contract_address", "$collection_address"}}},
+	//				{"pipeline",
+	//					bson.A{
+	//						bson.D{
+	//							{"$match",
+	//								bson.D{
+	//									{"$expr",
+	//										bson.D{
+	//											{"$eq",
+	//												bson.A{
+	//													"$collection_address",
+	//													strings.ToLower(*filter.ContractAddress),
+	//												},
+	//											},
+	//										},
+	//									},
+	//									{"status", bson.M{"$in": bson.A{1, 2}}}, // 1 token ở 1 contract tại 1 thời điểm chỉ có 1 auction diễn ra
+	//								},
+	//							},
+	//						},
+	//						bson.M{"$sort": bson.M{"created_at": -1}},
+	//						bson.M{"$skip": 0},
+	//						bson.M{"$limit": 1},
+	//					},
+	//				},
+	//				{"as", "auction"},
+	//			},
+	//		},
+	//	},
+	//	bson.D{
+	//		{"$unwind",
+	//			bson.D{
+	//				{"path", "$auction"},
+	//				{"preserveNullAndEmptyArrays", true},
+	//			},
+	//		},
+	//	},
+	//	bson.D{
+	//		{"$addFields",
+	//			bson.D{
+	//				{"db_auction_id",
+	//					bson.D{
+	//						{"$cond",
+	//							bson.A{
+	//								bson.D{
+	//									{"$or",
+	//										bson.A{
+	//											bson.D{
+	//												{"$eq",
+	//													bson.A{
+	//														bson.D{
+	//															{"$ifNull",
+	//																bson.A{
+	//																	"$auction",
+	//																	0,
+	//																},
+	//															},
+	//														},
+	//														0,
+	//													},
+	//												},
+	//											},
+	//										},
+	//									},
+	//								},
+	//								"",
+	//								"$auction._id",
+	//							},
+	//						},
+	//					},
+	//				},
+	//				{"start_time_block",
+	//					bson.D{
+	//						{"$cond",
+	//							bson.A{
+	//								bson.D{
+	//									{"$or",
+	//										bson.A{
+	//											bson.D{
+	//												{"$eq",
+	//													bson.A{
+	//														bson.D{
+	//															{"$ifNull",
+	//																bson.A{
+	//																	"$auction",
+	//																	0,
+	//																},
+	//															},
+	//														},
+	//														0,
+	//													},
+	//												},
+	//											},
+	//										},
+	//									},
+	//								},
+	//								"",
+	//								"$auction.start_time_block",
+	//							},
+	//						},
+	//					},
+	//				},
+	//				{"end_time_block",
+	//					bson.D{
+	//						{"$cond",
+	//							bson.A{
+	//								bson.D{
+	//									{"$or",
+	//										bson.A{
+	//											bson.D{
+	//												{"$eq",
+	//													bson.A{
+	//														bson.D{
+	//															{"$ifNull",
+	//																bson.A{
+	//																	"$auction",
+	//																	0,
+	//																},
+	//															},
+	//														},
+	//														0,
+	//													},
+	//												},
+	//											},
+	//										},
+	//									},
+	//								},
+	//								"",
+	//								"$auction.end_time_block",
+	//							},
+	//						},
+	//					},
+	//				},
+	//				{"auction_id",
+	//					bson.D{
+	//						{"$cond",
+	//							bson.A{
+	//								bson.D{
+	//									{"$or",
+	//										bson.A{
+	//											bson.D{
+	//												{"$eq",
+	//													bson.A{
+	//														bson.D{
+	//															{"$ifNull",
+	//																bson.A{
+	//																	"$auction",
+	//																	0,
+	//																},
+	//															},
+	//														},
+	//														0,
+	//													},
+	//												},
+	//											},
+	//										},
+	//									},
+	//								},
+	//								"",
+	//								"$auction.auction_id",
+	//							},
+	//						},
+	//					},
+	//				},
+	//				{"auction_status",
+	//					bson.D{
+	//						{"$cond",
+	//							bson.A{
+	//								bson.D{
+	//									{"$or",
+	//										bson.A{
+	//											bson.D{
+	//												{"$eq",
+	//													bson.A{
+	//														bson.D{
+	//															{"$ifNull",
+	//																bson.A{
+	//																	"$auction",
+	//																	0,
+	//																},
+	//															},
+	//														},
+	//														0,
+	//													},
+	//												},
+	//											},
+	//										},
+	//									},
+	//								},
+	//								-1,
+	//								"$auction.status",
+	//							},
+	//						},
+	//					},
+	//				},
+	//				{"is_available_for_auction", "$nft_auction_available.is_auction"},
+	//				{"is_live_auction",
+	//					bson.D{
+	//						{"$cond",
+	//							bson.A{
+	//								bson.D{
+	//									{"$or",
+	//										bson.A{
+	//											bson.D{
+	//												{"$eq",
+	//													bson.A{
+	//														bson.D{
+	//															{"$ifNull",
+	//																bson.A{
+	//																	"$auction",
+	//																	0,
+	//																},
+	//															},
+	//														},
+	//														0,
+	//													},
+	//												},
+	//											},
+	//										},
+	//									},
+	//								},
+	//								false,
+	//								true,
+	//							},
+	//						},
+	//					},
+	//				},
+	//			},
+	//		},
+	//	},
+	//	bson.D{
+	//		{"$project",
+	//			bson.D{
+	//				{"auction", 0},
+	//				{"nft_auction_available", 0},
+	//			},
+	//		},
+	//	},
+	//	bson.D{
+	//		{"$lookup",
+	//			bson.D{
+	//				{"from", "nfts_attributes_percent_view"},
+	//				{"localField", "token_id"},
+	//				{"foreignField", "token_id"},
+	//				{"let", bson.D{{"contract", "$collection_address"}}},
+	//				{"pipeline",
+	//					bson.A{
+	//						bson.D{
+	//							{"$match",
+	//								bson.D{
+	//									{"$expr",
+	//										bson.D{
+	//											{"$eq",
+	//												bson.A{
+	//													"$collection_address",
+	//													strings.ToLower(*filter.ContractAddress),
+	//												},
+	//											},
+	//										},
+	//									},
+	//								},
+	//							},
+	//						},
+	//					},
+	//				},
+	//				{"as", "percent_attributes"},
+	//			},
+	//		},
+	//	},
+	//	bson.D{
+	//		{"$addFields",
+	//			bson.D{
+	//				{"attributes", "$percent_attributes"},
+	//				{"rarity", bson.D{{"$avg", "$percent_attributes.percent"}}},
+	//			},
+	//		},
+	//	},
+	//	bson.D{{"$project", bson.D{{"percent_attributes", 0}}}},
+	//}
+	//
+	//if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
+	//	pipeline = append(pipeline, bson.D{
+	//		{"$match", bson.D{{"$or", bson.A{
+	//			bson.M{
+	//				"is_available_for_auction": true,
+	//			}, bson.M{
+	//				"is_live_auction": true,
+	//			}}}}},
+	//	})
+	//} else {
+	//	pipeline = append(pipeline, bson.D{
+	//		{"$match", bson.D{{"$and", bson.A{
+	//			bson.M{
+	//				"is_available_for_auction": false,
+	//			}, bson.M{
+	//				"is_live_auction": false,
+	//			}}}}},
+	//	})
+	//}
 
-	if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
-		pipeline = append(pipeline, bson.D{
-			{"$match", bson.D{{"$or", bson.A{
-				bson.M{
-					"is_available_for_auction": true,
-				}, bson.M{
-					"is_live_auction": true,
-				}}}}},
-		})
-	} else {
-		pipeline = append(pipeline, bson.D{
-			{"$match", bson.D{{"$and", bson.A{
-				bson.M{
-					"is_available_for_auction": false,
-				}, bson.M{
-					"is_live_auction": false,
-				}}}}},
-		})
-	}
-
-	return pipeline
+	return bson.A{}
 }
 
 func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
