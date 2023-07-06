@@ -126,23 +126,23 @@ func (u *Usecase) SoulNftImageCrontab() error {
 					Traits:           soulImage.Traits,
 					ReplacedTraits:   soulImage.ReplacedTraits,
 				})
+
+				if len(*soulImage.ReplacedTraits) == 0 { //only use the original replaced
+					wg3.Add(1)
+					image := output[0].CapturedImage
+					traits := output[0].Traits
+					animationURL := out.Html
+					updatedData := CaptureSoulImageChan{
+						Err:              out.Err,
+						Nft:              out.Nft,
+						Image:            &image,
+						AnimationFileUrl: animationURL,
+						Traits:           traits,
+					}
+					go u.UpdateSoulNftImageWorker(&wg3, updatedData)
+				}
 			}
 
-			//TODO - logic will be applied here
-			wg3.Add(1)
-
-			image := output[0].CapturedImage
-			traits := output[0].Traits
-			animationURL := out.Html
-			updatedData := CaptureSoulImageChan{
-				Err:              out.Err,
-				Nft:              out.Nft,
-				Image:            &image,
-				AnimationFileUrl: animationURL,
-				Traits:           traits,
-			}
-
-			go u.UpdateSoulNftImageWorker(&wg3, updatedData)
 		}
 
 		wg1.Wait()
