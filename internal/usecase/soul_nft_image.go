@@ -351,7 +351,7 @@ func (u *Usecase) GetSoulNftAnimationURLWorkerNew(wg *sync.WaitGroup, inputChan 
 				html1 = strings.ReplaceAll(html1, replaced, replaceTo)
 			}
 
-			htmlFileLink, err := u.UploadSoulHtmlToGCS(html1, "", nft.ContractAddress, nft.TokenID)
+			htmlFileLink, err := u.UploadSoulHtmlToGCS(html1, fmt.Sprintf("%d", i), nft.ContractAddress, nft.TokenID)
 			if err != nil {
 				return
 			}
