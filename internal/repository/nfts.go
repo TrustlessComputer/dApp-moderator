@@ -243,7 +243,7 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 									{"$eq",
 										bson.A{
 											"$contract",
-											"$$contract_address",
+											strings.ToLower(*filter.ContractAddress),
 										},
 									},
 								},
@@ -276,7 +276,7 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 												{"$eq",
 													bson.A{
 														"$collection_address",
-														"$$contract_address",
+														strings.ToLower(*filter.ContractAddress),
 													},
 												},
 											},
@@ -520,7 +520,7 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 												{"$eq",
 													bson.A{
 														"$collection_address",
-														"$$contract",
+														strings.ToLower(*filter.ContractAddress),
 													},
 												},
 											},
@@ -630,6 +630,10 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		contractAddress := strings.ToLower(*filter.ContractAddress)
 		if contractAddress == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
 			sortDoc := bson.D{}
+
+			//force current user nft always on top
+			sortDoc = append(sortDoc, bson.E{"priority", entity.SORT_DESC})
+
 			if filter.SortBy == "orphanage" {
 				sortDoc = append(sortDoc,
 					bson.E{"is_available_for_auction", filter.Sort},
@@ -642,8 +646,38 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			if filter.SortBy != "token_id_int" {
 				sortDoc = append(sortDoc, bson.E{"token_id_int", entity.SORT_DESC})
 			}
-			fsort = bson.D{{"$sort", sortDoc}}
+
 			f = append(f, r.getPipelineForAuctionRequest(&filter)...)
+
+			if filter.CurrentUser != nil && *filter.CurrentUser != "" {
+				f = append(f, bson.D{
+					{"$addFields",
+						bson.D{
+							{"priority",
+								bson.D{
+									{"$cond",
+										bson.A{
+											bson.D{
+												{"$eq",
+													bson.A{
+														"$owner",
+														strings.ToLower(*filter.CurrentUser),
+													},
+												},
+											},
+											1,
+											0,
+										},
+									},
+								},
+							},
+						},
+					},
+				})
+
+			}
+
+			fsort = bson.D{{"$sort", sortDoc}}
 		} else {
 			addFields := bson.D{
 				{"buyable",
