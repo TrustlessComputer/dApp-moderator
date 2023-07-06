@@ -588,7 +588,12 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 }
 
 func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
-
+	if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
+		return &entity.MkpNftsPagination{
+			Items:     []*entity.MkpNftsResp{},
+			TotalItem: 0,
+		}, nil
+	}
 	f := bson.A{}
 	match := bson.D{}
 
