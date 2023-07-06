@@ -141,12 +141,12 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		if err != nil {
 			logger.AtLog.Logger.Error(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID), zap.String("tokenID", nft.TokenID), zap.Error(err), zap.Any("outData", outData))
 		} else {
-			//logger.AtLog.Logger.Info(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID),
-			//	zap.String("tokenID", nft.TokenID),
-			//	zap.Any("owner", nft.Owner),
-			//	zap.Any("is_available_for_auction", outData.IsAvailable),
-			//	zap.Any("balance", outData.Balance),
-			//)
+			logger.AtLog.Logger.Info(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID),
+				zap.String("tokenID", nft.TokenID),
+				zap.Any("owner", nft.Owner),
+				zap.Any("is_available_for_auction", outData.IsAvailable),
+				zap.Any("balance", outData.Balance),
+			)
 		}
 
 		output <- outData
