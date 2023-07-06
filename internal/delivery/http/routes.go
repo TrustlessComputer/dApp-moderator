@@ -196,6 +196,7 @@ func (h *httpDelivery) RegisterV1Routes() {
 
 	//marketplace
 	marketplace := api.PathPrefix("/marketplace").Subrouter()
+	marketplace.Use(h.MiddleWare.AuthorizationFunc)
 	marketplace.HandleFunc("/collections", h.mkpCollections).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}", h.mkpCollectionDetail).Methods("GET")
 	marketplace.HandleFunc("/collections/{contract_address}/activities", h.getCollectionActivities).Methods("GET")

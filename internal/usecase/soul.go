@@ -153,6 +153,7 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		output <- outData
 	}()
 
+	//soulInstance.Available handle it
 	//owner := nft.Owner
 	//balanceOf, err = erc20Instance.BalanceOf(nil, common.HexToAddress(owner))
 	//if err != nil {
