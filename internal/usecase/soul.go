@@ -167,6 +167,13 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		return
 	}
 
+	name, err := soulInstance.Names(&bind.CallOpts{Context: context.Background()}, tokenID)
+	if err == nil {
+		if name != nft.Name {
+			u.Repo.UpdateSoulname(nft.ContractAddress, nft.TokenID, name)
+		}
+	}
+
 	isAvailable, err = soulInstance.Available(nil, tokenID)
 	if err != nil {
 		return
