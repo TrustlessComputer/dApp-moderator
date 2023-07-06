@@ -8,6 +8,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	b64 "encoding/base64"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -475,4 +476,20 @@ func CreateFile(fileName string, data interface{}) error {
 	}
 
 	return nil
+}
+
+func ReadCsvFile(filePath string) ([][]string, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	csvReader := csv.NewReader(f)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return records, nil
 }

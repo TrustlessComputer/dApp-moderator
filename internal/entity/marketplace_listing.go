@@ -59,14 +59,14 @@ type FilterNfts struct {
 	TokenID         *string
 	Owner           *string
 	//Rarity          *string
-	AttrKey   []string
-	AttrValue []string
-	Rarity    *Rarity
-	Price     *Rarity
-	IsBigFile *bool
-	IsBuyable *bool
-
-	IsOrphan *int
+	AttrKey     []string
+	AttrValue   []string
+	Rarity      *Rarity
+	Price       *Rarity
+	IsBigFile   *bool
+	IsBuyable   *bool
+	CurrentUser *string
+	IsOrphan    *int
 }
 
 type Rarity struct {

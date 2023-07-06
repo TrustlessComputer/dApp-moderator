@@ -501,6 +501,12 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				}
 			}
 
+			iwalletAdress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
+			walletAdress, ok := iwalletAdress.(string)
+			if ok {
+				f.CurrentUser = &walletAdress
+			}
+
 			data, err := h.Usecase.FilterMkplaceNftNew(ctx, f)
 			if err != nil {
 				logger.AtLog.Logger.Error("can not get nfts", zap.Any("iPagination", iPagination), zap.Error(err))
