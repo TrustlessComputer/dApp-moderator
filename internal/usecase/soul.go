@@ -17,17 +17,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
-	"math/big"
-	"os"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 type CheckGMBalanceOutputChan struct {
@@ -152,11 +153,11 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		output <- outData
 	}()
 
-	owner := nft.Owner
-	balanceOf, err = erc20Instance.BalanceOf(nil, common.HexToAddress(owner))
-	if err != nil {
-		return
-	}
+	//owner := nft.Owner
+	//balanceOf, err = erc20Instance.BalanceOf(nil, common.HexToAddress(owner))
+	//if err != nil {
+	//	return
+	//}
 
 	//TODO - soul was not created in production
 	tokenID, isSet := new(big.Int).SetString(nft.TokenID, 10)
