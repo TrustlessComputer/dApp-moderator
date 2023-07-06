@@ -4,6 +4,7 @@ import (
 	"context"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strings"
 	"time"
 
@@ -67,11 +68,11 @@ func (r *Repository) NftWithoutCapturedImage(contractAddress string, offset int,
 			{"$match",
 				bson.D{
 					{"collection_address", strings.ToLower(contractAddress)},
-					//{"image_capture_at", bson.D{{"$in", bson.A{
-					//	"",
-					//	primitive.Null{},
-					//},
-					//}}},
+					{"image_capture_at", bson.D{{"$in", bson.A{
+						"",
+						primitive.Null{},
+					},
+					}}},
 				},
 			},
 		},
