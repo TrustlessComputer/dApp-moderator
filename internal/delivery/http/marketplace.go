@@ -501,10 +501,10 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				}
 			}
 
-			iwalletAdress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
-			walletAdress, ok := iwalletAdress.(string)
+			iWalletAddress := ctx.Value(utils.SIGNED_WALLET_ADDRESS)
+			walletAddress, ok := iWalletAddress.(string)
 			if ok {
-				f.CurrentUser = &walletAdress
+				f.CurrentUser = &walletAddress
 			}
 
 			data, err := h.Usecase.FilterMkplaceNftNew(ctx, f)
@@ -513,7 +513,11 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination), zap.Any("data", len(data.Items)))
+			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination),
+				zap.Any("filter", f),
+				zap.Any("data", len(data.Items)),
+			)
+
 			return data, nil
 		},
 	).ServeHTTP(w, r)

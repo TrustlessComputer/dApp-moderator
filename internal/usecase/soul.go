@@ -17,17 +17,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
-	"math/big"
-	"os"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 type CheckGMBalanceOutputChan struct {
@@ -141,22 +142,23 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		if err != nil {
 			logger.AtLog.Logger.Error(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID), zap.String("tokenID", nft.TokenID), zap.Error(err), zap.Any("outData", outData))
 		} else {
-			//logger.AtLog.Logger.Info(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID),
-			//	zap.String("tokenID", nft.TokenID),
-			//	zap.Any("owner", nft.Owner),
-			//	zap.Any("is_available_for_auction", outData.IsAvailable),
-			//	zap.Any("balance", outData.Balance),
-			//)
+			logger.AtLog.Logger.Info(fmt.Sprintf("CheckGMBalanceWorker - %s", nft.TokenID),
+				zap.String("tokenID", nft.TokenID),
+				zap.Any("owner", nft.Owner),
+				zap.Any("is_available_for_auction", outData.IsAvailable),
+				zap.Any("balance", outData.Balance),
+			)
 		}
 
 		output <- outData
 	}()
 
-	owner := nft.Owner
-	balanceOf, err = erc20Instance.BalanceOf(nil, common.HexToAddress(owner))
-	if err != nil {
-		return
-	}
+	//soulInstance.Available handle it
+	//owner := nft.Owner
+	//balanceOf, err = erc20Instance.BalanceOf(nil, common.HexToAddress(owner))
+	//if err != nil {
+	//	return
+	//}
 
 	//TODO - soul was not created in production
 	tokenID, isSet := new(big.Int).SetString(nft.TokenID, 10)
