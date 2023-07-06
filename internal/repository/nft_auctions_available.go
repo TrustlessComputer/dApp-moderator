@@ -67,11 +67,11 @@ func (r *Repository) NftWithoutCapturedImage(contractAddress string, offset int,
 			{"$match",
 				bson.D{
 					{"collection_address", strings.ToLower(contractAddress)},
-					//{"image_capture_at", bson.D{{"$in", bson.A{
-					//	"",
-					//	primitive.Null{},
-					//},
-					//}}},
+					{"image_capture_at", bson.D{{"$in", bson.A{
+						"",
+						primitive.Null{},
+					},
+					}}},
 				},
 			},
 		},
