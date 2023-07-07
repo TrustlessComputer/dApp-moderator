@@ -167,6 +167,13 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		return
 	}
 
+	name, err := soulInstance.Names(&bind.CallOpts{Context: context.Background()}, tokenID)
+	if err == nil {
+		if name != nft.Name {
+			u.Repo.UpdateSoulname(nft.ContractAddress, nft.TokenID, name)
+		}
+	}
+
 	isAvailable, err = soulInstance.Available(nil, tokenID)
 	if err != nil {
 		return
@@ -316,6 +323,7 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 	var err error
 	minted := new(big.Int)
 	gm := float64(0)
+	fProtocolDeposit := new(float64)
 	resp := &structure.CreateSignatureResp{}
 
 	key := fmt.Sprintf("CreateSignature - %s", requestData.WalletAddress)
@@ -332,6 +340,10 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 
 		if minted != nil {
 			zap.String("minted", minted.String())
+		}
+
+		if fProtocolDeposit != nil {
+			zap.Float64("fProtocolDeposit", *fProtocolDeposit)
 		}
 
 		if err != nil {
@@ -362,10 +374,11 @@ func (u *Usecase) CreateSignature(requestData request.CreateSignatureRequest) (*
 		key := fmt.Sprintf("gm.deposit.%s", userWalletAddress)
 		existed, _ := u.Cache.Exists(key)
 		if !*existed {
-			gm, err = u.GMDeposit(userWalletAddress)
+			gm, err = u.GMFprotocolDeposit(userWalletAddress)
 			if err != nil {
 				return nil, err
 			}
+			fProtocolDeposit = &gm
 
 			err = u.Cache.SetData(key, gm)
 			if err != nil {
@@ -478,6 +491,27 @@ func (u *Usecase) GMDeposit(walletAddress string) (float64, error) {
 		if strings.ToLower(item.From) == strings.ToLower(walletAddress) {
 			return item.GmReceive, nil
 		}
+	}
+
+	return 0, nil
+}
+
+func (u *Usecase) GMFprotocolDeposit(walletAddress string) (float64, error) {
+	generativeURL := fmt.Sprintf("https://www.fprotocol.io/api/gm/check-result?address=%s", walletAddress)
+	resp := &structure.FProtocol{}
+
+	data, _, _, err := helpers.JsonRequest(generativeURL, "GET", make(map[string]string), nil)
+	if err != nil {
+		return 0, err
+	}
+
+	err = json.Unmarshal(data, resp)
+	if err != nil {
+		return 0, err
+	}
+
+	if resp.Result != nil {
+		return resp.Result.GmReceive, nil
 	}
 
 	return 0, nil

@@ -199,6 +199,24 @@ func (r *Repository) UpdateNftSize(contract string, tokenID string, size int64) 
 
 }
 
+func (r *Repository) UpdateSoulname(contract string, tokenID string, name string) (*mongo.UpdateResult, error) {
+	f := bson.D{
+		{"collection_address", contract},
+		{"token_id", tokenID},
+	}
+
+	update := bson.M{"$set": bson.M{"name": name}}
+
+	updated, err := r.UpdateOne(entity.Nfts{}.CollectionName(), f, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+
+}
+
 func (r *Repository) GetNftsWithoutSize(collectionAddress string, skip int, limit int) ([]entity.Nfts, error) {
 	f2 := bson.A{
 		bson.D{
@@ -228,22 +246,24 @@ func (r *Repository) GetNftsWithoutSize(collectionAddress string, skip int, limi
 }
 
 func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bson.A {
-	pipeline := bson.A{bson.M{"$lookup": bson.D{
-		{"from", "nft_auction_available"},
-		{"localField", "token_id"},
-		{"foreignField", "token_id"},
-		{"let", bson.D{{"contract_address", "$collection_address"}}},
-		{"pipeline",
-			bson.A{
-				bson.D{
-					{"$match",
-						bson.D{
-							{"$expr",
-								bson.D{
-									{"$eq",
-										bson.A{
-											"$contract",
-											strings.ToLower(*filter.ContractAddress),
+	pipeline := bson.A{
+		bson.M{"$lookup": bson.D{
+			{"from", "nft_auction_available"},
+			{"localField", "token_id"},
+			{"foreignField", "token_id"},
+			{"let", bson.D{{"contract_address", "$collection_address"}}},
+			{"pipeline",
+				bson.A{
+					bson.D{
+						{"$match",
+							bson.D{
+								{"$expr",
+									bson.D{
+										{"$eq",
+											bson.A{
+												"$contract",
+												strings.ToLower(*filter.ContractAddress),
+											},
 										},
 									},
 								},
@@ -252,9 +272,8 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 					},
 				},
 			},
-		},
-		{"as", "nft_auction_available"},
-	}},
+			{"as", "nft_auction_available"},
+		}},
 		bson.M{"$unwind": bson.D{
 			{"path", "$nft_auction_available"},
 			{"preserveNullAndEmptyArrays", true},
@@ -506,7 +525,7 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 		bson.D{
 			{"$lookup",
 				bson.D{
-					{"from", "nfts_attributes_percent_view"},
+					{"from", "soul_attributes_percent_view"},
 					{"localField", "token_id"},
 					{"foreignField", "token_id"},
 					{"let", bson.D{{"contract", "$collection_address"}}},
@@ -565,11 +584,16 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 		})
 	}
 
-	return pipeline
+	return bson.A{}
 }
 
 func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
-
+	if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
+		return &entity.MkpNftsPagination{
+			Items:     []*entity.MkpNftsResp{},
+			TotalItem: 0,
+		}, nil
+	}
 	f := bson.A{}
 	match := bson.D{}
 
@@ -642,13 +666,13 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 
 			//force current user nft always on top
 			sortDoc = append(sortDoc, bson.E{"priority", entity.SORT_DESC})
-
 			if filter.SortBy == "orphanage" {
 				sortDoc = append(sortDoc,
 					bson.E{"is_available_for_auction", filter.Sort},
 					bson.E{"is_live_auction", filter.Sort},
 					bson.E{"auction_status", 1},
 				)
+				//sortDoc = append(sortDoc, bson.E{filter.SortBy, filter.Sort})
 			} else {
 				sortDoc = append(sortDoc, bson.E{filter.SortBy, filter.Sort})
 			}

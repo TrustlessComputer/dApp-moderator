@@ -1,11 +1,13 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"dapp-moderator/external/nft_explorer"
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
+	"encoding/gob"
 	"fmt"
 	"math/big"
 	"os"
@@ -192,24 +194,23 @@ func (u *Usecase) FilterMkplaceNfts(ctx context.Context, filter entity.FilterNft
 	return respData, nil
 }
 
+func (u *Usecase) Hash(s interface{}) ([]byte, error) {
+	var b bytes.Buffer
+	if err := gob.NewEncoder(&b).Encode(s); err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
+}
 func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
+	var (
+		resp *entity.MkpNftsPagination
+		//err  error
+	)
+
 	resp, err := u.Repo.FilterMKPNfts(filter)
 	if err != nil {
 		return nil, err
 	}
-
-	//// Nếu contract là SOUL thì lấy name tu chain, mặc dù ban đầu có update vô rồi nhưng van co thể user change name
-	/// existed in nft_explorer.go:682
-	//if filter.ContractAddress != nil && strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
-	//	if soulContract, err := soul_contract.NewSoul(common.HexToAddress(*filter.ContractAddress), u.TCPublicNode.GetClient()); err == nil {
-	//		for i, item := range resp.Items {
-	//			resp.Items[i].Name = ""
-	//			if name, err := u.SoulNFTName(item.TokenID, soulContract); err == nil {
-	//				resp.Items[i].Name = name
-	//			}
-	//		}
-	//	}
-	//}
 
 	return resp, nil
 }
@@ -256,34 +257,34 @@ func (u *Usecase) GetMkplaceNft(ctx context.Context, contractAddress string, tok
 		}
 	}
 
-	if strings.ToLower(contractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
-		attributes := resp.Attributes
-		attrSorted := make(map[string]nft_explorer.MkpNftAttr)
-		attrSorted[strings.ToLower("Color Palette")] = nft_explorer.MkpNftAttr{}
-		attrSorted[strings.ToLower("Sea Level")] = nft_explorer.MkpNftAttr{}
-		attrSorted[strings.ToLower("Neighborhood")] = nft_explorer.MkpNftAttr{}
-		attrSorted[strings.ToLower("Soul Form")] = nft_explorer.MkpNftAttr{}
-		attrSorted[strings.ToLower("Decoration")] = nft_explorer.MkpNftAttr{}
-		attrSorted[strings.ToLower("Special Object")] = nft_explorer.MkpNftAttr{}
-		attrSorted[strings.ToLower("Rendering Rate")] = nft_explorer.MkpNftAttr{}
-		attrSorted[strings.ToLower("Activity In")] = nft_explorer.MkpNftAttr{}
-
-		for _, attribute := range attributes {
-			attrSorted[strings.ToLower(attribute.TraitType)] = attribute
-		}
-
-		respAttr := []nft_explorer.MkpNftAttr{}
-		respAttr = append(respAttr, attrSorted[strings.ToLower("Color Palette")])
-		respAttr = append(respAttr, attrSorted[strings.ToLower("Sea Level")])
-		respAttr = append(respAttr, attrSorted[strings.ToLower("Neighborhood")])
-		respAttr = append(respAttr, attrSorted[strings.ToLower("Soul Form")])
-		respAttr = append(respAttr, attrSorted[strings.ToLower("Decoration")])
-		respAttr = append(respAttr, attrSorted[strings.ToLower("Special Object")])
-		respAttr = append(respAttr, attrSorted[strings.ToLower("Rendering Rate")])
-		respAttr = append(respAttr, attrSorted[strings.ToLower("Activity In")])
-
-		resp.Attributes = respAttr
-	}
+	//if strings.ToLower(contractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+	//	attributes := resp.Attributes
+	//	attrSorted := make(map[string]nft_explorer.MkpNftAttr)
+	//	attrSorted[strings.ToLower("Color Palette")] = nft_explorer.MkpNftAttr{}
+	//	attrSorted[strings.ToLower("Sea Level")] = nft_explorer.MkpNftAttr{}
+	//	attrSorted[strings.ToLower("Neighborhood")] = nft_explorer.MkpNftAttr{}
+	//	attrSorted[strings.ToLower("Soul Form")] = nft_explorer.MkpNftAttr{}
+	//	attrSorted[strings.ToLower("Decoration")] = nft_explorer.MkpNftAttr{}
+	//	attrSorted[strings.ToLower("Special Object")] = nft_explorer.MkpNftAttr{}
+	//	attrSorted[strings.ToLower("Rendering Rate")] = nft_explorer.MkpNftAttr{}
+	//	attrSorted[strings.ToLower("Activity In")] = nft_explorer.MkpNftAttr{}
+	//
+	//	for _, attribute := range attributes {
+	//		attrSorted[strings.ToLower(attribute.TraitType)] = attribute
+	//	}
+	//
+	//	respAttr := []nft_explorer.MkpNftAttr{}
+	//	respAttr = append(respAttr, attrSorted[strings.ToLower("Color Palette")])
+	//	respAttr = append(respAttr, attrSorted[strings.ToLower("Sea Level")])
+	//	respAttr = append(respAttr, attrSorted[strings.ToLower("Neighborhood")])
+	//	respAttr = append(respAttr, attrSorted[strings.ToLower("Soul Form")])
+	//	respAttr = append(respAttr, attrSorted[strings.ToLower("Decoration")])
+	//	respAttr = append(respAttr, attrSorted[strings.ToLower("Special Object")])
+	//	respAttr = append(respAttr, attrSorted[strings.ToLower("Rendering Rate")])
+	//	respAttr = append(respAttr, attrSorted[strings.ToLower("Activity In")])
+	//
+	//	resp.Attributes = respAttr
+	//}
 	return resp, nil
 }
 
