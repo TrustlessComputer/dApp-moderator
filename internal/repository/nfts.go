@@ -680,7 +680,8 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			}
 
 			//https://www.mongodb.com/docs/v4.2/core/materialized-views/
-			//create from create-soul-nfts-view.txt
+			//create from PrepareSoulData() soul_image_histories.go:21
+			//triggered by capture thumbnail() soul_nft_image.go:144
 			collection = utils.COLLECTION_SOUL_NFTS
 			//f = append(f, r.getPipelineForAuctionRequest(&filter)...)
 			//

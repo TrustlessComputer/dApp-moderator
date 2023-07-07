@@ -128,7 +128,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 				})
 
 				if len(*soulImage.ReplacedTraits) == 0 { //only use the original replaced
-					wg3.Add(1)
+					wg3.Add(2)
 					image := output[0].CapturedImage
 					traits := output[0].Traits
 					animationURL := out.Html
@@ -140,6 +140,8 @@ func (u *Usecase) SoulNftImageCrontab() error {
 						Traits:           traits,
 					}
 					go u.UpdateSoulNftImageWorker(&wg3, updatedData)
+
+					go u.Repo.PrepareSoulData(&wg3)
 				}
 			}
 
