@@ -658,9 +658,10 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 	fName := bson.A{}
 
 	collection := utils.COLLECTION_NFTS
+	contractAddress := ""
 	// Only for soul
 	if filter.ContractAddress != nil {
-		contractAddress := strings.ToLower(*filter.ContractAddress)
+		contractAddress = strings.ToLower(*filter.ContractAddress)
 		if contractAddress == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
 			sortDoc := bson.D{}
 
@@ -711,100 +712,175 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			}
 
 			fsort = bson.D{{"$sort", sortDoc}}
-		} else {
-			addFields := bson.D{
-				{"buyable",
-					bson.D{
-						{"$cond",
-							bson.A{
-								bson.D{
-									{"$or",
-										bson.A{
-											bson.D{
-												{"$eq",
-													bson.A{
-														bson.D{
-															{"$ifNull",
-																bson.A{
-																	"$price_erc20",
-																	0,
-																},
-															},
+		}
+	}
+
+	addFields := bson.D{
+		{"buyable",
+			bson.D{
+				{"$cond",
+					bson.A{
+						bson.D{
+							{"$or",
+								bson.A{
+									bson.D{
+										{"$eq",
+											bson.A{
+												bson.D{
+													{"$ifNull",
+														bson.A{
+															"$price_erc20",
+															0,
 														},
-														0,
 													},
 												},
+												0,
 											},
 										},
 									},
 								},
-								false,
-								true,
+							},
+						},
+						false,
+						true,
+					},
+				},
+			},
+		},
+		{"price",
+			bson.D{
+				{"$cond",
+					bson.A{
+						bson.D{
+							{"$or",
+								bson.A{
+									bson.D{
+										{"$eq",
+											bson.A{
+												bson.D{
+													{"$ifNull",
+														bson.A{
+															"$price_erc20",
+															0,
+														},
+													},
+												},
+												0,
+											},
+										},
+									},
+								},
+							},
+						},
+						0,
+						bson.D{{"$toDouble", "$price_erc20.price"}},
+					},
+				},
+			},
+		},
+		{"erc20", "$price_erc20.erc_20_token"},
+	}
+
+	//used for marketplace
+	fMarketPlaceOffer = append(fMarketPlaceOffer, bson.E{"$lookup",
+		bson.D{
+			{"from", "marketplace_offers"},
+			{"localField", "token_id"},
+			{"foreignField", "token_id"},
+			{"pipeline",
+				bson.A{
+					bson.D{
+						{"$match",
+							bson.D{
+								{"collection_contract", strings.ToLower(*filter.ContractAddress)},
+								{"status", 0},
 							},
 						},
 					},
+					bson.D{{"$skip", 0}},
+					bson.D{{"$limit", 100}},
 				},
+			},
+			{"as", "make_offers"},
+		},
+	})
+	f1 = append(f1, bson.D{
+		{"$lookup",
+			bson.D{
+				{"from", "marketplace_listings"},
+				{"localField", "token_id"},
+				{"foreignField", "token_id"},
+				{"pipeline",
+					bson.A{
+						bson.D{
+							{"$match",
+								bson.D{
+									{"collection_contract", strings.ToLower(*filter.ContractAddress)},
+									{"status", 0},
+								},
+							},
+						},
+						bson.D{{"$skip", 0}},
+						bson.D{{"$limit", 1}},
+					},
+				},
+				{"as", "listing_for_sales"},
+			},
+		},
+	})
+
+	f1 = append(f1, bson.D{{"$addFields", bson.D{{"price_erc20", "$listing_for_sales"}}}})
+	f1 = append(f1, bson.D{
+		{"$unwind",
+			bson.D{
+				{"path", "$price_erc20"},
+				{"preserveNullAndEmptyArrays", true},
+			},
+		},
+	})
+	f1 = append(f1, bson.D{
+		{"$addFields", addFields},
+	})
+	f1 = append(f1, bson.D{
+		{"$addFields",
+			bson.D{
 				{"price",
 					bson.D{
-						{"$cond",
+						{"$divide",
 							bson.A{
+								"$price",
 								bson.D{
-									{"$or",
+									{"$pow",
 										bson.A{
-											bson.D{
-												{"$eq",
-													bson.A{
-														bson.D{
-															{"$ifNull",
-																bson.A{
-																	"$price_erc20",
-																	0,
-																},
-															},
-														},
-														0,
-													},
-												},
-											},
+											10,
+											18,
 										},
 									},
 								},
-								0,
-								bson.D{{"$toDouble", "$price_erc20.price"}},
 							},
 						},
 					},
 				},
-				{"erc20", "$price_erc20.erc_20_token"},
-			}
+			},
+		},
+	})
+	fsort = bson.D{
+		{"$sort",
+			bson.D{
+				{"buyable", -1},
+				{"price", 1},
+				{filter.SortBy, filter.Sort},
+			},
+		},
+	}
 
-			//used for marketplace
-			fMarketPlaceOffer = append(fMarketPlaceOffer, bson.E{"$lookup",
-				bson.D{
-					{"from", "marketplace_offers"},
-					{"localField", "token_id"},
-					{"foreignField", "token_id"},
-					{"pipeline",
-						bson.A{
-							bson.D{
-								{"$match",
-									bson.D{
-										{"collection_contract", strings.ToLower(*filter.ContractAddress)},
-										{"status", 0},
-									},
-								},
-							},
-							bson.D{{"$skip", 0}},
-							bson.D{{"$limit", 100}},
-						},
-					},
-					{"as", "make_offers"},
-				},
-			})
-			f1 = append(f1, bson.D{
+	if contractAddress != "" {
+		switch contractAddress {
+		case strings.ToLower(os.Getenv("BNS_ADDRESS")):
+			fName = append(fName, bson.D{
 				{"$lookup",
 					bson.D{
-						{"from", "marketplace_listings"},
+						{"from", "bns"},
 						{"localField", "token_id"},
 						{"foreignField", "token_id"},
 						{"pipeline",
@@ -812,147 +888,74 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 								bson.D{
 									{"$match",
 										bson.D{
-											{"collection_contract", strings.ToLower(*filter.ContractAddress)},
-											{"status", 0},
+											{"collection_address", contractAddress},
 										},
 									},
 								},
 								bson.D{{"$skip", 0}},
 								bson.D{{"$limit", 1}},
+								bson.D{{"$project", bson.D{{"name", 1}}}},
 							},
 						},
-						{"as", "listing_for_sales"},
+						{"as", "bns"},
+					},
+				}},
+				bson.D{
+					{"$unwind",
+						bson.D{
+							{"path", "$bns"},
+							{"preserveNullAndEmptyArrays", true},
+						},
 					},
 				},
-			})
+			)
 
-			f1 = append(f1, bson.D{{"$addFields", bson.D{{"price_erc20", "$listing_for_sales"}}}})
-			f1 = append(f1, bson.D{
-				{"$unwind",
+			fieldName := bson.M{"name": "$bns.name"}
+			fName = append(fName, bson.D{{
+				"$addFields", fieldName,
+			}})
+			break
+		default:
+			fieldName := bson.M{"name": bson.D{
+				{"$cond",
 					bson.D{
-						{"path", "$price_erc20"},
-						{"preserveNullAndEmptyArrays", true},
-					},
-				},
-			})
-			f1 = append(f1, bson.D{
-				{"$addFields", addFields},
-			})
-			f1 = append(f1, bson.D{
-				{"$addFields",
-					bson.D{
-						{"price",
+						{"if",
 							bson.D{
-								{"$divide",
+								{"$eq",
 									bson.A{
-										"$price",
-										bson.D{
-											{"$pow",
-												bson.A{
-													10,
-													18,
-												},
-											},
-										},
+										"$name",
+										"",
 									},
 								},
 							},
 						},
-					},
-				},
-			})
-			fsort = bson.D{
-				{"$sort",
-					bson.D{
-						{"buyable", -1},
-						{"price", 1},
-						{filter.SortBy, filter.Sort},
-					},
-				},
-			}
-
-			switch contractAddress {
-			case strings.ToLower(os.Getenv("BNS_ADDRESS")):
-				fName = append(fName, bson.D{
-					{"$lookup",
-						bson.D{
-							{"from", "bns"},
-							{"localField", "token_id"},
-							{"foreignField", "token_id"},
-							{"pipeline",
-								bson.A{
-									bson.D{
-										{"$match",
-											bson.D{
-												{"collection_address", contractAddress},
-											},
-										},
-									},
-									bson.D{{"$skip", 0}},
-									bson.D{{"$limit", 1}},
-									bson.D{{"$project", bson.D{{"name", 1}}}},
-								},
-							},
-							{"as", "bns"},
-						},
-					}},
-					bson.D{
-						{"$unwind",
+						{"then",
 							bson.D{
-								{"path", "$bns"},
-								{"preserveNullAndEmptyArrays", true},
-							},
-						},
-					},
-				)
-
-				fieldName := bson.M{"name": "$bns.name"}
-				fName = append(fName, bson.D{{
-					"$addFields", fieldName,
-				}})
-				break
-			default:
-				fieldName := bson.M{"name": bson.D{
-					{"$cond",
-						bson.D{
-							{"if",
-								bson.D{
-									{"$eq",
-										bson.A{
-											"$name",
-											"",
-										},
-									},
-								},
-							},
-							{"then",
-								bson.D{
-									{"$cond",
-										bson.D{
-											{"if",
-												bson.D{
-													{"$gt",
-														bson.A{
-															"$token_id_int",
-															1000000,
-														},
+								{"$cond",
+									bson.D{
+										{"if",
+											bson.D{
+												{"$gt",
+													bson.A{
+														"$token_id_int",
+														1000000,
 													},
 												},
 											},
-											{"then",
-												bson.D{
-													{"$concat",
-														bson.A{
-															"$collection.name",
-															" #",
-															bson.D{
-																{"$toString",
-																	bson.D{
-																		{"$mod",
-																			bson.A{
-																				"$token_id_int",
-																				1000000,
-																			},
+										},
+										{"then",
+											bson.D{
+												{"$concat",
+													bson.A{
+														"$collection.name",
+														" #",
+														bson.D{
+															{"$toString",
+																bson.D{
+																	{"$mod",
+																		bson.A{
+																			"$token_id_int",
+																			1000000,
 																		},
 																	},
 																},
@@ -961,14 +964,14 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 													},
 												},
 											},
-											{"else",
-												bson.D{
-													{"$concat",
-														bson.A{
-															"$collection.name",
-															" #",
-															"$token_id",
-														},
+										},
+										{"else",
+											bson.D{
+												{"$concat",
+													bson.A{
+														"$collection.name",
+														" #",
+														"$token_id",
 													},
 												},
 											},
@@ -976,15 +979,15 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 									},
 								},
 							},
-							{"else", "$name"},
 						},
+						{"else", "$name"},
 					},
-				}}
-				fName = append(fName, bson.D{{
-					"$addFields", fieldName,
-				}})
-				break
-			}
+				},
+			}}
+			fName = append(fName, bson.D{{
+				"$addFields", fieldName,
+			}})
+			break
 		}
 	}
 
