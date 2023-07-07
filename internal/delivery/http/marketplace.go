@@ -513,11 +513,6 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				return nil, err
 			}
 
-			logger.AtLog.Logger.Info("Nfts", zap.Any("iPagination", iPagination),
-				zap.Any("filter", f),
-				zap.Any("data", len(data.Items)),
-			)
-
 			return data, nil
 		},
 	).ServeHTTP(w, r)
