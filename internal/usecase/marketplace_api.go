@@ -8,6 +8,7 @@ import (
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"os"
@@ -201,17 +202,46 @@ func (u *Usecase) Hash(s interface{}) ([]byte, error) {
 	}
 	return b.Bytes(), nil
 }
+
 func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
-	var (
-		resp *entity.MkpNftsPagination
-		//err  error
-	)
+
+	//only applied for SOUL
+	if filter.ContractAddress != nil {
+		if strings.ToLower(*filter.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+			key := ""
+			resp := &entity.MkpNftsPagination{}
+
+			keyBytes, err := u.Hash(filter)
+			if err == nil {
+				key = fmt.Sprintf("filered.soul.%s", string(keyBytes))
+				existed, _ := u.Cache.Exists(key)
+				if existed != nil && *existed == true {
+					cached, err := u.Cache.GetData(key)
+					if err == nil {
+						cachedBytes := []byte(*cached)
+						err = json.Unmarshal(cachedBytes, resp)
+						if err == nil {
+							return resp, nil
+						}
+					}
+				}
+
+			}
+
+			resp, err = u.Repo.FilterMKPNfts(filter)
+			if err != nil {
+				return nil, err
+			}
+
+			u.Cache.SetDataWithExpireTime(key, resp, 60) // only 1 minute
+			return resp, nil
+		}
+	}
 
 	resp, err := u.Repo.FilterMKPNfts(filter)
 	if err != nil {
 		return nil, err
 	}
-
 	return resp, nil
 }
 
