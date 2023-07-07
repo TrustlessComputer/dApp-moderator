@@ -211,9 +211,9 @@ func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterN
 			key := ""
 			resp := &entity.MkpNftsPagination{}
 
-			keyBytes, err := u.Hash(filter)
+			keyBytes, err := u.Hash(&filter)
 			if err == nil {
-				key = fmt.Sprintf("filered.soul.%s", string(keyBytes))
+				key = fmt.Sprintf("filtered.soul.%s", string(keyBytes))
 				existed, _ := u.Cache.Exists(key)
 				if existed != nil && *existed == true {
 					cached, err := u.Cache.GetData(key)
@@ -225,7 +225,6 @@ func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterN
 						}
 					}
 				}
-
 			}
 
 			resp, err = u.Repo.FilterMKPNfts(filter)
@@ -233,7 +232,7 @@ func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterN
 				return nil, err
 			}
 
-			u.Cache.SetDataWithExpireTime(key, resp, 60) // only 1 minute
+			u.Cache.SetDataWithExpireTime(key, resp, 2*60) // only 2 minute
 			return resp, nil
 		}
 	}
