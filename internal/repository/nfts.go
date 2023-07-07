@@ -643,19 +643,19 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			value = append(value, attr.Value)
 		}
 
-		if len(key) > 0 && len(value) > 0 {
-			filter.AttrKey = key
-			filter.AttrValue = value
+		filter.AttrKey = key
+		filter.AttrValue = value
+		match = append(match, bson.E{"attributes.trait_type", bson.M{"$in": filter.AttrKey}})
+		match = append(match, bson.E{"attributes.value", bson.M{"$in": filter.AttrValue}})
+
+	} else {
+		if len(filter.AttrKey) > 0 {
+			match = append(match, bson.E{"attributes.trait_type", bson.M{"$in": filter.AttrKey}})
 		}
 
-	}
-
-	if len(filter.AttrKey) > 0 {
-		match = append(match, bson.E{"attributes.trait_type", bson.M{"$in": filter.AttrKey}})
-	}
-
-	if len(filter.AttrValue) > 0 {
-		match = append(match, bson.E{"attributes.value", bson.M{"$in": filter.AttrValue}})
+		if len(filter.AttrValue) > 0 {
+			match = append(match, bson.E{"attributes.value", bson.M{"$in": filter.AttrValue}})
+		}
 	}
 
 	if len(match) > 0 {
