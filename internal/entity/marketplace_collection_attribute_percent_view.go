@@ -19,7 +19,9 @@ type FilterMarketplaceCollectionAttribute struct {
 	BaseFilters
 	ContractAddress *string
 	TraitType       *string
+	TraitTypes      []string
 	Value           *string
+	Values          []string
 	Percent         *float64
 	MinPercent      *float64
 	MaxPercent      *float64
