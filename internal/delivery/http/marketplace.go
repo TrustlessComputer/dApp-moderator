@@ -7,6 +7,7 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/logger"
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -507,6 +508,18 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 			walletAdress, ok := iwalletAdress.(string)
 			if ok {
 				f.CurrentUser = &walletAdress
+			}
+
+			clearCache := r.URL.Query().Get("clear_cache")
+			if clearCache != "" {
+				if clearCache == "true" {
+					hash, err := h.Usecase.Hash(f)
+					if err == nil {
+						key := string(hash)
+						key = fmt.Sprintf("filtered.soul.%s", key)
+						h.Usecase.Cache.Delete(key)
+					}
+				}
 			}
 
 			data, err := h.Usecase.FilterMkplaceNftNew(ctx, f)
