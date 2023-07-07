@@ -431,18 +431,20 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 				rarity = strings.ReplaceAll(rarity, " ", "")
 				rArray := strings.Split(rarity, ",")
 				if len(rArray) == 2 {
+					if !(rArray[0] == "-1" && rArray[1] == "-1") {
+						sort.SliceIsSorted(rArray, func(i, j int) bool {
+							return rArray[i] > rArray[j]
+						})
 
-					sort.SliceIsSorted(rArray, func(i, j int) bool {
-						return rArray[i] > rArray[j]
-					})
+						min, _ := strconv.ParseFloat(rArray[0], 10)
+						max, _ := strconv.ParseFloat(rArray[1], 10)
 
-					min, _ := strconv.ParseFloat(rArray[0], 10)
-					max, _ := strconv.ParseFloat(rArray[1], 10)
-
-					f.Rarity = &entity.Rarity{
-						Min: min,
-						Max: max,
+						f.Rarity = &entity.Rarity{
+							Min: min,
+							Max: max,
+						}
 					}
+
 				}
 			}
 
