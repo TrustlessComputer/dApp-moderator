@@ -296,7 +296,7 @@ func (r *Repository) PrepareSoulData(wg *sync.WaitGroup) error {
 			{"$merge",
 				bson.D{
 					{"into", utils.COLLECTION_SOUL_NFTS},
-					{"whenMatched", "keepExisting"},
+					{"whenMatched", "replace"},
 				},
 			},
 		},
