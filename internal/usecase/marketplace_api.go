@@ -7,11 +7,8 @@ import (
 	"dapp-moderator/internal/entity"
 	"dapp-moderator/utils"
 	"dapp-moderator/utils/helpers"
-	"dapp-moderator/utils/logger"
 	"encoding/gob"
-	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
 	"math/big"
 	"os"
 	"strconv"
@@ -209,30 +206,10 @@ func (u *Usecase) FilterMkplaceNftNew(ctx context.Context, filter entity.FilterN
 		resp *entity.MkpNftsPagination
 		//err  error
 	)
-	var redisKey string
-	key, err := u.Hash(&filter)
 
-	go func() {
-		resp, err11 := u.Repo.FilterMKPNfts(filter)
-		if err11 != nil {
-			return
-		}
-
-		if redisKey != "" {
-			if err11 = u.Cache.SetDataWithExpireTime(redisKey, resp, 7*60); err11 != nil {
-				logger.AtLog.Logger.Error("Set redis error: %v", zap.Error(err11))
-			}
-		}
-	}()
-
-	if err == nil {
-		redisKey = fmt.Sprintf("%v_%v", "SOUL_NFTS", string(key))
-		data, err := u.Cache.GetData(redisKey)
-		if err == nil && data != nil {
-			if err := json.Unmarshal([]byte(*data), &resp); err == nil {
-				return resp, nil
-			}
-		}
+	resp, err := u.Repo.FilterMKPNfts(filter)
+	if err != nil {
+		return nil, err
 	}
 
 	return resp, nil
