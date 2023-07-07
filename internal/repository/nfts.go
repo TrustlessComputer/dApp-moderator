@@ -890,6 +890,41 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		},
 	}
 
+	matchPrice := bson.D{}
+	if filter.IsBuyable != nil {
+		matchPrice = append(matchPrice, bson.E{"buyable", *filter.IsBuyable})
+	}
+
+	if filter.Price != nil {
+		//matchPrice = append(matchPrice, bson.E{"buyable", true})
+		matchPrice = append(matchPrice, bson.E{"$and", bson.A{
+			bson.D{{"price", bson.D{{"$lte", filter.Price.Max}}}},
+			bson.D{{"price", bson.D{{"$gte", filter.Price.Min}}}},
+		}})
+	}
+
+	if len(matchPrice) > 0 {
+		f1 = append(f1, bson.D{{"$match", matchPrice}})
+	}
+
+	fPagination := append(f, f1...)
+
+	//count all items
+	fCount := fPagination
+	fCount = append(fCount, bson.D{
+		{"$group",
+			bson.D{
+				{"_id", bson.D{{"collection_address", "$collection_address"}}},
+				{"all", bson.D{{"$sum", 1}}},
+			},
+		},
+	})
+
+	fPagination = append(fPagination, fsort)
+	fPagination = append(fPagination, bson.D{{"$skip", filter.Offset}})
+	fPagination = append(fPagination, bson.D{{"$limit", filter.Limit}})
+
+	//modify name
 	if contractAddress != "" {
 		switch contractAddress {
 		case strings.ToLower(os.Getenv("BNS_ADDRESS")):
@@ -932,6 +967,12 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			}})
 			break
 		default:
+
+			colName := "$collection.name"
+			if strings.ToLower(os.Getenv("SOUL_CONTRACT")) == strings.ToLower(contractAddress) {
+				colName = "Soul"
+			}
+
 			fieldName := bson.M{"name": bson.D{
 				{"$cond",
 					bson.D{
@@ -963,7 +1004,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 											bson.D{
 												{"$concat",
 													bson.A{
-														"$collection.name",
+														colName,
 														" #",
 														bson.D{
 															{"$toString",
@@ -985,7 +1026,7 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 											bson.D{
 												{"$concat",
 													bson.A{
-														"$collection.name",
+														colName,
 														" #",
 														"$token_id",
 													},
@@ -1006,40 +1047,6 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			break
 		}
 	}
-
-	matchPrice := bson.D{}
-	if filter.IsBuyable != nil {
-		matchPrice = append(matchPrice, bson.E{"buyable", *filter.IsBuyable})
-	}
-
-	if filter.Price != nil {
-		//matchPrice = append(matchPrice, bson.E{"buyable", true})
-		matchPrice = append(matchPrice, bson.E{"$and", bson.A{
-			bson.D{{"price", bson.D{{"$lte", filter.Price.Max}}}},
-			bson.D{{"price", bson.D{{"$gte", filter.Price.Min}}}},
-		}})
-	}
-
-	if len(matchPrice) > 0 {
-		f1 = append(f1, bson.D{{"$match", matchPrice}})
-	}
-
-	fPagination := append(f, f1...)
-
-	//count all items
-	fCount := fPagination
-	fCount = append(fCount, bson.D{
-		{"$group",
-			bson.D{
-				{"_id", bson.D{{"collection_address", "$collection_address"}}},
-				{"all", bson.D{{"$sum", 1}}},
-			},
-		},
-	})
-
-	fPagination = append(fPagination, fsort)
-	fPagination = append(fPagination, bson.D{{"$skip", filter.Offset}})
-	fPagination = append(fPagination, bson.D{{"$limit", filter.Limit}})
 
 	//move them after limit and skip for performance
 	fPagination = append(fPagination, bson.D{
