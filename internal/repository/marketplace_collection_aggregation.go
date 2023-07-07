@@ -322,19 +322,27 @@ func (r *Repository) FilterCollectionAttributeByPercent(filter entity.FilterMark
 		max = *filter.MaxPercent
 	}
 
+	match := bson.D{
+		{"contract", strings.ToLower(*filter.ContractAddress)},
+		{"$and",
+			bson.A{
+				bson.D{{"percent", bson.D{{"$gte", min}}}},
+				bson.D{{"percent", bson.D{{"$lte", max}}}},
+			},
+		},
+	}
+
+	if len(filter.TraitTypes) > 0 {
+		match = append(match, bson.E{"trait_type", bson.M{"$in": filter.TraitTypes}})
+	}
+
+	if len(filter.Values) > 0 {
+		match = append(match, bson.E{"value", bson.M{"$in": filter.Values}})
+	}
+
 	f := bson.A{
 		bson.D{
-			{"$match",
-				bson.D{
-					{"contract", strings.ToLower(*filter.ContractAddress)},
-					{"$and",
-						bson.A{
-							bson.D{{"percent", bson.D{{"$gte", min}}}},
-							bson.D{{"percent", bson.D{{"$lte", max}}}},
-						},
-					},
-				},
-			},
+			{"$match", match},
 		},
 	}
 

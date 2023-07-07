@@ -616,11 +616,21 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 		//	bson.E{"attributes.percent", bson.M{"$gte": filter.Rarity.Min / 100}},
 		//}})
 
-		attrs, err := r.FilterCollectionAttributeByPercent(entity.FilterMarketplaceCollectionAttribute{
+		fA := entity.FilterMarketplaceCollectionAttribute{
 			ContractAddress: filter.ContractAddress,
 			MaxPercent:      &filter.Rarity.Max,
 			MinPercent:      &filter.Rarity.Min,
-		})
+		}
+
+		if len(filter.AttrKey) > 0 {
+			fA.TraitTypes = filter.AttrKey
+		}
+
+		if len(filter.AttrValue) > 0 {
+			fA.Values = filter.AttrValue
+		}
+
+		attrs, err := r.FilterCollectionAttributeByPercent(fA)
 
 		if err != nil {
 			return nil, err
@@ -633,8 +643,11 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 			value = append(value, attr.Value)
 		}
 
-		filter.AttrKey = key
-		filter.AttrValue = value
+		if len(key) > 0 && len(value) > 0 {
+			filter.AttrKey = key
+			filter.AttrValue = value
+		}
+
 	}
 
 	if len(filter.AttrKey) > 0 {
