@@ -1,0 +1,191 @@
+[
+  {
+    $match: {
+      collection_address:
+        "0xab566c459f0e8067c842e4c74bd47e7a7ca8fb2d",
+    },
+  },
+  {
+    $lookup: {
+      from: "nft_auction_available",
+      localField: "token_id",
+      foreignField: "token_id",
+      let: {
+        contract_address: "$collection_address",
+      },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $eq: [
+                "$contract",
+                "$$contract_address",
+              ],
+            },
+          },
+        },
+      ],
+      as: "nft_auction_available",
+    },
+  },
+  {
+    $unwind: {
+      path: "$nft_auction_available",
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $lookup: {
+      from: "auction",
+      localField: "token_id",
+      foreignField: "token_id",
+      let: {
+        contract_address: "$collection_address",
+      },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $eq: [
+                "$collection_address",
+                "$$contract_address",
+              ],
+            },
+            status: 1,
+          },
+        },
+      ],
+      as: "auction",
+    },
+  },
+  {
+    $unwind: {
+      path: "$auction",
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $addFields: {
+      db_auction_id: {
+        $cond: [
+          {
+            $or: [
+              {
+                $eq: [
+                  {
+                    $ifNull: ["$auction", 0],
+                  },
+                  0,
+                ],
+              },
+            ],
+          },
+          "",
+          "$auction._id",
+        ],
+      },
+      start_time_block: {
+        $cond: [
+          {
+            $or: [
+              {
+                $eq: [
+                  {
+                    $ifNull: ["$auction", 0],
+                  },
+                  0,
+                ],
+              },
+            ],
+          },
+          "",
+          "$auction.start_time_block",
+        ],
+      },
+      end_time_block: {
+        $cond: [
+          {
+            $or: [
+              {
+                $eq: [
+                  {
+                    $ifNull: ["$auction", 0],
+                  },
+                  0,
+                ],
+              },
+            ],
+          },
+          "",
+          "$auction.end_time_block",
+        ],
+      },
+      auction_id: {
+        $cond: [
+          {
+            $or: [
+              {
+                $eq: [
+                  {
+                    $ifNull: ["$auction", 0],
+                  },
+                  0,
+                ],
+              },
+            ],
+          },
+          "",
+          "$auction.auction_id",
+        ],
+      },
+      is_available_for_auction:
+        "$nft_auction_available.is_auction",
+      is_live_auction: {
+        $cond: [
+          {
+            $or: [
+              {
+                $eq: [
+                  {
+                    $ifNull: ["$auction", 0],
+                  },
+                  0,
+                ],
+              },
+            ],
+          },
+          false,
+          true,
+        ],
+      },
+    },
+  },
+  {
+    $project: {
+      auction: 0,
+      nft_auction_available: 0,
+    },
+  },
+  {
+    $lookup: {
+      from: "soul_attributes_percent_view",
+      localField: "token_id",
+      foreignField: "token_id",
+      as: "percent_attributes",
+    },
+  },
+  {
+    $addFields: {
+      attributes: "$percent_attributes",
+      rarity: {
+        $avg: "$percent_attributes.percent",
+      },
+    },
+  },
+  {
+    $project: {
+      percent_attributes: 0,
+    },
+  },
+  { $merge: { into: "view_soul_nfts", whenMatched: "replace" } }
+]

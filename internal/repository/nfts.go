@@ -583,8 +583,7 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 				}}}}},
 		})
 	}
-
-	return bson.A{}
+	return pipeline
 }
 
 func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
@@ -680,35 +679,38 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 				sortDoc = append(sortDoc, bson.E{"token_id_int", entity.SORT_DESC})
 			}
 
-			f = append(f, r.getPipelineForAuctionRequest(&filter)...)
-
-			if filter.CurrentUser != nil && *filter.CurrentUser != "" {
-				f = append(f, bson.D{
-					{"$addFields",
-						bson.D{
-							{"priority",
-								bson.D{
-									{"$cond",
-										bson.A{
-											bson.D{
-												{"$eq",
-													bson.A{
-														"$owner",
-														strings.ToLower(*filter.CurrentUser),
-													},
-												},
-											},
-											1,
-											0,
-										},
-									},
-								},
-							},
-						},
-					},
-				})
-
-			}
+			//https://www.mongodb.com/docs/v4.2/core/materialized-views/
+			//create from create-soul-nfts-view.txt
+			collection = utils.COLLECTION_SOUL_NFTS
+			//f = append(f, r.getPipelineForAuctionRequest(&filter)...)
+			//
+			//if filter.CurrentUser != nil && *filter.CurrentUser != "" {
+			//	f = append(f, bson.D{
+			//		{"$addFields",
+			//			bson.D{
+			//				{"priority",
+			//					bson.D{
+			//						{"$cond",
+			//							bson.A{
+			//								bson.D{
+			//									{"$eq",
+			//										bson.A{
+			//											"$owner",
+			//											strings.ToLower(*filter.CurrentUser),
+			//										},
+			//									},
+			//								},
+			//								1,
+			//								0,
+			//							},
+			//						},
+			//					},
+			//				},
+			//			},
+			//		},
+			//	})
+			//
+			//}
 
 			fsort = bson.D{{"$sort", sortDoc}}
 		} else {
