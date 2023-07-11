@@ -670,8 +670,8 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 			zap.Error(erc721Err))
 	}
 
-	//artfactAddress := strings.ToLower(os.Getenv("ARTIFACT_ADDRESS"))
-	//bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
+	artfactAddress := strings.ToLower(os.Getenv("ARTIFACT_ADDRESS"))
+	bnsAddress := strings.ToLower(os.Getenv("BNS_ADDRESS"))
 
 	//logger.AtLog.Logger.Info(fmt.Sprintf("InsertOrUpdateNft.%s", contract), zap.String("contract", tmp.ContractAddress), zap.String("tokenID", tmp.TokenID))
 
@@ -701,34 +701,26 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 				return err
 			}
 
-			//Disabled by request: turn off "NEW SMART INSCRIPTION"
-			//if tmp.ContractAddress == artfactAddress {
-			//	u.NewArtifactNotify(tmp)
-			//}
-
-			//DISABLE this
-			//} else {
-			//	if tmp.ContractAddress != bnsAddress {
-			//		//u.NewMintTokenNotify(tmp)
-			//	}
-			//}
-
-			//Only soul is allowed
-			if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+			if tmp.ContractAddress == artfactAddress {
+				//"NEW SMART INSCRIPTION"
+				u.NewArtifactNotify(tmp)
+			} else if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
+				//NEW SOUL MINT
 				u.NewSoulTokenMintedNotify(tmp)
+			} else if strings.ToLower(tmp.ContractAddress) == strings.ToLower(bnsAddress) {
+				//BNS
+				go func() {
+					name, err := u.BnsService.NameByToken(tmp.TokenID)
+					if err == nil {
+						u.NewNameNotify(name)
+					} else {
+						logger.AtLog.Logger.Error("InsertOrUpdateNft.NewNameNotify", zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
+					}
+				}()
+			} else {
+				//BRC-721
+				u.NewMintTokenNotify(tmp)
 			}
-
-			//Disabled by request: turn off "NEW SMART INSCRIPTION"
-			//if tmp.ContractAddress == bnsAddress {
-			//	go func() {
-			//		name, err := u.BnsService.NameByToken(tmp.TokenID)
-			//		if err == nil {
-			//			u.NewNameNotify(name)
-			//		} else {
-			//			logger.AtLog.Logger.Error("InsertOrUpdateNft.NewNameNotify", zap.String("contract", contract), zap.Int("tokenID", int(tmp.TokenIDInt)), zap.Error(err))
-			//		}
-			//	}()
-			//}
 
 			err = u.Repo.InsertActivity(&entity.MarketplaceTokenActivity{
 				//Collection:        strings.ToLower(tmp.Collection),
