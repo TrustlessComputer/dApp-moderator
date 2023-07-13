@@ -28,6 +28,7 @@ type Nfts struct {
 	AnimationFileUrl string     `json:"animation_file_url,omitempty" bson:"animation_file_url,omitempty"`
 	ImageCapture     string     `json:"image_capture,omitempty" bson:"image_capture,omitempty"`
 	ImageCaptureAt   *time.Time `json:"image_capture_at,omitempty" bson:"image_capture_at,omitempty"`
+	SoulBalanceOf    float64    `json:"soul_balance_of,omitempty" bson:"soul_balance_of,omitempty"`
 }
 
 type NftAttr struct {

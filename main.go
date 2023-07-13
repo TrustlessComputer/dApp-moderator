@@ -43,6 +43,7 @@ var generativeMongoConnection connections.IConnection
 var conf *config.Config
 
 func init() {
+
 	logger = _logger.NewLogger(true)
 
 	c, err := config.NewConfig()
@@ -98,6 +99,18 @@ func main() {
 }
 
 func startServer() {
+
+	appName := os.Getenv("APP_NAME")
+	if appName == "" {
+		appName = "dapp-moderator"
+	}
+	// init tracer
+	tracer.Start(
+		tracer.WithEnv(os.Getenv("ENV")),
+		tracer.WithService(appName),
+		tracer.WithLogger(logger.AtLog()),
+	)
+
 	logger.AtLog().Logger.Info("starting server ...")
 	cache, redisClient := redis.NewRedisCache(conf.Redis)
 	r := mux.NewRouter()

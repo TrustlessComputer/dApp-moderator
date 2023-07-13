@@ -217,6 +217,24 @@ func (r *Repository) UpdateSoulname(contract string, tokenID string, name string
 
 }
 
+func (r *Repository) UpdateSoulBalanceOf(contract string, tokenID string, balanceOf float64) (*mongo.UpdateResult, error) {
+	f := bson.D{
+		{"collection_address", contract},
+		{"token_id", tokenID},
+	}
+
+	update := bson.M{"$set": bson.M{"soul_balance_of": balanceOf}}
+
+	updated, err := r.UpdateOne(entity.Nfts{}.CollectionName(), f, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+
+}
+
 func (r *Repository) GetNftsWithoutSize(collectionAddress string, skip int, limit int) ([]entity.Nfts, error) {
 	f2 := bson.A{
 		bson.D{

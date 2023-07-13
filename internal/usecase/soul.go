@@ -153,12 +153,17 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		output <- outData
 	}()
 
-	//soulInstance.Available handle it
-	//owner := nft.Owner
-	//balanceOf, err = erc20Instance.BalanceOf(nil, common.HexToAddress(owner))
-	//if err != nil {
-	//	return
-	//}
+	//only update balance of the owner
+	owner := nft.Owner
+	balanceOf, err = erc20Instance.BalanceOf(&bind.CallOpts{Context: context.Background()}, common.HexToAddress(owner))
+	if err == nil {
+		i := balanceOf.Uint64()
+		balanceOfF := helpers.GetValue(fmt.Sprintf("%d", i), 18)
+
+		if nft.SoulBalanceOf != balanceOfF {
+			u.Repo.UpdateSoulBalanceOf(nft.ContractAddress, nft.TokenID, balanceOfF)
+		}
+	}
 
 	//TODO - soul was not created in production
 	tokenID, isSet := new(big.Int).SetString(nft.TokenID, 10)
@@ -174,7 +179,7 @@ func (u *Usecase) CheckGMBalanceWorker(wg *sync.WaitGroup, erc20Instance *erc20.
 		}
 	}
 
-	isAvailable, err = soulInstance.Available(nil, tokenID)
+	isAvailable, err = soulInstance.Available(&bind.CallOpts{Context: context.Background()}, tokenID)
 	if err != nil {
 		return
 	}
