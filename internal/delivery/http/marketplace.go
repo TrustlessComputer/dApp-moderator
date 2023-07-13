@@ -474,7 +474,7 @@ func (h *httpDelivery) mkplaceNftsOfACollection(w http.ResponseWriter, r *http.R
 
 			attributes := r.URL.Query().Get("attributes")
 			if attributes != "" {
-				attributeArr := strings.Split(attributes, ",")
+				attributeArr := strings.Split(attributes, "|")
 				val := []string{}
 				key := []string{}
 				for _, attr := range attributeArr {
