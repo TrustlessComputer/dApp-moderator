@@ -13,6 +13,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 	"io/ioutil"
 	"log"
 	"math"
@@ -356,6 +359,53 @@ func TxHashInfo(txhash string) ([]byte, *http.Header, int, error) {
 	requestBody["method"] = "eth_getTransactionByHash"
 	requestBody["params"] = []string{txhash}
 	return HttpRequest(url, "POST", make(map[string]string), requestBody)
+}
+
+func ToBlockNumArg(number *big.Int) string {
+	if number == nil {
+		return "latest"
+	}
+	pending := big.NewInt(-1)
+	if number.Cmp(pending) == 0 {
+		return "pending"
+	}
+	finalized := big.NewInt(int64(rpc.FinalizedBlockNumber))
+	if number.Cmp(finalized) == 0 {
+		return "finalized"
+	}
+	safe := big.NewInt(int64(rpc.SafeBlockNumber))
+	if number.Cmp(safe) == 0 {
+		return "safe"
+	}
+	return hexutil.EncodeBig(number)
+}
+
+func BlockByNumber(number string) (*types.Header, error) {
+	numberI, _ := new(big.Int).SetString(number, 10)
+	_hex := ToBlockNumArg(numberI)
+
+	url := os.Getenv("TC_ENDPOINT")
+	requestBody := make(map[string]interface{})
+	requestBody["version"] = "2.0"
+	requestBody["method"] = "eth_getBlockByNumber"
+	requestBody["params"] = []string{_hex}
+	_bytes, _, _, err := HttpRequest(url, "POST", make(map[string]string), requestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	type resp struct {
+		Result *types.Header `json:"result"`
+	}
+
+	res := &resp{}
+
+	err = json.Unmarshal(_bytes, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Result, nil
 }
 
 func BnsTokenNameKey(token string) string {

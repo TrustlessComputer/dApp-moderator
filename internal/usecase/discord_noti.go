@@ -165,19 +165,35 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 		return nil, err
 	}
 
+	startBlock := auction.StartTimeBlock
+	endBlock := auction.EndTimeBlock
+
+	format := "2006-01-02 15:04:05"
+
+	var startTime *time.Time
+	var endTime *time.Time
+	sBlock, err := helpers.BlockByNumber(startBlock)
+	if err == nil {
+		startTime = helpers.ParseUintToUnixTime(sBlock.Time)
+	}
+	eBlock, err := helpers.BlockByNumber(endBlock)
+	if err == nil {
+		endTime = helpers.ParseUintToUnixTime(eBlock.Time)
+	}
+
 	message := discordclient.Message{
-		Content:   fmt.Sprintf("**Create Adopt**"),
+		Content:   fmt.Sprintf("**AVAILABLE ADOPTION**"),
 		Username:  "Satoshi 27",
 		AvatarUrl: "",
 		Embeds: []discordclient.Embed{
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Start Block:** \n%s", auction.StartTimeBlock),
+						Value:  fmt.Sprintf("**Start Time** \n%s", startTime.Format(format)),
 						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**End Block:** \n%s", auction.EndTimeBlock),
+						Value:  fmt.Sprintf("**End Time** \n%s", endTime.Format(format)),
 						Inline: true,
 					},
 				},
@@ -222,18 +238,18 @@ func (u *Usecase) NewAuctionSettledNotify(auction *entity.Auction, winnerAmount 
 	wn = *auction.Winner
 
 	message := discordclient.Message{
-		Content:   fmt.Sprintf("**Settle**"),
+		Content:   fmt.Sprintf("**ADOPTION FINALIZATION**"),
 		Username:  "Satoshi 27",
 		AvatarUrl: "",
 		Embeds: []discordclient.Embed{
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Winner:** \n%s", utils.ShortenBlockAddress(wn)),
+						Value:  fmt.Sprintf("**Adopter** \n%s", utils.ShortenBlockAddress(wn)),
 						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**Amount:** \n%.5f", helpers.GetValue(winnerAmount.String(), 18)),
+						Value:  fmt.Sprintf("**GM Amount** \n%.5f", helpers.GetValue(winnerAmount.String(), 18)),
 						Inline: true,
 					},
 				},
@@ -271,18 +287,18 @@ func (u *Usecase) NewBidCreatedNotify(auctionBid *entity.AuctionBid) (*entity.Di
 	}
 
 	message := discordclient.Message{
-		Content:   fmt.Sprintf("**Create Bid**"),
+		Content:   fmt.Sprintf("**ADOPTION OFFER**"),
 		Username:  "Satoshi 27",
 		AvatarUrl: "",
 		Embeds: []discordclient.Embed{
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Sender:** \n%s", utils.ShortenBlockAddress(auctionBid.Sender)),
+						Value:  fmt.Sprintf("**Participant** \n%s", utils.ShortenBlockAddress(auctionBid.Sender)),
 						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**Amount:** \n%.5f GM", helpers.GetValue(auctionBid.Amount, 18)),
+						Value:  fmt.Sprintf("**GM Amount** \n%.5f GM", helpers.GetValue(auctionBid.Amount, 18)),
 						Inline: true,
 					},
 				},
@@ -315,14 +331,14 @@ func (u *Usecase) NewBidCreatedNotify(auctionBid *entity.AuctionBid) (*entity.Di
 
 func (u *Usecase) NewSoulTokenMintedNotify(nfts *entity.Nfts) (*entity.DiscordNotification, error) {
 	message := discordclient.Message{
-		Content:   fmt.Sprintf("**NEW MINT**"),
+		Content:   fmt.Sprintf("**NEW ADOPTION**"),
 		Username:  "Satoshi 27",
 		AvatarUrl: "",
 		Embeds: []discordclient.Embed{
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Owner:** \n%s", utils.ShortenBlockAddress(nfts.Owner)),
+						Value:  fmt.Sprintf("**Adopter** \n%s", utils.ShortenBlockAddress(nfts.Owner)),
 						Inline: true,
 					},
 					//{
