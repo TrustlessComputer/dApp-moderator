@@ -50,8 +50,9 @@ type DiscordMeta struct {
 
 type DiscordNotification struct {
 	BaseEntity `bson:",inline"`
-	UUID       string
-	Message    discordclient.Message `bson:"message"` // message to send, base on client
+	//use it to avoid duplicated: hashed by Webhook, Event and Message
+	UUID    string
+	Message discordclient.Message `bson:"message"` // message to send, base on client
 
 	Status     DiscordStatus `bson:"status"`
 	NumRetried int           `bson:"num_retried"`

@@ -491,6 +491,10 @@ func (u *Usecase) CreateDiscordNotify(notify *entity.DiscordNotification) error 
 		}
 		notify.Webhook = webhook
 		notify.Meta.SendTo = partner.Name
+
+		msg := notify.Message.Embeds[0]
+		hash := fmt.Sprintf("%s.%s.%s.%s", notify.Event, notify.Webhook, msg.Url, msg.Title)
+		notify.UUID = hash
 		err = u.Repo.CreateDiscordNotification(context.TODO(), notify)
 		if err != nil {
 			logger.AtLog.Error("CreateDiscordNotification", zap.Error(err))

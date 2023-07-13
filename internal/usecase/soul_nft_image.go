@@ -146,6 +146,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 
 					//send discord notification
 					out.Nft.Image = image
+					out.Nft.ImageCapture = image
 					u.NewSoulTokenMintedNotify(&out.Nft)
 				}
 			}
@@ -726,9 +727,9 @@ func (u *Usecase) CreateSoulNftImages(wg *sync.WaitGroup, inputChan CaptureSoulI
 
 	defer func() {
 		if err == nil {
-			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID))
+			logger.AtLog.Logger.Info(fmt.Sprintf("CreateSoulNftImages - %s, %s", zap.Any("inputChan", inputChan), nft.ContractAddress, nft.TokenID))
 		} else {
-			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Error(err))
+			logger.AtLog.Logger.Error(fmt.Sprintf("CreateSoulNftImages - %s, %s", zap.Any("inputChan", inputChan), nft.ContractAddress, nft.TokenID), zap.Error(err))
 		}
 
 	}()

@@ -15,7 +15,6 @@ import (
 func (r *Repository) CreateDiscordNotification(ctx context.Context, notify *entity.DiscordNotification) error {
 	now := time.Now().UTC()
 	notify.ID = primitive.NewObjectID()
-	notify.UUID = notify.Id()
 	notify.CreatedAt = &now
 
 	_, err := r.DB.Collection(utils.COLLECTION_DISCORD_NOTIFICATION).InsertOne(ctx, notify)
