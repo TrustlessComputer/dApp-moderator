@@ -170,15 +170,17 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 
 	format := "2006-01-02 15:04:05"
 
-	var startTime *time.Time
-	var endTime *time.Time
+	startTime := ""
+	endTime := ""
 	sBlock, err := helpers.BlockByNumber(startBlock)
 	if err == nil {
-		startTime = helpers.ParseUintToUnixTime(sBlock.Time)
+		st := helpers.ParseUintToUnixTime(sBlock.Time)
+		startTime = st.Format(format)
 	}
 	eBlock, err := helpers.BlockByNumber(endBlock)
 	if err == nil {
-		endTime = helpers.ParseUintToUnixTime(eBlock.Time)
+		et := helpers.ParseUintToUnixTime(eBlock.Time)
+		endTime = et.Format(format)
 	}
 
 	message := discordclient.Message{
@@ -189,11 +191,11 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Start Time** \n%s", startTime.Format(format)),
+						Value:  fmt.Sprintf("**Start Time** \n%s", startTime),
 						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**End Time** \n%s", endTime.Format(format)),
+						Value:  fmt.Sprintf("**End Time** \n%s", endTime),
 						Inline: true,
 					},
 				},
