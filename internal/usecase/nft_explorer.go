@@ -706,7 +706,8 @@ func (u *Usecase) InsertOrUpdateNft(ctx context.Context, item *nft_explorer.Nfts
 				u.NewArtifactNotify(tmp)
 			} else if strings.ToLower(tmp.ContractAddress) == strings.ToLower(os.Getenv("SOUL_CONTRACT")) {
 				//NEW SOUL MINT
-				u.NewSoulTokenMintedNotify(tmp)
+				//move to capture image
+				//u.NewSoulTokenMintedNotify(tmp)
 			} else if strings.ToLower(tmp.ContractAddress) == strings.ToLower(bnsAddress) {
 				//BNS
 				go func() {

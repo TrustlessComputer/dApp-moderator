@@ -141,7 +141,11 @@ func (u *Usecase) SoulNftImageCrontab() error {
 					}
 					go u.UpdateSoulNftImageWorker(&wg3, updatedData)
 
+					//load data for homepage
 					go u.Repo.PrepareSoulData(&wg3)
+
+					//send discord notification
+					u.NewSoulTokenMintedNotify(&out.Nft)
 				}
 			}
 
