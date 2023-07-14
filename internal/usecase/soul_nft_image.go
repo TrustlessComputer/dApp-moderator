@@ -515,18 +515,7 @@ func (u *Usecase) UpdateSoulNftImageWorker(wg *sync.WaitGroup, inputChan Capture
 	out := inputChan
 	nft := out.Nft
 
-	newImagePathP := new(string)
-	traitP := new([]entity.NftAttr)
 	var err error
-
-	defer func() {
-		if err == nil {
-			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("newImagePathP", newImagePathP), zap.Any("traitP", traitP))
-		} else {
-			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Error(err))
-		}
-
-	}()
 
 	err = out.Err
 	if err != nil {
