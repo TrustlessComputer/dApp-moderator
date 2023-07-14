@@ -128,7 +128,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 				})
 
 				if len(*soulImage.ReplacedTraits) == 0 { //only use the original replaced
-					wg3.Add(2)
+					wg3.Add(1)
 					image := output[0].CapturedImage
 					traits := output[0].Traits
 					animationURL := out.Html
@@ -142,7 +142,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 					go u.UpdateSoulNftImageWorker(&wg3, updatedData)
 
 					//load data for homepage
-					go u.Repo.PrepareSoulData(&wg3)
+					//go u.Repo.PrepareSoulData(&wg3)
 
 					//send discord notification
 					out.Nft.Image = image
@@ -159,6 +159,12 @@ func (u *Usecase) SoulNftImageCrontab() error {
 
 		page++
 	}
+
+	//load data for homepage
+	wgPrepareData := sync.WaitGroup{}
+	wgPrepareData.Add(1)
+	go u.Repo.PrepareSoulData(&wgPrepareData)
+	wgPrepareData.Wait()
 
 	return nil
 }
@@ -254,6 +260,11 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 
 		page++
 	}
+
+	wgPrepareData := sync.WaitGroup{}
+	wgPrepareData.Add(1)
+	go u.Repo.PrepareSoulData(&wgPrepareData)
+	wgPrepareData.Wait()
 
 	return nil
 }
@@ -741,9 +752,10 @@ func (u *Usecase) CreateSoulNftImages(wg *sync.WaitGroup, inputChan CaptureSoulI
 
 	defer func() {
 		if err == nil {
-			logger.AtLog.Logger.Info(fmt.Sprintf("CreateSoulNftImages - %s, %s", zap.Any("inputChan", inputChan), nft.ContractAddress, nft.TokenID))
+			logger.AtLog.Logger.Info(fmt.Sprintf("CreateSoulNftImages - %s, %s", nft.ContractAddress, nft.TokenID),
+				zap.Any("inputChan", inputChan))
 		} else {
-			logger.AtLog.Logger.Error(fmt.Sprintf("CreateSoulNftImages - %s, %s", zap.Any("inputChan", inputChan), nft.ContractAddress, nft.TokenID), zap.Error(err))
+			logger.AtLog.Logger.Error(fmt.Sprintf("CreateSoulNftImages - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("inputChan", inputChan), zap.Error(err))
 		}
 
 	}()

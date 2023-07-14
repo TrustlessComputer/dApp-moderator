@@ -629,7 +629,7 @@ func (u *Usecase) ReplaceSoulHtml(input string) (*string, error) {
 	html := bytes.NewBuffer(byteArray).String()
 	html = strings.ReplaceAll(html, "Web3.givenProvider", replaceTo1)
 	html = strings.ReplaceAll(html, "isFakeData=!1", replaceTo3)
-	//html = strings.ReplaceAll(html, "isCapture=!1", "isCapture=true")
+	html = strings.ReplaceAll(html, "isCapture=!1", "isCapture=true")
 	return &html, nil
 }
 
