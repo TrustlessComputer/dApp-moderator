@@ -175,12 +175,18 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 	sBlock, err := helpers.BlockByNumber(startBlock)
 	if err == nil {
 		st := helpers.ParseUintToUnixTime(sBlock.Time)
-		startTime = st.Format(format)
+		if st != nil {
+			startTime = st.Format(format)
+		}
+
 	}
 	eBlock, err := helpers.BlockByNumber(endBlock)
 	if err == nil {
 		et := helpers.ParseUintToUnixTime(eBlock.Time)
-		endTime = et.Format(format)
+		if et != nil {
+			endTime = et.Format(format)
+		}
+
 	}
 
 	message := discordclient.Message{
