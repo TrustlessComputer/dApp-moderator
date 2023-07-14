@@ -369,6 +369,10 @@ func (u *Usecase) NewSoulTokenMintedNotify(nfts *entity.Nfts) (*entity.DiscordNo
 	notify.Message.Embeds[0].Title = fmt.Sprintf("Soul #%s", nfts.TokenID)
 	notify.Message.Embeds[0].Url = fmt.Sprintf("%s/souls/%s", os.Getenv("SOUL_DOMAIN"), nfts.TokenID)
 
+	//avoid duplicated here
+	hash := strings.ToLower(fmt.Sprintf("%s.%s.%s.%s", notify.Event, notify.Webhook, nfts.ContractAddress, nfts.TokenID))
+	notify.UUID = hash
+
 	err := u.CreateDiscordNotify(notify)
 	if err != nil {
 		return nil, err
@@ -492,9 +496,6 @@ func (u *Usecase) CreateDiscordNotify(notify *entity.DiscordNotification) error 
 		notify.Webhook = webhook
 		notify.Meta.SendTo = partner.Name
 
-		msg := notify.Message.Embeds[0]
-		hash := fmt.Sprintf("%s.%s.%s.%s", notify.Event, notify.Webhook, msg.Url, msg.Title)
-		notify.UUID = hash
 		err = u.Repo.CreateDiscordNotification(context.TODO(), notify)
 		if err != nil {
 			logger.AtLog.Error("CreateDiscordNotification", zap.Error(err))

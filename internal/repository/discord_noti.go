@@ -17,6 +17,10 @@ func (r *Repository) CreateDiscordNotification(ctx context.Context, notify *enti
 	notify.ID = primitive.NewObjectID()
 	notify.CreatedAt = &now
 
+	if notify.UUID == "" {
+		notify.UUID = notify.Id()
+	}
+
 	_, err := r.DB.Collection(utils.COLLECTION_DISCORD_NOTIFICATION).InsertOne(ctx, notify)
 	return err
 }
