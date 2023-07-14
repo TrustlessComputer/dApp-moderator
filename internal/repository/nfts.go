@@ -605,12 +605,6 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 }
 
 func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
-	if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
-		return &entity.MkpNftsPagination{
-			Items:     []*entity.MkpNftsResp{},
-			TotalItem: 0,
-		}, nil
-	}
 	f := bson.A{}
 	match := bson.D{}
 
@@ -724,6 +718,26 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 					},
 				},
 			})
+
+			if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
+				f1 = append(f1, bson.D{
+					{"$match", bson.D{{"$or", bson.A{
+						bson.M{
+							"is_available_for_auction": true,
+						}, bson.M{
+							"is_live_auction": true,
+						}}}}},
+				})
+			} else {
+				f1 = append(f1, bson.D{
+					{"$match", bson.D{{"$and", bson.A{
+						bson.M{
+							"is_available_for_auction": false,
+						}, bson.M{
+							"is_live_auction": false,
+						}}}}},
+				})
+			}
 
 			fsort = bson.D{{"$sort", sortDoc}}
 		} else {
