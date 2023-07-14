@@ -98,7 +98,7 @@ func (r *Repository) NftCapturedImageHistories(contractAddress string, offset in
 			{"$match",
 				bson.D{
 					{"collection_address", strings.ToLower(contractAddress)},
-					{"token_id", bson.M{"$in": specialNfts}},
+					//{"token_id", bson.M{"$in": specialNfts}},
 				},
 			},
 		},

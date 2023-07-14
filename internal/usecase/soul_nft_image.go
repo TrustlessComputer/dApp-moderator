@@ -573,6 +573,20 @@ func (u *Usecase) UpdateSoulNftImageImageHistoriesWorker(wg *sync.WaitGroup, bit
 
 	defer func() {
 		if err == nil {
+			//update soul's capture image
+			updatedData := CaptureSoulImageChan{
+				Err:              out.Err,
+				Nft:              out.Nft,
+				Image:            out.Image,
+				AnimationFileUrl: out.AnimationFileUrl,
+				Traits:           out.Traits,
+			}
+
+			wg3 := sync.WaitGroup{}
+			wg3.Add(1)
+			go u.UpdateSoulNftImageWorker(&wg3, updatedData)
+			wg3.Wait()
+
 			logger.AtLog.Logger.Info(fmt.Sprintf("UpdateSoulNftImageImageHistoriesWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("newImagePathP", newImagePathP), zap.Any("traitP", traitP))
 		} else {
 			logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageImageHistoriesWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Error(err))
