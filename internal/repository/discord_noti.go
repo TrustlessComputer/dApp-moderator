@@ -57,9 +57,9 @@ func (r *Repository) FindDiscordNotifications(ctx context.Context, req entity.Ge
 	return results, nil
 }
 
-func (r *Repository) UpdateDiscord(ctx context.Context, id string, fields map[string]interface{}) error {
+func (r *Repository) UpdateDiscord(ctx context.Context, uuid string, fields map[string]interface{}) error {
 	filter := bson.M{
-		"uuid": id,
+		"uuid": uuid,
 	}
 
 	update := bson.M{}

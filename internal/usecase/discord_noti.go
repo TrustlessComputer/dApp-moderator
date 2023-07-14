@@ -460,7 +460,7 @@ func (u *Usecase) JobSendDiscord() error {
 				}
 
 				if notify.NumRetried+1 == entity.MaxSendDiscordRetryTimes {
-					err = u.Repo.UpdateDiscord(context.TODO(), notify.Id(), map[string]interface{}{
+					err = u.Repo.UpdateDiscord(context.TODO(), notify.UUID, map[string]interface{}{
 						"status": entity.FAILED,
 						"note":   fmt.Sprintf("failed after %d times", entity.MaxSendDiscordRetryTimes),
 					})
@@ -469,7 +469,7 @@ func (u *Usecase) JobSendDiscord() error {
 					}
 				}
 			} else {
-				err = u.Repo.UpdateDiscord(context.TODO(), notify.Id(), map[string]interface{}{
+				err = u.Repo.UpdateDiscord(context.TODO(), notify.UUID, map[string]interface{}{
 					"status": entity.DONE,
 					"note":   "messaged is sent at " + time.Now().Format(time.RFC3339),
 				})
