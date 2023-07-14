@@ -150,10 +150,16 @@ func (c *txSoulServer) Task(wg *sync.WaitGroup, taskName string, processFunc fun
 	}
 }
 
+func (c *txSoulServer) checkSoulOwnerCrontab(ctx context.Context) error {
+	c.Usecase.SoulCrontab()
+	return nil
+}
+
 func (c *txSoulServer) StartServer() {
 
 	tasks := make(map[string]func(ctx context.Context) error)
 	tasks["soul-tx-transaction"] = c.resolveTxTransaction
+	tasks["checkSoulOwnerCrontab"] = c.checkSoulOwnerCrontab
 
 	var wg sync.WaitGroup
 	for {

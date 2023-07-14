@@ -150,7 +150,6 @@ func (c *txTCServer) StartServer() {
 
 	tasks := make(map[string]func(ctx context.Context) error)
 	//function is being developed
-	tasks["checkSoulOwnerCrontab"] = c.checkSoulOwnerCrontab
 	tasks["captureSoulImageCrontab"] = c.captureSoulImageCrontab
 	tasks["resolveTxTransaction"] = c.resolveTxTransaction
 
@@ -265,11 +264,6 @@ func (c *txTCServer) fetchToken(ctx context.Context) error {
 
 func (c *txTCServer) checkTxHashChunks(ctx context.Context) error {
 	return c.Usecase.ListenedChunks()
-}
-
-func (c *txTCServer) checkSoulOwnerCrontab(ctx context.Context) error {
-	c.Usecase.SoulCrontab()
-	return nil
 }
 
 func (c *txTCServer) captureSoulImageCrontab(ctx context.Context) error {

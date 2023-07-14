@@ -3,8 +3,10 @@ package nft_explorer
 import (
 	"dapp-moderator/utils/config"
 	"dapp-moderator/utils/helpers"
+	"dapp-moderator/utils/logger"
 	"dapp-moderator/utils/redis"
 	"fmt"
+	"go.uber.org/zap"
 	"net/url"
 	"os"
 	"strings"
@@ -57,6 +59,8 @@ func (q NftExplorer) CollectionDetail(contractAddress string) (*CollectionsResp,
 func (q NftExplorer) CollectionNfts(contractAddress string, params url.Values) ([]*NftsResp, error) {
 	headers := make(map[string]string)
 	url := fmt.Sprintf("%s/%s/%s/nfts?%s", q.serverURL, "collection", contractAddress, params.Encode())
+
+	logger.AtLog.Logger.Info("CollectionNfts", zap.String("url", url))
 	data, _, _, err := helpers.JsonRequest(url, "GET", headers, nil)
 	if err != nil {
 		return nil, err

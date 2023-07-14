@@ -116,7 +116,7 @@ func (u *Usecase) SoulCrontab() error {
 
 		//Trigger to auto-tc-node
 		if insertData.IsAuction {
-			u.TriggerCreateAuction(insertData)
+			//u.TriggerCreateAuction(insertData)
 		}
 	}
 	return nil

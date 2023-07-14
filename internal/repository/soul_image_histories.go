@@ -230,7 +230,35 @@ func (r *Repository) PrepareSoulData(wg *sync.WaitGroup) error {
 							},
 						},
 					},
-					{"is_available_for_auction", "$nft_auction_available.is_auction"},
+					{"is_available_for_auction", bson.D{
+						{"$cond",
+							bson.A{
+								bson.D{
+									{"$or",
+										bson.A{
+											bson.D{
+												{"$eq",
+													bson.A{
+														bson.D{
+															{"$ifNull",
+																bson.A{
+																	"$nft_auction_available",
+																	0,
+																},
+															},
+														},
+														0,
+													},
+												},
+											},
+										},
+									},
+								},
+								false,
+								"$nft_auction_available.is_auction",
+							},
+						},
+					}},
 					{"is_live_auction",
 						bson.D{
 							{"$cond",
