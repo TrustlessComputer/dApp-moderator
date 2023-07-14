@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -169,26 +170,35 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 	startBlock := auction.StartTimeBlock
 	endBlock := auction.EndTimeBlock
 
-	//format := "2006-01-02 15:04:05"
+	format := "2006-01-02 15:04:05"
 
-	//startTime := ""
-	//endTime := ""
-	//sBlock, err := helpers.BlockByNumber(startBlock)
-	//if err == nil {
-	//	st := helpers.ParseUintToUnixTime(sBlock.Time)
-	//	if st != nil {
-	//		startTime = st.Format(format)
-	//	}
-	//
-	//}
-	//eBlock, err := helpers.BlockByNumber(endBlock)
-	//if err == nil {
-	//	et := helpers.ParseUintToUnixTime(eBlock.Time)
-	//	if et != nil {
-	//		endTime = et.Format(format)
-	//	}
-	//
-	//}
+	startTime := ""
+	endTime := ""
+	st := &time.Time{}
+	sBlock, err := helpers.BlockByNumber(startBlock)
+	if err == nil && sBlock != nil {
+		st = helpers.ParseUintToUnixTime(sBlock.Time)
+		if st != nil {
+			startTime = st.Format(format)
+		}
+
+	} else {
+		return nil, errors.New("Cannot get start block")
+	}
+
+	startBlockInt, err := strconv.Atoi(startBlock)
+	if err != nil {
+		return nil, errors.New("Cannot get start block")
+	}
+
+	endBlockInt, err := strconv.Atoi(endBlock)
+	if err != nil {
+		return nil, errors.New("Cannot get end block")
+	}
+
+	diffMinute := (endBlockInt - startBlockInt) * 10
+	et := st.Add(time.Duration(diffMinute) * time.Minute)
+	endTime = et.Format(format)
 
 	message := discordclient.Message{
 		Content:   fmt.Sprintf("**AVAILABLE ADOPTION**"),
@@ -198,11 +208,11 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Start Time** \n%s", startBlock),
+						Value:  fmt.Sprintf("**Start Time** \n%s", startTime),
 						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**End Time** \n%s", endBlock),
+						Value:  fmt.Sprintf("**End Time** \n%s", endTime),
 						Inline: true,
 					},
 				},

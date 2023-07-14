@@ -157,14 +157,14 @@ func (u *Usecase) SoulNftImageCrontab() error {
 		wg2.Wait()
 		wg3.Wait()
 
+		//load data for homepage
+		wgPrepareData := sync.WaitGroup{}
+		wgPrepareData.Add(1)
+		go u.Repo.PrepareSoulData(&wgPrepareData)
+		wgPrepareData.Wait()
+
 		page++
 	}
-
-	//load data for homepage
-	wgPrepareData := sync.WaitGroup{}
-	wgPrepareData.Add(1)
-	go u.Repo.PrepareSoulData(&wgPrepareData)
-	wgPrepareData.Wait()
 
 	return nil
 }
@@ -258,13 +258,13 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		wg2.Wait()
 		wg3.Wait()
 
+		wgPrepareData := sync.WaitGroup{}
+		wgPrepareData.Add(1)
+		go u.Repo.PrepareSoulData(&wgPrepareData)
+		wgPrepareData.Wait()
+
 		page++
 	}
-
-	wgPrepareData := sync.WaitGroup{}
-	wgPrepareData.Add(1)
-	go u.Repo.PrepareSoulData(&wgPrepareData)
-	wgPrepareData.Wait()
 
 	return nil
 }
