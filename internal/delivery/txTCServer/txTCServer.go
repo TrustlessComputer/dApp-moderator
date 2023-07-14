@@ -150,7 +150,7 @@ func (c *txTCServer) StartServer() {
 
 	tasks := make(map[string]func(ctx context.Context) error)
 	//function is being developed
-	tasks["captureSoulImageCrontab"] = c.captureSoulImageCrontab
+	//tasks["captureSoulImageCrontab"] = c.captureSoulImageCrontab
 	tasks["resolveTxTransaction"] = c.resolveTxTransaction
 
 	//function have been done in develop
