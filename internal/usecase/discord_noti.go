@@ -160,6 +160,7 @@ func (u *Usecase) NewArtifactNotify(nfts *entity.Nfts) error {
 
 // SOUL notifications
 func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.DiscordNotification, error) {
+
 	nft, err := u.Repo.GetNft(auction.CollectionAddress, auction.TokenID)
 	if err != nil {
 		return nil, err
@@ -168,26 +169,26 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 	startBlock := auction.StartTimeBlock
 	endBlock := auction.EndTimeBlock
 
-	format := "2006-01-02 15:04:05"
+	//format := "2006-01-02 15:04:05"
 
-	startTime := ""
-	endTime := ""
-	sBlock, err := helpers.BlockByNumber(startBlock)
-	if err == nil {
-		st := helpers.ParseUintToUnixTime(sBlock.Time)
-		if st != nil {
-			startTime = st.Format(format)
-		}
-
-	}
-	eBlock, err := helpers.BlockByNumber(endBlock)
-	if err == nil {
-		et := helpers.ParseUintToUnixTime(eBlock.Time)
-		if et != nil {
-			endTime = et.Format(format)
-		}
-
-	}
+	//startTime := ""
+	//endTime := ""
+	//sBlock, err := helpers.BlockByNumber(startBlock)
+	//if err == nil {
+	//	st := helpers.ParseUintToUnixTime(sBlock.Time)
+	//	if st != nil {
+	//		startTime = st.Format(format)
+	//	}
+	//
+	//}
+	//eBlock, err := helpers.BlockByNumber(endBlock)
+	//if err == nil {
+	//	et := helpers.ParseUintToUnixTime(eBlock.Time)
+	//	if et != nil {
+	//		endTime = et.Format(format)
+	//	}
+	//
+	//}
 
 	message := discordclient.Message{
 		Content:   fmt.Sprintf("**AVAILABLE ADOPTION**"),
@@ -197,11 +198,11 @@ func (u *Usecase) NewAuctionCreatedNotify(auction *entity.Auction) (*entity.Disc
 			{
 				Fields: []discordclient.Field{
 					{
-						Value:  fmt.Sprintf("**Start Time** \n%s", startTime),
+						Value:  fmt.Sprintf("**Start Time** \n%s", startBlock),
 						Inline: true,
 					},
 					{
-						Value:  fmt.Sprintf("**End Time** \n%s", endTime),
+						Value:  fmt.Sprintf("**End Time** \n%s", endBlock),
 						Inline: true,
 					},
 				},
