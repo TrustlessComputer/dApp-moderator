@@ -719,26 +719,30 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 				},
 			})
 
-			if filter.IsOrphan != nil && *filter.IsOrphan > 0 {
-				f1 = append(f1, bson.D{
-					{"$match", bson.D{{"$or", bson.A{
-						bson.M{
-							"is_available_for_auction": true,
-						}, bson.M{
-							"is_live_auction": true,
-						}}}}},
-				})
-			} else {
-				f1 = append(f1, bson.D{
-					{"$match", bson.D{{"$and", bson.A{
-						bson.M{
-							"is_available_for_auction": false,
-						}, bson.M{
-							"is_live_auction": false,
-						}}}}},
-				})
+			if filter.IsOrphan != nil {
+				switch *filter.IsOrphan {
+				case 1:
+					f1 = append(f1, bson.D{
+						{"$match", bson.D{{"$or", bson.A{
+							bson.M{
+								"is_available_for_auction": true,
+							}, bson.M{
+								"is_live_auction": true,
+							}}}}},
+					})
+					break
+				case -1:
+					f1 = append(f1, bson.D{
+						{"$match", bson.D{{"$and", bson.A{
+							bson.M{
+								"is_available_for_auction": false,
+							}, bson.M{
+								"is_live_auction": false,
+							}}}}},
+					})
+					break
+				}
 			}
-
 			fsort = bson.D{{"$sort", sortDoc}}
 		} else {
 			addFields := bson.D{
