@@ -659,7 +659,7 @@ func (u *Usecase) UpdateSoulNftImageImageHistoriesWorker(wg *sync.WaitGroup, bit
 		BlockNumber:      bn, // current block number
 		Owner:            strings.ToLower(owner),
 		Event:            entity.SoulCaptureHistory,
-		TxHash:           fmt.Sprintf("%d", bn), //there is no txHash for this action
+		TxHash:           fmt.Sprintf("%d.%s.%d", bn, nft.TokenID, now.UnixMicro()), //there is no txHash for this action
 	}
 
 	if len(bitcoindex.Data) >= 1 {
