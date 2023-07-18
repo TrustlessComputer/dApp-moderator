@@ -531,6 +531,10 @@ func (u *Usecase) UpdateSoulNftImageWorker(wg *sync.WaitGroup, inputChan Capture
 	traits := out.Traits
 	animationFileUrl := out.AnimationFileUrl
 
+	if traits == nil {
+		return
+	}
+
 	updated, err := u.Repo.UpdateOne(utils.COLLECTION_NFTS, bson.D{{"_id", nft.ID}}, bson.M{"$set": bson.M{
 		"image_capture":      *image,
 		"animation_file_url": animationFileUrl,

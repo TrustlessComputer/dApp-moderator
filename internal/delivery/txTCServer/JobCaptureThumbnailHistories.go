@@ -25,14 +25,15 @@ func (c *JobCaptureThumbnailHistories) StartServer() {
 
 		wg.Add(2)
 
-		//go func(wg *sync.WaitGroup) {
-		//	defer wg.Done()
-		//	c.UseCase.SoulNftImageHistoriesCrontab([]string{})
-		//}(&wg)
 		go func(wg *sync.WaitGroup) {
 			defer wg.Done()
-			c.UseCase.SoulNftImageCrontab()
+			c.UseCase.SoulNftImageHistoriesCrontab([]string{})
 		}(&wg)
+
+		//go func(wg *sync.WaitGroup) {
+		//	defer wg.Done()
+		//	c.UseCase.SoulNftImageCrontab()
+		//}(&wg)
 
 		go func(wg *sync.WaitGroup) {
 			defer wg.Done()
