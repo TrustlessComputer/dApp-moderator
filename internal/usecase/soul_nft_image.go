@@ -270,7 +270,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 }
 
 func (u *Usecase) GetSoulNftAnimationURLWorker(wg *sync.WaitGroup, inputChan chan entity.Nfts, outputChan chan CaptureSoulImageChan) {
-	ctx := context.Background()
+	//ctx := context.Background()
 	defer wg.Done()
 	nft := <-inputChan
 	var err error
@@ -291,7 +291,7 @@ func (u *Usecase) GetSoulNftAnimationURLWorker(wg *sync.WaitGroup, inputChan cha
 		}
 	}()
 
-	animationFileUrl, err := u.GetAnimationFileUrl(ctx, &nft)
+	animationFileUrl := nft.AnimationFileUrl
 	animationFileUrlP = &animationFileUrl
 }
 
