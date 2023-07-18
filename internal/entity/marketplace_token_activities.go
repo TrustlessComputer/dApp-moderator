@@ -26,6 +26,7 @@ const (
 	AuctionSettledActivity TokenActivityType = 14
 	AuctionClaimActivity   TokenActivityType = 15
 	SoulUnlockFeature      TokenActivityType = 16
+	SoulCaptureHistory     TokenActivityType = 17
 )
 
 var TokenActivityName = map[TokenActivityType]string{

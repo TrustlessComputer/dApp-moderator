@@ -270,7 +270,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 }
 
 func (u *Usecase) GetSoulNftAnimationURLWorker(wg *sync.WaitGroup, inputChan chan entity.Nfts, outputChan chan CaptureSoulImageChan) {
-	//ctx := context.Background()
+	ctx := context.Background()
 	defer wg.Done()
 	nft := <-inputChan
 	var err error
@@ -291,7 +291,7 @@ func (u *Usecase) GetSoulNftAnimationURLWorker(wg *sync.WaitGroup, inputChan cha
 		}
 	}()
 
-	animationFileUrl := nft.AnimationFileUrl
+	animationFileUrl, err := u.GetAnimationFileUrl(ctx, &nft)
 	animationFileUrlP = &animationFileUrl
 }
 
@@ -656,9 +656,10 @@ func (u *Usecase) UpdateSoulNftImageImageHistoriesWorker(wg *sync.WaitGroup, bit
 		ImageCaptureDate: fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day()),
 		Erc20Address:     strings.ToLower(os.Getenv("SOUL_GM_ADDRESS")),
 		Erc20Amount:      erc20Amount,
-		BlockNumber:      bn,
+		BlockNumber:      bn, // current block number
 		Owner:            strings.ToLower(owner),
-		Event:            entity.SoulUnlockFeature,
+		Event:            entity.SoulCaptureHistory,
+		TxHash:           fmt.Sprintf("%d", bn), //there is no txHash for this action
 	}
 
 	if len(bitcoindex.Data) >= 1 {
