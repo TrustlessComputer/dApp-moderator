@@ -139,6 +139,7 @@ const (
 	COLLECTION_SOUL_NFTS                  string = "view_soul_nfts"         //ERC721
 	COLLECTION_SOUL_IMAGE_HISTORIES       string = "soul_image_histories"   //ERC721
 	COLLECTION_SOUL_IMAGES                string = "soul_images"            //ERC721
+	COLLECTION_SOUL_ANIMATION_HTML        string = "soul_animation_html"    // the html that is read and uploaded to GCS will be saved in this collection
 	COLLECTION_NFT_AUCTIONS               string = "nft_auction_available"  //ERC721
 	COLLECTION_NFT_TRIGGERED_AUCTIONS     string = "nft_triggered_auctions" //ERC721
 	COLLECTION_BNS                        string = "bns"                    //ERC721

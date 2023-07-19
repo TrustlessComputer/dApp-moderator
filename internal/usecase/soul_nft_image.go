@@ -212,10 +212,30 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 			break
 		}
 
+		tokenIDs := []string{}
+		for _, nft := range nfts {
+			tokenIDs = append(tokenIDs, nft.TokenID)
+		}
+
+		//nfts
+		animations, err := u.Repo.FindAnimationHtmls(tokenIDs)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Error(err))
+			return err
+		}
+
+		links := make(map[string]string)
+		for _, animation := range animations {
+			if animation.AnimationURL != nil {
+				links[animation.TokenID] = *animation.AnimationURL
+			}
+		}
+
 		var wg1 sync.WaitGroup
 		var wg2 sync.WaitGroup
 		var wg3 sync.WaitGroup
 		var wg4 sync.WaitGroup
+
 		inputWorker1Chan := make(chan entity.Nfts, len(nfts))
 		inputWorker3Chan := make(chan entity.Nfts, len(nfts))
 
@@ -224,7 +244,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		outputFromWorker3Chan := make(chan CaptureSoulOwnerChan, len(nfts))
 
 		for i := 0; i < len(nfts); i++ {
-			go u.GetSoulNftAnimationURLWorker(&wg1, inputWorker1Chan, outputFromWorker1Chan)
+			go u.GetSoulNftAnimationURLWorker(&wg1, links, inputWorker1Chan, outputFromWorker1Chan)
 		}
 
 		for i := 0; i < len(nfts); i++ {
@@ -269,7 +289,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 	return nil
 }
 
-func (u *Usecase) GetSoulNftAnimationURLWorker(wg *sync.WaitGroup, inputChan chan entity.Nfts, outputChan chan CaptureSoulImageChan) {
+func (u *Usecase) GetSoulNftAnimationURLWorker(wg *sync.WaitGroup, animationLinks map[string]string, inputChan chan entity.Nfts, outputChan chan CaptureSoulImageChan) {
 	ctx := context.Background()
 	defer wg.Done()
 	nft := <-inputChan
@@ -291,7 +311,23 @@ func (u *Usecase) GetSoulNftAnimationURLWorker(wg *sync.WaitGroup, inputChan cha
 		}
 	}()
 
-	animationFileUrl, err := u.GetAnimationFileUrl(ctx, &nft)
+	//check animationLinks existed
+	animationFileUrl, ok := animationLinks[nft.TokenID]
+	if !ok {
+		animationFileUrl, err := u.GetAnimationFileUrl(ctx, &nft)
+		//save this to DB
+		if err == nil {
+			obj := &entity.SoulAnimationHtml{
+				TokenID:         nft.TokenID,
+				ContractAddress: nft.ContractAddress,
+				TokenIDInt:      nft.TokenIDInt,
+				AnimationURL:    &animationFileUrl,
+			}
+
+			u.Repo.InsertSoulAnimationHtml(obj)
+		}
+	}
+
 	animationFileUrlP = &animationFileUrl
 }
 
