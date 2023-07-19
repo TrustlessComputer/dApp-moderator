@@ -300,7 +300,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		go u.Repo.PrepareSoulData(&wgPrepareData, tokenIDs)
 		wgPrepareData.Wait()
 
-		u.Cache.SetData(key, page)
+		u.Cache.SetDataWithExpireTime(key, page, 86400) // a day
 		page++
 	}
 
