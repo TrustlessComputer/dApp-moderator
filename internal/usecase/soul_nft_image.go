@@ -121,7 +121,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 				continue
 			}
 
-			for _, soulImage := range output {
+			for i, soulImage := range output {
 				wg3.Add(1)
 				go u.CreateSoulNftImages(&wg3, CaptureSoulImageChan{
 					Err:              out.Err,
@@ -132,7 +132,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 					ReplacedTraits:   soulImage.ReplacedTraits,
 				})
 
-				if len(*soulImage.ReplacedTraits) == 1 { //only use the original replaced
+				if i == 0 { //only use the original replaced
 					wg3.Add(1)
 					image := output[0].CapturedImage
 					traits := output[0].Traits
@@ -175,6 +175,19 @@ func (u *Usecase) SoulNftImageCrontab() error {
 }
 
 func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
+	key := "SoulNftImageHistoriesCrontab.processed.page"
+
+	page := 1
+	cached, err := u.Cache.GetData(key)
+	if err == nil && cached != nil {
+		page, err = strconv.Atoi(*cached)
+		if err != nil {
+			page = 1
+		} else {
+			page++
+		}
+	}
+
 	logger.AtLog.Logger.Info("SoulNftImageHistoriesCrontab", zap.Any("specialNfts", specialNfts))
 	gmAddress := os.Getenv("SOUL_GM_ADDRESS")
 	url := fmt.Sprintf("https://www.fprotocol.io/api/swap/token/report?address=%s", gmAddress)
@@ -201,7 +214,6 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		return err
 	}
 	limit := 3
-	page := 1
 
 	for {
 		offset := (page - 1) * limit
@@ -288,6 +300,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		go u.Repo.PrepareSoulData(&wgPrepareData, tokenIDs)
 		wgPrepareData.Wait()
 
+		u.Cache.SetData(key, page)
 		page++
 	}
 
