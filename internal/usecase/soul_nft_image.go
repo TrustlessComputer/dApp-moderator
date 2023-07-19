@@ -80,6 +80,11 @@ func (u *Usecase) SoulNftImageCrontab() error {
 			break
 		}
 
+		tokenIDs := []string{}
+		for _, nft := range nfts {
+			tokenIDs = append(tokenIDs, nft.TokenID)
+		}
+
 		var wg1 sync.WaitGroup
 		var wg2 sync.WaitGroup
 		var wg3 sync.WaitGroup
@@ -127,7 +132,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 					ReplacedTraits:   soulImage.ReplacedTraits,
 				})
 
-				if len(*soulImage.ReplacedTraits) == 0 { //only use the original replaced
+				if len(*soulImage.ReplacedTraits) == 1 { //only use the original replaced
 					wg3.Add(1)
 					image := output[0].CapturedImage
 					traits := output[0].Traits
@@ -147,7 +152,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 					//send discord notification
 					out.Nft.Image = image
 					out.Nft.ImageCapture = image
-					u.NewSoulTokenMintedNotify(&out.Nft)
+					//u.NewSoulTokenMintedNotify(&out.Nft)
 				}
 			}
 
@@ -160,7 +165,7 @@ func (u *Usecase) SoulNftImageCrontab() error {
 		//load data for homepage
 		wgPrepareData := sync.WaitGroup{}
 		wgPrepareData.Add(1)
-		go u.Repo.PrepareSoulData(&wgPrepareData)
+		go u.Repo.PrepareSoulData(&wgPrepareData, tokenIDs)
 		wgPrepareData.Wait()
 
 		page++
@@ -280,7 +285,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 
 		wgPrepareData := sync.WaitGroup{}
 		wgPrepareData.Add(1)
-		go u.Repo.PrepareSoulData(&wgPrepareData)
+		go u.Repo.PrepareSoulData(&wgPrepareData, tokenIDs)
 		wgPrepareData.Wait()
 
 		page++

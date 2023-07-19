@@ -19,11 +19,14 @@ func (r *Repository) InsertSoulImageHistory(obj *entity.SoulImageHistories) erro
 }
 
 // aggregate data to view_soul_nfts
-func (r *Repository) PrepareSoulData(wg *sync.WaitGroup) error {
+func (r *Repository) PrepareSoulData(wg *sync.WaitGroup, nfts []string) error {
 	defer wg.Done()
 
 	fAll := bson.A{
-		bson.D{{"$match", bson.D{{"collection_address", strings.ToLower(os.Getenv("SOUL_CONTRACT"))}}}},
+		bson.D{{"$match", bson.D{
+			{"collection_address", strings.ToLower(os.Getenv("SOUL_CONTRACT"))},
+			{"token_id", bson.M{"$in": nfts}},
+		}}},
 		bson.D{
 			{"$lookup",
 				bson.D{
