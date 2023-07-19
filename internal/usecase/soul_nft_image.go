@@ -178,15 +178,6 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 	key := "SoulNftImageHistoriesCrontab.processed.page"
 
 	page := 1
-	cached, err := u.Cache.GetData(key)
-	if err == nil && cached != nil {
-		page, err = strconv.Atoi(*cached)
-		if err != nil {
-			page = 1
-		} else {
-			page++
-		}
-	}
 
 	logger.AtLog.Logger.Info("SoulNftImageHistoriesCrontab", zap.Any("specialNfts", specialNfts))
 	gmAddress := os.Getenv("SOUL_GM_ADDRESS")
@@ -216,6 +207,16 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 	limit := 3
 
 	for {
+		cached, err := u.Cache.GetData(key)
+		if err == nil && cached != nil {
+			page, err = strconv.Atoi(*cached)
+			if err != nil {
+				page = 1
+			} else {
+				page++
+			}
+		}
+
 		offset := (page - 1) * limit
 
 		addr := os.Getenv("SOUL_CONTRACT")
@@ -530,9 +531,19 @@ func (u *Usecase) CaptureSoulNftImageWorker(wg *sync.WaitGroup, inputChan chan C
 	defer func() {
 
 		if err == nil {
-			logger.AtLog.Logger.Info(fmt.Sprintf("CaptureSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("newImagePathP", newImagePathP), zap.Any("traitP", traitP))
+			logger.AtLog.Logger.Info(fmt.Sprintf("CaptureSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("newImagePathP", newImagePathP),
+				zap.Any("traitP", traitP),
+				zap.Any("inChan", inChan),
+				zap.String("contractAddress", nft.ContractAddress),
+				zap.String("tokenID", nft.TokenID),
+			)
 		} else {
-			logger.AtLog.Logger.Error(fmt.Sprintf("CaptureSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Error(err))
+			logger.AtLog.Logger.Error(fmt.Sprintf("CaptureSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
+				zap.Error(err),
+				zap.Any("inChan", inChan),
+				zap.String("contractAddress", nft.ContractAddress),
+				zap.String("tokenID", nft.TokenID),
+			)
 		}
 
 		inChan.Image = newImagePathP
