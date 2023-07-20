@@ -723,7 +723,7 @@ func (u *Usecase) ParseHtmlImage(imageURL string) (string, map[string]string, er
 	now := time.Now().UTC().UnixNano()
 	postData := make(map[string]interface{})
 	postData["display_url"] = imageURL
-	postData["delay_time"] = 20
+	postData["delay_time"] = 90
 	postData["app_id"] = fmt.Sprintf("dapp-%d", now)
 
 	resp, _, _, err := helpers.HttpRequest(parseImageUrl, "POST", make(map[string]string), postData)
