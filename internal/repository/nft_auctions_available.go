@@ -92,17 +92,21 @@ func (r *Repository) NftWithoutCapturedImage(contractAddress string, offset int,
 	return resp, nil
 }
 
-func (r *Repository) NftCapturedImageHistories(contractAddress string, offset int, limit int, specialNfts []string) ([]entity.Nfts, error) {
+func (r *Repository) NftCapturedImageHistories(contractAddress string, offset int, limit int, specialNfts []string, sort bson.D) ([]entity.Nfts, error) {
+	m := bson.D{
+		{"collection_address", strings.ToLower(contractAddress)},
+	}
+
+	if len(specialNfts) > 0 {
+		m = append(m, bson.E{"token_id", bson.M{"$in": specialNfts}})
+	}
+
 	resp := []entity.Nfts{}
 	f := bson.A{
 		bson.D{
-			{"$match",
-				bson.D{
-					{"collection_address", strings.ToLower(contractAddress)},
-					//{"token_id", bson.M{"$in": specialNfts}},
-				},
-			},
+			{"$match", m},
 		},
+		bson.D{{"$sort", sort}},
 		bson.D{{"$skip", offset}},
 		bson.D{{"$limit", limit}},
 	}

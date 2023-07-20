@@ -204,35 +204,89 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		logger.AtLog.Logger.Error("SoulNftImageHistoriesCrontab", zap.Error(err))
 		return err
 	}
-	limit := 3
+	limit := 2
+
+	type nftsChan struct {
+		Nfts []entity.Nfts
+		Err  error
+	}
+
+	out1Chan := make(chan nftsChan, 1)
+	out2Chan := make(chan nftsChan, 1)
+
+	loadData := func(addr string, offset int, limit int, sort bson.D, outChan chan nftsChan) {
+		nfts, err := u.Repo.NftCapturedImageHistories(addr, offset, limit, specialNfts, sort)
+		if err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Error(err))
+			outChan <- nftsChan{
+				Nfts: nfts,
+				Err:  err,
+			}
+		}
+
+		outChan <- nftsChan{
+			Nfts: nfts,
+			Err:  err,
+		}
+	}
 
 	for {
-		cached, err := u.Cache.GetData(key)
-		if err == nil && cached != nil {
-			page, err = strconv.Atoi(*cached)
-			if err != nil {
-				page = 1
-			} else {
-				page++
+		//skip if specialNfts has items
+		if len(specialNfts) == 0 {
+			cached, err := u.Cache.GetData(key)
+			if err == nil && cached != nil {
+				page, err = strconv.Atoi(*cached)
+				if err != nil {
+					page = 1
+				} else {
+					page++
+				}
 			}
 		}
 
 		offset := (page - 1) * limit
 
 		addr := os.Getenv("SOUL_CONTRACT")
-		nfts, err := u.Repo.NftCapturedImageHistories(addr, offset, limit, specialNfts)
-		if err != nil {
-			logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Error(err))
+
+		s := bson.D{
+			{"token_id_int", entity.SORT_ASC},
 		}
 
-		logger.AtLog.Logger.Info(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Int("nfts", len(nfts)))
-		if len(nfts) == 0 {
+		sReverse := bson.D{
+			{"token_id_int", entity.SORT_DESC},
+		}
+
+		go loadData(addr, offset, limit, s, out1Chan)
+		go loadData(addr, offset, limit, sReverse, out2Chan)
+
+		o1FChan := <-out1Chan
+		o2FChan := <-out2Chan
+
+		if o1FChan.Err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Error(o1FChan.Err))
+			return err
+		}
+
+		if o2FChan.Err != nil {
+			logger.AtLog.Logger.Error(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Error(o1FChan.Err))
+			return err
+		}
+		nfts := o1FChan.Nfts
+		nfts1 := o2FChan.Nfts
+		nfts = append(nfts, nfts1...)
+
+		group := make(map[string]entity.Nfts)
+		for _, nft := range nfts {
+			group[nft.TokenID] = nft
+		}
+		logger.AtLog.Logger.Info(fmt.Sprintf("SoulNftImageHistoriesCrontab - page: %d, limit: %d", page, limit), zap.Int("nfts", len(group)))
+		if len(group) == 0 {
 			break
 		}
 
 		tokenIDs := []string{}
-		for _, nft := range nfts {
-			tokenIDs = append(tokenIDs, nft.TokenID)
+		for key, _ := range group {
+			tokenIDs = append(tokenIDs, key)
 		}
 
 		//nfts
@@ -254,26 +308,26 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		var wg3 sync.WaitGroup
 		var wg4 sync.WaitGroup
 
-		inputWorker1Chan := make(chan entity.Nfts, len(nfts))
-		inputWorker3Chan := make(chan entity.Nfts, len(nfts))
+		inputWorker1Chan := make(chan entity.Nfts, len(group))
+		inputWorker3Chan := make(chan entity.Nfts, len(group))
 
-		outputFromWorker1Chan := make(chan CaptureSoulImageChan, len(nfts))
-		outputFromWorker2Chan := make(chan CaptureSoulImageChan, len(nfts))
-		outputFromWorker3Chan := make(chan CaptureSoulOwnerChan, len(nfts))
+		outputFromWorker1Chan := make(chan CaptureSoulImageChan, len(group))
+		outputFromWorker2Chan := make(chan CaptureSoulImageChan, len(group))
+		outputFromWorker3Chan := make(chan CaptureSoulOwnerChan, len(group))
 
-		for i := 0; i < len(nfts); i++ {
+		for i := 0; i < len(group); i++ {
 			go u.GetSoulNftAnimationURLWorker(&wg1, links, inputWorker1Chan, outputFromWorker1Chan)
 		}
 
-		for i := 0; i < len(nfts); i++ {
+		for i := 0; i < len(group); i++ {
 			go u.CaptureSoulNftImageWorker(&wg2, outputFromWorker1Chan, outputFromWorker2Chan)
 		}
 
-		for i := 0; i < len(nfts); i++ {
+		for i := 0; i < len(group); i++ {
 			go u.GetSoulNftOwnerWorker(&wg4, inputWorker3Chan, erc20Contract, nftContract, outputFromWorker3Chan)
 		}
 
-		for _, nft := range nfts {
+		for _, nft := range group {
 			wg1.Add(1)
 			wg2.Add(1)
 			wg4.Add(1)
@@ -282,7 +336,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 			inputWorker3Chan <- nft
 		}
 
-		for i := 0; i < len(nfts); i++ {
+		for i := 0; i < len(group); i++ {
 			out := <-outputFromWorker2Chan
 			out1 := <-outputFromWorker3Chan
 
@@ -739,7 +793,7 @@ func (u *Usecase) UpdateSoulNftImageImageHistoriesWorker(wg *sync.WaitGroup, bit
 
 	err = u.Repo.InsertSoulImageHistory(obj)
 	if err != nil {
-		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
+		logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageImageHistoriesWorker - %s, %s", nft.ContractAddress, nft.TokenID),
 			zap.String("tokenID", nft.TokenID),
 			zap.String("contractAddress", nft.ContractAddress),
 			zap.Any("image", image),
