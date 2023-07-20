@@ -748,7 +748,7 @@ func (u *Usecase) UpdateSoulNftImageImageHistoriesWorker(wg *sync.WaitGroup, bit
 		return
 	}
 
-	logger.AtLog.Logger.Error(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
+	logger.AtLog.Logger.Info(fmt.Sprintf("UpdateSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
 		zap.String("tokenID", nft.TokenID),
 		zap.String("contractAddress", nft.ContractAddress),
 		zap.Any("image", image),
