@@ -18,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
+	"math"
 	"math/big"
 	"os"
 	"strconv"
@@ -178,6 +179,15 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 	key := "SoulNftImageHistoriesCrontab.processed.page"
 
 	page := 1
+	total, err := u.Repo.CountNfts(bson.D{{
+		"collection_address", strings.ToLower(os.Getenv("SOUL_CONTRACT")),
+	}})
+
+	if err != nil {
+		return err
+	}
+
+	totalItemsPerProcess := math.Ceil(float64(*total) / 2)
 
 	logger.AtLog.Logger.Info("SoulNftImageHistoriesCrontab", zap.Any("specialNfts", specialNfts))
 	gmAddress := os.Getenv("SOUL_GM_ADDRESS")
@@ -205,6 +215,8 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		return err
 	}
 	limit := 3
+	pagesPerProcess := math.Ceil(totalItemsPerProcess / float64(limit))
+	pagesPerProcessInt := int(pagesPerProcess)
 
 	type nftsChan struct {
 		Nfts []entity.Nfts
@@ -242,6 +254,10 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 					page++
 				}
 			}
+		}
+
+		if page > pagesPerProcessInt {
+			break
 		}
 
 		offset := (page - 1) * limit

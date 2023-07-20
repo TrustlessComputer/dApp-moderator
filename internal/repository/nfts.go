@@ -1189,3 +1189,11 @@ func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPag
 
 	return pResp[0], nil
 }
+
+func (r *Repository) CountNfts(filter bson.D) (*int64, error) {
+	total, err := r.DB.Collection(entity.Nfts{}.CollectionName()).CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return &total, nil
+}
