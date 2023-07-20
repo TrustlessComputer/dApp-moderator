@@ -305,6 +305,8 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		page++
 	}
 
+	//reload for the next
+	u.Cache.Delete(key)
 	return nil
 }
 
@@ -528,24 +530,13 @@ func (u *Usecase) CaptureSoulNftImageWorker(wg *sync.WaitGroup, inputChan chan C
 	var err error
 	nft := inChan.Nft
 
+	logs := []zap.Field{
+		zap.Any("inChan", inChan),
+		zap.String("contractAddress", nft.ContractAddress),
+		zap.String("tokenID", nft.TokenID),
+	}
+
 	defer func() {
-
-		if err == nil {
-			logger.AtLog.Logger.Info(fmt.Sprintf("CaptureSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID), zap.Any("newImagePathP", newImagePathP),
-				zap.Any("traitP", traitP),
-				zap.Any("inChan", inChan),
-				zap.String("contractAddress", nft.ContractAddress),
-				zap.String("tokenID", nft.TokenID),
-			)
-		} else {
-			logger.AtLog.Logger.Error(fmt.Sprintf("CaptureSoulNftImageWorker - %s, %s", nft.ContractAddress, nft.TokenID),
-				zap.Error(err),
-				zap.Any("inChan", inChan),
-				zap.String("contractAddress", nft.ContractAddress),
-				zap.String("tokenID", nft.TokenID),
-			)
-		}
-
 		inChan.Image = newImagePathP
 		inChan.Traits = traitP
 		inChan.Err = err
@@ -554,11 +545,17 @@ func (u *Usecase) CaptureSoulNftImageWorker(wg *sync.WaitGroup, inputChan chan C
 
 	if inChan.Err != nil {
 		err = inChan.Err
+		logs = append(logs, zap.Error(err))
+		logger.AtLog.Logger.Error(fmt.Sprintf("CaptureSoulNftImageWorker -  inChan.Err - %s, %s", nft.ContractAddress, nft.TokenID), logs...)
 		return
 	}
 
 	newImagePath, traits, err := u.ParseHtmlImage(*inChan.AnimationFileUrl)
 	if err != nil {
+
+		logs = append(logs, zap.Error(err))
+		logger.AtLog.Logger.Error(fmt.Sprintf("CaptureSoulNftImageWorker - ParseHtmlImage - %s, %s", nft.ContractAddress, nft.TokenID), logs...)
+
 		return
 	}
 
@@ -572,6 +569,8 @@ func (u *Usecase) CaptureSoulNftImageWorker(wg *sync.WaitGroup, inputChan chan C
 		traitObjs = append(traitObjs, t)
 	}
 
+	logs = append(logs, zap.Any("traitObjs", traitObjs))
+	logger.AtLog.Logger.Error(fmt.Sprintf("CaptureSoulNftImageWorker - done - %s, %s", nft.ContractAddress, nft.TokenID), logs...)
 	traitP = &traitObjs
 }
 
