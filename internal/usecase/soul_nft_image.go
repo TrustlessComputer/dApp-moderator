@@ -204,7 +204,7 @@ func (u *Usecase) SoulNftImageHistoriesCrontab(specialNfts []string) error {
 		logger.AtLog.Logger.Error("SoulNftImageHistoriesCrontab", zap.Error(err))
 		return err
 	}
-	limit := 2
+	limit := 3
 
 	type nftsChan struct {
 		Nfts []entity.Nfts
