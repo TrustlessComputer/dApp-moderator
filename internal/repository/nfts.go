@@ -606,7 +606,9 @@ func (r *Repository) getPipelineForAuctionRequest(filter *entity.FilterNfts) bso
 
 func (r *Repository) FilterMKPNfts(filter entity.FilterNfts) (*entity.MkpNftsPagination, error) {
 	f := bson.A{}
-	match := bson.D{}
+	match := bson.D{
+		bson.E{"deleted_at", bson.D{{"$eq", primitive.Null{}}}},
+	}
 
 	if filter.TokenID != nil && *filter.TokenID != "" {
 		match = append(match, bson.E{"token_id", *filter.TokenID})
