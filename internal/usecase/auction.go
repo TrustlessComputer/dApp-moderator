@@ -319,11 +319,15 @@ func (u *Usecase) AuctionListBid(filterReq *request.FilterAuctionBid) (*response
 	for _, item := range resp {
 		name, avatar := "", ""
 		if item.BnsDefault != nil && item.BnsDefault.BNSDefaultData != nil {
-			avatar = item.BnsDefault.BNSDefaultData.PfpData.GCSUrl
+			if item.BnsDefault.BNSDefaultData.PfpData != nil {
+				avatar = item.BnsDefault.BNSDefaultData.PfpData.GCSUrl
+			}
 			name = item.BnsDefault.BNSDefaultData.Name
 		} else {
 			if len(item.BnsData) > 0 {
-				avatar = item.BnsData[0].PfpData.GCSUrl
+				if item.BnsData[0].PfpData != nil {
+					avatar = item.BnsData[0].PfpData.GCSUrl
+				}
 				name = item.BnsData[0].Name
 			}
 		}
