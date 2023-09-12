@@ -5,10 +5,11 @@ import (
 	"dapp-moderator/utils/helpers"
 	"dapp-moderator/utils/redis"
 	"encoding/json"
+	"strconv"
 )
 
 type QuickNode struct {
-	conf *config.Config
+	conf      *config.Config
 	serverURL string
 	cache     redis.IRedisCache
 }
@@ -21,26 +22,51 @@ func NewQuickNode(conf *config.Config, cache redis.IRedisCache) *QuickNode {
 	}
 }
 
+type QuickNodeUTXO_NEW struct {
+	Txid          string `json:"txid"`
+	Vout          int    `json:"vout"`
+	Value         string `json:"value"`
+	Height        int    `json:"height"`
+	Confirmations int    `json:"confirmations"`
+}
 
 func (q QuickNode) AddressBalance(walletAddress string) ([]WalletAddressBalanceResp, error) {
 	headers := make(map[string]string)
 	reqBody := RequestData{
-		Method: "qn_addressBalance",
+		Method: "bb_getutxos",
 		Params: []string{
 			walletAddress,
 		},
 	}
-	
-	data,_, _, err := helpers.HttpRequest(q.serverURL, "POST", headers, reqBody)
+
+	data, _, _, err := helpers.HttpRequest(q.serverURL, "POST", headers, reqBody)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := []WalletAddressBalanceResp{}
+	resp := []QuickNodeUTXO_NEW{}
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
 		return nil, err
 	}
-	
-	return resp, nil
+
+	result := []WalletAddressBalanceResp{}
+	for _, v := range resp {
+		value, err := strconv.ParseUint(v.Value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, WalletAddressBalanceResp{
+			Version:  0,
+			Height:   int64(v.Height),
+			Script:   "",
+			Address:  walletAddress,
+			Coinbase: false,
+			Hash:     v.Txid,
+			Index:    v.Vout,
+			Value:    value,
+		})
+	}
+
+	return result, nil
 }
