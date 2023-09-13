@@ -44,14 +44,16 @@ func (q QuickNode) AddressBalance(walletAddress string) ([]WalletAddressBalanceR
 		return nil, err
 	}
 
-	resp := []QuickNodeUTXO_NEW{}
+	resp := struct {
+		Result []QuickNodeUTXO_NEW `json:"result"`
+	}{}
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
 		return nil, err
 	}
 
 	result := []WalletAddressBalanceResp{}
-	for _, v := range resp {
+	for _, v := range resp.Result {
 		value, err := strconv.ParseUint(v.Value, 10, 64)
 		if err != nil {
 			return nil, err
